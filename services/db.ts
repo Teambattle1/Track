@@ -1,6 +1,6 @@
 
-import { supabase } from '../lib/supabase';
-import { Game, TaskTemplate, TaskList, Team } from '../types';
+import { supabase } from '../lib/supabase.ts';
+import { Game, TaskTemplate, TaskList, Team } from '../types.ts';
 
 const logError = (context: string, error: any) => {
     const message = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
@@ -9,7 +9,7 @@ const logError = (context: string, error: any) => {
     } else if (error?.code === '42P01' || message.includes('Could not find the table')) {
         console.error(`[Supabase] Table missing in '${context}'. Use Admin panel to run SQL setup.`);
     } else {
-        console.error(`[Supabase] Error in '${context}':`, message);
+        console.error(`[Supabase] Error in '${context}':`, error);
     }
     return message;
 };
@@ -96,7 +96,6 @@ export const registerTeam = async (team: Team) => {
 
 export const updateTeamProgress = async (teamId: string, completedPointId: string, newScore: number) => {
     try {
-        // Fetch current to merge
         const team = await fetchTeam(teamId);
         if (!team) return;
 

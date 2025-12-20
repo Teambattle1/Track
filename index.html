@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="dark">
   <head>
@@ -6,6 +7,9 @@
     <title>TeamAction by TeamBattle</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Shim for process.env used by libraries in browser native environment
+      window.process = { env: { API_KEY: "" } };
+      
       tailwind.config = {
         darkMode: 'class',
         theme: {
@@ -32,21 +36,19 @@
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
     <style>
-      /* Fix for Leaflet in some environments */
       .leaflet-container {
         width: 100%;
         height: 100%;
         z-index: 10;
-        background: #1a202c; /* Dark mode map bg */
+        background: #1a202c;
       }
       body, html, #root {
         height: 100%;
         width: 100%;
         margin: 0;
-        overflow: hidden; /* Prevent scrolling on mobile */
-        background-color: #0f172a; /* Slate 900 */
+        overflow: hidden;
+        background-color: #0f172a;
       }
-      /* Custom Scrollbar for dark mode */
       ::-webkit-scrollbar {
         width: 8px;
       }
@@ -85,5 +87,7 @@
 </head>
   <body class="bg-slate-900 text-slate-100">
     <div id="root"></div>
+    <!-- Entry point for the application -->
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>

@@ -1,27 +1,27 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import GameMap, { GameMapHandle } from './components/GameMap';
-import TaskModal from './components/TaskModal';
-import GameHUD from './components/GameHUD';
-import GameStats from './components/GameStats';
-import GameManager from './components/GameManager';
-import GameChooser from './components/GameChooser';
-import TaskMaster from './components/TaskMaster';
-import WelcomeScreen from './components/WelcomeScreen';
-import LandingPage from './components/LandingPage';
-import TeamsModal from './components/TeamsModal';
-import EditorDrawer from './components/EditorDrawer';
-import AdminModal from './components/AdminModal'; 
-import InstructorDashboard from './components/InstructorDashboard'; 
-import MessagePopup from './components/MessagePopup'; 
-import LocationSearch from './components/LocationSearch';
-import TaskPreview from './components/TaskPreview';
-import AiTaskGenerator from './components/AiTaskGenerator';
-import { GamePoint, Coordinate, GameState, GameMode, Game, MapStyleId, Language, ChatMessage, TaskTemplate, Team } from './types';
-import { haversineMeters, isWithinRadius } from './utils/geo';
+import GameMap, { GameMapHandle } from './components/GameMap.tsx';
+import TaskModal from './components/TaskModal.tsx';
+import GameHUD from './components/GameHUD.tsx';
+import GameStats from './components/GameStats.tsx';
+import GameManager from './components/GameManager.tsx';
+import GameChooser from './components/GameChooser.tsx';
+import TaskMaster from './components/TaskMaster.tsx';
+import WelcomeScreen from './components/WelcomeScreen.tsx';
+import LandingPage from './components/LandingPage.tsx';
+import TeamsModal from './components/TeamsModal.tsx';
+import EditorDrawer from './components/EditorDrawer.tsx';
+import AdminModal from './components/AdminModal.tsx'; 
+import InstructorDashboard from './components/InstructorDashboard.tsx'; 
+import MessagePopup from './components/MessagePopup.tsx'; 
+import LocationSearch from './components/LocationSearch.tsx';
+import TaskPreview from './components/TaskPreview.tsx';
+import AiTaskGenerator from './components/AiTaskGenerator.tsx';
+import { GamePoint, Coordinate, GameState, GameMode, Game, MapStyleId, Language, ChatMessage, TaskTemplate, Team } from './types.ts';
+import { haversineMeters, isWithinRadius } from './utils/geo.ts';
 import { X, Copy, ClipboardPaste, ChevronDown, AlertTriangle, Plus, Sparkles, Library, FilePlus, CheckCircle } from 'lucide-react';
-import * as db from './services/db';
-import { teamSync } from './services/teamSync';
+import * as db from './services/db.ts';
+import { teamSync } from './services/teamSync.ts';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -52,7 +52,6 @@ const App: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [forceExpandDrawer, setForceExpandDrawer] = useState(false);
 
-  // Local Team Progress state (to avoid game template clashes)
   const [completedPointIds, setCompletedPointIds] = useState<string[]>([]);
   const [unlockedPointIds, setUnlockedPointIds] = useState<string[]>([]);
 
@@ -80,13 +79,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
       const unsubscribeChat = teamSync.subscribeToChat((msg) => setCurrentChatMessage(msg));
-      const unsubscribeVotes = teamSync.subscribeToVotes((votes) => {
-          // If a vote indicates someone completed a task, we might want to refresh
-          // But usually the DB sync is primary
-      });
       return () => {
           unsubscribeChat();
-          unsubscribeVotes();
       };
   }, []);
 
@@ -122,11 +116,9 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(refreshData, 500);
-    return () => clearTimeout(timer);
+    refreshData();
   }, [refreshData]);
 
-  // GPS Watcher
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
@@ -136,7 +128,6 @@ const App: React.FC = () => {
         setGameState(prev => ({ ...prev, userLocation: newLoc, gpsAccuracy: accuracy }));
         teamSync.updateLocation(newLoc);
 
-        // Check for geofence unlocks
         const activeGame = gameStateRef.current.games.find(g => g.id === gameStateRef.current.activeGameId);
         if (activeGame && mode === GameMode.PLAY) {
              activeGame.points.forEach(point => {
@@ -158,22 +149,11 @@ const App: React.FC = () => {
   }, [mode, completedPointIds]); 
 
   const handlePointHover = useCallback((point: GamePoint | null) => {
-    if (hoverGraceTimeoutRef.current) {
-      clearTimeout(hoverGraceTimeoutRef.current);
-      hoverGraceTimeoutRef.current = null;
-    }
     if (point) setHoveredPoint(point);
-    else {
-      hoverGraceTimeoutRef.current = window.setTimeout(() => {
-        setHoveredPoint(null);
-      }, 1000);
-    }
+    else setHoveredPoint(null);
   }, []);
 
-  const hoverGraceTimeoutRef = useRef<number | null>(null);
-
   const handleStartGame = (gameId: string, teamName: string, userName: string, style: MapStyleId) => {
-      // Calculate Team ID to recover session
       const teamId = `team-${teamName.replace(/\s+/g, '-').toLowerCase()}-${gameId}`;
       setGameState(prev => ({ ...prev, activeGameId: gameId, teamName, userName, teamId }));
       setMode(GameMode.PLAY); setMapStyle(style); setShowLanding(false); setBypassWelcome(true);
@@ -311,7 +291,6 @@ const App: React.FC = () => {
       return gameState.games.find(g => g.id === gameState.activeGameId);
   }, [gameState.games, gameState.activeGameId]);
 
-  // Merge template points with team progress
   const displayPoints = useMemo(() => {
       if (!activeGame) return [];
       return activeGame.points.map(p => ({
@@ -351,9 +330,10 @@ const App: React.FC = () => {
                     const name = prompt("ENTER NAME FOR NEW GAME:", "NEW GAME");
                     if (name) {
                         const newGame: Game = { id: `game-${Date.now()}`, name, description: '', points: [], createdAt: Date.now() };
-                        setGameState(prev => ({ ...prev, activeGameId: newGame.id, games: [newGame, ...prev.games] }));
                         db.saveGame(newGame).then(() => { 
-                            refreshData(); setMode(GameMode.EDIT); setShowLanding(false); setBypassWelcome(true); setForceExpandDrawer(true);
+                            refreshData(); 
+                            setGameState(prev => ({ ...prev, activeGameId: newGame.id }));
+                            setMode(GameMode.EDIT); setShowLanding(false); setBypassWelcome(true); setForceExpandDrawer(true);
                         });
                     }
                     return;
@@ -475,7 +455,7 @@ const App: React.FC = () => {
 
       {/* GLOBAL MODALS */}
       {showInstructorDashboard && instructorGame && <InstructorDashboard game={instructorGame} onClose={() => setShowInstructorDashboard(false)} />}
-      {showGameChooser && <GameChooser games={gameState.games} taskLists={gameState.taskLists} onClose={() => setShowGameChooser(false)} onSelectGame={(id) => { setGameState(prev => ({ ...prev, activeGameId: id })); setShowGameChooser(false); }} onCreateGame={(name) => { const newGame: Game = { id: `game-${Date.now()}`, name, description: '', points: [], createdAt: Date.now() }; setGameState(prev => ({ ...prev, games: [newGame, ...prev.games], activeGameId: newGame.id })); db.saveGame(newGame).then(() => { refreshData(); setShowGameChooser(false); }); }} />}
+      {showGameChooser && <GameChooser games={gameState.games} taskLists={gameState.taskLists} onClose={() => setShowGameChooser(false)} onSelectGame={(id) => { setGameState(prev => ({ ...prev, activeGameId: id })); setShowGameChooser(false); }} onCreateGame={(name) => { const newGame: Game = { id: `game-${Date.now()}`, name, description: '', points: [], createdAt: Date.now() }; db.saveGame(newGame).then(() => { refreshData(); setGameState(prev => ({ ...prev, activeGameId: newGame.id })); setShowGameChooser(false); }); }} />}
       {showTaskMaster && <TaskMaster library={gameState.taskLibrary} lists={gameState.taskLists} onClose={() => { setShowTaskMaster(false); setIsTaskSelectionMode(false); }} onSaveTemplate={(t) => db.saveTemplate(t).then(refreshData)} onDeleteTemplate={(id) => db.deleteTemplate(id).then(refreshData)} onSaveList={(l) => db.saveTaskList(l).then(refreshData)} onDeleteList={(id) => db.deleteTaskList(id).then(refreshData)} onCreateGameFromList={() => {}} isSelectionMode={isTaskSelectionMode} onSelectTasksForGame={handleAddTasksFromLibrary} />}
       {showAiGenerator && <AiTaskGenerator onClose={() => setShowAiGenerator(false)} onAddTasks={handleAddAiTasks} />}
       {showTeamsModal && <TeamsModal gameId={gameState.activeGameId} games={gameState.games} onSelectGame={(id) => setGameState(prev => ({ ...prev, activeGameId: id }))} onClose={() => setShowTeamsModal(false)} />}
