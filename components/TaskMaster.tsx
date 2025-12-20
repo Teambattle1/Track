@@ -1,7 +1,8 @@
 
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TaskTemplate, TaskList, GamePoint, IconId } from '../types';
-import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, CheckCircle2, ChevronRight, ListChecks, Globe, Home, ArrowLeft, Wand2, FilePlus, Sparkles, Camera, Image as ImageIcon } from 'lucide-react';
+import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, CheckCircle2, ChevronRight, ListChecks, Globe, Home, ArrowLeft, Wand2, FilePlus, Sparkles, Camera, Image as ImageIcon, Gamepad2 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import TaskEditor from './TaskEditor';
 import AiTaskGenerator from './AiTaskGenerator';
@@ -608,7 +609,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-[1200] bg-gray-100 dark:bg-gray-900 flex flex-col animate-in fade-in duration-200">
+    <div className="absolute inset-0 z-[1900] bg-gray-100 dark:bg-gray-900 flex flex-col animate-in fade-in duration-200">
       
       {/* Header */}
       <div className={`text-white p-4 shadow-md flex justify-between items-center z-10 ${isSelectionMode ? 'bg-orange-900' : 'bg-gray-800'}`}>
@@ -676,4 +677,288 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                      <button 
+                      <button
+                          onClick={createNewTemplate}
+                          className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 hover:border-orange-500 hover:shadow-lg transition-all group"
+                      >
+                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-orange-100 dark:group-hover:bg-orange-900/30 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                              <FilePlus className="w-8 h-8" />
+                          </div>
+                          <div className="text-center">
+                              <h3 className="font-bold text-gray-800 dark:text-white text-lg uppercase">MANUAL CREATION</h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wide">Design task from scratch</p>
+                          </div>
+                      </button>
+
+                      <button
+                          onClick={() => setShowAiGenerator(true)}
+                          className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 hover:border-purple-500 hover:shadow-lg transition-all group"
+                      >
+                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                              <Wand2 className="w-8 h-8" />
+                          </div>
+                          <div className="text-center">
+                              <h3 className="font-bold text-gray-800 dark:text-white text-lg uppercase">AI GENERATOR</h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wide">Generate from topic</p>
+                          </div>
+                      </button>
+                      
+                      {/* Image Upload Button */}
+                      <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all group col-span-1 md:col-span-2"
+                      >
+                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              <Camera className="w-8 h-8" />
+                          </div>
+                          <div className="text-center">
+                              <h3 className="font-bold text-gray-800 dark:text-white text-lg uppercase">FROM IMAGE</h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wide">Snap photo to create task</p>
+                          </div>
+                          <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              ref={fileInputRef}
+                              onChange={handleImageUpload}
+                          />
+                      </button>
+
+                  </div>
+              </div>
+          )}
+
+          {/* LISTS VIEW */}
+          {activeTab === 'LISTS' && (
+              <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden">
+                  
+                  {/* Sidebar Lists */}
+                  <div className="w-full md:w-1/3 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                           <button 
+                                onClick={() => setSelectedListId(null)} // Show creation form
+                                className="w-full py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center justify-center gap-2 uppercase"
+                           >
+                               <Plus className="w-4 h-4" /> NEW LIST
+                           </button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-2">
+                           {lists.map(list => (
+                               <TaskListItem 
+                                    key={list.id} 
+                                    list={list} 
+                                    isSelected={selectedListId === list.id} 
+                                    onSelect={() => { setSelectedListId(list.id); setIsAddingToList(false); }}
+                                    onDelete={handleDeleteListHandler}
+                                    isSelectionMode={isSelectionMode}
+                               />
+                           ))}
+                      </div>
+                  </div>
+
+                  {/* List Detail / Create List Form */}
+                  <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 overflow-hidden">
+                       {!selectedListId ? (
+                           // Create List Form
+                           <div className="flex-1 flex flex-col items-center justify-center p-8">
+                               <div className="w-full max-w-sm space-y-4">
+                                   <div className="text-center mb-6">
+                                       <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                           <Layers className="w-8 h-8" />
+                                       </div>
+                                       <h3 className="text-xl font-bold uppercase tracking-wider">CREATE NEW LIST</h3>
+                                   </div>
+                                   <form onSubmit={handleCreateList} className="space-y-4">
+                                       <div>
+                                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">LIST NAME</label>
+                                           <input 
+                                                type="text" 
+                                                value={newListName}
+                                                onChange={(e) => setNewListName(e.target.value)}
+                                                placeholder="e.g. City Tour 2024"
+                                                className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                                                autoFocus
+                                           />
+                                       </div>
+                                       <div>
+                                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">COLOR</label>
+                                           <div className="flex flex-wrap gap-2">
+                                               {COLORS.map(c => (
+                                                   <button
+                                                       key={c}
+                                                       type="button"
+                                                       onClick={() => setNewListColor(c)}
+                                                       className={`w-8 h-8 rounded-full border-2 transition-transform ${newListColor === c ? 'border-gray-400 scale-110' : 'border-transparent'}`}
+                                                       style={{ backgroundColor: c }}
+                                                   />
+                                               ))}
+                                           </div>
+                                       </div>
+                                       <button 
+                                            type="submit" 
+                                            disabled={!newListName.trim()}
+                                            className="w-full py-3 bg-amber-500 text-white rounded-xl font-bold uppercase tracking-wide hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                                       >
+                                           CREATE LIST
+                                       </button>
+                                   </form>
+                               </div>
+                           </div>
+                       ) : selectedList ? (
+                           // List Detail View
+                           <div className="flex flex-col h-full">
+                               <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+                                   <div>
+                                       <h3 className="font-bold text-lg uppercase tracking-wide flex items-center gap-2">
+                                           <div className="w-3 h-8 rounded-full" style={{backgroundColor: selectedList.color}}></div>
+                                           {selectedList.name}
+                                       </h3>
+                                       <p className="text-xs text-gray-500 uppercase mt-1">{selectedList.tasks.length} tasks in list</p>
+                                   </div>
+                                   <div className="flex gap-2">
+                                       {onCreateGameFromList && (
+                                           <button 
+                                                onClick={() => onCreateGameFromList(selectedList.id)}
+                                                className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1"
+                                           >
+                                               <Gamepad2 className="w-3 h-3" /> Play
+                                           </button>
+                                       )}
+                                       <button 
+                                            onClick={() => { setActiveTab('LIBRARY'); setIsAddingToList(true); }}
+                                            className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-1"
+                                       >
+                                           <Plus className="w-3 h-3" /> Add Tasks
+                                       </button>
+                                   </div>
+                               </div>
+                               
+                               <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                   {selectedList.tasks.length === 0 ? (
+                                       <div className="text-center py-10 text-gray-400">
+                                           <p className="text-sm font-bold uppercase">LIST IS EMPTY</p>
+                                           <button onClick={() => { setActiveTab('LIBRARY'); setIsAddingToList(true); }} className="text-blue-500 hover:underline text-xs mt-2 uppercase font-bold">BROWSE LIBRARY TO ADD TASKS</button>
+                                       </div>
+                                   ) : (
+                                       selectedList.tasks.map(task => renderTaskRow(task, 'list'))
+                                   )}
+                               </div>
+                           </div>
+                       ) : (
+                           <div className="flex-1 flex items-center justify-center text-gray-400">
+                               Select a list...
+                           </div>
+                       )}
+                  </div>
+              </div>
+          )}
+
+          {/* LIBRARY VIEW */}
+          {activeTab === 'LIBRARY' && (
+              <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-900">
+                  {/* Search Bar & Filters */}
+                  <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row gap-3 bg-gray-50/50 dark:bg-gray-800/50">
+                      <div className="flex-1 relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input 
+                              type="text" 
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              placeholder="Search tasks..."
+                              className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-orange-500 outline-none dark:bg-gray-800 dark:text-white"
+                          />
+                      </div>
+                      
+                      {/* Language Filter */}
+                      <select 
+                          value={languageFilter} 
+                          onChange={(e) => setLanguageFilter(e.target.value)}
+                          className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm bg-white dark:bg-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-orange-500"
+                      >
+                          <option value="All">All Languages</option>
+                          {availableLanguages.map(lang => (
+                              <option key={lang} value={lang}>{lang}</option>
+                          ))}
+                      </select>
+
+                      {/* Bulk Mode Toggle */}
+                      {!isSelectionMode && (
+                        <button 
+                            onClick={() => { setIsBulkMode(!isBulkMode); setBulkSelectedIds(new Set()); }}
+                            className={`px-3 py-2 rounded-lg text-sm font-bold border transition-colors flex items-center gap-2 uppercase tracking-wide ${isBulkMode ? 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-500 text-indigo-700 dark:text-indigo-300' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'}`}
+                        >
+                            <CheckSquare className="w-4 h-4" /> Bulk Edit
+                        </button>
+                      )}
+                  </div>
+                  
+                  {/* Bulk Actions Bar */}
+                  {isBulkMode && (
+                      <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 border-b border-indigo-100 dark:border-indigo-800 flex items-center gap-3 animate-in slide-in-from-top-2">
+                          <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">{bulkSelectedIds.size} SELECTED</span>
+                          <div className="flex-1"></div>
+                          <div className="flex items-center gap-2">
+                              <input 
+                                   type="text" 
+                                   value={bulkTagInput} 
+                                   onChange={(e) => setBulkTagInput(e.target.value)}
+                                   placeholder="Tag to add..."
+                                   className="px-3 py-1.5 rounded-lg border border-indigo-200 text-sm focus:outline-none"
+                              />
+                              <button 
+                                   onClick={handleBulkAddTag}
+                                   disabled={!bulkTagInput.trim() || bulkSelectedIds.size === 0}
+                                   className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-50 uppercase tracking-wide"
+                              >
+                                  Add Tag
+                              </button>
+                          </div>
+                      </div>
+                  )}
+
+                  <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                      {isAddingToList && selectedList && (
+                          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl flex justify-between items-center">
+                              <span className="text-xs font-bold text-blue-800 dark:text-blue-200 uppercase tracking-wide">Adding to: {selectedList.name}</span>
+                              <button onClick={() => setIsAddingToList(false)} className="text-blue-600 hover:text-blue-800 text-xs font-bold uppercase tracking-wide">Done</button>
+                          </div>
+                      )}
+
+                      {filteredLibrary.length === 0 ? (
+                          <div className="text-center py-12 text-gray-400">
+                              <p className="font-bold uppercase tracking-wide">No tasks found</p>
+                              {searchQuery && <p className="text-xs">Try a different search term</p>}
+                          </div>
+                      ) : (
+                          filteredLibrary.map(t => renderTaskRow(t, 'library'))
+                      )}
+                  </div>
+              </div>
+          )}
+
+      </div>
+      
+      {/* Modals */}
+      {editingTemplate && (
+          <TaskEditor 
+              point={convertTemplateToPoint(editingTemplate)}
+              onSave={handleSaveTemplate}
+              onDelete={handleDeleteTemplateHandler}
+              onClose={() => setEditingTemplate(null)}
+              onClone={handleCloneTemplate}
+              isTemplateMode={true}
+          />
+      )}
+
+      {showAiGenerator && (
+          <AiTaskGenerator 
+              onClose={() => setShowAiGenerator(false)}
+              onAddTasks={handleAiTasksAdded}
+          />
+      )}
+
+    </div>
+  );
+};
+
+export default TaskMaster;

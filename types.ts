@@ -95,6 +95,23 @@ export type PointCompletionLogic =
   | 'keep_always' // Keep until end of game
   | 'allow_close'; // Allow close without answering
 
+// --- LOGIC SYSTEM ---
+export type ActionType = 'unlock' | 'lock' | 'score' | 'message' | 'sound' | 'reveal';
+
+export interface GameAction {
+  id: string;
+  type: ActionType;
+  targetId?: string; // ID of target point
+  value?: string | number; // Payload (score amount, message text, sound URL)
+}
+
+export interface TaskLogic {
+  onOpen?: GameAction[];
+  onCorrect?: GameAction[];
+  onIncorrect?: GameAction[];
+}
+// --------------------
+
 export interface GamePoint {
   id: string;
   title: string; 
@@ -125,6 +142,9 @@ export interface GamePoint {
   completionLogic?: PointCompletionLogic;
   instructorNotes?: string;
   
+  // Event Logic
+  logic?: TaskLogic;
+  
   // Structural
   isSectionHeader?: boolean; // If true, acts as a divider/group header in the list
 }
@@ -141,6 +161,7 @@ export interface TaskTemplate {
   intro?: string;
   feedback?: TaskFeedback;
   settings?: TaskSettings;
+  logic?: TaskLogic;
 }
 
 export interface TaskList {

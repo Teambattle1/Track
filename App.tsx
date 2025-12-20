@@ -18,6 +18,8 @@ import TeamsModal from './components/TeamsModal';
 import CreatorDrawer from './components/CreatorDrawer';
 import EditorDrawer from './components/EditorDrawer';
 import AdminModal from './components/AdminModal'; 
+import PointContextMenu from './components/PointContextMenu'; // NEW
+import TaskActionModal from './components/TaskActionModal'; // NEW
 import { GamePoint, Coordinate, GameState, GameMode, Game, TaskTemplate, TaskList, MapStyleId, Language } from './types';
 import { haversineMeters, isWithinRadius } from './utils/geo';
 import { Loader2 } from 'lucide-react';
@@ -44,6 +46,8 @@ const App: React.FC = () => {
   // Selection States
   const [selectedPoint, setSelectedPoint] = useState<GamePoint | null>(null);
   const [editingPoint, setEditingPoint] = useState<GamePoint | null>(null);
+  const [selectedPointForMenu, setSelectedPointForMenu] = useState<GamePoint | null>(null); // NEW: For Context Menu
+  const [pointForAction, setPointForAction] = useState<GamePoint | null>(null); // NEW: For Action Modal
   
   // Modal/Drawer States
   const [activeDrawer, setActiveDrawer] = useState<'CREATOR' | 'EDITOR' | 'NONE'>('NONE');
@@ -61,9 +65,9 @@ const App: React.FC = () => {
   // New: Source List for Quick Placing
   const [placingSourceListId, setPlacingSourceListId] = useState<string>('');
 
-  // Selection Mode State (Add from Library to Game)
-  const [isTaskMasterSelectionMode, setIsTaskMasterSelectionMode] = useState(false);
-
+  // Selection Mode State (Swap from Library)
+  const [isSwapMode, setIsSwapMode] = useState(false); // New state to track if we are swapping
+  
   // Nav State
   const [showLanding, setShowLanding] = useState(true);
   const [bypassWelcome, setBypassWelcome] = useState(false);
@@ -297,7 +301,8 @@ const App: React.FC = () => {
                  order: i,
                  tags: t.tags,
                  feedback: t.feedback,
-                 settings: t.settings
+                 settings: t.settings,
+                 logic: t.logic // Preserve logic from templates
              }));
          }
      }
@@ -316,6 +321,28 @@ const App: React.FC = () => {
       // Determine if we should go to Editor or Play based on current context
       if (mode === GameMode.EDIT) {
           setActiveDrawer('EDITOR');
+      }
+  };
+
+  const handleSwapTask = (templates: TaskTemplate[]) => {
+      if (selectedPointForMenu && activeGame && templates.length > 0) {
+          const t = templates[0]; // Take the first selection
+          const updatedPoint = {
+              ...selectedPointForMenu,
+              title: t.title,
+              task: t.task,
+              iconId: t.iconId,
+              tags: t.tags,
+              feedback: t.feedback,
+              settings: t.settings,
+              logic: t.logic
+          };
+          
+          const updatedPoints = activeGame.points.map(p => p.id === selectedPointForMenu.id ? updatedPoint : p);
+          db.saveGame({ ...activeGame, points: updatedPoints });
+          refreshData();
+          setIsSwapMode(false);
+          setSelectedPointForMenu(null); // Close menu
       }
   };
 
@@ -357,10 +384,10 @@ const App: React.FC = () => {
                 accuracy={gameState.gpsAccuracy}
                 mode={mode}
                 mapStyle={mapStyle}
-                selectedPointId={selectedPoint?.id}
+                selectedPointId={selectedPoint?.id || selectedPointForMenu?.id || editingPoint?.id}
                 onPointClick={(p) => {
                     if (mode === GameMode.EDIT) {
-                        setEditingPoint(p);
+                        setSelectedPointForMenu(p);
                     } else {
                         setSelectedPoint(p);
                     }
@@ -397,6 +424,7 @@ const App: React.FC = () => {
                                     newPoint.tags = available.tags;
                                     newPoint.feedback = available.feedback;
                                     newPoint.settings = available.settings;
+                                    newPoint.logic = available.logic;
                                     newPoint.points = available.points || 100;
                                 }
                             }
@@ -501,7 +529,8 @@ const App: React.FC = () => {
                                      createdAt: Date.now(),
                                      points: p.points,
                                      feedback: p.feedback,
-                                     settings: p.settings
+                                     settings: p.settings,
+                                     logic: p.logic
                                  })),
                                  color: '#3b82f6',
                                  createdAt: Date.now()
@@ -514,11 +543,12 @@ const App: React.FC = () => {
                 />
             )}
 
+            {/* Task Master / Swap Modal */}
             {showTaskMaster && (
                 <TaskMaster 
                     library={gameState.taskLibrary}
                     lists={gameState.taskLists}
-                    onClose={() => setShowTaskMaster(false)}
+                    onClose={() => { setShowTaskMaster(false); setIsSwapMode(false); }}
                     onSaveTemplate={(t) => { db.saveTemplate(t); refreshData(); }}
                     onDeleteTemplate={(id) => { db.deleteTemplate(id); refreshData(); }}
                     onSaveList={(l) => { db.saveTaskList(l); refreshData(); }}
@@ -526,6 +556,10 @@ const App: React.FC = () => {
                     onCreateGameFromList={(listId) => {
                         const list = gameState.taskLists.find(l => l.id === listId);
                         if (list) handleCreateGame(list.name, listId);
+                    }}
+                    isSelectionMode={isSwapMode}
+                    onSelectTasksForGame={(tasks) => {
+                        if (isSwapMode) handleSwapTask(tasks);
                     }}
                 />
             )}
@@ -535,6 +569,42 @@ const App: React.FC = () => {
                     games={gameState.games}
                     onClose={() => setShowAdminModal(false)}
                     onDeleteGame={(id) => { db.deleteGame(id); refreshData(); }}
+                />
+            )}
+
+            {/* Point Context Menu (Edit Mode) */}
+            {selectedPointForMenu && (
+                <PointContextMenu 
+                    point={selectedPointForMenu}
+                    onEdit={() => {
+                        setEditingPoint(selectedPointForMenu);
+                        setSelectedPointForMenu(null);
+                    }}
+                    onSwap={() => {
+                        setIsSwapMode(true);
+                        setShowTaskMaster(true);
+                        // Menu closes when TaskMaster opens/closes
+                    }}
+                    onAction={() => {
+                        setPointForAction(selectedPointForMenu);
+                        setSelectedPointForMenu(null);
+                    }}
+                    onClose={() => setSelectedPointForMenu(null)}
+                />
+            )}
+
+            {/* Action Logic Editor */}
+            {pointForAction && activeGame && (
+                <TaskActionModal 
+                    point={pointForAction}
+                    allPoints={activeGame.points}
+                    onSave={(updatedPoint) => {
+                        const updated = activeGame.points.map(p => p.id === updatedPoint.id ? updatedPoint : p);
+                        db.saveGame({ ...activeGame, points: updated });
+                        refreshData();
+                        setPointForAction(null);
+                    }}
+                    onClose={() => setPointForAction(null)}
                 />
             )}
 
@@ -557,10 +627,10 @@ const App: React.FC = () => {
                     sourceListId={placingSourceListId}
                     selectedPointId={editingPoint?.id}
                     onSetSourceListId={setPlacingSourceListId}
-                    onEditPoint={setEditingPoint}
+                    onEditPoint={(p) => setSelectedPointForMenu(p)} // Changed to open menu
                     onSelectPoint={(p) => { 
                          // Center map logic could go here
-                         setEditingPoint(p);
+                         setSelectedPointForMenu(p); // Open menu instead of direct edit
                     }}
                     onDeletePoint={(id) => {
                          const updated = activeGame.points.filter(p => p.id !== id);
