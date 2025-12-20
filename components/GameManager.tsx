@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Game, GamePoint, TaskList, TaskTemplate, IconId, GameMode } from '../types';
-import { Plus, Play, Edit2, Trash2, GripVertical, Wand2, Trophy, Calendar, Map, ChevronRight, ArrowLeft, FolderOpen, Layers, Library, Eraser, MousePointerClick, Save, LayoutTemplate, Check, X, Database, QrCode, Users, Disc, ChevronUp, GraduationCap, Gamepad2 } from 'lucide-react';
+import { Game, GamePoint, TaskList, TaskTemplate, IconId, GameMode, MapStyleId } from '../types';
+import { Plus, Play, Edit2, Trash2, GripVertical, Wand2, Trophy, Calendar, Map, ChevronRight, ArrowLeft, FolderOpen, Layers, Library, Eraser, MousePointerClick, Save, LayoutTemplate, Check, X, Database, QrCode, Users, Disc, ChevronUp, GraduationCap, Gamepad2, Clock, CheckCircle2, Globe, Moon, Sun, Home, AlertCircle } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { seedDatabase } from '../utils/demoContent';
 import {
@@ -26,7 +26,7 @@ interface GameManagerProps {
   taskLists: TaskList[];
   activeGameId: string | null;
   activeGamePoints: GamePoint[];
-  onCreateGame: (name: string, fromTaskListId?: string, description?: string) => void;
+  onCreateGame: (name: string, fromTaskListId?: string, description?: string, mapStyle?: MapStyleId) => void;
   onSelectGame: (id: string) => void;
   onEditGame?: (id: string) => void;
   onDeleteGame: (id: string) => void;
@@ -46,10 +46,10 @@ interface GameManagerProps {
   onShowResults?: () => void;
   mode: GameMode;
   onSetMode: (mode: GameMode) => void;
+  onOpenAiGenerator?: () => void;
 }
 
 // ... [Sortable Item Components remain unchanged - omitting for brevity as they are internal]
-// Re-declaring for valid compilation context
 interface SortablePointItemProps {
   point: GamePoint;
   onEdit: (p: GamePoint) => void;
@@ -108,8 +108,8 @@ const GameManager: React.FC<GameManagerProps> = ({
   activeGamePoints, 
   onCreateGame, 
   onSelectGame, 
-  onEditGame,
-  onDeleteGame,
+  onEditGame, 
+  onDeleteGame, 
   onEditPoint, 
   onReorderPoints,
   onOpenTaskMaster,
@@ -123,16 +123,20 @@ const GameManager: React.FC<GameManagerProps> = ({
   onEditGameMetadata,
   onShowResults,
   mode,
-  onSetMode
+  onSetMode,
+  onOpenAiGenerator
 }) => {
   const [newGameName, setNewGameName] = useState('');
   const [selectedListId, setSelectedListId] = useState<string>(''); 
   const [view, setView] = useState<'LIST' | 'DETAILS'>('LIST');
+  const [gameTab, setGameTab] = useState<'TODAY' | 'PLANNED' | 'COMPLETED'>('TODAY');
+  
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [isWizardMode, setIsWizardMode] = useState(false);
   const [showCreateGameModal, setShowCreateGameModal] = useState(false);
   const [createGameName, setCreateGameName] = useState('');
   const [createGameDesc, setCreateGameDesc] = useState('');
+  const [createGameMapStyle, setCreateGameMapStyle] = useState<MapStyleId>('osm'); // Added State
   const [createGameListId, setCreateGameListId] = useState<string | undefined>(undefined);
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [targetGameId, setTargetGameId] = useState<string | null>(null);
@@ -164,45 +168,103 @@ const GameManager: React.FC<GameManagerProps> = ({
   React.useEffect(() => {
     if (activeGameId) {
         setView('DETAILS');
-        const g = games.find(game => game.id === activeGameId);
-        if(g) { setEditName(g.name); setEditDesc(g.description || ''); }
-    } else { setView('LIST'); }
-  }, [activeGameId, games]);
+        // Only update local edit state if not currently editing to avoid overwriting user input
+        if (!isEditingMetadata) {
+            const g = games.find(game => game.id === activeGameId);
+            if(g) { setEditName(g.name); setEditDesc(g.description || ''); }
+        }
+    } else { 
+        setView('LIST'); 
+        setIsEditingMetadata(false);
+    }
+  }, [activeGameId, games, isEditingMetadata]);
+
+  const filteredGames = useMemo(() => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    // Sort by creation time (newest first)
+    const sorted = [...games].sort((a, b) => b.createdAt - a.createdAt);
+
+    return sorted.filter(g => {
+        const gDate = new Date(g.createdAt);
+        gDate.setHours(0,0,0,0);
+        const isToday = gDate.getTime() === today.getTime();
+        
+        // Check if fully completed
+        const isCompleted = g.points.length > 0 && g.points.every(p => p.isCompleted);
+        
+        if (gameTab === 'COMPLETED') return isCompleted;
+        if (isCompleted) return false;
+
+        if (gameTab === 'TODAY') return isToday;
+        if (gameTab === 'PLANNED') return !isToday;
+        
+        return true;
+    });
+  }, [games, gameTab]);
 
   const handleInlineCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (newGameName.trim()) {
-      onCreateGame(newGameName, selectedListId || undefined);
+      onCreateGame(newGameName, selectedListId || undefined, undefined, 'osm');
       setNewGameName(''); setSelectedListId(''); setView('DETAILS');
     }
   };
 
-  const handleStartAutoGenerate = () => { setIsWizardMode(true); setShowTemplateSelector(true); };
+  const handleStartAutoGenerate = () => { 
+      setIsWizardMode(true); 
+      // Skip template selector, directly open create modal for a fresh start with AI
+      setCreateGameListId(undefined);
+      setCreateGameName("New Adventure");
+      setCreateGameDesc(`Created on ${new Date().toLocaleDateString()}`);
+      setCreateGameMapStyle('osm'); 
+      setShowCreateGameModal(true);
+  };
   
   const handleTemplateSelected = (listId: string | '') => {
       setSelectedListId(listId);
       setShowTemplateSelector(false);
+      // Logic for manual template selection (if re-enabled or used elsewhere)
       if (isWizardMode) {
           setCreateGameListId(listId || undefined);
           setCreateGameName("New Adventure");
           setCreateGameDesc(`Created on ${new Date().toLocaleDateString()}`);
+          setCreateGameMapStyle('osm'); 
           setShowCreateGameModal(true);
-          setIsWizardMode(false);
       }
   };
 
   const handleConfirmCreateGame = (e: React.FormEvent) => {
       e.preventDefault();
       if (!createGameName.trim()) return;
-      onCreateGame(createGameName, createGameListId, createGameDesc);
+      onCreateGame(createGameName, createGameListId, createGameDesc, createGameMapStyle);
       setShowCreateGameModal(false);
-      setCreateGameName(''); setCreateGameDesc(''); setCreateGameListId(undefined);
+      
+      // If triggered via Auto-Generate wizard, open AI Generator now
+      if (isWizardMode) {
+          if (onOpenAiGenerator) onOpenAiGenerator();
+          setIsWizardMode(false);
+      }
+
+      setCreateGameName(''); setCreateGameDesc(''); setCreateGameListId(undefined); setCreateGameMapStyle('osm');
   };
   
   const handleSaveMetadata = () => {
       if (activeGameId && onEditGameMetadata) {
           onEditGameMetadata(activeGameId, editName, editDesc);
           setIsEditingMetadata(false);
+      }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+          handleSaveMetadata();
+      } else if (e.key === 'Escape') {
+          setIsEditingMetadata(false);
+          // Revert changes from state
+          const g = games.find(game => game.id === activeGameId);
+          if(g) { setEditName(g.name); setEditDesc(g.description || ''); }
       }
   };
 
@@ -255,6 +317,19 @@ const GameManager: React.FC<GameManagerProps> = ({
   }, [selectedListId, taskLists]);
   const activeSourceList = taskLists.find(l => l.id === sourceListId);
 
+  // Stats for the currently selected source list
+  const sourceListStats = useMemo(() => {
+      if (!activeSourceList) return null;
+      const placedCount = activeGamePoints.filter(p => activeSourceList.tasks.some(t => t.title === p.title)).length;
+      const totalCount = activeSourceList.tasks.length;
+      return { 
+          placed: placedCount, 
+          total: totalCount, 
+          remaining: totalCount - placedCount,
+          exhausted: placedCount >= totalCount && totalCount > 0 
+      };
+  }, [activeSourceList, activeGamePoints]);
+
   return (
     <div className="absolute top-0 left-0 bottom-0 z-[1100] w-full sm:w-[400px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 border-r border-gray-200 dark:border-gray-800">
       
@@ -266,19 +341,73 @@ const GameManager: React.FC<GameManagerProps> = ({
                   <form onSubmit={handleConfirmCreateGame} className="space-y-4">
                       <div><label className="text-xs font-bold text-gray-500 uppercase">Game Name</label><input autoFocus className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white" value={createGameName} onChange={e => setCreateGameName(e.target.value)} placeholder="e.g. City Hunt 2024" /></div>
                       <div><label className="text-xs font-bold text-gray-500 uppercase">Description / Date</label><input className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white" value={createGameDesc} onChange={e => setCreateGameDesc(e.target.value)} placeholder="Optional info..." /></div>
-                      <div className="flex gap-3 pt-2"><button type="button" onClick={() => setShowCreateGameModal(false)} className="flex-1 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button><button type="submit" disabled={!createGameName.trim()} className="flex-1 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors disabled:opacity-50">Create Game</button></div>
+                      
+                      {/* Map Style Selector */}
+                      <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase">Default Map Style</label>
+                          <div className="grid grid-cols-4 gap-2 mt-1">
+                              {[
+                                  { id: 'osm', label: 'Standard', icon: Map },
+                                  { id: 'satellite', label: 'Sat', icon: Globe },
+                                  { id: 'dark', label: 'Dark', icon: Moon },
+                                  { id: 'light', label: 'Light', icon: Sun },
+                              ].map(style => (
+                                  <button
+                                      key={style.id}
+                                      type="button"
+                                      onClick={() => setCreateGameMapStyle(style.id as MapStyleId)}
+                                      className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${createGameMapStyle === style.id ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-500 text-orange-600 dark:text-orange-400' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400'}`}
+                                  >
+                                      <style.icon className="w-5 h-5 mb-1" />
+                                      <span className="text-[10px] font-bold">{style.label}</span>
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+
+                      <div className="flex gap-3 pt-2"><button type="button" onClick={() => { setShowCreateGameModal(false); setIsWizardMode(false); }} className="flex-1 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button><button type="submit" disabled={!createGameName.trim()} className="flex-1 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors disabled:opacity-50">Create Game</button></div>
                   </form>
               </div>
           </div>
       )}
+      
       {showSaveTemplateModal && (
-          <div className="fixed inset-0 z-[1300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-sm border border-gray-200 dark:border-gray-700">
-                  <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Save as Template</h3>
+          <div className="fixed inset-0 z-[1300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm border border-gray-200 dark:border-gray-700 transform transition-all scale-100">
+                  <div className="flex items-center gap-3 mb-5">
+                      <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-xl text-teal-600 dark:text-teal-400">
+                          <LayoutTemplate className="w-6 h-6" />
+                      </div>
+                      <div>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Save as Template</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Create a reusable copy of this game</p>
+                      </div>
+                  </div>
+                  
                   <form onSubmit={handleConfirmSaveTemplate} className="space-y-4">
-                      <div><label className="text-xs font-bold text-gray-500 uppercase">Template Name</label><input autoFocus className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white" value={tplName} onChange={e => setTplName(e.target.value)} /></div>
-                      <div><label className="text-xs font-bold text-gray-500 uppercase">Description</label><input className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white" value={tplDesc} onChange={e => setTplDesc(e.target.value)} /></div>
-                      <div className="flex gap-3 pt-2"><button type="button" onClick={() => setShowSaveTemplateModal(false)} className="flex-1 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button><button type="submit" disabled={!tplName.trim()} className="flex-1 py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700">Save Template</button></div>
+                      <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Template Name</label>
+                          <input 
+                              autoFocus 
+                              className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white font-bold" 
+                              value={tplName} 
+                              onChange={e => setTplName(e.target.value)} 
+                              placeholder="e.g. City Hunt Template"
+                          />
+                      </div>
+                      <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Description</label>
+                          <textarea 
+                              className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white text-sm min-h-[80px]" 
+                              value={tplDesc} 
+                              onChange={e => setTplDesc(e.target.value)} 
+                              placeholder="Describe the template..."
+                          />
+                      </div>
+                      <div className="flex gap-3 pt-2">
+                          <button type="button" onClick={() => setShowSaveTemplateModal(false)} className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+                          <button type="submit" disabled={!tplName.trim()} className="flex-1 py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 shadow-lg shadow-teal-600/20 transition-all disabled:opacity-50 disabled:shadow-none">Save Template</button>
+                      </div>
                   </form>
               </div>
           </div>
@@ -287,28 +416,62 @@ const GameManager: React.FC<GameManagerProps> = ({
       {/* Header with Integrated Mode Switcher */}
       <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex justify-between items-center mb-3">
-          {view === 'DETAILS' && isEditingMetadata ? (
-              <div className="flex-1 mr-2">
-                  <input autoFocus className="w-full text-xl font-black bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 outline-none text-gray-900 dark:text-white" value={editName} onChange={e => setEditName(e.target.value)} />
-                  <input className="w-full text-xs mt-1 bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 outline-none text-gray-600 dark:text-gray-300" value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Description..." />
-                  <div className="flex gap-2 mt-2"><button onClick={handleSaveMetadata} className="text-xs bg-green-600 text-white px-2 py-1 rounded">Save</button><button onClick={() => setIsEditingMetadata(false)} className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Cancel</button></div>
-              </div>
-          ) : (
-            <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2 truncate">
-                    {view === 'LIST' ? 'GAMES' : (activeGame?.name || 'Game Details')}
-                    {view === 'DETAILS' && <button onClick={() => setIsEditingMetadata(true)} className="text-gray-400 hover:text-orange-500"><Edit2 className="w-4 h-4" /></button>}
-                </h2>
-                {view === 'DETAILS' && activeGame?.description && <p className="text-xs text-gray-500 truncate">{activeGame.description}</p>}
-            </div>
-          )}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+             <button onClick={onClose} className="p-1.5 bg-slate-800 rounded-full hover:bg-slate-700 text-white mr-1 shrink-0"><Home className="w-4 h-4" /></button>
+             {view === 'DETAILS' && isEditingMetadata ? (
+                  <div className="flex-1 mr-2">
+                      <input 
+                        autoFocus 
+                        className="w-full text-xl font-black bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 outline-none text-gray-900 dark:text-white border-2 border-transparent focus:border-orange-500 transition-colors" 
+                        value={editName} 
+                        onChange={e => setEditName(e.target.value)} 
+                        onKeyDown={handleKeyDown}
+                        placeholder="Game Name"
+                      />
+                      <input 
+                        className="w-full text-xs mt-1 bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 outline-none text-gray-600 dark:text-gray-300 border-2 border-transparent focus:border-orange-500 transition-colors" 
+                        value={editDesc} 
+                        onChange={e => setEditDesc(e.target.value)} 
+                        onKeyDown={handleKeyDown}
+                        placeholder="Description..." 
+                      />
+                      <div className="flex gap-2 mt-2">
+                          <button onClick={handleSaveMetadata} className="text-xs bg-green-600 text-white px-3 py-1 rounded font-bold hover:bg-green-700">Save</button>
+                          <button onClick={() => setIsEditingMetadata(false)} className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded font-bold hover:bg-gray-300">Cancel</button>
+                      </div>
+                  </div>
+              ) : (
+                <div className="flex-1 min-w-0 group/header">
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight truncate">
+                            {view === 'LIST' ? 'GAMES' : (activeGame?.name || 'Game Details')}
+                        </h2>
+                        {view === 'DETAILS' && (
+                            <button 
+                                onClick={() => setIsEditingMetadata(true)} 
+                                className="text-gray-400 hover:text-orange-500 opacity-0 group-hover/header:opacity-100 transition-opacity p-1"
+                                title="Edit Name & Description"
+                            >
+                                <Edit2 className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                    {view === 'DETAILS' && (
+                        <p 
+                            className={`text-xs truncate ${activeGame?.description ? 'text-gray-500' : 'text-gray-400 italic cursor-pointer hover:text-orange-500'}`}
+                            onClick={() => !activeGame?.description && setIsEditingMetadata(true)}
+                        >
+                            {activeGame?.description || "Add a description..."}
+                        </p>
+                    )}
+                </div>
+              )}
+          </div>
           
           <div className="flex items-center gap-2">
               {view === 'DETAILS' && onExplicitSaveGame && (
                   <button onClick={onExplicitSaveGame} className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800 transition-colors" title="Save Changes"><Disc className="w-5 h-5" /></button>
               )}
-              
-              {/* EXPLICIT CLOSE BUTTON - NOW UNBLOCKED */}
               <button 
                  onClick={onClose} 
                  className="text-white bg-red-500 hover:bg-red-600 p-2 rounded-full transition-colors flex-shrink-0 shadow-lg"
@@ -404,10 +567,34 @@ const GameManager: React.FC<GameManagerProps> = ({
                 <button type="submit" disabled={!newGameName.trim()} className="w-full bg-orange-600 text-white py-2 rounded-lg font-bold hover:bg-orange-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Create Game</button>
               </form>
             </div>
+            
+            {/* YOUR GAMES SECTION */}
             <div className="space-y-4">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Your Games</label>
-              {games.length === 0 && (<div className="text-center py-10 px-6 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700"><Map className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" /><p className="text-gray-500 dark:text-gray-400 font-medium">No adventures yet.</p><p className="text-sm text-gray-400 dark:text-gray-500">Create one above to get started!</p></div>)}
-              {games.slice().reverse().map((game, i) => {
+              <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Your Games</label>
+              </div>
+              
+              {/* TABS */}
+              <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+                  <button onClick={() => setGameTab('TODAY')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${gameTab === 'TODAY' ? 'bg-white dark:bg-gray-700 shadow text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <Clock className="w-3 h-3" /> Today
+                  </button>
+                  <button onClick={() => setGameTab('PLANNED')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${gameTab === 'PLANNED' ? 'bg-white dark:bg-gray-700 shadow text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <Calendar className="w-3 h-3" /> Planned
+                  </button>
+                  <button onClick={() => setGameTab('COMPLETED')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${gameTab === 'COMPLETED' ? 'bg-white dark:bg-gray-700 shadow text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <CheckCircle2 className="w-3 h-3" /> Done
+                  </button>
+              </div>
+
+              {filteredGames.length === 0 && (
+                  <div className="text-center py-8 px-6 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                      <Map className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                      <p className="text-gray-500 dark:text-gray-400 font-medium text-xs">No games found in '{gameTab.toLowerCase()}'.</p>
+                  </div>
+              )}
+
+              {filteredGames.map((game, i) => {
                  const gCompleted = game.points.filter(p => p.isCompleted).length;
                  const gTotal = game.points.filter(p => !p.isSectionHeader).length;
                  const gProgress = gTotal > 0 ? Math.round((gCompleted / gTotal) * 100) : 0;
@@ -436,6 +623,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                 );
               })}
             </div>
+            
             <div className="pt-4 mt-6 border-t border-gray-100 dark:border-gray-800 text-center"><button onClick={handleSeedData} disabled={isSeeding} className="text-xs font-bold text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 flex items-center justify-center gap-2 mx-auto disabled:opacity-50"><Database className="w-3 h-3" />{isSeeding ? 'Installing Demo Data...' : 'Install Demo Data'}</button></div>
           </div>
         ) : (
@@ -455,9 +643,32 @@ const GameManager: React.FC<GameManagerProps> = ({
             {onSetSourceListId && (
                 <div className="mb-6 relative z-30" ref={menuRef}>
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block ml-1">Map Click Behavior</label>
-                    <button onClick={() => setShowSourceMenu(!showSourceMenu)} className={`w-full bg-white dark:bg-gray-800 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm hover:shadow-md transition-all group ${showSourceMenu ? 'ring-2 ring-orange-500 border-transparent' : ''}`}>
-                        <div className={`p-2 rounded-lg transition-colors ${activeSourceList ? 'text-white' : 'bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400'}`} style={activeSourceList ? { backgroundColor: activeSourceList.color } : {}}><MousePointerClick className="w-5 h-5" /></div>
-                        <div className="flex-1 text-left min-w-0"><span className="text-[10px] text-gray-400 uppercase font-bold block mb-0.5">Placing from:</span><span className="font-bold text-gray-800 dark:text-white text-sm truncate block">{activeSourceList ? activeSourceList.name : "Default (New Empty Task)"}</span></div>
+                    <button 
+                        onClick={() => setShowSourceMenu(!showSourceMenu)} 
+                        className={`w-full bg-white dark:bg-gray-800 p-2.5 rounded-xl border flex items-center gap-3 shadow-sm hover:shadow-md transition-all group ${
+                            sourceListStats?.exhausted 
+                            ? 'border-red-400 dark:border-red-900 bg-red-50 dark:bg-red-900/20 animate-pulse' 
+                            : 'border-gray-200 dark:border-gray-700'
+                        } ${showSourceMenu ? 'ring-2 ring-orange-500 border-transparent' : ''}`}
+                    >
+                        <div className={`p-2 rounded-lg transition-colors ${
+                            activeSourceList 
+                            ? (sourceListStats?.exhausted ? 'bg-red-500 text-white' : 'text-white') 
+                            : 'bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400'
+                        }`} style={activeSourceList && !sourceListStats?.exhausted ? { backgroundColor: activeSourceList.color } : {}}>
+                            {sourceListStats?.exhausted ? <AlertCircle className="w-5 h-5" /> : <MousePointerClick className="w-5 h-5" />}
+                        </div>
+                        <div className="flex-1 text-left min-w-0">
+                            <span className={`text-[10px] uppercase font-bold block mb-0.5 ${sourceListStats?.exhausted ? 'text-red-500' : 'text-gray-400'}`}>
+                                {sourceListStats?.exhausted ? "List Empty!" : "Placing from:"}
+                            </span>
+                            <span className="font-bold text-gray-800 dark:text-white text-sm truncate block">{activeSourceList ? activeSourceList.name : "Default (New Empty Task)"}</span>
+                            {sourceListStats && (
+                                <span className={`text-[10px] font-bold ${sourceListStats.exhausted ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                    {sourceListStats.exhausted ? `⚠️ All ${sourceListStats.total} tasks placed` : `${sourceListStats.remaining} tasks remaining`}
+                                </span>
+                            )}
+                        </div>
                         <div className={`text-gray-400 transition-transform duration-300 ${showSourceMenu ? 'rotate-180 text-orange-500' : 'group-hover:text-gray-600'}`}><ChevronUp className="w-5 h-5" /></div>
                     </button>
                     {showSourceMenu && (
@@ -465,9 +676,28 @@ const GameManager: React.FC<GameManagerProps> = ({
                             <div className="p-3 border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-900/50"><span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Select Source</span></div>
                             <div className="max-h-60 overflow-y-auto p-1.5 space-y-1 custom-scrollbar">
                                 <button onClick={() => { onSetSourceListId(''); setShowSourceMenu(false); }} className={`w-full p-2.5 rounded-xl flex items-center gap-3 transition-all ${!sourceListId ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'}`}><div className={`p-2 rounded-lg ${!sourceListId ? 'bg-amber-200 dark:bg-amber-800' : 'bg-gray-200 dark:bg-gray-600'}`}><Plus className="w-4 h-4" /></div><span className="font-bold text-sm flex-1 text-left">Default (New Empty Task)</span>{!sourceListId && <Check className="w-4 h-4" />}</button>
-                                {taskLists.map(list => (
-                                    <button key={list.id} onClick={() => { onSetSourceListId(list.id); setShowSourceMenu(false); }} className={`w-full p-2.5 rounded-xl flex items-center gap-3 transition-all ${sourceListId === list.id ? 'bg-gray-100 dark:bg-gray-700 shadow-inner' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'}`}><div className="p-2 rounded-lg text-white shadow-sm" style={{ backgroundColor: list.color }}><LayoutTemplate className="w-4 h-4" /></div><div className="flex-1 text-left"><span className={`font-bold text-sm block ${sourceListId === list.id ? 'text-gray-900 dark:text-white' : ''}`}>{list.name}</span><span className="text-[10px] text-gray-400 opacity-80">{list.tasks.length} tasks</span></div>{sourceListId === list.id && <Check className="w-4 h-4 text-gray-500" />}</button>
-                                ))}
+                                {taskLists.map(list => {
+                                    const placed = activeGamePoints.filter(p => list.tasks.some(t => t.title === p.title)).length;
+                                    const total = list.tasks.length;
+                                    const exhausted = placed >= total;
+                                    
+                                    return (
+                                    <button key={list.id} onClick={() => { onSetSourceListId(list.id); setShowSourceMenu(false); }} className={`w-full p-2.5 rounded-xl flex items-center gap-3 transition-all ${sourceListId === list.id ? 'bg-gray-100 dark:bg-gray-700 shadow-inner' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+                                        <div className="p-2 rounded-lg text-white shadow-sm" style={{ backgroundColor: list.color }}><LayoutTemplate className="w-4 h-4" /></div>
+                                        <div className="flex-1 text-left">
+                                            <span className={`font-bold text-sm block ${sourceListId === list.id ? 'text-gray-900 dark:text-white' : ''}`}>{list.name}</span>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[10px] text-gray-400 opacity-80">{total} tasks</span>
+                                                {exhausted ? (
+                                                    <span className="text-[10px] text-red-500 font-bold bg-red-100 dark:bg-red-900/30 px-1.5 rounded">All Placed</span>
+                                                ) : (
+                                                    <span className="text-[10px] text-green-600 dark:text-green-400 font-bold bg-green-100 dark:bg-green-900/30 px-1.5 rounded">{total - placed} left</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {sourceListId === list.id && <Check className="w-4 h-4 text-gray-500" />}
+                                    </button>
+                                )})}
                             </div>
                         </div>
                     )}

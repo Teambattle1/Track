@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Game, TaskList } from '../types';
-import { X, Calendar, CheckCircle, Clock, Play, MapPin, ChevronRight, Trophy, LayoutTemplate, Gamepad2, Save, RefreshCw } from 'lucide-react';
+import { X, Calendar, CheckCircle, Clock, Play, MapPin, ChevronRight, Trophy, LayoutTemplate, Gamepad2, Save, RefreshCw, Home } from 'lucide-react';
 
 interface GameChooserProps {
   games: Game[];
@@ -106,9 +106,14 @@ const GameChooser: React.FC<GameChooserProps> = ({
         
         {/* Header */}
         <div className="p-5 bg-gray-900 text-white flex justify-between items-center flex-shrink-0">
-          <div>
-              <h2 className="text-xl font-black tracking-tight">My Games</h2>
-              <p className="text-gray-400 text-sm">Resume playing or start new</p>
+          <div className="flex items-center gap-3">
+              <button onClick={onClose} className="p-1.5 bg-slate-800 rounded-full hover:bg-slate-700 text-white transition-colors">
+                  <Home className="w-4 h-4" />
+              </button>
+              <div>
+                  <h2 className="text-xl font-black tracking-tight">My Games</h2>
+                  <p className="text-gray-400 text-sm">Resume playing or start new</p>
+              </div>
           </div>
           <div className="flex items-center gap-1">
               {onRefresh && (

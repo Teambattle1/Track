@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GameMode, MapStyleId, Language } from '../types';
 import { t } from '../utils/i18n';
-import { ShieldCheck, Map as MapIcon, Layers, GraduationCap, Menu, Settings, X, Globe, Moon, Sun, Gamepad2, Library, Plus } from 'lucide-react';
+import { ShieldCheck, Map as MapIcon, Layers, GraduationCap, Menu, Settings, X, Globe, Moon, Sun, Gamepad2, Library, Plus, Users } from 'lucide-react';
 
 interface GameHUDProps {
   accuracy: number | null;
@@ -10,6 +10,7 @@ interface GameHUDProps {
   onOpenGameChooser: () => void;
   onOpenGameManager: () => void;
   onOpenTaskMaster: () => void;
+  onOpenTeams: () => void;
   mapStyle: MapStyleId;
   onSetMapStyle: (style: MapStyleId) => void;
   language: Language;
@@ -22,6 +23,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
   onOpenGameChooser,
   onOpenGameManager,
   onOpenTaskMaster,
+  onOpenTeams,
   mapStyle,
   onSetMapStyle,
   language
@@ -74,6 +76,15 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <Gamepad2 className="w-4 h-4 fill-current" />
                             </div>
                             PLAY
+                        </button>
+                        <button 
+                            onClick={() => { onOpenTeams(); setIsMenuOpen(false); }}
+                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left font-medium"
+                        >
+                            <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 dark:text-blue-400">
+                                <Users className="w-4 h-4" />
+                            </div>
+                            TEAMS
                         </button>
                         <button 
                             onClick={() => { onOpenGameManager(); setIsMenuOpen(false); }}

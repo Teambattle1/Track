@@ -1,9 +1,9 @@
 
 import React, { useState, useRef } from 'react';
 import { TaskTemplate } from '../types';
-import { generateAiTasks, generateAiImage } from '../services/ai';
+import { generateAiTasks, generateAiImage, findCompanyDomain } from '../services/ai';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkles, AlertCircle, Ban, Edit2, Globe, Tag, Image as ImageIcon } from 'lucide-react';
+import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkles, AlertCircle, Ban, Edit2, Globe, Tag, Image as ImageIcon, Home, Search } from 'lucide-react';
 
 interface AiTaskGeneratorProps {
   onClose: () => void;
@@ -34,20 +34,52 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks }
   const isActiveRef = useRef(false);
   const topicInputRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleGenerateLogo = async () => {
+  const handleSearchLogo = async () => {
       if (!topic.trim()) return;
       setIsGeneratingLogo(true);
+      setLogoUrl(null);
+      setError(null);
+      
       try {
-          const url = await generateAiImage(topic, 'logo');
-          if (url) {
-              setLogoUrl(url);
-              setUseLogoForTasks(true); // Default to using it once generated
+          const domain = await findCompanyDomain(topic);
+          
+          if (domain) {
+              const checkImage = (url: string): Promise<boolean> => {
+                  return new Promise(resolve => {
+                      const img = new Image();
+                      img.onload = () => resolve(true);
+                      img.onerror = () => resolve(false);
+                      img.src = url;
+                  });
+              };
+
+              // Strategy 1: Clearbit (Best for logos)
+              const clearbitUrl = `https://logo.clearbit.com/${domain}`;
+              if (await checkImage(clearbitUrl)) {
+                  setLogoUrl(clearbitUrl);
+                  setUseLogoForTasks(true);
+                  setIsGeneratingLogo(false);
+                  return;
+              }
+
+              // Strategy 2: Google Favicon (Reliable fallback)
+              // size=256 often gives a nice high-res square logo/icon
+              const googleUrl = `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=256`;
+              if (await checkImage(googleUrl)) {
+                  setLogoUrl(googleUrl);
+                  setUseLogoForTasks(true);
+                  setIsGeneratingLogo(false);
+                  return;
+              }
+
+              setError(`Domain found (${domain}) but no logo available.`);
+              setIsGeneratingLogo(false);
           } else {
-              setError("Failed to generate logo. Please try again.");
+              setError("Could not identify a company domain for this topic.");
+              setIsGeneratingLogo(false);
           }
       } catch (e) {
-          setError("Error generating logo.");
-      } finally {
+          setError("Error searching for logo.");
           setIsGeneratingLogo(false);
       }
   };
@@ -183,6 +215,9 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks }
         {/* Header */}
         <div className="p-6 bg-gradient-to-r from-orange-600 to-red-600 flex justify-between items-center text-white shrink-0">
           <div className="flex items-center gap-3">
+            <button onClick={onClose} className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors">
+               <Home className="w-5 h-5" />
+            </button>
             <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
                <Wand2 className="w-6 h-6 text-white" />
             </div>
@@ -221,24 +256,24 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks }
                       />
                     </div>
 
-                    {/* Logo Generation Section */}
+                    {/* Logo Search Section */}
                     <div>
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block flex items-center gap-1">
                             <ImageIcon className="w-3 h-3" /> Company / Brand Logo
                         </label>
                         {!logoUrl ? (
                             <button 
-                                onClick={handleGenerateLogo}
+                                onClick={handleSearchLogo}
                                 disabled={isGeneratingLogo || !topic.trim()}
                                 className="w-full py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors flex items-center justify-center gap-2"
                             >
-                                {isGeneratingLogo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                                Show Logo from Topic
+                                {isGeneratingLogo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+                                Search Logo Online
                             </button>
                         ) : (
                             <div className="bg-white dark:bg-gray-700 p-2 rounded-lg border border-gray-200 dark:border-gray-600">
                                 <div className="relative h-24 w-full bg-gray-100 dark:bg-gray-800 rounded mb-2 flex items-center justify-center overflow-hidden">
-                                    <img src={logoUrl} alt="Generated Logo" className="h-full object-contain" />
+                                    <img src={logoUrl} alt="Found Logo" className="h-full object-contain" />
                                     <button onClick={() => setLogoUrl(null)} className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors">
                                         <X className="w-3 h-3" />
                                     </button>

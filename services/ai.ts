@@ -173,3 +173,36 @@ export const generateAiImage = async (prompt: string, type: 'scavenger' | 'logo'
     return null;
   }
 };
+
+export const findCompanyDomain = async (topic: string): Promise<string | null> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Find the official website domain for: "${topic}".
+      Return ONLY the domain name (e.g. 'lego.com' or 'apple.com').
+      Do not include 'https://' or 'www.' or any path.
+      If no clear brand/company is found, return 'NOT_FOUND'.`,
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const text = response.text?.trim() || '';
+    if (text.includes('NOT_FOUND')) return null;
+
+    // Extract domain (simplified but robust)
+    // Matches something.something (min 2 chars each)
+    const match = text.match(/([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/i);
+    let domain = match ? match[0] : null;
+
+    if (!domain) return null;
+    
+    // Cleanup if any leftovers
+    domain = domain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+
+    return domain;
+  } catch (error) {
+    console.error("Domain search failed:", error);
+    return null;
+  }
+};

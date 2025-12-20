@@ -12,6 +12,8 @@ import TaskPlaylistModal from './components/TaskPlaylistModal';
 import AiTaskGenerator from './components/AiTaskGenerator';
 import WelcomeScreen from './components/WelcomeScreen';
 import ResultsView from './components/ResultsView';
+import LandingPage from './components/LandingPage';
+import TeamsModal from './components/TeamsModal';
 import { GamePoint, Coordinate, GameState, GameMode, Game, TaskTemplate, TaskList, MapStyleId, Language } from './types';
 import { haversineMeters, isWithinRadius } from './utils/geo';
 import { Loader2 } from 'lucide-react';
@@ -41,6 +43,7 @@ const App: React.FC = () => {
   const [showGameManager, setShowGameManager] = useState(false);
   const [showGameChooser, setShowGameChooser] = useState(false);
   const [showTaskMaster, setShowTaskMaster] = useState(false);
+  const [showTeamsModal, setShowTeamsModal] = useState(false);
   
   // New States for Advanced Features
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
@@ -54,7 +57,8 @@ const App: React.FC = () => {
   // Selection Mode State (Add from Library to Game)
   const [isTaskMasterSelectionMode, setIsTaskMasterSelectionMode] = useState(false);
 
-  // Bypass Welcome Screen
+  // Nav State
+  const [showLanding, setShowLanding] = useState(true);
   const [bypassWelcome, setBypassWelcome] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -195,16 +199,41 @@ const App: React.FC = () => {
 
   // Handlers
 
-  const handleStartGame = (gameId: string, teamName: string, userName: string, selectedStyle: MapStyleId) => {
+  // Landing Page Handlers
+  const handleLandingPlay = () => {
+      setShowLanding(false);
+      setBypassWelcome(false); 
+      setMode(GameMode.PLAY);
+  };
+
+  const handleLandingCreate = () => {
+      setShowLanding(false);
+      setBypassWelcome(true);
+      setMode(GameMode.EDIT);
+      setShowGameManager(true);
+      // Optional: Could trigger create modal directly here if GameManager supported a prop for it
+  };
+
+  const handleLandingEdit = () => {
+      setShowLanding(false);
+      setBypassWelcome(true);
+      setMode(GameMode.EDIT);
+      setShowGameManager(true);
+  };
+
+  const handleStartGame = (gameId: string, teamName: string, userName: string, _ignoredMapStyle: MapStyleId) => {
+      const game = gameState.games.find(g => g.id === gameId);
+      const styleToUse = game?.defaultMapStyle || 'osm';
+      
       setGameState(prev => ({ ...prev, activeGameId: gameId, teamName, userName }));
-      setMapStyle(selectedStyle);
+      setMapStyle(styleToUse);
       setMode(GameMode.PLAY);
       
       // Initialize Sync with Player Name
       teamSync.connect(gameId, teamName, userName);
   };
 
-  const handleCreateGame = (name: string, fromTaskListId?: string, description?: string) => {
+  const handleCreateGame = (name: string, fromTaskListId?: string, description?: string, mapStyle: MapStyleId = 'osm') => {
     let initialPoints: GamePoint[] = [];
 
     // If creating from a TaskList, generate points around the user
@@ -241,7 +270,8 @@ const App: React.FC = () => {
       name,
       description: description || '',
       points: initialPoints,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      defaultMapStyle: mapStyle
     };
     
     db.saveGame(newGame); // Persist
@@ -251,6 +281,18 @@ const App: React.FC = () => {
       games: [...prev.games, newGame],
       activeGameId: newGame.id
     }));
+    
+    // Set map style for editing immediately
+    setMapStyle(mapStyle);
+    
+    // CRITICAL FIX: If created from a list, set that list as the placing source
+    // This restricts accidental "New Task" creation and encourages placing from the list.
+    if (fromTaskListId) {
+        setPlacingSourceListId(fromTaskListId);
+    } else {
+        setPlacingSourceListId('');
+    }
+    
     setMode(GameMode.EDIT);
     setShowGameManager(true);
     setShowGameChooser(false); 
@@ -323,12 +365,19 @@ const App: React.FC = () => {
   };
 
   const handleSelectGame = (id: string) => {
+    const game = gameState.games.find(g => g.id === id);
+    if(game && game.defaultMapStyle) setMapStyle(game.defaultMapStyle);
+    
     setGameState(prev => ({ ...prev, activeGameId: id }));
     setShowGameChooser(false);
     setShowGameManager(false);
+    setPlacingSourceListId(''); // Reset placing mode on game switch
   };
 
   const handleEditGame = (id: string) => {
+    const game = gameState.games.find(g => g.id === id);
+    if(game && game.defaultMapStyle) setMapStyle(game.defaultMapStyle);
+
     setGameState(prev => ({ ...prev, activeGameId: id }));
     setMode(GameMode.EDIT);
     // Keep GameManager open to show details
@@ -376,7 +425,17 @@ const App: React.FC = () => {
           const list = gameState.taskLists.find(l => l.id === placingSourceListId);
           if (list) {
               const existingTitles = activePoints.map(p => p.title);
+              // Find the first task in the list that isn't on the map yet
               nextTemplate = list.tasks.find(t => !existingTitles.includes(t.title));
+              
+              if (!nextTemplate) {
+                  // Strict check: if list is active but exhausted, DO NOT create generic point
+                  alert(`All tasks from "${list.name}" have already been placed on the map.`);
+                  return;
+              }
+          } else {
+              // List ID exists but list not found (deleted?) - Fallback to default
+              setPlacingSourceListId('');
           }
       }
 
@@ -400,12 +459,7 @@ const App: React.FC = () => {
             activationTypes: ['radius']
           };
       } else {
-          // If user specifically selected a list, but we found no next template
-          if (placingSourceListId) {
-              alert("All tasks from the selected list have been placed! No generic tasks allowed when a list is active.");
-              return;
-          }
-
+          // Default generic point creation
           newPoint = {
             id: newPointId,
             title: "New Task",
@@ -748,7 +802,18 @@ const App: React.FC = () => {
     );
   }
 
-  // SHOW WELCOME SCREEN IF NO ACTIVE GAME
+  // --- INITIAL LANDING PAGE ---
+  if (showLanding && !gameState.activeGameId) {
+      return (
+          <LandingPage 
+              onPlay={handleLandingPlay}
+              onCreate={handleLandingCreate}
+              onEdit={handleLandingEdit}
+          />
+      );
+  }
+
+  // SHOW WELCOME SCREEN IF NO ACTIVE GAME AND NOT BYPASSED
   if (!gameState.activeGameId && !bypassWelcome) {
       return (
           <WelcomeScreen 
@@ -762,6 +827,10 @@ const App: React.FC = () => {
                   setBypassWelcome(true);
                   setMode(GameMode.EDIT);
                   setShowGameManager(true);
+              }}
+              onBack={() => {
+                  setShowLanding(true);
+                  setBypassWelcome(false);
               }}
           />
       );
@@ -797,7 +866,7 @@ const App: React.FC = () => {
       )}
 
       {/* HUD Layer (Menu & Toggles) */}
-      {!showGameManager && !showGameChooser && !showTaskMaster && !showPlaylistModal && !showResults && (
+      {!showGameManager && !showGameChooser && !showTaskMaster && !showPlaylistModal && !showResults && !showTeamsModal && (
           <GameHUD 
             accuracy={gameState.gpsAccuracy}
             mode={mode}
@@ -811,6 +880,9 @@ const App: React.FC = () => {
                 setIsTaskMasterSelectionMode(false);
                 setShowTaskMaster(true);
             }}
+            onOpenTeams={() => {
+                setShowTeamsModal(true);
+            }}
             mapStyle={mapStyle}
             onSetMapStyle={setMapStyle}
             language={appLanguage}
@@ -823,7 +895,7 @@ const App: React.FC = () => {
             games={gameState.games}
             taskLists={gameState.taskLists}
             onSelectGame={handleSelectGame}
-            onCreateGame={handleCreateGame}
+            onCreateGame={(name, listId) => handleCreateGame(name, listId, undefined, 'osm')}
             onClose={() => setShowGameChooser(false)}
             onSaveAsTemplate={handleSaveGameAsTemplate}
             onRefresh={refreshData}
@@ -847,7 +919,11 @@ const App: React.FC = () => {
             onReorderPoints={handleReorderPoints}
             onCreateTestGame={handleCreateTestGame}
             onOpenTaskMaster={() => { setIsTaskMasterSelectionMode(false); setShowTaskMaster(true); }}
-            onClose={() => setShowGameManager(false)}
+            onClose={() => {
+                // If closing manager and no game is active, return to landing if we want, or just hide
+                // For now, simple hide.
+                setShowGameManager(false);
+            }}
             onAddFromLibrary={() => { setIsTaskMasterSelectionMode(true); setShowTaskMaster(true); }}
             onClearMap={handleClearGamePoints}
             sourceListId={placingSourceListId}
@@ -859,6 +935,10 @@ const App: React.FC = () => {
             onShowResults={() => setShowResults(true)}
             mode={mode} // Pass current mode
             onSetMode={setMode} // Allow switching mode
+            onOpenAiGenerator={() => {
+                setInsertionIndex(null); // Append to end for whole game generation
+                setShowAiGenerator(true);
+            }}
           />
       )}
 
@@ -907,6 +987,16 @@ const App: React.FC = () => {
               onCreateGameFromList={handleCreateGameFromList}
               isSelectionMode={isTaskMasterSelectionMode}
               onSelectTasksForGame={handleSelectTasksForGame}
+          />
+      )}
+      
+      {/* Teams Modal */}
+      {showTeamsModal && (
+          <TeamsModal 
+              gameId={gameState.activeGameId}
+              games={gameState.games}
+              onSelectGame={handleSelectGame}
+              onClose={() => setShowTeamsModal(false)}
           />
       )}
 

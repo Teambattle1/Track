@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Game, TaskTemplate, TaskList } from '../types';
+import { Game, TaskTemplate, TaskList, Team } from '../types';
 
 // Helper to handle errors gracefully and avoid [object Object] logging
 const logError = (context: string, error: any) => {
@@ -33,6 +33,71 @@ export const saveGame = async (game: Game) => {
 export const deleteGame = async (id: string) => {
   const { error } = await supabase.from('games').delete().eq('id', id);
   if (error) logError('deleteGame', error);
+};
+
+// --- TEAMS ---
+
+export const fetchTeams = async (gameId: string): Promise<Team[]> => {
+    const { data, error } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('game_id', gameId);
+    
+    if (error) {
+        logError('fetchTeams', error);
+        return [];
+    }
+    // Map snake_case DB columns to camelCase types
+    return data ? data.map((row: any) => ({
+        id: row.id,
+        gameId: row.game_id,
+        name: row.name,
+        joinCode: row.join_code, // Map if exists
+        photoUrl: row.photo_url,
+        members: row.members || [],
+        score: row.score || 0,
+        updatedAt: row.updated_at
+    })) : [];
+};
+
+export const registerTeam = async (team: Team) => {
+    // Attempt 1: Try saving with all fields including join_code
+    const { error } = await supabase
+        .from('teams')
+        .upsert({
+            id: team.id,
+            game_id: team.gameId,
+            name: team.name,
+            join_code: team.joinCode, 
+            photo_url: team.photoUrl,
+            members: team.members,
+            score: team.score,
+            updated_at: new Date().toISOString()
+        });
+    
+    if (error) {
+        console.warn("[Supabase] First attempt to register team failed. Retrying without 'join_code' in case of schema mismatch...", error.message);
+        
+        // Attempt 2: Retry without join_code (in case column is missing in DB)
+        const { error: retryError } = await supabase
+            .from('teams')
+            .upsert({
+                id: team.id,
+                game_id: team.gameId,
+                name: team.name,
+                // join_code omitted
+                photo_url: team.photoUrl,
+                members: team.members,
+                score: team.score,
+                updated_at: new Date().toISOString()
+            });
+            
+        if (retryError) {
+            logError('registerTeam (Retry)', retryError);
+        } else {
+            console.log("[Supabase] Team registered successfully (fallback mode).");
+        }
+    }
 };
 
 // --- LIBRARY (Templates) ---

@@ -1,7 +1,7 @@
 import React from 'react';
 import { GamePoint, Language } from '../types';
 import { t } from '../utils/i18n';
-import { Trophy, Clock, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { Trophy, Clock, CheckCircle, XCircle, Home } from 'lucide-react';
 
 interface ResultsViewProps {
   points: GamePoint[];
@@ -23,8 +23,8 @@ const ResultsView: React.FC<ResultsViewProps> = ({ points, score, totalPossibleS
         
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-            <button onClick={onClose} className="p-2 bg-slate-800 rounded-full hover:bg-slate-700">
-                <ArrowLeft className="w-6 h-6" />
+            <button onClick={onClose} className="p-2 bg-slate-800 rounded-full hover:bg-slate-700 text-white">
+                <Home className="w-6 h-6" />
             </button>
             <h2 className="text-xl font-bold uppercase tracking-widest text-slate-400">{t('missionReport', language)}</h2>
             <div className="w-10"></div> {/* Spacer */}

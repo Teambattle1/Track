@@ -2,6 +2,7 @@
   "name": "TeamAction by TeamBattle",
   "description": "A location-based game app where users unlock tasks by physically visiting specific GPS coordinates. Features interactive maps, geofencing logic, and task management.",
   "requestFramePermissions": [
-    "geolocation"
+    "geolocation",
+    "camera"
   ]
 }

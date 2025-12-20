@@ -19,6 +19,17 @@ export interface TeamMember {
   lastSeen: number;
 }
 
+export interface Team {
+  id: string;
+  gameId: string;
+  name: string;
+  joinCode?: string; // 6-digit code
+  photoUrl?: string; // Base64 or URL
+  members: string[]; // List of names
+  score: number;
+  updatedAt: string;
+}
+
 export interface TaskVote {
   deviceId: string;
   userName: string; // Added user name
@@ -147,6 +158,7 @@ export interface Game {
   description: string;
   points: GamePoint[];
   createdAt: number;
+  defaultMapStyle?: MapStyleId; // Added map style preference
 }
 
 export interface GameState {

@@ -1,16 +1,15 @@
-
 import { supabase } from '../lib/supabase';
 import { TaskVote, TeamMember } from '../types';
 
 type VoteCallback = (votes: TaskVote[]) => void;
-type MemberCallback = (count: number) => void;
+type MemberCallback = (members: TeamMember[]) => void;
 
 class TeamSyncService {
   private channel: any = null;
   private deviceId: string = '';
   private userName: string = 'Anonymous'; // Default
   private votes: Record<string, TaskVote[]> = {}; // pointId -> votes
-  private members: Set<string> = new Set();
+  private members: Map<string, TeamMember> = new Map();
   
   private voteListeners: VoteCallback[] = [];
   private memberListeners: MemberCallback[] = [];
@@ -50,15 +49,15 @@ class TeamSyncService {
         this.handleIncomingVote(payload.payload as TaskVote);
       })
       .on('broadcast', { event: 'presence' }, (payload: any) => {
-        // Simple heartbeat handling
-        this.members.add(payload.payload.deviceId);
+        const member = payload.payload as TeamMember;
+        this.members.set(member.deviceId, member);
         this.notifyMemberListeners();
       })
       .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
            this.sendPresence();
            // Send presence periodically
-           setInterval(() => this.sendPresence(), 10000); 
+           setInterval(() => this.sendPresence(), 5000); 
         }
       });
   }
@@ -96,14 +95,19 @@ class TeamSyncService {
 
   private sendPresence() {
       if(!this.channel) return;
+      const me: TeamMember = {
+          deviceId: this.deviceId,
+          userName: this.userName,
+          lastSeen: Date.now()
+      };
       this.channel.send({
           type: 'broadcast',
           event: 'presence',
-          payload: { 
-              deviceId: this.deviceId,
-              userName: this.userName
-          }
+          payload: me
       });
+      // Add self to map just in case
+      this.members.set(this.deviceId, me);
+      this.notifyMemberListeners();
   }
 
   private handleIncomingVote(vote: TaskVote) {
@@ -118,8 +122,12 @@ class TeamSyncService {
     // Add new vote
     this.votes[vote.pointId].push(vote);
 
-    // Ensure member is counted
-    this.members.add(vote.deviceId);
+    // Ensure member is counted (if voting implies presence)
+    this.members.set(vote.deviceId, { 
+        deviceId: vote.deviceId, 
+        userName: vote.userName, 
+        lastSeen: Date.now() 
+    });
     this.notifyMemberListeners();
 
     // Notify listeners
@@ -127,8 +135,14 @@ class TeamSyncService {
   }
 
   private notifyMemberListeners() {
-      const count = this.members.size;
-      this.memberListeners.forEach(cb => cb(count));
+      // Filter out stale members (offline > 20s)
+      const now = Date.now();
+      const active: TeamMember[] = [];
+      this.members.forEach((m) => {
+          if (now - m.lastSeen < 20000) active.push(m);
+      });
+      
+      this.memberListeners.forEach(cb => cb(active));
   }
 
   public subscribeToVotes(callback: VoteCallback) {
@@ -138,11 +152,18 @@ class TeamSyncService {
     };
   }
   
-  public subscribeToMemberCount(callback: MemberCallback) {
+  public subscribeToMembers(callback: MemberCallback) {
       this.memberListeners.push(callback);
+      // Immediate callback with current state
+      callback(Array.from(this.members.values()));
       return () => {
           this.memberListeners = this.memberListeners.filter(cb => cb !== callback);
       }
+  }
+
+  // Deprecated wrapper
+  public subscribeToMemberCount(callback: (c: number) => void) {
+      return this.subscribeToMembers((members) => callback(members.length));
   }
 
   public getVotesForTask(pointId: string): TaskVote[] {

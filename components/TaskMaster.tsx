@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { TaskTemplate, TaskList, GamePoint } from '../types';
-import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, Palette, CheckCircle2, ChevronRight, GripVertical, ArrowLeft, Wand2, Square, CheckSquare as CheckSquareFilled, ListChecks, Globe } from 'lucide-react';
+import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, Palette, CheckCircle2, ChevronRight, GripVertical, ArrowLeft, Wand2, Square, CheckSquare as CheckSquareFilled, ListChecks, Globe, Home } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import TaskEditor from './TaskEditor';
 import AiTaskGenerator from './AiTaskGenerator';
@@ -443,6 +443,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
       {/* Header */}
       <div className={`text-white p-4 shadow-md flex justify-between items-center z-10 ${isSelectionMode ? 'bg-orange-900' : 'bg-gray-800'}`}>
         <div className="flex items-center gap-3">
+            <button onClick={onClose} className="p-1.5 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
+                <Home className="w-4 h-4" />
+            </button>
             <div className={`p-2 rounded-lg ${isSelectionMode ? 'bg-orange-600' : 'bg-amber-500'}`}>
                 {isSelectionMode ? <CheckSquare className="w-6 h-6 text-white" /> : <FolderOpen className="w-6 h-6 text-white" />}
             </div>
