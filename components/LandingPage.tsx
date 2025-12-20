@@ -7,17 +7,21 @@ interface LandingPageProps {
   onAction: (action: 'PLAY' | 'CREATE' | 'EDIT' | 'TEAM' | 'TASKS' | 'ADMIN') => void;
   onChooseGame: () => void;
   onHome: () => void;
+  version: string;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ activeGameName, onAction, onChooseGame }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ activeGameName, onAction, onChooseGame, version }) => {
   return (
     <div className="fixed inset-0 z-[3000] bg-black/60 backdrop-blur-md flex items-center justify-center p-6 font-sans uppercase animate-in fade-in duration-300">
       
       <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-8 relative">
           
           <div className="text-center mb-8">
-              <h1 className="text-3xl font-black text-white tracking-[0.2em] mb-2 leading-none">CREATOR HUB</h1>
-              <p className="text-[10px] text-slate-500 font-bold tracking-[0.3em] mb-4">TEAMBATTLE</p>
+              <h1 className="text-3xl font-black text-white tracking-[0.2em] mb-1 leading-none">CREATOR HUB</h1>
+              <div className="flex flex-col gap-0.5 mb-4">
+                  <p className="text-[10px] text-slate-500 font-bold tracking-[0.3em]">TEAMBATTLE</p>
+                  <p className="text-[9px] text-orange-500/80 font-black tracking-widest">v. {version}</p>
+              </div>
               
               {activeGameName ? (
                   <button 

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TaskTemplate, TaskList, GamePoint, IconId } from '../types';
-import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, CheckCircle2, ChevronRight, ListChecks, Globe, Home, ArrowLeft, Wand2, FilePlus, Sparkles, Camera, Image as ImageIcon, Gamepad2, ChevronLeft } from 'lucide-react';
+import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, CheckCircle2, ChevronRight, ListChecks, Globe, Home, ArrowLeft, Wand2, FilePlus, Sparkles, Camera, Image as ImageIcon, Gamepad2, ChevronLeft, Filter } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import TaskEditor from './TaskEditor';
 import AiTaskGenerator from './AiTaskGenerator';
@@ -11,23 +11,16 @@ interface TaskMasterProps {
   library: TaskTemplate[];
   lists: TaskList[];
   onClose: () => void;
-  // Changed props for better DB integration
   onSaveTemplate: (template: TaskTemplate) => void;
   onDeleteTemplate: (id: string) => void;
   onSaveList: (list: TaskList) => void;
   onDeleteList: (id: string) => void;
-  
   onCreateGameFromList: (listId: string) => void;
-  
-  // Selection Mode Props
   isSelectionMode?: boolean;
   onSelectTasksForGame?: (tasks: TaskTemplate[]) => void;
 }
 
-const COLORS = [
-  '#3b82f6', '#ef4444', '#10b981', '#f59e0b', 
-  '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6',
-];
+const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'];
 
 const getFlagEmoji = (lang?: string) => {
     if (!lang) return '🌐';
@@ -54,405 +47,137 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
   const [activeTab, setActiveTab] = useState<'CREATE' | 'LIBRARY' | 'LISTS'>('LISTS');
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('All');
+  const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
   
-  // Library State
   const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | null>(null);
   const [showAiGenerator, setShowAiGenerator] = useState(false);
-  
-  // Create from Image State
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Bulk Edit State
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set());
   const [bulkTagInput, setBulkTagInput] = useState('');
   
-  // List State
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [newListColor, setNewListColor] = useState(COLORS[0]);
   const [newListIcon, setNewListIcon] = useState<IconId>('default');
   const [isAddingToList, setIsAddingToList] = useState(false); 
-  
-  // Game Selection Buffer
   const [selectedTasksBuffer, setSelectedTasksBuffer] = useState<TaskTemplate[]>([]);
 
-  // Tag Colors Cache
   const [tagColors, setTagColors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const loadColors = () => {
         try {
             const stored = localStorage.getItem('geohunt_tag_colors');
-            if (stored) {
-                setTagColors(JSON.parse(stored));
-            }
-        } catch (e) { console.error("Failed to load tag colors", e); }
+            if (stored) setTagColors(JSON.parse(stored));
+        } catch (e) { console.error(e); }
     };
     loadColors();
-    window.addEventListener('storage', loadColors);
-    return () => window.removeEventListener('storage', loadColors);
   }, [editingTemplate]);
 
-  // Extract unique tags
   const allTags = useMemo(() => {
       const tags = new Set<string>();
       library.forEach(t => t.tags.forEach(tag => tags.add(tag)));
       return Array.from(tags).sort();
   }, [library]);
 
-  // Extract unique languages for filter
   const availableLanguages = useMemo(() => {
       const langs = new Set<string>();
-      library.forEach(t => {
-          if (t.settings?.language) langs.add(t.settings.language);
-      });
+      library.forEach(t => { if (t.settings?.language) langs.add(t.settings.language); });
       return Array.from(langs).sort();
   }, [library]);
 
-  // Helpers
-  const convertTemplateToPoint = (t: TaskTemplate): GamePoint => ({
-    id: t.id,
-    title: t.title,
-    task: t.task,
-    location: { lat: 0, lng: 0 }, 
-    radiusMeters: 30,
-    iconId: t.iconId,
-    isUnlocked: false,
-    isCompleted: false,
-    order: 0,
-    tags: t.tags,
-    activationTypes: ['radius'],
-    points: t.points || 100,
-    feedback: t.feedback,
-    settings: t.settings
-  });
+  const filteredLibrary = useMemo(() => {
+      return library.filter(t => {
+          const q = searchQuery.toLowerCase();
+          const matchesSearch = t.title.toLowerCase().includes(q) || t.tags.some(tag => tag.toLowerCase().includes(q));
+          const matchesLanguage = languageFilter === 'All' || t.settings?.language === languageFilter;
+          const matchesTag = !selectedTagFilter || t.tags.includes(selectedTagFilter);
+          return matchesSearch && matchesLanguage && matchesTag;
+      }).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  }, [library, searchQuery, languageFilter, selectedTagFilter]);
 
-  const convertPointToTemplate = (p: GamePoint): TaskTemplate => ({
-    id: p.id,
-    title: p.title,
-    task: p.task,
-    tags: p.tags || [],
-    iconId: p.iconId,
-    createdAt: Date.now(),
-    points: p.points,
-    feedback: p.feedback,
-    settings: p.settings
-  });
-
-  // Library Handlers
   const handleSaveTemplate = (point: GamePoint) => {
-    const template = convertPointToTemplate(point);
-    // If editing existing, keep ID and CreatedAt
-    const existing = library.find(t => t.id === point.id);
-    const finalTemplate = { 
-        ...template, 
-        id: existing ? existing.id : template.id,
-        createdAt: existing ? existing.createdAt : Date.now() 
+    const template: TaskTemplate = {
+        id: point.id, title: point.title, task: point.task, tags: point.tags || [], iconId: point.iconId,
+        createdAt: library.find(t => t.id === point.id)?.createdAt || Date.now(),
+        points: point.points, feedback: point.feedback, settings: point.settings
     };
-    
-    onSaveTemplate(finalTemplate);
+    onSaveTemplate(template);
     setEditingTemplate(null);
-  };
-
-  const handleCloneTemplate = (point: GamePoint) => {
-      const template = convertPointToTemplate(point);
-      const newTemplate = {
-          ...template,
-          id: `tpl-${Date.now()}`,
-          title: `${template.title} (Copy)`,
-          createdAt: Date.now()
-      };
-      onSaveTemplate(newTemplate);
-      setEditingTemplate(null);
-      alert("Task copied to Library!");
-  };
-
-  const handleDeleteTemplateHandler = (id: string) => {
-    if (confirm('Are you sure? This will not remove tasks from existing games.')) {
-        onDeleteTemplate(id);
-        setEditingTemplate(null);
-    }
-  };
-
-  const createNewTemplate = () => {
-      const newTemplate: TaskTemplate = {
-          id: `tpl-${Date.now()}`,
-          title: 'New Task',
-          task: { type: 'text', question: 'Question here...' },
-          tags: [],
-          iconId: 'default',
-          createdAt: Date.now(),
-          settings: {
-              language: 'English',
-              scoreDependsOnSpeed: false,
-              showAnswerStatus: true,
-              showCorrectAnswerOnMiss: false
-          }
-      };
-      setEditingTemplate(newTemplate);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-
       setIsAnalyzingImage(true);
-      
       const reader = new FileReader();
       reader.onloadend = async () => {
-          const base64 = reader.result as string;
-          const task = await generateTaskFromImage(base64);
-          
-          if (task) {
-              setEditingTemplate(task);
-          } else {
-              alert("Failed to analyze image. Try another.");
-          }
+          const task = await generateTaskFromImage(reader.result as string);
+          if (task) setEditingTemplate(task);
+          else alert("Failed to analyze image.");
           setIsAnalyzingImage(false);
       };
       reader.readAsDataURL(file);
-      
       if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Bulk Handlers
-  const toggleBulkSelection = (id: string) => {
-      const newSet = new Set(bulkSelectedIds);
-      if (newSet.has(id)) newSet.delete(id);
-      else newSet.add(id);
-      setBulkSelectedIds(newSet);
-  };
-
-  const handleBulkAddTag = () => {
-      if (!bulkTagInput.trim() || bulkSelectedIds.size === 0) return;
-      
-      const tag = bulkTagInput.trim();
-      const ids = Array.from(bulkSelectedIds);
-      
-      const newColors = { ...tagColors };
-      if (!newColors[tag]) {
-          newColors[tag] = COLORS[Math.floor(Math.random() * COLORS.length)];
-          localStorage.setItem('geohunt_tag_colors', JSON.stringify(newColors));
-          setTagColors(newColors);
-      }
-
-      ids.forEach(id => {
-          const tpl = library.find(t => t.id === id);
-          if (tpl && !tpl.tags.includes(tag)) {
-              onSaveTemplate({ ...tpl, tags: [...tpl.tags, tag] });
-          }
-      });
-
-      setBulkTagInput('');
-      setBulkSelectedIds(new Set());
-      setIsBulkMode(false);
-      alert(`Tag "${tag}" added to ${ids.length} tasks.`);
-  };
-
-  // List Handlers
-  const handleCreateList = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!newListName.trim()) return;
-      const newList: TaskList = {
-          id: `list-${Date.now()}`,
-          name: newListName,
-          description: '',
-          tasks: [],
-          color: newListColor,
-          iconId: newListIcon,
-          createdAt: Date.now()
-      };
-      onSaveList(newList);
-      setNewListName('');
-      setShowCreateListModal(false);
-  };
-
-  const handleDeleteListHandler = (id: string) => {
-      if (confirm("Delete this list? Tasks inside will remain in the library.")) {
-          onDeleteList(id);
-          if (selectedListId === id) setSelectedListId(null);
-      }
-  };
-
-  const toggleTaskInList = (template: TaskTemplate) => {
-      if (!selectedListId) return;
-      const list = lists.find(l => l.id === selectedListId);
-      if (!list) return;
-
-      const exists = list.tasks.find(t => t.id === template.id);
-      let newTasks;
-      if (exists) {
-          newTasks = list.tasks.filter(t => t.id !== template.id);
-      } else {
-          newTasks = [...list.tasks, template];
-      }
-
-      onSaveList({ ...list, tasks: newTasks });
-  };
-
-  const handleAiTasksAdded = (tasks: TaskTemplate[]) => {
-      tasks.forEach(task => onSaveTemplate(task));
-      
-      if (selectedListId && isAddingToList) {
-          const list = lists.find(l => l.id === selectedListId);
-          if (list) {
-              const newTasks = [...list.tasks];
-              tasks.forEach(task => {
-                  if (!newTasks.find(t => t.id === task.id)) {
-                      newTasks.push(task);
-                  }
-              });
-              onSaveList({ ...list, tasks: newTasks });
-          }
-      }
-      
-      if (isSelectionMode) {
-          setSelectedTasksBuffer(prev => [...prev, ...tasks]);
-      }
-  };
-
-  const toggleSelectionBuffer = (template: TaskTemplate) => {
-      if (selectedTasksBuffer.find(t => t.id === template.id)) {
-          setSelectedTasksBuffer(prev => prev.filter(t => t.id !== template.id));
-      } else {
-          setSelectedTasksBuffer(prev => [...prev, template]);
-      }
-  };
-  
-  const handleConfirmSelection = () => {
-      if (onSelectTasksForGame) {
-          onSelectTasksForGame(selectedTasksBuffer);
-          onClose();
-      }
-  };
-
-  const filteredLibrary = library.filter(t => {
-      const q = searchQuery.toLowerCase();
-      const matchesSearch = t.title.toLowerCase().includes(q) || 
-                            t.tags.some(tag => tag.toLowerCase().includes(q));
-      const matchesLanguage = languageFilter === 'All' || t.settings?.language === languageFilter;
-      return matchesSearch && matchesLanguage;
-  });
-
-  const selectedList = lists.find(l => l.id === selectedListId);
-
-  // Reusable Row Renderer
   const renderTaskRow = (template: TaskTemplate, context: 'list' | 'library') => {
-      const Icon = ICON_COMPONENTS[template.iconId];
-      
-      const isInList = isAddingToList && selectedList?.tasks.some(t => t.id === template.id);
+      const Icon = ICON_COMPONENTS[template.iconId] || Search;
+      const isInList = isAddingToList && lists.find(l => l.id === selectedListId)?.tasks.some(t => t.id === template.id);
       const isSelected = isSelectionMode && selectedTasksBuffer.some(t => t.id === template.id);
       const isBufferSelected = selectedTasksBuffer.some(t => t.id === template.id);
       const isBulkSelected = isBulkMode && bulkSelectedIds.has(template.id);
 
       const handleClick = () => {
          if (context === 'library') {
-             if (isBulkMode) toggleBulkSelection(template.id);
-             else if (isAddingToList) toggleTaskInList(template);
-             else if (isSelectionMode) toggleSelectionBuffer(template);
+             if (isBulkMode) { const n = new Set(bulkSelectedIds); if(n.has(template.id)) n.delete(template.id); else n.add(template.id); setBulkSelectedIds(n); }
+             else if (isAddingToList) {
+                const list = lists.find(l => l.id === selectedListId);
+                if (list) {
+                    const exists = list.tasks.find(t => t.id === template.id);
+                    onSaveList({ ...list, tasks: exists ? list.tasks.filter(t => t.id !== template.id) : [...list.tasks, template] });
+                }
+             }
+             else if (isSelectionMode) { setSelectedTasksBuffer(p => p.find(t => t.id === template.id) ? p.filter(t => t.id !== template.id) : [...p, template]); }
          } else if (context === 'list' && isSelectionMode) {
-             toggleSelectionBuffer(template);
+             setSelectedTasksBuffer(p => p.find(t => t.id === template.id) ? p.filter(t => t.id !== template.id) : [...p, template]);
          }
       };
 
-      let containerClass = "bg-white dark:bg-gray-900 border-b last:border-0 border-gray-100 dark:border-gray-800 p-3 flex items-center gap-4 transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50 group";
-      
-      if (context === 'library') {
-          if (isAddingToList || isSelectionMode || isBulkMode) {
-              containerClass += " cursor-pointer";
-              if (isInList || isSelected || isBulkSelected) {
-                  containerClass = "bg-green-50 dark:bg-green-900/10 border-b border-green-100 dark:border-green-900/30 p-3 flex items-center gap-4 cursor-pointer";
-              }
-          }
-      } else if (context === 'list') {
-          if (isSelectionMode && isBufferSelected) {
-              containerClass = "bg-orange-50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-900/30 p-3 flex items-center gap-4 cursor-pointer";
-          } else if (isSelectionMode) {
-              containerClass += " cursor-pointer";
-          }
-      }
+      const highlight = (context === 'library' && (isInList || isSelected || isBulkSelected)) || (context === 'list' && isSelectionMode && isBufferSelected);
 
       return (
-          <div 
-            key={template.id} 
-            className={containerClass}
-            onClick={handleClick}
-          >
-              {context === 'library' && isBulkMode && (
-                  <div className={`w-5 h-5 flex-shrink-0 rounded border flex items-center justify-center transition-colors ${isBulkSelected ? 'bg-green-50 border-green-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
-                      {isBulkSelected && <CheckSquare className="w-3 h-3" />}
-                  </div>
-              )}
-
-              <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg text-gray-500 dark:text-gray-400 group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors">
+          <div key={template.id} onClick={handleClick} className={`bg-white dark:bg-gray-950 border-b last:border-0 border-gray-100 dark:border-gray-800 p-4 flex items-center gap-4 transition-all hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer ${highlight ? 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/30' : ''}`}>
+              {isBulkMode && context === 'library' && <div className={`w-5 h-5 rounded border-2 transition-colors flex items-center justify-center ${isBulkSelected ? 'bg-orange-600 border-orange-600 text-white' : 'border-gray-300 dark:border-gray-700'}`}>{isBulkSelected && <CheckSquare className="w-3 h-3" />}</div>}
+              
+              <div className={`p-2.5 rounded-xl flex-shrink-0 transition-colors ${highlight ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}>
                   <Icon className="w-5 h-5" />
               </div>
 
-              <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-2 items-start">
-                  <div className="md:col-span-4 min-w-0 flex items-center gap-2">
-                      <span className="text-lg" title={template.settings?.language}>{getFlagEmoji(template.settings?.language)}</span>
-                      <div className="min-w-0">
-                          <h3 className="font-bold text-gray-800 dark:text-gray-100 truncate text-sm" title={template.title}>{template.title}</h3>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] bg-gray-100 dark:bg-gray-800 px-1.5 rounded text-gray-500 uppercase font-bold tracking-wider">{template.task.type.replace('_', ' ')}</span>
-                          </div>
-                      </div>
+              <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[14px]" title={template.settings?.language}>{getFlagEmoji(template.settings?.language)}</span>
+                      <h3 className="font-black text-xs uppercase tracking-widest text-gray-800 dark:text-gray-200 truncate">{template.title}</h3>
                   </div>
-                  
-                  <div className="md:col-span-8 min-w-0 flex flex-col justify-center gap-1.5">
-                       <div 
-                         className="text-xs text-gray-400 truncate dark:text-gray-500"
-                         dangerouslySetInnerHTML={{ __html: template.task.question.replace(/<[^>]*>/g, '') }}
-                       />
-                       <div className="flex flex-wrap gap-1">
-                          {template.tags.slice(0, 5).map((tag, i) => {
-                              const color = tagColors[tag] || '#94a3b8'; 
-                              return (
-                                <span 
-                                    key={i} 
-                                    className="text-[10px] px-2 py-0.5 rounded-full text-white font-medium flex items-center gap-1 shadow-sm uppercase tracking-wide"
-                                    style={{ backgroundColor: color }}
-                                >
-                                    {tag}
-                                </span>
-                              );
-                          })}
-                      </div>
+                  <div className="flex flex-wrap gap-1.5">
+                      <span className="text-[9px] font-black bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-gray-500 uppercase tracking-tighter">{template.task.type}</span>
+                      {template.tags.map(tag => <span key={tag} className="text-[9px] px-2 py-0.5 rounded-full text-white font-black uppercase tracking-tighter shadow-sm" style={{ backgroundColor: tagColors[tag] || '#94a3b8' }}>{tag}</span>)}
                   </div>
               </div>
 
               {!isBulkMode && (
-                  <div className="flex items-center gap-2 pl-2 border-l border-gray-100 dark:border-gray-800 ml-2">
-                      {context === 'library' && (isAddingToList || isSelectionMode) ? (
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${(isInList || isSelected) ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
-                            {(isInList || isSelected) && <CheckSquare className="w-3 h-3" />}
-                        </div>
-                      ) : context === 'list' && isSelectionMode ? (
-                          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isBufferSelected ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
-                            {isBufferSelected && <CheckSquare className="w-3 h-3" />}
-                        </div>
+                  <div className="flex items-center gap-2 ml-auto">
+                      {(isAddingToList || isSelectionMode) ? (
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${highlight ? 'bg-orange-600 border-orange-600 text-white scale-110' : 'border-gray-200 dark:border-gray-700'}`}>{highlight && <CheckSquare className="w-4 h-4" />}</div>
                       ) : (
-                          <>
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); setEditingTemplate(template); }}
-                                className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors"
-                                title="Edit"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                            </button>
-                            {context === 'list' && !isSelectionMode && (
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); toggleTaskInList(template); }}
-                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                                    title="Remove from list"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            )}
-                          </>
+                        <>
+                            <button onClick={(e) => { e.stopPropagation(); setEditingTemplate(template); }} className="p-2 text-gray-400 hover:text-orange-600 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                            {context === 'list' && <button onClick={(e) => { e.stopPropagation(); handleClick(); }} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><X className="w-4 h-4" /></button>}
+                        </>
                       )}
                   </div>
               )}
@@ -461,199 +186,96 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-[1900] bg-gray-100 dark:bg-gray-900 flex flex-col animate-in fade-in duration-200">
-      
+    <div className="fixed inset-0 z-[1900] bg-gray-50 dark:bg-gray-950 flex flex-col font-sans animate-in fade-in">
       {/* Header */}
-      <div className={`text-white p-4 shadow-md flex justify-between items-center z-10 ${isSelectionMode ? 'bg-orange-900' : 'bg-gray-800'}`}>
+      <div className={`p-4 text-white flex justify-between items-center shadow-2xl z-20 ${isSelectionMode ? 'bg-slate-900' : 'bg-slate-900'}`}>
         <div className="flex items-center gap-3">
-            <button onClick={onClose} className="p-1.5 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
-                <Home className="w-4 h-4" />
-            </button>
-            <div className={`p-2 rounded-lg ${isSelectionMode ? 'bg-orange-600' : 'bg-amber-500'}`}>
-                {isSelectionMode ? <CheckSquare className="w-6 h-6 text-white" /> : <FolderOpen className="w-6 h-6 text-white" />}
-            </div>
+            <button onClick={onClose} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all"><Home className="w-5 h-5" /></button>
+            <div className={`p-2 rounded-xl ${isSelectionMode ? 'bg-orange-600' : 'bg-orange-500 shadow-lg shadow-orange-500/20'}`}><FolderOpen className="w-6 h-6" /></div>
             <div>
-                <h1 className="text-xl font-bold uppercase tracking-wider">{isSelectionMode ? 'Add Tasks to Game' : 'TaskMaster'}</h1>
-                <p className="text-xs text-white/70 uppercase tracking-wide">{isSelectionMode ? `${selectedTasksBuffer.length} SELECTED` : 'LIBRARY & LIST MANAGER'}</p>
+                <h1 className="text-lg font-black uppercase tracking-[0.2em]">{isSelectionMode ? 'ADD TO GAME' : 'TASK MASTER'}</h1>
+                <p className="text-[10px] text-white/50 font-black uppercase tracking-widest">{isSelectionMode ? `${selectedTasksBuffer.length} SELECTED` : 'ORGANIZE YOUR LIBRARY'}</p>
             </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
             {activeTab === 'LISTS' && !selectedListId && !isSelectionMode && (
-                <button 
-                    onClick={() => setShowCreateListModal(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-bold text-xs shadow-lg flex items-center gap-2 uppercase tracking-wide mr-2"
-                >
-                    <Plus className="w-4 h-4" /> NEW LIST
-                </button>
+                <button onClick={() => setShowCreateListModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-black text-xs shadow-lg flex items-center gap-2 uppercase tracking-widest">NEW LIST</button>
             )}
-            
             {isSelectionMode && selectedTasksBuffer.length > 0 && (
-                <button 
-                    onClick={handleConfirmSelection}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 uppercase tracking-wide"
-                >
-                    <CheckCircle2 className="w-4 h-4" /> ADD SELECTED
-                </button>
+                <button onClick={() => onSelectTasksForGame?.(selectedTasksBuffer)} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-xl flex items-center gap-2 uppercase tracking-[0.2em] animate-pulse">ADD TO MAP</button>
             )}
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                <X className="w-6 h-6" />
-            </button>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full"><X className="w-6 h-6" /></button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex">
-          <button 
-             onClick={() => { setActiveTab('CREATE'); setIsAddingToList(false); setIsBulkMode(false); }}
-             className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide border-b-2 transition-all ${activeTab === 'CREATE' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-              CREATE TASK
-          </button>
-          <button 
-             onClick={() => { setActiveTab('LISTS'); setIsAddingToList(false); setIsBulkMode(false); setSelectedListId(null); }}
-             className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide border-b-2 transition-all ${activeTab === 'LISTS' ? 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-              TASK LISTS
-          </button>
-          <button 
-             onClick={() => { setActiveTab('LIBRARY'); setIsAddingToList(false); }}
-             className={`flex-1 py-4 font-bold text-sm uppercase tracking-wide border-b-2 transition-all ${activeTab === 'LIBRARY' ? 'border-orange-500 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-              ALL TASKS (LIBRARY)
-          </button>
+      {/* Main Tabs */}
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex flex-shrink-0 z-10">
+          {[
+              {id: 'LISTS', label: 'MY LISTS', color: 'border-amber-500'},
+              {id: 'LIBRARY', label: 'FULL LIBRARY', color: 'border-orange-500'},
+              {id: 'CREATE', label: 'CREATE NEW', color: 'border-blue-500'}
+          ].map(tab => (
+              <button key={tab.id} onClick={() => { setActiveTab(tab.id as any); setSelectedListId(null); }} className={`flex-1 py-4 text-[11px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === tab.id ? `${tab.color} text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/50` : 'border-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{tab.label}</button>
+          ))}
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden flex relative">
+      <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
           
-          {/* CREATE TASK VIEW */}
           {activeTab === 'CREATE' && (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 w-full animate-in fade-in duration-300 overflow-y-auto">
-                  {isAnalyzingImage && (
-                      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center text-white flex-col gap-4 animate-in fade-in">
-                          <Sparkles className="w-12 h-12 text-orange-400 animate-spin" />
-                          <p className="font-bold text-lg uppercase tracking-wider animate-pulse">ANALYZING IMAGE WITH AI...</p>
-                      </div>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                      <button onClick={createNewTemplate} className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 hover:border-orange-500 hover:shadow-lg transition-all group">
-                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-orange-100 dark:group-hover:bg-orange-900/30 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                              <FilePlus className="w-8 h-8" />
-                          </div>
-                          <div className="text-center">
-                              <h3 className="font-bold text-gray-800 dark:text-white text-lg uppercase">MANUAL CREATION</h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wide">Design task from scratch</p>
-                          </div>
-                      </button>
-
-                      <button onClick={() => setShowAiGenerator(true)} className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 hover:border-purple-500 hover:shadow-lg transition-all group">
-                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                              <Wand2 className="w-8 h-8" />
-                          </div>
-                          <div className="text-center">
-                              <h3 className="font-bold text-gray-800 dark:text-white text-lg uppercase">AI GENERATOR</h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wide">Generate from topic</p>
-                          </div>
-                      </button>
-                      
-                      <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all group col-span-1 md:col-span-2">
-                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              <Camera className="w-8 h-8" />
-                          </div>
-                          <div className="text-center">
-                              <h3 className="font-bold text-gray-800 dark:text-white text-lg uppercase">FROM IMAGE</h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wide">Snap photo to create task</p>
-                          </div>
-                          <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
-                      </button>
+              <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-6 bg-gray-50 dark:bg-gray-950 overflow-y-auto">
+                  {isAnalyzingImage && <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center text-white flex-col gap-4 animate-in fade-in"><Sparkles className="w-16 h-16 text-orange-500 animate-spin" /><p className="font-black text-xl uppercase tracking-[0.3em] animate-pulse">ANALYZING...</p></div>}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl">
+                      {[
+                        { id: 'MANUAL', label: 'START SCRATCH', desc: 'HAND-CRAFTED TASK', icon: FilePlus, color: 'from-orange-500 to-red-600', onClick: () => setEditingTemplate({ id: `tpl-${Date.now()}`, title: 'New Task', task: { type: 'text', question: '' }, tags: [], iconId: 'default', createdAt: Date.now() }) },
+                        { id: 'AI', label: 'AI GENERATOR', desc: 'AUTO-GENERATE BY TOPIC', icon: Wand2, color: 'from-purple-600 to-indigo-700', onClick: () => setShowAiGenerator(true) },
+                        { id: 'IMAGE', label: 'FROM PHOTO', desc: 'SNAP TO CREATE', icon: Camera, color: 'from-blue-600 to-cyan-700', onClick: () => fileInputRef.current?.click() }
+                      ].map(card => (
+                          <button key={card.id} onClick={card.onClick} className={`group relative p-8 rounded-3xl overflow-hidden shadow-2xl transition-all hover:scale-105 active:scale-95 ${card.id === 'IMAGE' ? 'sm:col-span-2' : ''}`}>
+                              <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-90 group-hover:opacity-100 transition-opacity`} />
+                              <div className="relative z-10 flex flex-col items-center text-center text-white">
+                                  <div className="p-4 bg-white/20 rounded-2xl mb-4 backdrop-blur-md group-hover:rotate-6 transition-transform"><card.icon className="w-10 h-10" /></div>
+                                  <h3 className="text-xl font-black tracking-[0.2em] mb-1">{card.label}</h3>
+                                  <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">{card.desc}</p>
+                              </div>
+                          </button>
+                      ))}
                   </div>
+                  <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
               </div>
           )}
 
-          {/* LISTS VIEW - GRID LAYOUT */}
           {activeTab === 'LISTS' && (
-              <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+              <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950">
                   {!selectedListId ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                          {lists.length === 0 && (
-                              <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
-                                  <Layers className="w-12 h-12 mb-4 opacity-50" />
-                                  <p className="font-bold uppercase tracking-wide">NO LISTS YET</p>
-                                  <button onClick={() => setShowCreateListModal(true)} className="mt-4 text-blue-500 font-bold uppercase text-xs hover:underline">Create First List</button>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {lists.map(list => (
+                              <div key={list.id} onClick={() => setSelectedListId(list.id)} className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-xl hover:shadow-2xl hover:border-amber-400 dark:hover:border-amber-500 cursor-pointer transition-all flex flex-col gap-4 relative group overflow-hidden">
+                                  <div className="absolute top-0 left-0 w-2 h-full" style={{ backgroundColor: list.color }} />
+                                  <div className="flex justify-between items-start">
+                                      <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-500 group-hover:bg-amber-500 group-hover:text-white transition-all"><Layers className="w-6 h-6" /></div>
+                                      <button onClick={(e) => { e.stopPropagation(); if(confirm('Delete list?')) onDeleteList(list.id); }} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-5 h-5"/></button>
+                                  </div>
+                                  <div>
+                                      <h3 className="font-black text-sm uppercase tracking-widest text-slate-800 dark:text-white mb-1">{list.name}</h3>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase">{list.tasks.length} MISSION UNITS</p>
+                                  </div>
                               </div>
-                          )}
-                          {lists.map(list => {
-                              const ListIcon = ICON_COMPONENTS[list.iconId || 'default'];
-                              return (
-                                <div 
-                                    key={list.id}
-                                    onClick={() => { setSelectedListId(list.id); setIsAddingToList(false); }}
-                                    className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-amber-400 dark:hover:border-amber-500 cursor-pointer transition-all flex flex-col gap-3 group relative overflow-hidden"
-                                >
-                                    <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: list.color }}></div>
-                                    <div className="flex justify-between items-start">
-                                        <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300">
-                                            <ListIcon className="w-5 h-5" />
-                                        </div>
-                                        {!isSelectionMode && (
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); handleDeleteListHandler(list.id); }}
-                                                className="text-gray-400 hover:text-red-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 dark:text-white uppercase truncate text-sm">{list.name}</h3>
-                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase mt-1 font-bold">{list.tasks.length} TASKS</p>
-                                    </div>
-                                </div>
-                              );
-                          })}
+                          ))}
                       </div>
                   ) : (
-                      // Single List Detail View
-                      <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                           <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
-                               <div className="flex items-center gap-3">
-                                   <button onClick={() => setSelectedListId(null)} className="p-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                                       <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                   </button>
-                                   <div>
-                                       <h3 className="font-bold text-lg uppercase tracking-wide flex items-center gap-2">
-                                           <div className="w-3 h-3 rounded-full" style={{backgroundColor: selectedList?.color}}></div>
-                                           {selectedList?.name}
-                                       </h3>
-                                   </div>
+                      <div className="flex flex-col h-full bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95">
+                           <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-slate-50/50 dark:bg-gray-850">
+                               <div className="flex items-center gap-4">
+                                   <button onClick={() => setSelectedListId(null)} className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-slate-100 transition-colors"><ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" /></button>
+                                   <h3 className="font-black text-lg uppercase tracking-widest flex items-center gap-3"><div className="w-4 h-4 rounded-full shadow-lg" style={{backgroundColor: lists.find(l=>l.id===selectedListId)?.color}} /> {lists.find(l=>l.id===selectedListId)?.name}</h3>
                                </div>
-                               <div className="flex gap-2">
-                                   {onCreateGameFromList && (
-                                       <button 
-                                            onClick={() => onCreateGameFromList(selectedList!.id)}
-                                            className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1"
-                                       >
-                                           <Gamepad2 className="w-3 h-3" /> Play
-                                       </button>
-                                   )}
-                                   <button 
-                                        onClick={() => { setActiveTab('LIBRARY'); setIsAddingToList(true); }}
-                                        className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-1"
-                                   >
-                                       <Plus className="w-3 h-3" /> Add Tasks
-                                   </button>
-                               </div>
+                               <button onClick={() => { setActiveTab('LIBRARY'); setIsAddingToList(true); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2"><Plus className="w-4 h-4" /> ADD TASKS</button>
                            </div>
-                           
-                           <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
-                               {selectedList?.tasks.length === 0 ? (
-                                   <div className="text-center py-20 text-gray-400">
-                                       <p className="text-sm font-bold uppercase">LIST IS EMPTY</p>
-                                       <button onClick={() => { setActiveTab('LIBRARY'); setIsAddingToList(true); }} className="text-blue-500 hover:underline text-xs mt-2 uppercase font-bold">BROWSE LIBRARY TO ADD TASKS</button>
-                                   </div>
+                           <div className="flex-1 overflow-y-auto">
+                               {lists.find(l=>l.id===selectedListId)?.tasks.length === 0 ? (
+                                   <div className="text-center py-20 opacity-30"><FolderOpen className="w-16 h-16 mx-auto mb-4" /><p className="font-black uppercase tracking-widest">LIST IS EMPTY</p></div>
                                ) : (
-                                   selectedList?.tasks.map(task => renderTaskRow(task, 'list'))
+                                   lists.find(l=>l.id===selectedListId)?.tasks.map(task => renderTaskRow(task, 'list'))
                                )}
                            </div>
                       </div>
@@ -661,167 +283,71 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
               </div>
           )}
 
-          {/* LIBRARY VIEW */}
           {activeTab === 'LIBRARY' && (
-              <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-900">
-                  {/* Search Bar & Filters */}
-                  <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row gap-3 bg-gray-50/50 dark:bg-gray-800/50">
-                      <div className="flex-1 relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                          <input 
-                              type="text" 
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              placeholder="Search tasks..."
-                              className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-orange-500 outline-none dark:bg-gray-800 dark:text-white"
-                          />
+              <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-950 overflow-hidden">
+                  <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col gap-4 bg-slate-50/50 dark:bg-gray-900/50">
+                      <div className="flex gap-3">
+                          <div className="flex-1 relative">
+                              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="SEARCH SYSTEM ARCHIVE..." className="w-full pl-11 pr-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-850 text-xs font-black uppercase tracking-widest focus:border-orange-500 outline-none transition-all shadow-inner dark:text-white" />
+                          </div>
+                          <button onClick={() => { setIsBulkMode(!isBulkMode); setBulkSelectedIds(new Set()); }} className={`px-4 py-3 rounded-2xl text-[10px] font-black border-2 transition-all flex items-center gap-2 uppercase tracking-widest ${isBulkMode ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-slate-500 hover:border-orange-500'}`}><CheckSquare className="w-4 h-4" /> {isBulkMode ? 'FINISH' : 'BULK'}</button>
                       </div>
                       
-                      {/* Language Filter */}
-                      <select 
-                          value={languageFilter} 
-                          onChange={(e) => setLanguageFilter(e.target.value)}
-                          className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm bg-white dark:bg-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-orange-500"
-                      >
-                          <option value="All">All Languages</option>
-                          {availableLanguages.map(lang => (
-                              <option key={lang} value={lang}>{lang}</option>
+                      {/* Tag Filtering Ribbon */}
+                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                          <button onClick={() => setSelectedTagFilter(null)} className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter border-2 whitespace-nowrap transition-all ${!selectedTagFilter ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-slate-500'}`}>ALL UNITS</button>
+                          {allTags.map(tag => (
+                              <button key={tag} onClick={() => setSelectedTagFilter(selectedTagFilter === tag ? null : tag)} className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter border-2 whitespace-nowrap transition-all ${selectedTagFilter === tag ? 'text-white border-transparent' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-slate-500'}`} style={{ backgroundColor: selectedTagFilter === tag ? (tagColors[tag] || '#000') : 'transparent' }}>
+                                  {tag}
+                              </button>
                           ))}
-                      </select>
-
-                      {/* Bulk Mode Toggle */}
-                      {!isSelectionMode && (
-                        <button 
-                            onClick={() => { setIsBulkMode(!isBulkMode); setBulkSelectedIds(new Set()); }}
-                            className={`px-3 py-2 rounded-lg text-sm font-bold border transition-colors flex items-center gap-2 uppercase tracking-wide ${isBulkMode ? 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-500 text-indigo-700 dark:text-indigo-300' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'}`}
-                        >
-                            <CheckSquare className="w-4 h-4" /> Bulk Edit
-                        </button>
-                      )}
+                      </div>
                   </div>
                   
-                  {/* Bulk Actions Bar */}
                   {isBulkMode && (
-                      <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 border-b border-indigo-100 dark:border-indigo-800 flex items-center gap-3 animate-in slide-in-from-top-2">
-                          <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">{bulkSelectedIds.size} SELECTED</span>
-                          <div className="flex-1"></div>
-                          <div className="flex items-center gap-2">
-                              <input 
-                                   type="text" 
-                                   value={bulkTagInput} 
-                                   onChange={(e) => setBulkTagInput(e.target.value)}
-                                   placeholder="Tag to add..."
-                                   className="px-3 py-1.5 rounded-lg border border-indigo-200 text-sm focus:outline-none"
-                              />
-                              <button 
-                                   onClick={handleBulkAddTag}
-                                   disabled={!bulkTagInput.trim() || bulkSelectedIds.size === 0}
-                                   className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-50 uppercase tracking-wide"
-                              >
-                                  Add Tag
-                              </button>
+                      <div className="bg-orange-600 p-3 flex items-center gap-4 text-white animate-in slide-in-from-top-4">
+                          <span className="text-[10px] font-black uppercase tracking-widest">{bulkSelectedIds.size} UNITS READY</span>
+                          <div className="flex-1">
+                              <input type="text" value={bulkTagInput} onChange={(e) => setBulkTagInput(e.target.value)} placeholder="BATCH TAG..." className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white placeholder:text-white/50 focus:bg-white/20 outline-none" />
                           </div>
+                          <button onClick={() => { 
+                              if(!bulkTagInput.trim()) return; 
+                              const ids = Array.from(bulkSelectedIds);
+                              ids.forEach(id => {
+                                  const tpl = library.find(t => t.id === id);
+                                  if (tpl && !tpl.tags.includes(bulkTagInput.toLowerCase())) onSaveTemplate({ ...tpl, tags: [...tpl.tags, bulkTagInput.toLowerCase()] });
+                              });
+                              setIsBulkMode(false); setBulkSelectedIds(new Set()); setBulkTagInput('');
+                          }} className="bg-white text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl">APPLY</button>
                       </div>
                   )}
 
-                  <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                      {isAddingToList && selectedList && (
-                          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl flex justify-between items-center">
-                              <span className="text-xs font-bold text-blue-800 dark:text-blue-200 uppercase tracking-wide">Adding to: {selectedList.name}</span>
-                              <button onClick={() => setIsAddingToList(false)} className="text-blue-600 hover:text-blue-800 text-xs font-bold uppercase tracking-wide">Done</button>
-                          </div>
-                      )}
-
-                      {filteredLibrary.length === 0 ? (
-                          <div className="text-center py-12 text-gray-400">
-                              <p className="font-bold uppercase tracking-wide">No tasks found</p>
-                              {searchQuery && <p className="text-xs">Try a different search term</p>}
-                          </div>
-                      ) : (
-                          filteredLibrary.map(t => renderTaskRow(t, 'library'))
-                      )}
+                  <div className="flex-1 overflow-y-auto">
+                      {isAddingToList && <div className="p-3 bg-blue-600 text-white flex justify-between items-center"><span className="text-[10px] font-black uppercase tracking-widest">SELECT TASKS FOR LIST</span><button onClick={() => setIsAddingToList(false)} className="bg-white text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">DONE</button></div>}
+                      {filteredLibrary.length === 0 ? <div className="py-20 text-center opacity-20"><Search className="w-16 h-16 mx-auto mb-4" /><p className="font-black uppercase tracking-[0.2em]">NO UNITS FOUND</p></div> : filteredLibrary.map(t => renderTaskRow(t, 'library'))}
                   </div>
               </div>
           )}
-
       </div>
-      
-      {/* Create List Modal */}
+
+      {editingTemplate && (
+          <TaskEditor point={{ id: editingTemplate.id, title: editingTemplate.title, task: editingTemplate.task, location: { lat: 0, lng: 0 }, radiusMeters: 30, iconId: editingTemplate.iconId, isUnlocked: false, isCompleted: false, order: 0, tags: editingTemplate.tags, activationTypes: ['radius'], points: editingTemplate.points || 100, feedback: editingTemplate.feedback, settings: editingTemplate.settings }} onSave={handleSaveTemplate} onDelete={() => onDeleteTemplate(editingTemplate.id)} onClose={() => setEditingTemplate(null)} isTemplateMode={true} />
+      )}
+      {showAiGenerator && <AiTaskGenerator onClose={() => setShowAiGenerator(false)} onAddTasks={(tasks) => { tasks.forEach(t => onSaveTemplate(t)); setActiveTab('LIBRARY'); }} />}
+
       {showCreateListModal && (
-          <div className="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-              <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-200 dark:border-gray-800">
-                   <div className="text-center mb-6">
-                       <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                           <Layers className="w-8 h-8" />
-                       </div>
-                       <h3 className="text-xl font-bold uppercase tracking-wider text-gray-900 dark:text-white">CREATE NEW LIST</h3>
-                   </div>
-                   <form onSubmit={handleCreateList} className="space-y-4">
-                       <div>
-                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">LIST NAME</label>
-                           <input 
-                                type="text" 
-                                value={newListName}
-                                onChange={(e) => setNewListName(e.target.value)}
-                                placeholder="e.g. City Tour 2024"
-                                className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 outline-none focus:ring-2 focus:ring-amber-500 text-sm text-gray-900 dark:text-white"
-                                autoFocus
-                           />
-                       </div>
-                       <div>
-                           <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">COLOR</label>
-                           <div className="flex flex-wrap gap-2">
-                               {COLORS.map(c => (
-                                   <button
-                                       key={c}
-                                       type="button"
-                                       onClick={() => setNewListColor(c)}
-                                       className={`w-8 h-8 rounded-full border-2 transition-transform ${newListColor === c ? 'border-gray-400 scale-110' : 'border-transparent'}`}
-                                       style={{ backgroundColor: c }}
-                                   />
-                               ))}
-                           </div>
-                       </div>
-                       <div className="flex gap-3 pt-2">
-                           <button 
-                                type="button" 
-                                onClick={() => setShowCreateListModal(false)}
-                                className="flex-1 py-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-bold uppercase tracking-wide hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                           >
-                               CANCEL
-                           </button>
-                           <button 
-                                type="submit" 
-                                disabled={!newListName.trim()}
-                                className="flex-1 py-3 bg-amber-500 text-white rounded-xl font-bold uppercase tracking-wide hover:bg-amber-600 disabled:opacity-50 transition-colors"
-                           >
-                               CREATE
-                           </button>
-                       </div>
+          <div className="fixed inset-0 z-[3000] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in">
+              <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border-4 border-gray-100 dark:border-gray-800">
+                   <h3 className="text-2xl font-black uppercase tracking-[0.2em] text-center mb-8">NEW MISSION LIST</h3>
+                   <form onSubmit={(e) => { e.preventDefault(); if(newListName.trim()) { onSaveList({ id: `list-${Date.now()}`, name: newListName, description: '', tasks: [], color: newListColor, iconId: newListIcon, createdAt: Date.now() }); setNewListName(''); setShowCreateListModal(false); } }} className="space-y-6">
+                       <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">LIST DESIGNATION</label><input type="text" value={newListName} onChange={(e) => setNewListName(e.target.value)} placeholder="E.G. URBAN EXPLORER" className="w-full p-4 rounded-2xl border-2 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-black uppercase tracking-widest focus:border-blue-500 outline-none" autoFocus /></div>
+                       <div><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">IDENTIFICATION COLOR</label><div className="flex flex-wrap gap-3">{COLORS.map(c => <button key={c} type="button" onClick={() => setNewListColor(c)} className={`w-8 h-8 rounded-xl border-4 transition-all ${newListColor === c ? 'border-blue-500 scale-110 shadow-lg' : 'border-white dark:border-gray-800'}`} style={{ backgroundColor: c }} />)}</div></div>
+                       <div className="flex gap-3 pt-4"><button type="button" onClick={() => setShowCreateListModal(false)} className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-2xl font-black text-xs uppercase tracking-widest">CANCEL</button><button type="submit" disabled={!newListName.trim()} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 disabled:opacity-30">INITIALIZE</button></div>
                    </form>
               </div>
           </div>
       )}
-
-      {/* Modals */}
-      {editingTemplate && (
-          <TaskEditor 
-              point={convertTemplateToPoint(editingTemplate)}
-              onSave={handleSaveTemplate}
-              onDelete={handleDeleteTemplateHandler}
-              onClose={() => setEditingTemplate(null)}
-              onClone={handleCloneTemplate}
-              isTemplateMode={true}
-          />
-      )}
-
-      {showAiGenerator && (
-          <AiTaskGenerator 
-              onClose={() => setShowAiGenerator(false)}
-              onAddTasks={handleAiTasksAdded}
-          />
-      )}
-
     </div>
   );
 };

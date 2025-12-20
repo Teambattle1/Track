@@ -17,7 +17,7 @@ export interface TeamMember {
   deviceId: string;
   userName: string;
   lastSeen: number;
-  location?: Coordinate; // Added location
+  location?: Coordinate; 
 }
 
 export interface Team {
@@ -28,8 +28,10 @@ export interface Team {
   photoUrl?: string;
   members: string[];
   score: number;
-  completedPointIds?: string[]; // Added task history
+  completedPointIds?: string[];
   updatedAt: string;
+  captainDeviceId?: string; // New: To identify the team captain
+  isStarted?: boolean; // New: To track if mission has moved from lobby to active
 }
 
 export interface TaskVote {

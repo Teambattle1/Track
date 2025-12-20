@@ -43,10 +43,10 @@ const GameHUD: React.FC<GameHUDProps> = ({
   }, [mode]);
 
   const mapStyles: { id: MapStyleId; label: string; icon: any }[] = [
-      { id: 'osm', label: 'Std', icon: MapIcon },
-      { id: 'satellite', label: 'Sat', icon: Globe },
-      { id: 'dark', label: 'Dark', icon: Moon },
-      { id: 'light', label: 'Light', icon: Sun },
+      { id: 'osm', label: 'Standard', icon: MapIcon },
+      { id: 'satellite', label: 'Satellite', icon: Globe },
+      { id: 'dark', label: 'Dark Mode', icon: Moon },
+      { id: 'light', label: 'Light Mode', icon: Sun },
   ];
 
   return (
@@ -60,12 +60,19 @@ const GameHUD: React.FC<GameHUDProps> = ({
       )}
 
       <div className="absolute top-4 left-4 z-[1000] pointer-events-auto h-12 flex items-center">
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 ${isMenuOpen ? 'bg-white text-slate-900' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            <div className="relative group">
+                <button 
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  title="Main Menu"
+                  className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 ${isMenuOpen ? 'bg-white text-slate-900' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
+                >
+                  <Menu className="w-6 h-6" />
+                </button>
+                {/* Visual Tooltip for Menu */}
+                <div className="absolute top-full left-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap z-[1100]">
+                    Menu
+                </div>
+            </div>
             
             {isMenuOpen && (
                 <div className="absolute top-full left-0 mt-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl p-2 min-w-[240px] animate-in slide-in-from-top-2 fade-in duration-200 origin-top-left z-[3000]">
@@ -74,16 +81,16 @@ const GameHUD: React.FC<GameHUDProps> = ({
                         <button onClick={() => setIsMenuOpen(false)} className="text-slate-500 hover:text-white"><X className="w-4 h-4" /></button>
                     </div>
                     <div className="flex flex-col gap-1 mb-2">
-                        <button onClick={() => { onBackToHub(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide border-b border-white/5 mb-1">
+                        <button onClick={() => { onBackToHub(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide border-b border-white/5 mb-1" title="Back to Hub">
                             <Home className="w-4 h-4" /> HUB
                         </button>
-                        <button onClick={() => { onOpenTeams(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 transition-colors text-left font-bold text-xs uppercase tracking-wide">
+                        <button onClick={() => { onOpenTeams(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 transition-colors text-left font-bold text-xs uppercase tracking-wide" title="View Teams">
                             <Users className="w-4 h-4" /> TEAMS
                         </button>
-                        <button onClick={() => { onOpenGameManager(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
+                        <button onClick={() => { onOpenGameManager(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide" title="Manage Games">
                             <LayoutDashboard className="w-4 h-4" /> GAMES
                         </button>
-                        <button onClick={() => { onOpenTaskMaster(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 text-slate-300 hover:text-amber-400 transition-colors text-left font-bold text-xs uppercase tracking-wide border-b border-white/5 mb-1">
+                        <button onClick={() => { onOpenTaskMaster(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 text-slate-300 hover:text-amber-400 transition-colors text-left font-bold text-xs uppercase tracking-wide border-b border-white/5 mb-1" title="Task Library">
                             <Library className="w-4 h-4" /> TASKS
                         </button>
                         <div className="p-2 bg-slate-900/50 rounded-xl mt-1">
@@ -93,9 +100,10 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                     <button
                                         key={style.id}
                                         onClick={() => { onSetMapStyle(style.id); setIsMenuOpen(false); }}
+                                        title={`Switch to ${style.label}`}
                                         className={`flex items-center gap-1.5 p-2 rounded-lg text-[9px] font-black uppercase transition-all border ${mapStyle === style.id ? 'bg-orange-600 border-orange-500 text-white shadow-lg' : 'bg-slate-900 border-white/5 text-slate-400 hover:text-white'}`}
                                     >
-                                        <style.icon className="w-3 h-3" /> {style.label}
+                                        <style.icon className="w-3 h-3" /> {style.id}
                                     </button>
                                 ))}
                             </div>
@@ -107,12 +115,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
 
       <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2 h-12 pointer-events-auto">
         {mode === GameMode.INSTRUCTOR && onOpenInstructorDashboard && (
-            <button onClick={onOpenInstructorDashboard} className="w-12 h-12 bg-slate-900/95 dark:bg-gray-800 text-amber-500 shadow-2xl rounded-2xl flex items-center justify-center transition-all border border-amber-500/50 hover:bg-amber-500 hover:text-white hover:scale-105 active:scale-95" title="Team Dashboard">
+            <button 
+              onClick={onOpenInstructorDashboard} 
+              title="Instructor Dashboard"
+              className="w-12 h-12 bg-slate-900/95 dark:bg-gray-800 text-amber-500 shadow-2xl rounded-2xl flex items-center justify-center transition-all border border-amber-500/50 hover:bg-amber-500 hover:text-white hover:scale-105 active:scale-95 group relative"
+            >
                 <LayoutDashboard className="w-6 h-6" />
+                <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">Dashboard</div>
             </button>
         )}
-        <button onClick={toggleMode} className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 ${mode === GameMode.EDIT ? 'bg-orange-600 text-white' : mode === GameMode.INSTRUCTOR ? 'bg-amber-500 text-white' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`} title="Toggle Game Mode">
+        <button 
+          onClick={toggleMode} 
+          title={mode === GameMode.PLAY ? "Enter Edit Mode" : mode === GameMode.EDIT ? "Enter Instructor Mode" : "Return to Play Mode"}
+          className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 group relative ${mode === GameMode.EDIT ? 'bg-orange-600 text-white' : mode === GameMode.INSTRUCTOR ? 'bg-amber-50 text-amber-600' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
+        >
           {mode === GameMode.EDIT ? <Layers className="w-6 h-6" /> : mode === GameMode.INSTRUCTOR ? <GraduationCap className="w-6 h-6" /> : <MapIcon className="w-6 h-6" />}
+          <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">
+              {mode === GameMode.PLAY ? 'Mode: Play' : mode === GameMode.EDIT ? 'Mode: Edit' : 'Mode: Inst'}
+          </div>
         </button>
       </div>
     </>

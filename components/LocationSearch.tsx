@@ -50,10 +50,16 @@ const LocationSearch: React.FC<LocationSearchProps> = ({ onSelectLocation, onLoc
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search location..."
+            title="Search for a place on the map"
             className="w-full h-full pl-10 pr-10 bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-orange-500/50 transition-all text-white font-bold"
           />
           {query && (
-            <button type="button" onClick={() => { setQuery(''); setResults([]); setShowResults(false); }} className="absolute right-3 p-1.5 text-gray-400 hover:text-gray-200 z-10 bg-white/5 rounded-lg">
+            <button 
+              type="button" 
+              onClick={() => { setQuery(''); setResults([]); setShowResults(false); }} 
+              title="Clear Search"
+              className="absolute right-3 p-1.5 text-gray-400 hover:text-gray-200 z-10 bg-white/5 rounded-lg"
+            >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
@@ -77,24 +83,30 @@ const LocationSearch: React.FC<LocationSearchProps> = ({ onSelectLocation, onLoc
 
       <div className="flex gap-1.5 h-full">
           {onLocateMe && (
-            <div className="relative group flex items-center justify-center h-12 w-12">
-              <button onClick={onLocateMe} className="w-full h-full bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md text-blue-400 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95" aria-label="Locate Me">
+            <div className="relative group h-12 w-12">
+              <button 
+                onClick={onLocateMe} 
+                title="Locate Me (GPS)"
+                className="w-full h-full bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md text-blue-400 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95" 
+                aria-label="Locate Me"
+              >
                 <Target className="w-6 h-6" />
               </button>
-              <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[4000]">
-                <div className="bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-2xl border border-white/10 whitespace-nowrap">Locate Me</div>
-              </div>
+              <div className="absolute bottom-full mb-2 right-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">My Location</div>
             </div>
           )}
 
           {onFitBounds && (
-            <div className="relative group flex items-center justify-center h-12 w-12">
-              <button onClick={onFitBounds} className="w-full h-full bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md text-orange-400 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95" aria-label="Fit Map to Tasks">
+            <div className="relative group h-12 w-12">
+              <button 
+                onClick={onFitBounds} 
+                title="Show All Tasks"
+                className="w-full h-full bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md text-orange-400 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95" 
+                aria-label="Fit Map to Tasks"
+              >
                 <Maximize className="w-6 h-6" />
               </button>
-              <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-[4000]">
-                <div className="bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-2xl border border-white/10 whitespace-nowrap">Show All Tasks</div>
-              </div>
+              <div className="absolute bottom-full mb-2 right-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">View All</div>
             </div>
           )}
       </div>

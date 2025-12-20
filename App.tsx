@@ -23,12 +23,18 @@ import { X, Copy, ClipboardPaste, ChevronDown, AlertTriangle, Plus, Sparkles, Li
 import * as db from './services/db.ts';
 import { teamSync } from './services/teamSync.ts';
 
+const APP_VERSION = "1.0.1";
+// Standardized key for persistence
+const STORAGE_KEY_GAME_ID = 'teambattle_last_game_id';
+const STORAGE_KEY_TEAM_ID = 'teambattle_last_team_id';
+const STORAGE_KEY_PLAYER_NAME = 'teambattle_player_name';
+
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
-    activeGameId: localStorage.getItem('teambattle_last_game_id'), 
+    activeGameId: localStorage.getItem(STORAGE_KEY_GAME_ID), 
     games: [], taskLibrary: [], taskLists: [], score: 0,
     userLocation: null, gpsAccuracy: null, deviceId: teamSync.getDeviceId(),
-    teamId: localStorage.getItem('teambattle_last_team_id') || undefined
+    teamId: localStorage.getItem(STORAGE_KEY_TEAM_ID) || undefined
   });
 
   const [mode, setMode] = useState<GameMode>(GameMode.PLAY);
@@ -36,9 +42,6 @@ const App: React.FC = () => {
   const [appLanguage, setAppLanguage] = useState<Language>('English');
   const [selectedPoint, setSelectedPoint] = useState<GamePoint | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<GamePoint | null>(null);
-  const [markedPoints, setMarkedPoints] = useState<GamePoint[] | null>(null);
-  const [originalCenter, setOriginalCenter] = useState<Coordinate | null>(null);
-  const [sourceListId, setSourceListId] = useState('');
   
   const [showGameChooser, setShowGameChooser] = useState(false);
   const [showTaskMaster, setShowTaskMaster] = useState(false);
@@ -47,16 +50,16 @@ const App: React.FC = () => {
   const [showAdminModal, setShowAdminModal] = useState(false); 
   const [showInstructorDashboard, setShowInstructorDashboard] = useState(false); 
   const [showAiGenerator, setShowAiGenerator] = useState(false);
-  const [showAddMenu, setShowAddMenu] = useState(false);
   const [isTaskSelectionMode, setIsTaskSelectionMode] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [forceExpandDrawer, setForceExpandDrawer] = useState(false);
+  // Fix: Added missing state for sourceListId and setSourceListId
+  const [sourceListId, setSourceListId] = useState<string>('');
 
   const [completedPointIds, setCompletedPointIds] = useState<string[]>([]);
   const [unlockedPointIds, setUnlockedPointIds] = useState<string[]>([]);
 
   const [instructorGame, setInstructorGame] = useState<Game | null>(null);
-  const [currentChatMessage, setCurrentChatMessage] = useState<ChatMessage | null>(null);
   const [showLanding, setShowLanding] = useState(true);
   const [bypassWelcome, setBypassWelcome] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -69,8 +72,8 @@ const App: React.FC = () => {
   useEffect(() => {
     gameStateRef.current = gameState;
     unlockedIdsRef.current = unlockedPointIds;
-    if (gameState.activeGameId) localStorage.setItem('teambattle_last_game_id', gameState.activeGameId);
-    if (gameState.teamId) localStorage.setItem('teambattle_last_team_id', gameState.teamId);
+    if (gameState.activeGameId) localStorage.setItem(STORAGE_KEY_GAME_ID, gameState.activeGameId);
+    if (gameState.teamId) localStorage.setItem(STORAGE_KEY_TEAM_ID, gameState.teamId);
   }, [gameState, unlockedPointIds]);
 
   const refreshData = useCallback(async () => {
@@ -79,8 +82,9 @@ const App: React.FC = () => {
         const [games, library, lists] = await Promise.all([db.fetchGames(), db.fetchLibrary(), db.fetchTaskLists()]);
         
         let teamData: Team | null = null;
-        if (gameStateRef.current.teamId) {
-            teamData = await db.fetchTeam(gameStateRef.current.teamId);
+        const currentTeamId = localStorage.getItem(STORAGE_KEY_TEAM_ID);
+        if (currentTeamId) {
+            teamData = await db.fetchTeam(currentTeamId);
         }
 
         setGameState(prev => {
@@ -97,7 +101,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     refreshData();
-    const interval = setInterval(refreshData, 15000); // Background refresh every 15s
+    const interval = setInterval(refreshData, 15000); 
     return () => clearInterval(interval);
   }, [refreshData]);
 
@@ -128,9 +132,18 @@ const App: React.FC = () => {
   }, [mode, completedPointIds]); 
 
   const handleStartGame = (gameId: string, teamName: string, userName: string, style: MapStyleId) => {
-      const teamId = `team-${teamName.replace(/\s+/g, '-').toLowerCase()}-${gameId}`;
+      const cleanTeamName = teamName.replace(/\s+/g, '-').toLowerCase().replace(/[^a-z0-9-]/g, '');
+      const teamId = `team-${cleanTeamName}-${gameId}`;
+      
       setGameState(prev => ({ ...prev, activeGameId: gameId, teamName, userName, teamId }));
-      setMode(GameMode.PLAY); setMapStyle(style); setShowLanding(false); setBypassWelcome(true);
+      localStorage.setItem(STORAGE_KEY_GAME_ID, gameId);
+      localStorage.setItem(STORAGE_KEY_TEAM_ID, teamId);
+      localStorage.setItem(STORAGE_KEY_PLAYER_NAME, userName);
+
+      setMode(GameMode.PLAY); 
+      setMapStyle(style); 
+      setShowLanding(false); 
+      setBypassWelcome(true);
       teamSync.connect(gameId, teamName, userName);
       refreshData();
   };
@@ -189,6 +202,7 @@ const App: React.FC = () => {
       {showLanding && !bypassWelcome && (
           <LandingPage 
             activeGameName={activeGame?.name}
+            version={APP_VERSION}
             onChooseGame={() => setShowGameChooser(true)}
             onAction={(action) => {
                   if (action === 'CREATE') {
@@ -197,6 +211,7 @@ const App: React.FC = () => {
                         const newGame: Game = { id: `game-${Date.now()}`, name, description: '', points: [], createdAt: Date.now() };
                         db.saveGame(newGame).then(() => { 
                             setGameState(prev => ({ ...prev, activeGameId: newGame.id }));
+                            localStorage.setItem(STORAGE_KEY_GAME_ID, newGame.id);
                             setMode(GameMode.EDIT); setShowLanding(false); setBypassWelcome(true); setForceExpandDrawer(true);
                             refreshData();
                         });
@@ -213,7 +228,15 @@ const App: React.FC = () => {
       )}
 
       {!showLanding && !bypassWelcome && (
-          <WelcomeScreen games={gameState.games} userLocation={gameState.userLocation} onStartGame={handleStartGame} onSetMapStyle={setMapStyle} language={appLanguage} onSetLanguage={setAppLanguage} onOpenEditor={() => { setBypassWelcome(true); setMode(GameMode.EDIT); }} onBack={() => setShowLanding(true)} />
+          <WelcomeScreen 
+            games={gameState.games} 
+            userLocation={gameState.userLocation} 
+            onStartGame={handleStartGame} 
+            onSetMapStyle={setMapStyle} 
+            language={appLanguage} 
+            onSetLanguage={setAppLanguage} 
+            onBack={() => setShowLanding(true)} 
+          />
       )}
 
       {bypassWelcome && (
@@ -232,7 +255,20 @@ const App: React.FC = () => {
                 onDeletePoint={(id) => { if (!activeGame) return; const updatedPoints = activeGame.points.filter(p => p.id !== id); db.saveGame({ ...activeGame, points: updatedPoints }).then(refreshData); }} 
                 onMapClick={(coord) => { if (mode === GameMode.EDIT && activeGame) { const newPoint: GamePoint = { id: `pt-${Date.now()}`, title: 'New Task', location: coord, radiusMeters: 30, iconId: 'default', points: 100, isUnlocked: false, isCompleted: false, activationTypes: ['radius'], order: activeGame.points.length, task: { question: 'New Question?', type: 'text' } }; db.saveGame({...activeGame, points: [...activeGame.points, newPoint]}).then(refreshData); } }} 
               />
-              <GameHUD accuracy={gameState.gpsAccuracy} mode={mode} toggleMode={() => setMode(mode === GameMode.PLAY ? GameMode.EDIT : mode === GameMode.EDIT ? GameMode.INSTRUCTOR : GameMode.PLAY)} onOpenGameManager={() => setShowGameManager(true)} onOpenTaskMaster={() => { setIsTaskSelectionMode(false); setShowTaskMaster(true); }} onOpenTeams={() => setShowTeamsModal(true)} mapStyle={mapStyle} onSetMapStyle={setMapStyle} language={appLanguage} onBackToHub={() => { setBypassWelcome(false); setShowLanding(true); }} activeGameName={activeGame?.name} onOpenInstructorDashboard={() => { if (activeGame) { setInstructorGame(activeGame); setShowInstructorDashboard(true); } }} />
+              <GameHUD 
+                accuracy={gameState.gpsAccuracy} 
+                mode={mode} 
+                toggleMode={() => setMode(mode === GameMode.PLAY ? GameMode.EDIT : mode === GameMode.EDIT ? GameMode.INSTRUCTOR : GameMode.PLAY)} 
+                onOpenGameManager={() => setShowGameManager(true)} 
+                onOpenTaskMaster={() => { setIsTaskSelectionMode(false); setShowTaskMaster(true); }} 
+                onOpenTeams={() => setShowTeamsModal(true)} 
+                mapStyle={mapStyle} 
+                onSetMapStyle={setMapStyle} 
+                language={appLanguage} 
+                onBackToHub={() => { setBypassWelcome(false); setShowLanding(true); }} 
+                activeGameName={activeGame?.name} 
+                onOpenInstructorDashboard={() => { if (activeGame) { setInstructorGame(activeGame); setShowInstructorDashboard(true); } }} 
+              />
               
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 h-12 pointer-events-auto">
                   {mode !== GameMode.EDIT && (
@@ -250,7 +286,10 @@ const App: React.FC = () => {
                   allPoints={displayPoints} 
                   taskLists={gameState.taskLists} 
                   games={gameState.games}
-                  onSelectGame={(id) => setGameState(prev => ({ ...prev, activeGameId: id }))}
+                  onSelectGame={(id) => {
+                      setGameState(prev => ({ ...prev, activeGameId: id }));
+                      localStorage.setItem(STORAGE_KEY_GAME_ID, id);
+                  }}
                   onOpenGameChooser={() => setShowGameChooser(true)}
                   sourceListId={sourceListId} 
                   onSetSourceListId={setSourceListId} 
@@ -271,10 +310,40 @@ const App: React.FC = () => {
       )}
 
       {/* GLOBAL MODALS */}
-      {showGameChooser && <GameChooser games={gameState.games} taskLists={gameState.taskLists} onClose={() => setShowGameChooser(false)} onSelectGame={(id) => { setGameState(prev => ({ ...prev, activeGameId: id })); setShowGameChooser(false); }} onCreateGame={(name) => { const newGame: Game = { id: `game-${Date.now()}`, name, description: '', points: [], createdAt: Date.now() }; db.saveGame(newGame).then(() => { refreshData(); setGameState(prev => ({ ...prev, activeGameId: newGame.id })); setShowGameChooser(false); }); }} />}
+      {showGameChooser && (
+          <GameChooser 
+            games={gameState.games} 
+            taskLists={gameState.taskLists} 
+            onClose={() => setShowGameChooser(false)} 
+            onSelectGame={(id) => { 
+                setGameState(prev => ({ ...prev, activeGameId: id })); 
+                localStorage.setItem(STORAGE_KEY_GAME_ID, id);
+                setShowGameChooser(false); 
+            }} 
+            onCreateGame={(name) => { 
+                const newGame: Game = { id: `game-${Date.now()}`, name, description: '', points: [], createdAt: Date.now() }; 
+                db.saveGame(newGame).then(() => { 
+                    refreshData(); 
+                    setGameState(prev => ({ ...prev, activeGameId: newGame.id })); 
+                    localStorage.setItem(STORAGE_KEY_GAME_ID, newGame.id);
+                    setShowGameChooser(false); 
+                }); 
+            }} 
+          />
+      )}
       {showTaskMaster && <TaskMaster library={gameState.taskLibrary} lists={gameState.taskLists} onClose={() => { setShowTaskMaster(false); setIsTaskSelectionMode(false); }} onSaveTemplate={(t) => db.saveTemplate(t).then(refreshData)} onDeleteTemplate={(id) => db.deleteTemplate(id).then(refreshData)} onSaveList={(l) => db.saveTaskList(l).then(refreshData)} onDeleteList={(id) => db.deleteTaskList(id).then(refreshData)} onCreateGameFromList={() => {}} isSelectionMode={isTaskSelectionMode} onSelectTasksForGame={(tasks) => { if(!activeGame) return; const center = mapRef.current?.getCenter() || {lat:0, lng:0}; const newPoints = tasks.map((t,i) => ({ ...t, id: `pt-${Date.now()}-${i}`, location: center, radiusMeters: 30, isUnlocked: false, isCompleted: false, order: activeGame.points.length + i, activationTypes: ['radius'] })); db.saveGame({...activeGame, points: [...activeGame.points, ...newPoints] as any}).then(refreshData); setShowTaskMaster(false); }} />}
       {showAiGenerator && <AiTaskGenerator onClose={() => setShowAiGenerator(false)} onAddTasks={(tasks) => { if(!activeGame) return; const center = mapRef.current?.getCenter() || {lat:0, lng:0}; const newPoints = tasks.map((t,i) => ({ ...t, id: `pt-${Date.now()}-${i}`, location: center, radiusMeters: 30, isUnlocked: false, isCompleted: false, order: activeGame.points.length + i, activationTypes: ['radius'] })); db.saveGame({...activeGame, points: [...activeGame.points, ...newPoints] as any}).then(refreshData); setShowAiGenerator(false); }} />}
-      {showTeamsModal && <TeamsModal gameId={gameState.activeGameId} games={gameState.games} onSelectGame={(id) => setGameState(prev => ({ ...prev, activeGameId: id }))} onClose={() => setShowTeamsModal(false)} />}
+      {showTeamsModal && (
+          <TeamsModal 
+            gameId={gameState.activeGameId} 
+            games={gameState.games} 
+            onSelectGame={(id) => {
+                setGameState(prev => ({ ...prev, activeGameId: id }));
+                localStorage.setItem(STORAGE_KEY_GAME_ID, id);
+            }} 
+            onClose={() => setShowTeamsModal(false)} 
+          />
+      )}
       {showAdminModal && <AdminModal games={gameState.games} onClose={() => setShowAdminModal(false)} onDeleteGame={(id) => db.deleteGame(id).then(refreshData)} />}
       {selectedPoint && <TaskModal point={selectedPoint} onClose={() => setSelectedPoint(null)} onComplete={(id) => { setCompletedPointIds(prev => [...prev, id]); if (gameState.teamId) db.updateTeamProgress(gameState.teamId, id, gameState.score + selectedPoint.points); setSelectedPoint(null); }} distance={gameState.userLocation ? haversineMeters(gameState.userLocation, selectedPoint.location) : 0} />}
     </div>

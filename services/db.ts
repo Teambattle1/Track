@@ -53,7 +53,9 @@ export const fetchTeams = async (gameId: string): Promise<Team[]> => {
             members: row.members || [], 
             score: row.score || 0,
             completedPointIds: row.completed_point_ids || [], 
-            updatedAt: row.updated_at
+            updatedAt: row.updated_at,
+            captainDeviceId: row.captain_device_id,
+            isStarted: row.is_started
         })) : [];
     } catch (e) { logError('fetchTeams', e); return []; }
 };
@@ -71,7 +73,9 @@ export const fetchTeam = async (teamId: string): Promise<Team | null> => {
             members: data.members || [],
             score: data.score || 0,
             completedPointIds: data.completed_point_ids || [],
-            updatedAt: data.updated_at
+            updatedAt: data.updated_at,
+            captainDeviceId: data.captain_device_id,
+            isStarted: data.is_started
         };
     } catch (e) { return null; }
 };
@@ -87,11 +91,23 @@ export const registerTeam = async (team: Team) => {
             members: team.members, 
             score: team.score,
             completed_point_ids: team.completedPointIds || [], 
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            captain_device_id: team.captainDeviceId,
+            is_started: team.isStarted || false
         };
         const { error } = await supabase.from('teams').upsert(payload);
         if (error) logError('registerTeam', error);
     } catch (e) { logError('registerTeam', e); }
+};
+
+export const updateTeamStatus = async (teamId: string, isStarted: boolean) => {
+    try {
+        const { error } = await supabase.from('teams').update({ 
+            is_started: isStarted,
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+        if (error) logError('updateTeamStatus', error);
+    } catch (e) { logError('updateTeamStatus', e); }
 };
 
 export const updateTeamProgress = async (teamId: string, completedPointId: string, newScore: number) => {
