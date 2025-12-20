@@ -206,3 +206,72 @@ export const findCompanyDomain = async (topic: string): Promise<string | null> =
     return null;
   }
 };
+
+export const generateTaskFromImage = async (base64Image: string): Promise<TaskTemplate | null> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image', // Using vision model
+            contents: {
+                parts: [
+                    {
+                        inlineData: {
+                            mimeType: 'image/jpeg',
+                            data: base64Image.split(',')[1] // Remove data:image/jpeg;base64, prefix
+                        }
+                    },
+                    {
+                        text: `Analyze this image and create a single fun scavenger hunt task based on what you see. 
+                        Return JSON format ONLY:
+                        {
+                            "title": "Short Title",
+                            "question": "The question or challenge...",
+                            "type": "text" | "multiple_choice" | "boolean",
+                            "options": ["opt1", "opt2"] (only if multiple_choice),
+                            "answer": "Correct Answer",
+                            "hint": "Hint...",
+                            "iconId": "camera" | "question" | "star"
+                        }`
+                    }
+                ]
+            }
+        });
+
+        // Parse response (handle Markdown code blocks)
+        let text = response.text || '';
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const data = JSON.parse(text);
+
+        return {
+            id: `ai-img-${Date.now()}`,
+            title: data.title || "Image Task",
+            task: {
+                type: (data.type as TaskType) || 'text',
+                question: data.question || "What do you see?",
+                options: data.options,
+                answer: data.answer,
+                imageUrl: base64Image // Attach the original image
+            },
+            iconId: (data.iconId as IconId) || 'camera',
+            tags: ['image-generated'],
+            createdAt: Date.now(),
+            points: 100,
+            feedback: {
+                correctMessage: 'Correct!',
+                showCorrectMessage: true,
+                incorrectMessage: 'Incorrect, try again.',
+                showIncorrectMessage: true,
+                hint: data.hint || '',
+                hintCost: 10
+            },
+            settings: {
+                language: 'English',
+                scoreDependsOnSpeed: false,
+                showAnswerStatus: true,
+                showCorrectAnswerOnMiss: false
+            }
+        };
+    } catch (e) {
+        console.error("Image to task failed", e);
+        return null;
+    }
+};

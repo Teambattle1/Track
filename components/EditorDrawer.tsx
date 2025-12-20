@@ -39,11 +39,12 @@ const SortablePointItem: React.FC<{
   const [dragOffset, setDragOffset] = useState(0);
   const startX = useRef<number | null>(null);
   const itemRef = useRef<HTMLDivElement>(null);
+  const isSwiping = useRef(false);
   
   // DND Kit Transform takes precedence during sorting
   const style = { 
       transform: CSS.Transform.toString(transform), 
-      transition: isDragging ? 'none' : 'transform 0.2s', 
+      transition: isDragging || isSwiping.current ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)', 
       zIndex: isDragging ? 999 : 'auto', 
       opacity: isDragging ? 0.8 : 1,
       touchAction: 'pan-y' // Allow vertical scroll, handle horizontal manually
@@ -65,6 +66,7 @@ const SortablePointItem: React.FC<{
   const handleTouchStart = (e: React.TouchEvent) => {
       if (isDragging) return;
       startX.current = e.touches[0].clientX;
+      isSwiping.current = true;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -74,25 +76,34 @@ const SortablePointItem: React.FC<{
       
       // Only allow swipe right (positive diff)
       if (diff > 0) {
-          setDragOffset(Math.min(diff, 200)); // Cap at 200px
+          setDragOffset(Math.min(diff, 150)); // Cap visual drag
       }
   };
 
   const handleTouchEnd = () => {
-      if (dragOffset > 100) {
-          // Threshold met - delete
-          onDelete(point.id);
+      isSwiping.current = false;
+      if (dragOffset > 80) {
+          // Threshold met - trigger delete
+          // Visual feedback before deletion
+          setDragOffset(500); // Fly off screen
+          setTimeout(() => onDelete(point.id), 200);
+      } else {
+          // Snap back
+          setDragOffset(0);
       }
-      setDragOffset(0);
       startX.current = null;
   };
 
   return (
-    <div className="relative overflow-hidden my-1 rounded-r-xl touch-pan-y">
-        {/* Swipe Background Action (Delete) */}
+    <div className="relative overflow-hidden my-1 rounded-r-xl touch-pan-y group">
+        {/* Swipe Background Action (Delete) - Visible when swiping right */}
         <div 
-            className="absolute inset-y-0 left-0 bg-red-500 flex items-center justify-start pl-6 text-white rounded-r-xl transition-all"
-            style={{ width: `${Math.max(0, dragOffset)}px`, opacity: dragOffset > 0 ? 1 : 0 }}
+            className="absolute inset-y-0 left-0 bg-red-500 flex items-center justify-start pl-4 text-white rounded-r-xl transition-all"
+            style={{ 
+                width: `${Math.max(0, dragOffset)}px`, 
+                opacity: dragOffset > 0 ? 1 : 0,
+                zIndex: 0
+            }}
         >
             <Trash2 className="w-5 h-5" />
         </div>
@@ -136,8 +147,8 @@ const SortablePointItem: React.FC<{
                 </div>
             </div>
             
-            {/* Action Buttons (Desktop fallback / Quick actions) */}
-            <div className="flex gap-1 pl-2 border-l border-gray-100 dark:border-gray-700">
+            {/* Action Buttons (Visible on desktop / hidden on swipe) */}
+            <div className={`flex gap-1 pl-2 border-l border-gray-100 dark:border-gray-700 transition-opacity ${dragOffset > 0 ? 'opacity-0' : 'opacity-100'}`}>
                 <button 
                     onClick={(e) => { e.stopPropagation(); onEdit(point); }} 
                     className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"

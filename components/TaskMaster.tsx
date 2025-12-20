@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TaskTemplate, TaskList, GamePoint, IconId } from '../types';
-import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, CheckCircle2, ChevronRight, ListChecks, Globe, Home, ArrowLeft, Wand2, FilePlus, Sparkles } from 'lucide-react';
+import { X, Search, Plus, Tag, Layers, Edit2, Trash2, CheckSquare, FolderOpen, CheckCircle2, ChevronRight, ListChecks, Globe, Home, ArrowLeft, Wand2, FilePlus, Sparkles, Camera, Image as ImageIcon } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import TaskEditor from './TaskEditor';
 import AiTaskGenerator from './AiTaskGenerator';
+import { generateTaskFromImage } from '../services/ai';
 
 interface TaskMasterProps {
   library: TaskTemplate[];
@@ -40,6 +41,115 @@ const getFlagEmoji = (lang?: string) => {
     return '🌐';
 };
 
+// Sub-component for individual list items to handle swipe logic
+const TaskListItem: React.FC<{
+    list: TaskList;
+    isSelected: boolean;
+    onSelect: () => void;
+    onDelete: (id: string) => void;
+    isSelectionMode: boolean;
+}> = ({ list, isSelected, onSelect, onDelete, isSelectionMode }) => {
+    const ListIcon = ICON_COMPONENTS[list.iconId || 'default'];
+    
+    // Swipe State
+    const [dragOffset, setDragOffset] = useState(0);
+    const startX = useRef<number | null>(null);
+    const isSwiping = useRef(false);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (isSelectionMode) return;
+        startX.current = e.touches[0].clientX;
+        isSwiping.current = true;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (startX.current === null || isSelectionMode) return;
+        const currentX = e.touches[0].clientX;
+        const diff = currentX - startX.current;
+        if (diff > 0) { // Only allow swipe right
+            setDragOffset(Math.min(diff, 150));
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (isSelectionMode) return;
+        
+        if (dragOffset > 80) {
+            // Trigger delete on swipe threshold
+            if (confirm(`Delete list "${list.name}"? Tasks will remain in library.`)) {
+                onDelete(list.id);
+            }
+            setDragOffset(0);
+        } else {
+            // Snap back
+            setDragOffset(0);
+        }
+        startX.current = null;
+        isSwiping.current = false;
+    };
+
+    // Explicit delete button handler
+    const handleDeleteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (confirm(`Delete list "${list.name}"? Tasks will remain in library.`)) {
+            onDelete(list.id);
+        }
+    };
+
+    return (
+        <div className="relative overflow-hidden mb-2 rounded-xl group select-none">
+            {/* Swipe Background (Delete Action) */}
+            <div 
+                className="absolute inset-y-0 left-0 bg-red-500 flex items-center justify-start pl-4 text-white rounded-xl transition-all"
+                style={{ width: `${Math.max(0, dragOffset)}px`, opacity: dragOffset > 0 ? 1 : 0 }}
+            >
+                <Trash2 className="w-5 h-5" />
+            </div>
+
+            {/* List Content */}
+            <div 
+                onClick={onSelect}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className={`p-3 rounded-xl border cursor-pointer transition-transform relative overflow-hidden bg-white dark:bg-gray-900 
+                    ${isSelected 
+                        ? 'ring-2 ring-amber-500 border-transparent bg-amber-50 dark:bg-amber-900/10' 
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm'
+                    }
+                `}
+                style={{ transform: `translateX(${dragOffset}px)` }}
+            >
+                <div className="absolute left-0 top-0 bottom-0 w-2" style={{ backgroundColor: list.color }}></div>
+                
+                <div className="flex justify-between items-start pl-4">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0">
+                            <ListIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                        </div>
+                        <span className="font-bold text-gray-800 dark:text-gray-100 text-sm uppercase truncate">{list.name}</span>
+                    </div>
+                    
+                    {!isSelectionMode && (
+                        <button 
+                            onClick={handleDeleteClick} 
+                            className="p-2 -mr-2 -mt-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors z-10"
+                            title="Delete List"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+                
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-4 flex items-center justify-between uppercase tracking-wide">
+                    <span>{list.tasks.length} tasks</span>
+                    <ChevronRight className={`w-4 h-4 opacity-50 ${isSelected ? 'text-amber-500' : ''}`} />
+                </p>
+            </div>
+        </div>
+    );
+};
+
 const TaskMaster: React.FC<TaskMasterProps> = ({ 
   library, 
   lists, 
@@ -60,6 +170,10 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
   const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | null>(null);
   const [showAiGenerator, setShowAiGenerator] = useState(false);
   
+  // Create from Image State
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+
   // Bulk Edit State
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set());
@@ -194,6 +308,31 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
       setEditingTemplate(newTemplate);
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsAnalyzingImage(true);
+      
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+          const base64 = reader.result as string;
+          const task = await generateTaskFromImage(base64);
+          
+          if (task) {
+              // Add to library directly or prompt? Let's open editor
+              setEditingTemplate(task);
+          } else {
+              alert("Failed to analyze image. Try another.");
+          }
+          setIsAnalyzingImage(false);
+      };
+      reader.readAsDataURL(file);
+      
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   // Bulk Handlers
   const toggleBulkSelection = (id: string) => {
       const newSet = new Set(bulkSelectedIds);
@@ -230,6 +369,24 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
       alert(`Tag "${tag}" added to ${ids.length} tasks.`);
   };
 
+  // Tag Editor Logic
+  const deleteTagGlobally = (tagToDelete: string) => {
+      if (!confirm(`Delete tag "${tagToDelete}" from ALL tasks?`)) return;
+      
+      library.forEach(t => {
+          if (t.tags.includes(tagToDelete)) {
+              const newTags = t.tags.filter(tag => tag !== tagToDelete);
+              onSaveTemplate({ ...t, tags: newTags });
+          }
+      });
+      
+      // Update colors
+      const newColors = { ...tagColors };
+      delete newColors[tagToDelete];
+      setTagColors(newColors);
+      localStorage.setItem('geohunt_tag_colors', JSON.stringify(newColors));
+  };
+
   // List Handlers
   const handleCreateList = (e: React.FormEvent) => {
       e.preventDefault();
@@ -248,10 +405,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
   };
 
   const handleDeleteListHandler = (id: string) => {
-      if (confirm('Delete this list? Tasks will remain in the library.')) {
-          onDeleteList(id);
-          if (selectedListId === id) setSelectedListId(null);
-      }
+      onDeleteList(id);
+      if (selectedListId === id) setSelectedListId(null);
   };
 
   const toggleTaskInList = (template: TaskTemplate) => {
@@ -511,391 +666,14 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
           
           {/* CREATE TASK VIEW */}
           {activeTab === 'CREATE' && (
-              <div className="flex-1 flex items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 w-full animate-in fade-in duration-300">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                      <button 
-                          onClick={createNewTemplate}
-                          className="group relative h-48 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-3xl flex flex-col items-center justify-center shadow-lg hover:shadow-2xl hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all"
-                      >
-                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-300 group-hover:bg-indigo-600 group-hover:text-white transition-colors mb-4">
-                              <FilePlus className="w-8 h-8" />
-                          </div>
-                          <span className="text-xl font-black text-gray-800 dark:text-white uppercase tracking-widest">NEW TASK</span>
-                          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">MANUAL ENTRY</span>
-                      </button>
-
-                      <button 
-                          onClick={() => setShowAiGenerator(true)}
-                          className="group relative h-48 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-3xl flex flex-col items-center justify-center shadow-lg hover:shadow-2xl hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all"
-                      >
-                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-300 group-hover:bg-orange-600 group-hover:text-white transition-colors mb-4">
-                              <Wand2 className="w-8 h-8" />
-                          </div>
-                          <span className="text-xl font-black text-gray-800 dark:text-white uppercase tracking-widest">AI TASK</span>
-                          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1 group-hover:text-orange-600 dark:group-hover:text-orange-400">AUTO-GENERATE</span>
-                      </button>
-                  </div>
-              </div>
-          )}
-
-          {/* LISTS VIEW */}
-          {activeTab === 'LISTS' && (
-              <div className="flex-1 flex flex-col md:flex-row h-full w-full">
+              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 w-full animate-in fade-in duration-300 overflow-y-auto">
                   
-                  {/* Left Sidebar: List of Lists */}
-                  <div className={`w-full md:w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col ${selectedListId ? 'hidden md:flex' : 'flex'}`}>
-                      {!isSelectionMode && (
-                        <div className="p-4 border-b border-gray-100 dark:border-gray-800">
-                            <form onSubmit={handleCreateList} className="space-y-3">
-                                <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase">NEW LIST NAME</label>
-                                    <div className="flex gap-2">
-                                        <input 
-                                            type="text" 
-                                            value={newListName}
-                                            onChange={(e) => setNewListName(e.target.value)}
-                                            placeholder="e.g. History Tasks"
-                                            className="flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                                        />
-                                        <button disabled={!newListName} type="submit" className="bg-amber-500 text-white p-2 rounded-lg hover:bg-amber-600 disabled:opacity-50">
-                                            <Plus className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                                {/* Icon & Color Picker */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">LIST ICON & COLOR</label>
-                                    <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-                                        {ICONS.map(icon => {
-                                            const Icon = ICON_COMPONENTS[icon];
-                                            return (
-                                                <button
-                                                    key={icon}
-                                                    type="button"
-                                                    onClick={() => setNewListIcon(icon)}
-                                                    className={`p-1.5 rounded-lg border ${newListIcon === icon ? 'bg-amber-100 border-amber-500' : 'bg-gray-50 border-gray-200'}`}
-                                                >
-                                                    <Icon className="w-4 h-4 text-gray-600" />
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                    <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-                                        {COLORS.map(c => (
-                                            <button
-                                                key={c}
-                                                type="button"
-                                                onClick={() => setNewListColor(c)}
-                                                className={`w-6 h-6 rounded-full border-2 ${newListColor === c ? 'border-gray-600 dark:border-gray-300 scale-110' : 'border-transparent'}`}
-                                                style={{ backgroundColor: c }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                      )}
-                      <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                          {lists.map(list => {
-                              const ListIcon = ICON_COMPONENTS[list.iconId || 'default'];
-                              return (
-                              <div 
-                                key={list.id}
-                                onClick={() => setSelectedListId(list.id)}
-                                className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm relative overflow-hidden ${selectedListId === list.id ? 'bg-gray-50 dark:bg-gray-800 ring-1 ring-gray-300 dark:ring-gray-600' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'}`}
-                              >
-                                  <div className="absolute left-0 top-0 bottom-0 w-2" style={{ backgroundColor: list.color }}></div>
-                                  <div className="flex justify-between items-start pl-4">
-                                      <div className="flex items-center gap-2">
-                                          <div className="p-1 rounded bg-gray-100 dark:bg-gray-700">
-                                              <ListIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                          </div>
-                                          <span className="font-bold text-gray-800 dark:text-gray-100 text-sm uppercase">{list.name}</span>
-                                      </div>
-                                      {!isSelectionMode && (
-                                          <button onClick={(e) => { e.stopPropagation(); handleDeleteListHandler(list.id); }} className="text-gray-400 hover:text-red-500">
-                                              <Trash2 className="w-4 h-4" />
-                                          </button>
-                                      )}
-                                  </div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-4 flex items-center justify-between uppercase tracking-wide">
-                                      <span>{list.tasks.length} tasks</span>
-                                      <ChevronRight className="w-4 h-4 opacity-50" />
-                                  </p>
-                              </div>
-                          )})}
-                          {lists.length === 0 && (
-                              <p className="text-center text-gray-400 text-sm py-10 uppercase tracking-wide">NO LISTS CREATED YET.</p>
-                          )}
-                      </div>
-                  </div>
-
-                  {/* Right Panel: List Details */}
-                  {selectedList ? (
-                      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-800 h-full overflow-hidden absolute inset-0 md:static z-20">
-                          <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm z-10" style={{ borderTop: `4px solid ${selectedList.color}` }}>
-                              <div className="flex items-center gap-3">
-                                  <button onClick={() => setSelectedListId(null)} className="md:hidden text-gray-500">
-                                      <ArrowLeft className="w-6 h-6" />
-                                  </button>
-                                  <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 uppercase">
-                                      {selectedList.name}
-                                  </h2>
-                                  <span className="text-white text-xs px-2 py-1 rounded-full font-bold uppercase" style={{ backgroundColor: selectedList.color }}>
-                                    {selectedList.tasks.length} TASKS
-                                  </span>
-                              </div>
-                              <div className="flex gap-2">
-                                {!isSelectionMode && (
-                                    <>
-                                        <button 
-                                            onClick={() => setShowTagEditor(true)}
-                                            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-bold hover:bg-gray-300 dark:hover:bg-gray-600 shadow-sm flex items-center gap-2 uppercase text-xs tracking-wider"
-                                        >
-                                            <Tag className="w-4 h-4" /> TAG EDITOR
-                                        </button>
-                                        <button 
-                                            onClick={() => setIsAddingToList(true)}
-                                            className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg font-bold hover:bg-blue-200 dark:hover:bg-blue-900/50 shadow-sm flex items-center gap-2 uppercase text-xs tracking-wider"
-                                        >
-                                            <Plus className="w-4 h-4" /> ADD FROM LIBRARY
-                                        </button>
-                                        <button 
-                                            onClick={() => { onCreateGameFromList(selectedList.id); onClose(); }}
-                                            className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 shadow-sm flex items-center gap-2 uppercase text-xs tracking-wider"
-                                        >
-                                            <Layers className="w-4 h-4" /> CREATE GAME
-                                        </button>
-                                    </>
-                                )}
-                                {isSelectionMode && (
-                                    <button 
-                                        onClick={() => {
-                                            selectedList.tasks.forEach(t => {
-                                                if (!selectedTasksBuffer.find(st => st.id === t.id)) {
-                                                    toggleSelectionBuffer(t);
-                                                }
-                                            });
-                                        }}
-                                        className="bg-orange-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-700 shadow-sm flex items-center gap-2 uppercase text-xs tracking-wider"
-                                    >
-                                        <CheckSquare className="w-4 h-4" /> SELECT ALL
-                                    </button>
-                                )}
-                              </div>
-                          </div>
-
-                          <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 p-4">
-                              <div className="flex justify-between items-center mb-3 px-1">
-                                  <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">TASKS IN LIST</h3>
-                              </div>
-
-                              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-                                  {selectedList.tasks.map(task => renderTaskRow(task, 'list'))}
-                                  {selectedList.tasks.length === 0 && (
-                                      <div className="text-center py-12 px-4">
-                                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-300 dark:text-gray-600">
-                                              <Layers className="w-8 h-8" />
-                                          </div>
-                                          <p className="text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">THIS LIST IS EMPTY.</p>
-                                          {!isSelectionMode && (
-                                              <button onClick={() => setIsAddingToList(true)} className="mt-2 text-sm font-bold uppercase tracking-wide" style={{ color: selectedList.color }}>
-                                                  BROWSE LIBRARY TO ADD TASKS
-                                              </button>
-                                          )}
-                                      </div>
-                                  )}
-                              </div>
-                          </div>
-                      </div>
-                  ) : (
-                      <div className="hidden md:flex flex-1 items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-400 flex-col gap-4">
-                          <Layers className="w-16 h-16 opacity-20" />
-                          <p className="uppercase tracking-widest font-bold">SELECT A LIST TO VIEW TASKS</p>
+                  {isAnalyzingImage && (
+                      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center text-white flex-col gap-4 animate-in fade-in">
+                          <Sparkles className="w-12 h-12 text-orange-400 animate-spin" />
+                          <p className="font-bold text-lg uppercase tracking-wider animate-pulse">ANALYZING IMAGE WITH AI...</p>
                       </div>
                   )}
-              </div>
-          )}
 
-          {/* LIBRARY VIEW (Or "Add to List" Overlay) */}
-          {(activeTab === 'LIBRARY' || isAddingToList) && (
-             <div className={`flex-1 flex flex-col bg-gray-50 dark:bg-gray-800 h-full w-full absolute inset-0 z-30 md:static ${isAddingToList ? 'animate-in slide-in-from-bottom-10' : ''}`}>
-                 
-                 {/* Library Header */}
-                 <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-3 shadow-sm z-10">
-                     <div className="flex items-center justify-between">
-                         <h2 className="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2 uppercase">
-                             {isAddingToList ? (
-                                 <>
-                                    <button onClick={() => setIsAddingToList(false)} className="bg-gray-100 dark:bg-gray-800 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><X className="w-5 h-5" /></button>
-                                    ADD TO "{selectedList?.name}"
-                                 </>
-                             ) : 'TASK LIBRARY'}
-                         </h2>
-                         {!isAddingToList && !isSelectionMode && (
-                             <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={() => { setIsBulkMode(!isBulkMode); setBulkSelectedIds(new Set()); }}
-                                    className={`px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-2 border transition-all uppercase tracking-wide ${isBulkMode ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
-                                >
-                                    <ListChecks className="w-4 h-4" /> BULK EDIT
-                                </button>
-                                <button 
-                                    onClick={() => setShowAiGenerator(true)}
-                                    className="bg-orange-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-orange-700 flex items-center gap-2 shadow-sm border border-orange-500 uppercase tracking-wide"
-                                >
-                                    AI TASKS
-                                </button>
-                                <button 
-                                    onClick={createNewTemplate}
-                                    className="bg-gray-900 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-800 flex items-center gap-2 shadow-sm uppercase tracking-wide"
-                                >
-                                    <Plus className="w-4 h-4" /> NEW TASK
-                                </button>
-                             </div>
-                         )}
-                     </div>
-                     <div className="flex gap-2">
-                         <div className="relative flex-1">
-                             <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                             <input 
-                                type="text" 
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search by title or tags..."
-                                className="w-full pl-9 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border-transparent rounded-lg focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-orange-500 outline-none transition-all text-gray-900 dark:text-white"
-                             />
-                         </div>
-                         <div className="relative w-40">
-                             <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                             <select
-                                value={languageFilter}
-                                onChange={(e) => setLanguageFilter(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 bg-gray-100 dark:bg-gray-800 border-transparent rounded-lg focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-orange-500 outline-none transition-all text-gray-900 dark:text-white appearance-none cursor-pointer"
-                             >
-                                <option value="All">All Languages</option>
-                                {availableLanguages.map(lang => (
-                                    <option key={lang} value={lang}>{getFlagEmoji(lang)} {lang.split(' ')[0]}</option>
-                                ))}
-                             </select>
-                         </div>
-                     </div>
-                 </div>
-
-                 {/* Library List */}
-                 <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 p-4 pb-24">
-                     <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-                         {filteredLibrary.map(template => renderTaskRow(template, 'library'))}
-                         {filteredLibrary.length === 0 && (
-                             <div className="py-20 text-center">
-                                 <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-300 dark:text-gray-600">
-                                     <Search className="w-8 h-8" />
-                                 </div>
-                                 <p className="text-gray-500 dark:text-gray-400 uppercase tracking-wide">NO TASKS FOUND MATCHING YOUR SEARCH.</p>
-                             </div>
-                         )}
-                     </div>
-                 </div>
-
-                 {/* Bulk Edit Floating Panel */}
-                 {isBulkMode && bulkSelectedIds.size > 0 && (
-                     <div className="absolute bottom-4 left-4 right-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl p-4 rounded-xl flex items-center justify-between gap-4 animate-in slide-in-from-bottom-4 z-20">
-                         <div className="flex items-center gap-3">
-                             <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold px-3 py-1 rounded-full text-sm">
-                                 {bulkSelectedIds.size} SELECTED
-                             </div>
-                             <span className="text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wide">ADD TAG TO SELECTED:</span>
-                         </div>
-                         <div className="flex items-center gap-2 flex-1 max-w-sm">
-                             <div className="relative flex-1">
-                                 <Tag className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                 <input 
-                                    type="text" 
-                                    value={bulkTagInput}
-                                    onChange={(e) => setBulkTagInput(e.target.value)}
-                                    placeholder="Enter tag name..."
-                                    className="w-full pl-9 pr-3 py-2 border rounded-lg bg-gray-50 dark:bg-gray-900 text-sm outline-none focus:ring-2 focus:ring-amber-500"
-                                 />
-                             </div>
-                             <button 
-                                onClick={handleBulkAddTag}
-                                disabled={!bulkTagInput.trim()}
-                                className="bg-amber-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-600 disabled:opacity-50 transition-colors uppercase tracking-wide"
-                             >
-                                 ADD TAG
-                             </button>
-                         </div>
-                         <button onClick={() => setBulkSelectedIds(new Set())} className="text-gray-400 hover:text-red-500">
-                             <X className="w-5 h-5" />
-                         </button>
-                     </div>
-                 )}
-             </div>
-          )}
-
-      </div>
-
-      {/* Template Editor Modal */}
-      {editingTemplate && (
-          <TaskEditor 
-            point={convertTemplateToPoint(editingTemplate)}
-            onSave={handleSaveTemplate}
-            onClone={handleCloneTemplate}
-            onDelete={(id) => handleDeleteTemplateHandler(id)}
-            onClose={() => setEditingTemplate(null)}
-            isTemplateMode={true}
-          />
-      )}
-
-      {/* AI Task Generator Modal */}
-      {showAiGenerator && (
-          <AiTaskGenerator 
-              onClose={() => setShowAiGenerator(false)}
-              onAddTasks={handleAiTasksAdded}
-          />
-      )}
-
-      {/* TAG EDITOR MODAL */}
-      {showTagEditor && (
-          <div className="fixed inset-0 z-[1300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-              <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-                      <h3 className="font-bold text-lg text-gray-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
-                          <Tag className="w-5 h-5" /> TAG EDITOR
-                      </h3>
-                      <button onClick={() => setShowTagEditor(false)}><X className="w-5 h-5 text-gray-500" /></button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                      {allTags.length === 0 && <p className="text-center text-gray-400 italic">No tags found in library.</p>}
-                      {allTags.map(tag => (
-                          <div key={tag} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <span className="font-bold text-gray-700 dark:text-gray-200 text-sm uppercase">{tag}</span>
-                              <div className="flex gap-1">
-                                  {COLORS.map(c => (
-                                      <button 
-                                          key={c}
-                                          onClick={() => {
-                                              const newColors = { ...tagColors, [tag]: c };
-                                              setTagColors(newColors);
-                                              localStorage.setItem('geohunt_tag_colors', JSON.stringify(newColors));
-                                          }}
-                                          className={`w-6 h-6 rounded-full border-2 ${tagColors[tag] === c ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'}`}
-                                          style={{ backgroundColor: c }}
-                                      />
-                                  ))}
-                              </div>
-                          </div>
-                      ))}
-                  </div>
-                  <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                      <button onClick={() => setShowTagEditor(false)} className="w-full py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-bold uppercase tracking-wider text-sm hover:bg-gray-300 dark:hover:bg-gray-600">CLOSE</button>
-                  </div>
-              </div>
-          </div>
-      )}
-
-    </div>
-  );
-};
-
-export default TaskMaster;
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                      <button 
