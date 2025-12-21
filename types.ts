@@ -140,6 +140,17 @@ export interface Playground {
   buttonVisible: boolean; // If true, shows in HUD
   buttonLabel?: string;
   iconId?: IconId;
+  iconUrl?: string; // New: Custom icon for the HUD button
+}
+
+// Template for saving to library
+export interface PlaygroundTemplate {
+  id: string;
+  title: string;
+  playgroundData: Playground; // The playground settings
+  tasks: GamePoint[]; // The tasks relative to this playground
+  createdAt: number;
+  isGlobal: boolean;
 }
 
 export interface GamePoint {

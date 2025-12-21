@@ -19,7 +19,10 @@ import LocationSearch from './components/LocationSearch.tsx';
 import AiTaskGenerator from './components/AiTaskGenerator.tsx';
 import PlaygroundModal from './components/PlaygroundModal.tsx';
 import PlaygroundEditor from './components/PlaygroundEditor.tsx';
-import { GamePoint, Coordinate, GameState, GameMode, Game, MapStyleId, Language, Team, TaskTemplate, GameAction } from './types.ts';
+import PlaygroundLibraryModal from './components/PlaygroundLibraryModal.tsx';
+import TaskEditor from './components/TaskEditor.tsx';
+import TeamDashboard from './components/TeamDashboard.tsx'; // Import new component
+import { GamePoint, Coordinate, GameState, GameMode, Game, MapStyleId, Language, Team, TaskTemplate, GameAction, PlaygroundTemplate } from './types.ts';
 import { haversineMeters, isWithinRadius, formatDistance } from './utils/geo.ts';
 import { X, ChevronDown, AlertTriangle, CheckCircle, RefreshCw, Plus, Wand2, Library, MapPin, Ruler, RotateCcw, Check, PenTool } from 'lucide-react';
 import * as db from './services/db.ts';
@@ -45,6 +48,7 @@ const App: React.FC = () => {
   const [mapStyle, setMapStyle] = useState<MapStyleId>('osm'); 
   const [appLanguage, setAppLanguage] = useState<Language>('English');
   const [selectedPoint, setSelectedPoint] = useState<GamePoint | null>(null);
+  const [editingPoint, setEditingPoint] = useState<GamePoint | null>(null); // Separate state for editor
   
   const [showGameChooser, setShowGameChooser] = useState(false);
   const [showTaskMaster, setShowTaskMaster] = useState(false);
@@ -57,7 +61,9 @@ const App: React.FC = () => {
   const [showAdminModal, setShowAdminModal] = useState(false); 
   const [showInstructorDashboard, setShowInstructorDashboard] = useState(false); 
   const [showPlaygroundEditor, setShowPlaygroundEditor] = useState(false);
+  const [showPlaygroundLibrary, setShowPlaygroundLibrary] = useState(false);
   const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
+  const [showTeamDashboard, setShowTeamDashboard] = useState(false); // New State for Team Dashboard
 
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [forceExpandDrawer, setForceExpandDrawer] = useState(false);
@@ -213,9 +219,10 @@ const App: React.FC = () => {
       db.saveGame(updatedGame);
   };
 
-  const handleAddManualTask = (overrideLoc?: Coordinate) => {
+  const handleAddManualTask = (overrideLoc?: Coordinate, targetPlaygroundId?: string) => {
       if (!activeGame) return;
       const center = overrideLoc || mapRef.current?.getCenter() || gameState.userLocation || { lat: 0, lng: 0 };
+      
       const newPoint: GamePoint = { 
           id: `pt-${Date.now()}`, 
           title: 'New Task', 
@@ -227,13 +234,75 @@ const App: React.FC = () => {
           isCompleted: false, 
           activationTypes: ['radius'], 
           order: activeGame.points.length, 
-          task: { question: 'New Question?', type: 'text' } 
+          task: { question: 'New Question?', type: 'text' },
+          playgroundId: targetPlaygroundId,
+          playgroundPosition: targetPlaygroundId ? { x: 50, y: 50 } : undefined
       }; 
       updateActiveGame({...activeGame, points: [...activeGame.points, newPoint]});
-      setSelectedPoint(newPoint);
+      if(targetPlaygroundId) {
+          // If in playground, likely just show in list or select for editing
+          setEditingPoint(newPoint);
+      } else {
+          setSelectedPoint(newPoint);
+          setEditingPoint(newPoint);
+      }
       setShowAddMenu(false);
       setPendingClickLocation(null);
       targetLocationRef.current = null;
+      targetPlaygroundIdRef.current = null;
+  };
+
+  const handleAddPlaygroundTask = (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId: string) => {
+      if (type === 'MANUAL') {
+          handleAddManualTask(undefined, playgroundId);
+      } else if (type === 'AI') {
+          targetPlaygroundIdRef.current = playgroundId;
+          setShowAiGenerator(true);
+      } else if (type === 'LIBRARY') {
+          targetPlaygroundIdRef.current = playgroundId;
+          setTaskMasterTab('LIBRARY');
+          setTaskMasterSelectionMode(true);
+          setShowTaskMaster(true);
+      }
+  };
+
+  const handleImportPlayground = (template: PlaygroundTemplate) => {
+      if (!activeGame) return;
+      
+      // Deep Copy Logic
+      const newPlaygroundId = `pg-${Date.now()}`;
+      
+      // 1. Clone Playground Metadata
+      const newPlayground = {
+          ...template.playgroundData,
+          id: newPlaygroundId,
+          title: `${template.title} (Copy)`
+      };
+
+      // 2. Clone Tasks & Remap IDs
+      const newTasks = template.tasks.map((task, index) => {
+          return {
+              ...task,
+              id: `pt-${Date.now()}-${index}`, // New ID
+              playgroundId: newPlaygroundId, // Map to new playground
+              playgroundPosition: task.playgroundPosition || { x: 50, y: 50 },
+              location: { lat: 0, lng: 0 }, // Reset GPS location as it's virtual
+              order: activeGame.points.length + index
+          };
+      });
+
+      // 3. Update Game
+      const updatedPlaygrounds = [...(activeGame.playgrounds || []), newPlayground];
+      const updatedPoints = [...activeGame.points, ...newTasks];
+
+      updateActiveGame({ 
+          ...activeGame, 
+          playgrounds: updatedPlaygrounds,
+          points: updatedPoints 
+      });
+
+      setShowPlaygroundLibrary(false);
+      alert("Playground imported successfully! It is now part of this game.");
   };
 
   const handleAddTasksFromLibrary = (tasks: TaskTemplate[]) => {
@@ -407,7 +476,11 @@ const App: React.FC = () => {
           return;
       }
 
-      setSelectedPoint(p);
+      if (mode === GameMode.EDIT) {
+          setEditingPoint(p);
+      } else {
+          setSelectedPoint(p);
+      }
   };
 
   const handleCompleteTask = (id: string, customScore?: number) => {
@@ -437,6 +510,22 @@ const App: React.FC = () => {
 
   const currentDrawSourcePoint = activeGame?.points.find(p => p.id === drawSourcePointId);
   const currentLinkedCount = currentDrawSourcePoint?.logic?.[drawTriggerType]?.filter(a => a.type === 'unlock').length || 0;
+
+  // Calculate Nearest Point Distance
+  const nearestPointDistance = useMemo(() => {
+      if (!activeGame || !gameState.userLocation) return null;
+      // Filter out completed, section headers, AND playground tasks (which don't have geo coords usually)
+      const uncompletedPoints = activeGame.points.filter(p => 
+          !completedPointIds.includes(p.id) && 
+          !p.isSectionHeader && 
+          !p.playgroundId
+      );
+      
+      if (uncompletedPoints.length === 0) return null;
+      
+      const distances = uncompletedPoints.map(p => haversineMeters(gameState.userLocation!, p.location));
+      return Math.min(...distances);
+  }, [activeGame, completedPointIds, gameState.userLocation]);
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-slate-950 font-sans">
@@ -597,13 +686,16 @@ const App: React.FC = () => {
                 onToggleMeasure={() => { setIsMeasuring(!isMeasuring); setMeasurePathIds([]); }}
                 playgrounds={activeGame?.playgrounds}
                 onOpenPlayground={(id) => setActivePlaygroundId(id)}
+                onOpenTeamDashboard={() => setShowTeamDashboard(true)}
               />
               
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 h-12 pointer-events-auto">
-                  {mode !== GameMode.EDIT && (
+                  {mode === GameMode.INSTRUCTOR && (
                     <button onClick={() => setShowGameChooser(true)} className="h-12 bg-orange-600 hover:bg-orange-700 text-white px-5 rounded-2xl shadow-2xl flex items-center justify-center gap-2 border border-white/10 shrink-0"><span className="font-black text-xs uppercase tracking-widest truncate max-w-[150px]">{activeGame?.name || "SELECT"}</span><ChevronDown className="w-4 h-4 opacity-50" /></button>
                   )}
-                  <LocationSearch onSelectLocation={(coord) => mapRef.current?.jumpTo(coord)} onLocateMe={() => { if (gameState.userLocation) mapRef.current?.jumpTo(gameState.userLocation); }} onFitBounds={() => { if (activeGame && activeGame.points.length) mapRef.current?.fitBounds(activeGame.points); }} />
+                  {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
+                      <LocationSearch onSelectLocation={(coord) => mapRef.current?.jumpTo(coord)} onLocateMe={() => { if (gameState.userLocation) mapRef.current?.jumpTo(gameState.userLocation); }} onFitBounds={() => { if (activeGame && activeGame.points.length) mapRef.current?.fitBounds(activeGame.points); }} />
+                  )}
               </div>
 
               {/* Floating Add Menu for Editor Mode */}
@@ -685,7 +777,7 @@ const App: React.FC = () => {
                   onOpenGameChooser={() => setShowGameChooser(true)}
                   sourceListId={sourceListId} 
                   onSetSourceListId={setSourceListId} 
-                  onEditPoint={(p) => setSelectedPoint(p)} 
+                  onEditPoint={(p) => { setEditingPoint(p); }} 
                   onSelectPoint={(p) => { setSelectedPoint(p); mapRef.current?.jumpTo(p.location); }} 
                   onDeletePoint={(id) => { 
                       if(!activeGame) return; 
@@ -708,7 +800,7 @@ const App: React.FC = () => {
                   initialExpanded={forceExpandDrawer}
                 />
               )}
-              {mode === GameMode.PLAY && activeGame && <GameStats score={gameState.score} pointsCount={{ total: displayPoints.filter(p => !p.isSectionHeader).length, completed: completedPointIds.length }} nearestPointDistance={null} language={appLanguage} />}
+              {mode === GameMode.PLAY && activeGame && <GameStats score={gameState.score} pointsCount={{ total: displayPoints.filter(p => !p.isSectionHeader).length, completed: completedPointIds.length }} nearestPointDistance={nearestPointDistance} language={appLanguage} />}
           </>
       )}
 
@@ -718,13 +810,16 @@ const App: React.FC = () => {
               game={activeGame} 
               onUpdateGame={updateActiveGame} 
               onClose={() => setShowPlaygroundEditor(false)}
-              onEditPoint={setSelectedPoint}
-              onCreateTask={(pgId) => {
-                  targetPlaygroundIdRef.current = pgId;
-                  setTaskMasterTab('LIBRARY'); 
-                  setTaskMasterSelectionMode(true); 
-                  setShowTaskMaster(true); 
-              }}
+              onEditPoint={setEditingPoint}
+              onAddTask={handleAddPlaygroundTask}
+              onOpenLibrary={() => setShowPlaygroundLibrary(true)}
+          />
+      )}
+
+      {showPlaygroundLibrary && (
+          <PlaygroundLibraryModal 
+              onClose={() => setShowPlaygroundLibrary(false)}
+              onImport={handleImportPlayground}
           />
       )}
 
@@ -735,6 +830,39 @@ const App: React.FC = () => {
               onClose={() => setActivePlaygroundId(null)}
               onPointClick={setSelectedPoint}
               mode={mode}
+          />
+      )}
+
+      {showTeamDashboard && gameState.teamId && gameState.activeGameId && (
+          <TeamDashboard 
+              teamId={gameState.teamId} 
+              gameId={gameState.activeGameId} 
+              onClose={() => setShowTeamDashboard(false)} 
+          />
+      )}
+
+      {editingPoint && (
+          <TaskEditor 
+              point={editingPoint} 
+              onSave={(updatedPoint) => {
+                  if (!activeGame) return;
+                  const updatedPoints = activeGame.points.map(p => p.id === updatedPoint.id ? updatedPoint : p);
+                  updateActiveGame({ ...activeGame, points: updatedPoints });
+                  setEditingPoint(null);
+              }}
+              onDelete={(id) => {
+                  if (!activeGame) return;
+                  const updatedPoints = activeGame.points.filter(p => p.id !== id);
+                  updateActiveGame({ ...activeGame, points: updatedPoints });
+                  setEditingPoint(null);
+              }}
+              onClose={() => setEditingPoint(null)}
+              onClone={(p) => {
+                  if (!activeGame) return;
+                  const cloned = { ...p, id: `pt-clone-${Date.now()}`, title: `${p.title} (Copy)`, order: activeGame.points.length, location: { lat: p.location.lat + 0.0001, lng: p.location.lng + 0.0001 } };
+                  updateActiveGame({ ...activeGame, points: [...activeGame.points, cloned] });
+                  setEditingPoint(cloned);
+              }}
           />
       )}
 
@@ -873,4 +1001,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default App

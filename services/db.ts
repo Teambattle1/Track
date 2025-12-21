@@ -1,6 +1,6 @@
 
 import { supabase } from '../lib/supabase.ts';
-import { Game, TaskTemplate, TaskList, Team, TeamMemberData } from '../types.ts';
+import { Game, TaskTemplate, TaskList, Team, TeamMemberData, PlaygroundTemplate } from '../types.ts';
 
 const logError = (context: string, error: any) => {
     const message = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
@@ -110,6 +110,36 @@ export const updateTeamStatus = async (teamId: string, isStarted: boolean) => {
     } catch (e) { logError('updateTeamStatus', e); }
 };
 
+export const updateTeamName = async (teamId: string, name: string) => {
+    try {
+        const { error } = await supabase.from('teams').update({ 
+            name: name,
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+        if (error) logError('updateTeamName', error);
+    } catch (e) { logError('updateTeamName', e); }
+};
+
+export const updateTeamCaptain = async (teamId: string, captainDeviceId: string) => {
+    try {
+        const { error } = await supabase.from('teams').update({ 
+            captain_device_id: captainDeviceId,
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+        if (error) logError('updateTeamCaptain', error);
+    } catch (e) { logError('updateTeamCaptain', e); }
+};
+
+export const updateTeamMembers = async (teamId: string, members: TeamMemberData[]) => {
+    try {
+        const { error } = await supabase.from('teams').update({ 
+            members: members,
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+        if (error) logError('updateTeamMembers', error);
+    } catch (e) { logError('updateTeamMembers', e); }
+};
+
 export const updateTeamProgress = async (teamId: string, completedPointId: string, newScore: number) => {
     try {
         const team = await fetchTeam(teamId);
@@ -188,4 +218,42 @@ export const deleteTaskList = async (id: string) => {
     const { error } = await supabase.from('task_lists').delete().eq('id', id);
     if (error) logError('deleteTaskList', error);
   } catch (e) { logError('deleteTaskList', e); }
+};
+
+// --- PLAYGROUND LIBRARY ---
+
+export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> => {
+    try {
+        const { data, error } = await supabase.from('playground_library').select('*');
+        if (error) { 
+            // Silent fail if table doesn't exist yet (admin needs to create it)
+            if (error.code === '42P01') console.log("Playground library table missing");
+            else logError('fetchPlaygroundLibrary', error); 
+            return []; 
+        }
+        return data ? data.map((row: any) => ({
+            id: row.id,
+            title: row.title,
+            isGlobal: row.is_global,
+            playgroundData: row.data.playgroundData,
+            tasks: row.data.tasks,
+            createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now()
+        })) : [];
+    } catch (e) { logError('fetchPlaygroundLibrary', e); return []; }
+};
+
+export const savePlaygroundTemplate = async (template: PlaygroundTemplate) => {
+    try {
+        const { error } = await supabase.from('playground_library').upsert({
+            id: template.id,
+            title: template.title,
+            is_global: template.isGlobal,
+            data: { 
+                playgroundData: template.playgroundData,
+                tasks: template.tasks 
+            },
+            updated_at: new Date().toISOString()
+        });
+        if (error) logError('savePlaygroundTemplate', error);
+    } catch (e) { logError('savePlaygroundTemplate', e); }
 };

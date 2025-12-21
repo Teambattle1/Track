@@ -35,18 +35,27 @@ ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public games access" ON public.games FOR ALL USING (true) WITH CHECK (true);
 
 -- 2. Create TEAMS table
+-- Note: 'members' uses JSONB to store [{name, photo, deviceId}]
 CREATE TABLE IF NOT EXISTS public.teams (
     id TEXT PRIMARY KEY,
     game_id TEXT NOT NULL,
     name TEXT NOT NULL,
     join_code TEXT,
     photo_url TEXT,
-    members TEXT[] DEFAULT '{}',
+    members JSONB DEFAULT '[]'::jsonb, 
     score INTEGER DEFAULT 0,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    captain_device_id TEXT,
+    is_started BOOLEAN DEFAULT false,
+    completed_point_ids TEXT[] DEFAULT '{}'
 );
 ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public teams access" ON public.teams FOR ALL USING (true) WITH CHECK (true);
+
+-- !!! CRITICAL FIX FOR DISAPPEARING MEMBERS !!!
+-- Run this line if your members column was previously TEXT[]
+-- ALTER TABLE public.teams DROP COLUMN members;
+-- ALTER TABLE public.teams ADD COLUMN members JSONB DEFAULT '[]'::jsonb;
 
 -- 3. Create LIBRARY table
 CREATE TABLE IF NOT EXISTS public.library (
@@ -66,7 +75,19 @@ CREATE TABLE IF NOT EXISTS public.task_lists (
 ALTER TABLE public.task_lists ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public task_lists access" ON public.task_lists FOR ALL USING (true) WITH CHECK (true);
 
--- 5. Enable Realtime for TEAMS
+-- 5. Create PLAYGROUND_LIBRARY table
+CREATE TABLE IF NOT EXISTS public.playground_library (
+    id TEXT PRIMARY KEY,
+    title TEXT,
+    is_global BOOLEAN DEFAULT false,
+    data JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+ALTER TABLE public.playground_library ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public playground library access" ON public.playground_library FOR ALL USING (true) WITH CHECK (true);
+
+-- 6. Enable Realtime for TEAMS
 ALTER PUBLICATION supabase_realtime ADD TABLE public.teams;`;
 
   const copyToClipboard = () => {
@@ -113,7 +134,9 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.teams;`;
                   >
                       <Copy className="w-4 h-4" />
                   </button>
-                  <p className="text-[10px] text-slate-500 mt-2 italic">Paste this into the Supabase SQL Editor to fix "missing table" errors.</p>
+                  <p className="text-[10px] text-slate-500 mt-2 italic">
+                      Paste this into the Supabase SQL Editor to initialize your database.
+                  </p>
               </div>
           )}
 

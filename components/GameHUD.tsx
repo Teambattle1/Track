@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GameMode, MapStyleId, Language, Playground } from '../types';
-import { Map as MapIcon, Layers, GraduationCap, Menu, X, Globe, Moon, Sun, Library, Users, Home, LayoutDashboard, Ruler, Gamepad2 } from 'lucide-react';
+import { Map as MapIcon, Layers, GraduationCap, Menu, X, Globe, Moon, Sun, Library, Users, Home, LayoutDashboard, Ruler, Gamepad2, Shield } from 'lucide-react';
 
 interface GameHUDProps {
   accuracy: number | null;
@@ -20,6 +20,7 @@ interface GameHUDProps {
   onToggleMeasure?: () => void;
   playgrounds?: Playground[];
   onOpenPlayground?: (id: string) => void;
+  onOpenTeamDashboard?: () => void;
 }
 
 const GameHUD: React.FC<GameHUDProps> = ({ 
@@ -35,7 +36,8 @@ const GameHUD: React.FC<GameHUDProps> = ({
   isMeasuring,
   onToggleMeasure,
   playgrounds,
-  onOpenPlayground
+  onOpenPlayground,
+  onOpenTeamDashboard
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showEditBanner, setShowEditBanner] = useState(false);
@@ -70,21 +72,43 @@ const GameHUD: React.FC<GameHUDProps> = ({
           </div>
       )}
 
-      {/* PLAYGROUND BUTTONS (Bottom Center/Left) */}
-      {visiblePlaygrounds.length > 0 && mode === GameMode.PLAY && (
-          <div className="absolute bottom-24 left-4 z-[1000] flex flex-col gap-2 pointer-events-auto">
+      {/* PLAYGROUND BUTTONS (Bottom Center - Active in Play & Edit) */}
+      {visiblePlaygrounds.length > 0 && (mode === GameMode.PLAY || mode === GameMode.EDIT) && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] flex gap-3 pointer-events-auto">
               {visiblePlaygrounds.map(pg => (
                   <button
                       key={pg.id}
                       onClick={() => onOpenPlayground?.(pg.id)}
-                      className="h-14 w-14 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl shadow-xl flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all border-2 border-white/20 group relative"
+                      className={`h-16 w-16 rounded-2xl shadow-2xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/20'}`}
                   >
-                      <Gamepad2 className="w-8 h-8" />
-                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 bg-black/80 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      {pg.iconUrl ? (
+                          <img src={pg.iconUrl} className="w-full h-full object-cover" alt={pg.title} />
+                      ) : (
+                          <Gamepad2 className="w-8 h-8 text-white" />
+                      )}
+                      
+                      {/* Label on Hover */}
+                      <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
                           {pg.title}
                       </div>
                   </button>
               ))}
+          </div>
+      )}
+
+      {/* NEW: Team Dashboard Button (Bottom Left) */}
+      {mode === GameMode.PLAY && onOpenTeamDashboard && (
+          <div className="absolute bottom-6 left-4 z-[1000] pointer-events-auto">
+              <button 
+                  onClick={onOpenTeamDashboard}
+                  className="w-16 h-16 bg-slate-900 border-2 border-orange-500 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+              >
+                  <Shield className="w-8 h-8 text-white group-hover:text-orange-500 transition-colors" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full animate-ping" />
+                  <div className="absolute top-full mt-2 bg-black/80 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                      Team Zone
+                  </div>
+              </button>
           </div>
       )}
 

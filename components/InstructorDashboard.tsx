@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Game, Team, TeamMember, Coordinate } from '../types';
-import { X, Users, MessageSquare, Send, RefreshCw, Radio, MapPin, CheckCircle, Trophy, ListChecks, Plus, Minus } from 'lucide-react';
+import { X, Users, MessageSquare, Send, RefreshCw, Radio, MapPin, CheckCircle, Trophy, ListChecks, Plus, Minus, Gamepad2 } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
+import PlaygroundModal from './PlaygroundModal';
 
 interface InstructorDashboardProps {
   game: Game;
@@ -31,6 +32,9 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   const [showTeamControl, setShowTeamControl] = useState(false);
   const [controlTab, setControlTab] = useState<'CHAT' | 'SCORE' | 'TASKS'>('CHAT');
   const [scoreDelta, setScoreDelta] = useState(100);
+
+  // Playground state for Instructor
+  const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
 
   const mapRef = useRef<GameMapHandle>(null);
 
@@ -169,6 +173,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   };
 
   const selectedTeam = teams.find(t => t.id === selectedTeamId);
+  const visiblePlaygrounds = game.playgrounds?.filter(p => p.buttonVisible) || [];
 
   return (
     <div className="fixed inset-0 z-[2000] bg-slate-900 text-white flex flex-col animate-in fade-in duration-300">
@@ -209,7 +214,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                 </div>
 
                 {viewTab === 'MAP' ? (
-                    <div className="flex-1 bg-slate-800">
+                    <div className="flex-1 bg-slate-800 relative">
                         <GameMap 
                             ref={mapRef}
                             userLocation={null} // Instructor doesn't need their own location centered
@@ -223,6 +228,28 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                             onPointClick={() => {}} // Could show task details if needed
                             onTeamClick={handleTeamClickOnMap}
                         />
+                        
+                        {/* Instructor Playground Controls */}
+                        {visiblePlaygrounds.length > 0 && (
+                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] flex gap-3 pointer-events-auto">
+                                {visiblePlaygrounds.map(pg => (
+                                    <button
+                                        key={pg.id}
+                                        onClick={() => setActivePlaygroundId(pg.id)}
+                                        className={`h-16 w-16 rounded-2xl shadow-2xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/20'}`}
+                                    >
+                                        {pg.iconUrl ? (
+                                            <img src={pg.iconUrl} className="w-full h-full object-cover" alt={pg.title} />
+                                        ) : (
+                                            <Gamepad2 className="w-8 h-8 text-white" />
+                                        )}
+                                        <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
+                                            {pg.title}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="flex-1 bg-slate-900 overflow-y-auto p-6">
@@ -396,6 +423,17 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                     </div>
                 </div>
             </div>
+        )}
+
+        {/* Instructor Playground Viewer */}
+        {activePlaygroundId && (
+            <PlaygroundModal 
+                playground={game.playgrounds?.find(p => p.id === activePlaygroundId)!}
+                points={game.points}
+                onClose={() => setActivePlaygroundId(null)}
+                onPointClick={() => {}} // Instructor just views, no interaction needed usually
+                mode={2 as any} // INSTRUCTOR
+            />
         )}
     </div>
   );

@@ -188,7 +188,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[1900] bg-gray-50 dark:bg-gray-950 flex flex-col font-sans animate-in fade-in">
+    <div className="fixed inset-0 z-[3500] bg-gray-50 dark:bg-gray-950 flex flex-col font-sans animate-in fade-in">
       {/* Header */}
       <div className={`p-4 text-white flex justify-between items-center shadow-2xl z-20 ${isSelectionMode ? 'bg-slate-900' : 'bg-slate-900'}`}>
         <div className="flex items-center gap-3">
@@ -339,7 +339,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
       {showAiGenerator && <AiTaskGenerator onClose={() => setShowAiGenerator(false)} onAddTasks={(tasks) => { tasks.forEach(t => onSaveTemplate(t)); setActiveTab('LIBRARY'); }} />}
 
       {showCreateListModal && (
-          <div className="fixed inset-0 z-[3000] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in">
+          <div className="fixed inset-0 z-[4000] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in">
               <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border-4 border-gray-100 dark:border-gray-800">
                    <h3 className="text-2xl font-black uppercase tracking-[0.2em] text-center mb-8">NEW MISSION LIST</h3>
                    <form onSubmit={(e) => { e.preventDefault(); if(newListName.trim()) { onSaveList({ id: `list-${Date.now()}`, name: newListName, description: '', tasks: [], color: newListColor, iconId: newListIcon, createdAt: Date.now() }); setNewListName(''); setShowCreateListModal(false); } }} className="space-y-6">
