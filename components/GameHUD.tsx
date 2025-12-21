@@ -43,13 +43,8 @@ const GameHUD: React.FC<GameHUDProps> = ({
   const [showEditBanner, setShowEditBanner] = useState(false);
 
   useEffect(() => {
-      if (mode === GameMode.EDIT) {
-          setShowEditBanner(true);
-          const timer = setTimeout(() => setShowEditBanner(false), 5000);
-          return () => clearTimeout(timer);
-      } else {
-          setShowEditBanner(false);
-      }
+      // Persistent banner for Edit mode
+      setShowEditBanner(mode === GameMode.EDIT);
   }, [mode]);
 
   const mapStyles: { id: MapStyleId; label: string; icon: any }[] = [
@@ -65,30 +60,33 @@ const GameHUD: React.FC<GameHUDProps> = ({
   return (
     <>
       {showEditBanner && !isMeasuring && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-black/80 text-white px-5 py-2.5 rounded-full backdrop-blur-md z-[2000] animate-in fade-in slide-in-from-top-4 pointer-events-none shadow-xl border border-white/10">
-              <span className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                  <MapIcon className="w-3 h-3 text-orange-500" /> Tap map to place tasks
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-orange-600/95 text-white px-6 py-3 rounded-full backdrop-blur-md z-[2000] animate-in fade-in slide-in-from-top-4 pointer-events-none shadow-xl border border-white/20 flex items-center gap-3">
+              <div className="bg-white/20 p-1.5 rounded-full animate-pulse"><Layers className="w-4 h-4 text-white" /></div>
+              <span className="text-xs font-black uppercase tracking-widest">
+                  EDIT MODE &bull; TAP MAP TO PLACE
               </span>
           </div>
       )}
 
-      {/* PLAYGROUND BUTTONS (Bottom Center - Active in Play & Edit) */}
-      {visiblePlaygrounds.length > 0 && (mode === GameMode.PLAY || mode === GameMode.EDIT) && (
-          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] flex gap-3 pointer-events-auto">
+      {/* PLAYGROUND BUTTONS (Bottom Center - Active in Play, Edit & Instructor) */}
+      {visiblePlaygrounds.length > 0 && (mode === GameMode.PLAY || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] flex gap-4 pointer-events-auto items-end">
               {visiblePlaygrounds.map(pg => (
                   <button
                       key={pg.id}
                       onClick={() => onOpenPlayground?.(pg.id)}
-                      className={`h-16 w-16 rounded-2xl shadow-2xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/20'}`}
+                      className={`h-20 w-20 rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${
+                          pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'
+                      } ${mode === GameMode.PLAY ? 'shadow-[0_0_30px_rgba(147,51,234,0.6)] animate-pulse hover:animate-none hover:scale-110' : 'shadow-2xl hover:scale-105'}`}
                   >
                       {pg.iconUrl ? (
                           <img src={pg.iconUrl} className="w-full h-full object-cover" alt={pg.title} />
                       ) : (
-                          <Gamepad2 className="w-8 h-8 text-white" />
+                          <Gamepad2 className="w-10 h-10 text-white" />
                       )}
                       
-                      {/* Label on Hover */}
-                      <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
+                      {/* Label on Hover / Always in Edit Mode */}
+                      <div className={`absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10 ${mode === GameMode.EDIT ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                           {pg.title}
                       </div>
                   </button>
@@ -193,8 +191,8 @@ const GameHUD: React.FC<GameHUDProps> = ({
           className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 group relative ${mode === GameMode.EDIT ? 'bg-orange-600 text-white' : mode === GameMode.INSTRUCTOR ? 'bg-amber-50 text-amber-600' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
         >
           {mode === GameMode.EDIT ? <Layers className="w-6 h-6" /> : mode === GameMode.INSTRUCTOR ? <GraduationCap className="w-6 h-6" /> : <MapIcon className="w-6 h-6" />}
-          <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">
-              {mode === GameMode.PLAY ? 'Mode: Play' : mode === GameMode.EDIT ? 'Mode: Edit' : 'Mode: Inst'}
+          <div className="absolute top-full right-0 mt-2 bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap z-[2000]">
+              {mode === GameMode.PLAY ? 'MODE: PLAY' : mode === GameMode.EDIT ? 'MODE: EDIT' : 'MODE: INST'}
           </div>
         </button>
       </div>

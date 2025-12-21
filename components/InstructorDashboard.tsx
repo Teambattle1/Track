@@ -231,17 +231,17 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                         
                         {/* Instructor Playground Controls */}
                         {visiblePlaygrounds.length > 0 && (
-                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] flex gap-3 pointer-events-auto">
+                            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] flex gap-4 pointer-events-auto items-end">
                                 {visiblePlaygrounds.map(pg => (
                                     <button
                                         key={pg.id}
                                         onClick={() => setActivePlaygroundId(pg.id)}
-                                        className={`h-16 w-16 rounded-2xl shadow-2xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/20'}`}
+                                        className={`h-20 w-20 rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'} shadow-2xl hover:scale-105`}
                                     >
                                         {pg.iconUrl ? (
                                             <img src={pg.iconUrl} className="w-full h-full object-cover" alt={pg.title} />
                                         ) : (
-                                            <Gamepad2 className="w-8 h-8 text-white" />
+                                            <Gamepad2 className="w-10 h-10 text-white" />
                                         )}
                                         <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
                                             {pg.title}

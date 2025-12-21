@@ -212,6 +212,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [isExpanded, setIsExpanded] = useState(initialExpanded); 
   const [isSaved, setIsSaved] = useState(false);
+  const [clearConfirm, setClearConfirm] = useState(false);
 
   useEffect(() => {
     if (initialExpanded) setIsExpanded(true);
@@ -249,6 +250,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
   const availableTags = Array.from(new Set(allPoints.flatMap(p => p.tags || []))).sort();
   const availableLists = taskLists.filter(list => allPoints.some(p => list.tasks.some(t => t.title === p.title)));
+  const orphanPoints = allPoints.filter(p => !taskLists.some(list => list.tasks.some(t => t.title === p.title)));
 
   const isFiltered = filterState.mode !== 'ALL';
 
@@ -315,7 +317,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                         {isFiltered ? <Eye className="w-4 h-4" /> : <Filter className="w-4 h-4 opacity-70" />}
                         <span className="text-xs font-bold uppercase tracking-wider">
                             {isFiltered ? 
-                                (filterState.mode === 'TAG' ? `TAG: ${filterState.value}` : `LIST: ${taskLists.find(l => l.id === filterState.value)?.name || 'Unknown'}`) 
+                                (filterState.mode === 'TAG' ? `TAG: ${filterState.value}` : `LIST: ${taskLists.find(l => l.id === filterState.value)?.name || (filterState.value === 'orphan' ? 'Unlisted' : 'Unknown')}`) 
                                 : "FILTER MAP POINTS"}
                         </span>
                     </div>
@@ -323,7 +325,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 </button>
 
                 {showFilterMenu && (
-                    <div className="absolute top-full left-0 right-0 z-[6000] p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-2xl animate-in slide-in-from-top-2">
+                    <div className="absolute top-full left-0 right-0 z-[6000] p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-2xl animate-in slide-in-from-top-2 max-h-80 overflow-y-auto">
                         {isFiltered && onSetFilter && (
                             <button 
                                 onClick={() => { onSetFilter({ mode: 'ALL', value: '' }); setShowFilterMenu(false); }}
@@ -350,7 +352,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                             </div>
                         )}
 
-                        {availableLists.length > 0 && onSetFilter && (
+                        {onSetFilter && (availableLists.length > 0 || orphanPoints.length > 0) && (
                             <div>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">BY SOURCE LIST</p>
                                 <div className="flex flex-col gap-1">
@@ -364,7 +366,22 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                             {list.name}
                                         </button>
                                     ))}
+                                    {orphanPoints.length > 0 && (
+                                        <button 
+                                            onClick={() => { onSetFilter({ mode: 'LIST', value: 'orphan' }); setShowFilterMenu(false); }}
+                                            className={`px-2 py-1.5 rounded text-[10px] uppercase font-bold text-left border flex items-center gap-2 transition-colors ${filterState.mode === 'LIST' && filterState.value === 'orphan' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-400'}`}
+                                        >
+                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
+                                            Custom / Unlisted
+                                        </button>
+                                    )}
                                 </div>
+                            </div>
+                        )}
+                        
+                        {!availableTags.length && !availableLists.length && !orphanPoints.length && (
+                            <div className="text-center py-4 text-gray-400">
+                                <p className="text-[10px] uppercase font-bold">No filters available</p>
                             </div>
                         )}
                     </div>
@@ -432,14 +449,28 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     <button 
                         onClick={(e) => { 
                             e.stopPropagation(); 
-                            if (confirm('Clear these points?')) {
+                            if (clearConfirm) {
                                 if (isFiltered) onClearMap(points.map(p => p.id));
                                 else onClearMap();
+                                setClearConfirm(false);
+                            } else {
+                                setClearConfirm(true);
+                                setTimeout(() => setClearConfirm(false), 3000);
                             }
                         }}
-                        className={`text-[10px] font-bold flex items-center gap-1 uppercase tracking-wider ${isFiltered ? 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded' : 'text-red-500 hover:text-red-600'}`}
+                        className={`text-[10px] font-bold flex items-center gap-1 uppercase tracking-wider transition-all ${
+                            clearConfirm 
+                                ? 'bg-red-600 text-white px-3 py-1 rounded animate-pulse shadow-md' 
+                                : (isFiltered ? 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded' : 'text-red-500 hover:text-red-600')
+                        }`}
                     >
-                        <Eraser className="w-3 h-3" /> {isFiltered ? `Delete ${points.length} Visible` : 'Clear All'}
+                        {clearConfirm ? (
+                            "CONFIRM DELETE?"
+                        ) : (
+                            <>
+                                <Eraser className="w-3 h-3" /> {isFiltered ? `Delete ${points.length} Visible` : 'Clear All'}
+                            </>
+                        )}
                     </button>
                 </div>
 

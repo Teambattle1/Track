@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Playground, GamePoint, Game, PlaygroundTemplate } from '../types';
-import { X, Plus, Upload, Trash2, GripVertical, Image as ImageIcon, Check, MousePointer2, Wand2, Library, Save, Globe, Download, MoreVertical, Loader2, Gamepad2 } from 'lucide-react';
+import { X, Plus, Upload, Trash2, GripVertical, Image as ImageIcon, Check, MousePointer2, Wand2, Library, Save, Globe, Download, MoreVertical, Loader2, Gamepad2, CheckCircle } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import * as db from '../services/db';
 import { generateAiImage } from '../services/ai';
@@ -271,17 +271,27 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
 
                     <div className="mt-auto pt-6 border-t border-gray-100 dark:border-gray-700 space-y-3">
                         <button 
-                            onClick={handleSaveAsTemplate}
-                            className="w-full py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
+                            onClick={onClose}
+                            className="w-full py-3 bg-green-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-green-700 flex items-center justify-center gap-2 shadow-lg"
                         >
-                            <Save className="w-4 h-4" /> SAVE AS TEMPLATE
+                            <CheckCircle className="w-4 h-4" /> DONE / SAVE
                         </button>
-                        <button 
-                            onClick={() => handleDeletePlayground(activePlayground.id)}
-                            className="w-full py-3 border border-red-200 dark:border-red-900 text-red-500 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                            DELETE PLAYGROUND
-                        </button>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={handleSaveAsTemplate}
+                                className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
+                                title="Save as Template"
+                            >
+                                <Save className="w-4 h-4" /> TEMPLATE
+                            </button>
+                            <button 
+                                onClick={() => handleDeletePlayground(activePlayground.id)}
+                                className="flex-1 py-3 border border-red-200 dark:border-red-900 text-red-500 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/20"
+                                title="Delete Playground"
+                            >
+                                DELETE
+                            </button>
+                        </div>
                     </div>
                 </div>
             ) : (

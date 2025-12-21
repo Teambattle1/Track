@@ -68,6 +68,7 @@ const App: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [forceExpandDrawer, setForceExpandDrawer] = useState(false);
   const [sourceListId, setSourceListId] = useState<string>('');
+  const [editorFilter, setEditorFilter] = useState<{ mode: 'ALL' | 'TAG' | 'LIST'; value: string }>({ mode: 'ALL', value: '' });
   
   const [showAddMenu, setShowAddMenu] = useState(false); 
   const [pendingClickLocation, setPendingClickLocation] = useState<Coordinate | null>(null);
@@ -101,7 +102,9 @@ const App: React.FC = () => {
   }, [gameState, unlockedPointIds]);
 
   const refreshData = useCallback(async () => {
+    // Only show full loading screen on initial load
     if (gameState.games.length === 0) setLoading(true); 
+    
     setError(null);
     try {
         const [games, library, lists] = await Promise.all([db.fetchGames(), db.fetchLibrary(), db.fetchTaskLists()]);
@@ -114,7 +117,11 @@ const App: React.FC = () => {
 
         setGameState(prev => {
             let activeGameId = prev.activeGameId;
-            if (activeGameId && !games.find(g => g.id === activeGameId)) activeGameId = null;
+            // Only clear activeGameId if we fetched games successfully AND the ID is not in the list.
+            // If games is empty (e.g. fetch error), keep the ID to be safe.
+            if (activeGameId && games.length > 0 && !games.find(g => g.id === activeGameId)) {
+                activeGameId = null;
+            }
             return { ...prev, games, taskLibrary: library, taskLists: lists, activeGameId, score: teamData ? teamData.score : prev.score };
         });
 
@@ -347,20 +354,57 @@ const App: React.FC = () => {
 
   const displayPoints = useMemo(() => {
       if (!activeGame) return [];
-      return activeGame.points.map(p => ({
+      
+      let filtered = activeGame.points;
+      
+      // Apply Editor Filter if in EDIT mode
+      if (mode === GameMode.EDIT && editorFilter.mode !== 'ALL') {
+          if (editorFilter.mode === 'TAG') {
+              filtered = filtered.filter(p => p.tags?.includes(editorFilter.value));
+          } else if (editorFilter.mode === 'LIST') {
+              if (editorFilter.value === 'orphan') {
+                   // Points not in any list
+                   filtered = filtered.filter(p => !gameState.taskLists.some(list => list.tasks.some(t => t.title === p.title)));
+              } else {
+                   const list = gameState.taskLists.find(l => l.id === editorFilter.value);
+                   if (list) {
+                       filtered = filtered.filter(p => list.tasks.some(t => t.title === p.title));
+                   }
+              }
+          }
+      }
+
+      return filtered.map(p => ({
           ...p,
           isUnlocked: unlockedPointIds.includes(p.id) || mode !== GameMode.PLAY,
           isCompleted: completedPointIds.includes(p.id)
       }));
-  }, [activeGame, completedPointIds, unlockedPointIds, mode]);
+  }, [activeGame, completedPointIds, unlockedPointIds, mode, editorFilter, gameState.taskLists]);
 
   const handleLandingAction = (action: 'PLAY' | 'CREATE' | 'EDIT') => {
       if (action === 'PLAY') {
           setCurrentView('PLAYER_LOBBY');
       } else {
+          // If no active game, check if we have an ID in storage that matches a game in list
           if (!activeGame) {
-              setShowGameChooser(true);
-              (window as any)._afterChooseView = action === 'CREATE' ? 'CREATOR_HUB' : 'MAP_EDIT';
+              const storedId = localStorage.getItem(STORAGE_KEY_GAME_ID);
+              const foundGame = gameState.games.find(g => g.id === storedId);
+              
+              if (foundGame) {
+                  // Recovery: State might have drifted, but game exists. Set it and proceed.
+                  setGameState(prev => ({ ...prev, activeGameId: storedId }));
+                  if (action === 'CREATE') {
+                      setCurrentView('CREATOR_HUB');
+                  } else {
+                      setMode(GameMode.EDIT);
+                      setForceExpandDrawer(false);
+                      setCurrentView('MAP');
+                  }
+              } else {
+                  // Really no game active or found
+                  setShowGameChooser(true);
+                  (window as any)._afterChooseView = action === 'CREATE' ? 'CREATOR_HUB' : 'MAP_EDIT';
+              }
           } else {
               if (action === 'CREATE') {
                   setCurrentView('CREATOR_HUB');
@@ -595,7 +639,12 @@ const App: React.FC = () => {
             onSetMapStyle={setMapStyle} 
             language={appLanguage} 
             onSetLanguage={setAppLanguage} 
-            onBack={() => setCurrentView('LANDING')} 
+            onBack={() => setCurrentView('CREATOR_HUB')} 
+            onInstructorLogin={() => {
+                setMode(GameMode.INSTRUCTOR);
+                setShowTeamsModal(true);
+                setCurrentView('MAP');
+            }}
           />
       )}
 
@@ -679,7 +728,7 @@ const App: React.FC = () => {
                 mapStyle={mapStyle} 
                 onSetMapStyle={setMapStyle} 
                 language={appLanguage} 
-                onBackToHub={() => setCurrentView('LANDING')} 
+                onBackToHub={() => setCurrentView('CREATOR_HUB')} 
                 activeGameName={activeGame?.name} 
                 onOpenInstructorDashboard={() => setShowInstructorDashboard(true)} 
                 isMeasuring={isMeasuring}
@@ -798,6 +847,8 @@ const App: React.FC = () => {
                   onFitBounds={() => activeGame && mapRef.current?.fitBounds(activeGame.points)} 
                   onOpenPlaygroundEditor={() => setShowPlaygroundEditor(true)}
                   initialExpanded={forceExpandDrawer}
+                  filterState={editorFilter}
+                  onSetFilter={setEditorFilter}
                 />
               )}
               {mode === GameMode.PLAY && activeGame && <GameStats score={gameState.score} pointsCount={{ total: displayPoints.filter(p => !p.isSectionHeader).length, completed: completedPointIds.length }} nearestPointDistance={nearestPointDistance} language={appLanguage} />}
@@ -1001,4 +1052,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App
+export default App;

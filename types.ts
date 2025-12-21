@@ -215,6 +215,8 @@ export interface TaskList {
   tasks: TaskTemplate[];
   color: string; 
   iconId?: IconId;
+  imageUrl?: string; // Cover image for the list card
+  usageCount?: number; // Track popularity
   createdAt: number;
 }
 

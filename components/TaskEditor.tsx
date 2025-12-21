@@ -216,7 +216,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
           <div className="flex items-center gap-3">
               <div className="p-2 bg-white/10 rounded-lg"><Edit2 className="w-5 h-5" /></div>
               <h2 className="text-lg font-black uppercase tracking-widest">
-                  {isCropping ? 'CROP IMAGE' : (isTemplateMode ? 'TEMPLATE EDITOR' : 'TASK EDITOR')}
+                  {isCropping ? 'CROP IMAGE' : 'TASK EDITOR'}
               </h2>
           </div>
           {!isCropping && <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors"><X className="w-6 h-6" /></button>}
