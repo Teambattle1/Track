@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Playground, GamePoint, Game, PlaygroundTemplate } from '../types';
-import { X, Plus, Upload, Trash2, GripVertical, Image as ImageIcon, Check, MousePointer2, Wand2, Library, Save, Globe, Download, MoreVertical, Loader2, Gamepad2, CheckCircle } from 'lucide-react';
+import { X, Plus, Upload, Trash2, GripVertical, Image as ImageIcon, Check, MousePointer2, Wand2, Library, Save, Globe, Download, MoreVertical, Loader2, Gamepad2, CheckCircle, Maximize, Scaling } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import * as db from '../services/db';
 import { generateAiImage } from '../services/ai';
@@ -30,7 +30,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
       const newPlayground: Playground = {
           id: `pg-${Date.now()}`,
           title: 'New Playground',
-          buttonVisible: true
+          buttonVisible: true,
+          backgroundStyle: 'contain'
       };
       const updatedPlaygrounds = [...(game.playgrounds || []), newPlayground];
       onUpdateGame({ ...game, playgrounds: updatedPlaygrounds });
@@ -197,6 +198,25 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                             )}
                             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                         </div>
+                        
+                        {/* BACKGROUND STRETCH CONTROL */}
+                        {activePlayground.imageUrl && (
+                             <div className="mt-2 flex items-center gap-2">
+                                <button
+                                    onClick={() => handleUpdatePlayground({ backgroundStyle: activePlayground.backgroundStyle === 'stretch' ? 'contain' : 'stretch' })}
+                                    className={`flex-1 py-2 px-3 rounded-lg border flex items-center justify-center gap-2 transition-all ${
+                                        activePlayground.backgroundStyle === 'stretch' 
+                                            ? 'bg-blue-600 text-white border-blue-600' 
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+                                    }`}
+                                >
+                                    <Scaling className="w-4 h-4" />
+                                    <span className="text-[10px] font-black uppercase tracking-wide">
+                                        {activePlayground.backgroundStyle === 'stretch' ? 'STRETCHED' : 'FIT (CONTAIN)'}
+                                    </span>
+                                </button>
+                             </div>
+                        )}
                     </div>
 
                     {/* NEW: Button Icon Manager */}
@@ -311,10 +331,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                 {activePlayground ? (
                     <div 
                         ref={containerRef}
-                        className="relative w-full h-full max-w-5xl bg-white shadow-2xl rounded-lg overflow-hidden bg-center bg-no-repeat bg-contain border border-gray-300 dark:border-gray-700"
+                        className="relative w-full h-full max-w-5xl bg-white shadow-2xl rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700"
                         style={{ 
                             backgroundImage: activePlayground.imageUrl ? `url(${activePlayground.imageUrl})` : 'none',
-                            backgroundColor: '#1e293b'
+                            backgroundColor: '#1e293b',
+                            backgroundSize: activePlayground.backgroundStyle === 'stretch' ? '100% 100%' : 'contain',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
                         }}
                     >
                         {!activePlayground.imageUrl && <div className="absolute inset-0 flex items-center justify-center text-white/20 font-black text-4xl uppercase tracking-[0.2em]">DROP IMAGE HERE</div>}

@@ -137,6 +137,7 @@ export interface Playground {
   id: string;
   title: string;
   imageUrl?: string;
+  backgroundStyle?: 'cover' | 'contain' | 'stretch'; // New: Background fit style
   buttonVisible: boolean; // If true, shows in HUD
   buttonLabel?: string;
   iconId?: IconId;

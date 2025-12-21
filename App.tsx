@@ -20,7 +20,7 @@ import PlaygroundModal from './components/PlaygroundModal.tsx';
 import PlaygroundEditor from './components/PlaygroundEditor.tsx';
 import PlaygroundLibraryModal from './components/PlaygroundLibraryModal.tsx';
 import TaskEditor from './components/TaskEditor.tsx';
-import TeamDashboard from './components/TeamDashboard.tsx'; // Import new component
+import TeamDashboard from './components/TeamDashboard.tsx'; 
 import { GamePoint, Coordinate, GameState, GameMode, Game, MapStyleId, Language, Team, TaskTemplate, GameAction, PlaygroundTemplate, Playground } from './types.ts';
 import { haversineMeters, isWithinRadius, formatDistance } from './utils/geo.ts';
 import { X, ChevronDown, AlertTriangle, CheckCircle, RefreshCw, Plus, Wand2, Library, MapPin, Ruler, RotateCcw, Check, PenTool, Move } from 'lucide-react';
@@ -94,6 +94,9 @@ const App: React.FC = () => {
   const mapRef = useRef<GameMapHandle>(null);
   const gameStateRef = useRef(gameState);
   const unlockedIdsRef = useRef(unlockedPointIds);
+  
+  // Ref for debouncing save
+  const saveTimeoutRef = useRef<any>(null);
 
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -103,7 +106,10 @@ const App: React.FC = () => {
   }, [gameState, unlockedPointIds]);
 
   const refreshData = useCallback(async () => {
-    // Only show full loading screen on initial load
+    // 1. Skip refresh if in EDIT mode to prevent overwriting work-in-progress or causing sync conflicts.
+    // 2. Only show full loading screen on initial load
+    if (mode === GameMode.EDIT) return; 
+
     if (gameState.games.length === 0) setLoading(true); 
     
     setError(null);
@@ -130,7 +136,7 @@ const App: React.FC = () => {
     } catch (err: any) {
         setError(err?.message || "Connection Error");
     } finally { setLoading(false); }
-  }, []);
+  }, [mode, gameState.games.length]); // Added dependency on mode
 
   useEffect(() => {
     refreshData();
@@ -215,6 +221,9 @@ const App: React.FC = () => {
 
   const handleSaveGame = () => {
     if (activeGame) {
+      // Clear any pending debounce save to avoid double write
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      
       db.saveGame(activeGame).then(() => {
         setSaveStatus("GAME SAVED!");
         setTimeout(() => setSaveStatus(null), 3000);
@@ -223,11 +232,18 @@ const App: React.FC = () => {
   };
 
   const updateActiveGame = (updatedGame: Game) => {
+      // 1. Optimistic Update (Immediate UI response)
       setGameState(prev => ({
           ...prev,
           games: prev.games.map(g => g.id === updatedGame.id ? updatedGame : g)
       }));
-      db.saveGame(updatedGame);
+
+      // 2. Debounced Database Save
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+          console.log("[Auto-Save] Saving game to DB...");
+          db.saveGame(updatedGame);
+      }, 2000); // Wait 2 seconds of inactivity before saving to prevent timeout/flood
   };
 
   const handleUpdatePlayground = (updatedPlayground: Playground) => {
@@ -279,9 +295,10 @@ const App: React.FC = () => {
           setShowAiGenerator(true);
       } else if (type === 'LIBRARY') {
           targetPlaygroundIdRef.current = playgroundId;
-          setTaskMasterTab('LIBRARY');
+          // Force state update order to ensure TaskMaster sees new props
+          setTaskMasterTab('LISTS'); 
           setTaskMasterSelectionMode(true);
-          setShowTaskMaster(true);
+          setTimeout(() => setShowTaskMaster(true), 0);
       }
   };
 
@@ -325,7 +342,10 @@ const App: React.FC = () => {
   };
 
   const handleAddTasksFromLibrary = (tasks: TaskTemplate[]) => {
-      if (!activeGame) return;
+      // Use ref to get the absolute latest game state without relying on closure
+      const currentActiveGame = gameStateRef.current.games.find(g => g.id === gameStateRef.current.activeGameId);
+      if (!currentActiveGame) return;
+
       const baseLocation = targetLocationRef.current || mapRef.current?.getCenter() || { lat: 0, lng: 0 };
       const targetPlayground = targetPlaygroundIdRef.current;
       
@@ -343,7 +363,7 @@ const App: React.FC = () => {
           isUnlocked: false,
           isCompleted: false,
           activationTypes: ['radius'],
-          order: activeGame.points.length + i,
+          order: currentActiveGame.points.length + i,
           tags: t.tags,
           feedback: t.feedback,
           settings: t.settings,
@@ -351,7 +371,7 @@ const App: React.FC = () => {
           playgroundPosition: targetPlayground ? { x: 50 + (i * 2), y: 50 + (i * 2) } : undefined
       }));
       
-      updateActiveGame({ ...activeGame, points: [...activeGame.points, ...newPoints] });
+      updateActiveGame({ ...currentActiveGame, points: [...currentActiveGame.points, ...newPoints] });
       setShowTaskMaster(false);
       setTaskMasterSelectionMode(false);
       setShowAddMenu(false);
@@ -1056,7 +1076,11 @@ const App: React.FC = () => {
         <TaskMaster 
             library={gameState.taskLibrary} 
             lists={gameState.taskLists} 
-            onClose={() => { setShowTaskMaster(false); targetLocationRef.current = null; targetPlaygroundIdRef.current = null; }} 
+            onClose={() => { 
+                setShowTaskMaster(false); 
+                // DO NOT clear refs here, as this might be called on unmount during the 'add' flow
+                // Only clear if explicitly cancelling or when finished adding
+            }} 
             onSaveTemplate={(t) => db.saveTemplate(t).then(refreshData)} 
             onDeleteTemplate={(id) => db.deleteTemplate(id).then(refreshData)} 
             onSaveList={(l) => db.saveTaskList(l).then(refreshData)} 
@@ -1072,7 +1096,7 @@ const App: React.FC = () => {
               onClose={() => setShowAiGenerator(false)} 
               onAddTasks={(tasks) => {
                   tasks.forEach(t => db.saveTemplate(t));
-                  refreshData();
+                  // refreshData(); // Don't refresh immediately to avoid overwriting active game state if in edit
                   handleAddTasksFromLibrary(tasks);
                   setShowAiGenerator(false);
               }} 

@@ -23,19 +23,19 @@ const AdminModal: React.FC<AdminModalProps> = ({ games, onClose, onDeleteGame })
     }
   };
 
-  const sqlCode = `-- COPY THIS INTO THE SUPABASE SQL EDITOR
+  const sqlCode = `-- COPY THIS INTO THE SUPABASE SQL EDITOR TO FIX DATABASE ISSUES
 
--- 1. Create GAMES table
+-- 1. GAMES Table (Stores full game JSON including playgrounds)
 CREATE TABLE IF NOT EXISTS public.games (
     id TEXT PRIMARY KEY,
     data JSONB,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public games access" ON public.games;
 CREATE POLICY "Public games access" ON public.games FOR ALL USING (true) WITH CHECK (true);
 
--- 2. Create TEAMS table
--- Note: 'members' uses JSONB to store [{name, photo, deviceId}]
+-- 2. TEAMS Table
 CREATE TABLE IF NOT EXISTS public.teams (
     id TEXT PRIMARY KEY,
     game_id TEXT NOT NULL,
@@ -50,32 +50,30 @@ CREATE TABLE IF NOT EXISTS public.teams (
     completed_point_ids TEXT[] DEFAULT '{}'
 );
 ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public teams access" ON public.teams;
 CREATE POLICY "Public teams access" ON public.teams FOR ALL USING (true) WITH CHECK (true);
 
--- !!! CRITICAL FIX FOR DISAPPEARING MEMBERS !!!
--- Run this line if your members column was previously TEXT[]
--- ALTER TABLE public.teams DROP COLUMN members;
--- ALTER TABLE public.teams ADD COLUMN members JSONB DEFAULT '[]'::jsonb;
-
--- 3. Create LIBRARY table
+-- 3. LIBRARY Table (Task Templates)
 CREATE TABLE IF NOT EXISTS public.library (
     id TEXT PRIMARY KEY,
     data JSONB,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 ALTER TABLE public.library ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public library access" ON public.library;
 CREATE POLICY "Public library access" ON public.library FOR ALL USING (true) WITH CHECK (true);
 
--- 4. Create TASK_LISTS table
+-- 4. TASK_LISTS Table (Grouped Templates)
 CREATE TABLE IF NOT EXISTS public.task_lists (
     id TEXT PRIMARY KEY,
     data JSONB,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 ALTER TABLE public.task_lists ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public task_lists access" ON public.task_lists;
 CREATE POLICY "Public task_lists access" ON public.task_lists FOR ALL USING (true) WITH CHECK (true);
 
--- 5. Create PLAYGROUND_LIBRARY table
+-- 5. PLAYGROUND_LIBRARY Table (Saved Playgrounds)
 CREATE TABLE IF NOT EXISTS public.playground_library (
     id TEXT PRIMARY KEY,
     title TEXT,
@@ -85,10 +83,17 @@ CREATE TABLE IF NOT EXISTS public.playground_library (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 ALTER TABLE public.playground_library ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public playground library access" ON public.playground_library;
 CREATE POLICY "Public playground library access" ON public.playground_library FOR ALL USING (true) WITH CHECK (true);
 
 -- 6. Enable Realtime for TEAMS
-ALTER PUBLICATION supabase_realtime ADD TABLE public.teams;`;
+-- Note: This might throw an error if already added, which is fine to ignore, or check first.
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'teams') THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.teams;
+    END IF;
+END $$;`;
 
   const copyToClipboard = () => {
       navigator.clipboard.writeText(sqlCode);
@@ -104,7 +109,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.teams;`;
             <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
               <Database className="w-5 h-5 text-red-500"/> ADMIN
             </h2>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">MANAGE GAMES</p>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">MANAGE GAMES & DB</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
             <X className="w-6 h-6" />
@@ -135,7 +140,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.teams;`;
                       <Copy className="w-4 h-4" />
                   </button>
                   <p className="text-[10px] text-slate-500 mt-2 italic">
-                      Paste this into the Supabase SQL Editor to initialize your database.
+                      Paste this into the Supabase SQL Editor to fix any missing tables or permissions.
                   </p>
               </div>
           )}

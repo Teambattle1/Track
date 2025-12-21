@@ -146,8 +146,11 @@ const PlaygroundModal: React.FC<PlaygroundModalProps> = ({ playground, points, o
               {/* Background Image */}
               {playground.imageUrl ? (
                   <div 
-                    className="absolute inset-0 bg-center bg-no-repeat bg-contain" // Changed to contain to see full image
-                    style={{ backgroundImage: `url(${playground.imageUrl})` }}
+                    className="absolute inset-0 bg-center bg-no-repeat"
+                    style={{ 
+                        backgroundImage: `url(${playground.imageUrl})`,
+                        backgroundSize: playground.backgroundStyle === 'stretch' ? '100% 100%' : 'contain' 
+                    }}
                   />
               ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-black uppercase tracking-widest text-2xl">
