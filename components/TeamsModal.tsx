@@ -2,40 +2,33 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Team, Game } from '../types';
 import * as db from '../services/db';
-import { X, Users, RefreshCw, Hash, ChevronRight, Calendar, Clock, CheckCircle, ChevronDown, Anchor, Play } from 'lucide-react';
+import { teamSync } from '../services/teamSync';
+import { X, Users, RefreshCw, Hash, ChevronRight, Calendar, Clock, CheckCircle, ChevronDown, Anchor, Play, Edit2, Check, AlertCircle } from 'lucide-react';
 
 interface TeamsModalProps {
   gameId: string | null;
   games: Game[];
+  targetTeamId?: string | null; // New prop to direct link
   onSelectGame: (id: string) => void;
   onClose: () => void;
   onEnterLobby?: (team: Team) => void;
 }
 
-const getJoinCode = (name: string): string => {
-    if (!name) return '000000';
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        const char = name.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; 
-    }
-    const code = Math.abs(hash) % 900000 + 100000;
-    return code.toString();
-};
-
-const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, onClose }) => {
+const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, onSelectGame, onClose }) => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<'TODAY' | 'PLANNED' | 'COMPLETED'>('TODAY');
   const [showGameSwitch, setShowGameSwitch] = useState(false);
   const [activeLobbyView, setActiveLobbyView] = useState<Team | null>(null);
+  
+  // Edit State for Captain
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
 
   const loadTeams = async (targetId: string | null) => {
     if (!targetId) return;
     setLoading(true);
     try {
-        console.log(`[TeamsModal] Fetching teams for game: ${targetId}`);
         const data = await db.fetchTeams(targetId);
         setTeams(data);
     } catch (e) {
@@ -48,6 +41,27 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, on
   useEffect(() => {
     loadTeams(gameId);
   }, [gameId]);
+
+  // Auto-open target team if provided
+  useEffect(() => {
+      if (targetTeamId && teams.length > 0) {
+          const t = teams.find(team => team.id === targetTeamId);
+          if (t) {
+              setActiveLobbyView(t);
+              setEditedName(t.name);
+          }
+      }
+  }, [targetTeamId, teams]);
+
+  const handleSaveName = async () => {
+      if (activeLobbyView && editedName.trim()) {
+          await db.updateTeamName(activeLobbyView.id, editedName.trim());
+          setIsEditingName(false);
+          // Refresh local state optimistically or wait for reload
+          setActiveLobbyView(prev => prev ? { ...prev, name: editedName.trim() } : null);
+          loadTeams(gameId); // Background refresh
+      }
+  };
 
   const filteredGames = useMemo(() => {
     const today = new Date();
@@ -65,6 +79,9 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, on
   }, [games, tab]);
 
   if (activeLobbyView) {
+      const myDeviceId = teamSync.getDeviceId();
+      const isCaptain = activeLobbyView.captainDeviceId === myDeviceId;
+
       return (
           <div className="fixed inset-0 z-[2100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center sm:p-4 animate-in zoom-in-95">
               <div className="bg-slate-900 border-2 border-orange-500/50 w-full h-full sm:h-auto sm:max-h-[85vh] max-w-md sm:rounded-[2rem] overflow-hidden flex flex-col shadow-2xl relative">
@@ -74,9 +91,29 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, on
                   <div className="p-4 sm:p-6 bg-slate-950 border-b border-slate-800 flex justify-between items-center relative z-10 shrink-0">
                       <div className="flex flex-col">
                           <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">TEAM STATUS</span>
-                          <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider">{activeLobbyView.name}</h2>
+                          {isEditingName ? (
+                              <div className="flex items-center gap-2 mt-1">
+                                  <input 
+                                    type="text" 
+                                    value={editedName} 
+                                    onChange={(e) => setEditedName(e.target.value)}
+                                    className="bg-slate-800 text-white font-bold text-sm px-2 py-1 rounded border border-slate-600 focus:border-orange-500 outline-none uppercase"
+                                    autoFocus
+                                  />
+                                  <button onClick={handleSaveName} className="p-1 bg-green-600 rounded hover:bg-green-700 text-white"><Check className="w-4 h-4" /></button>
+                              </div>
+                          ) : (
+                              <div className="flex items-center gap-2">
+                                  <h2 className="text-lg sm:text-xl font-black text-white uppercase tracking-wider truncate max-w-[200px]">{activeLobbyView.name}</h2>
+                                  {isCaptain && (
+                                      <button onClick={() => { setIsEditingName(true); setEditedName(activeLobbyView.name); }} className="text-slate-500 hover:text-white transition-colors">
+                                          <Edit2 className="w-4 h-4" />
+                                      </button>
+                                  )}
+                              </div>
+                          )}
                       </div>
-                      <button onClick={() => setActiveLobbyView(null)} className="p-2 bg-slate-800 rounded-full text-white"><X className="w-5 h-5" /></button>
+                      <button onClick={() => { setActiveLobbyView(null); if(targetTeamId) onClose(); }} className="p-2 bg-slate-800 rounded-full text-white"><X className="w-5 h-5" /></button>
                   </div>
                   <div className="p-4 sm:p-6 flex-1 relative z-10 overflow-y-auto">
                       <div className="flex items-center gap-4 mb-6 sm:mb-8">
@@ -91,6 +128,17 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, on
                               </div>
                           </div>
                       </div>
+                      
+                      {isCaptain && (
+                          <div className="mb-6 bg-blue-900/20 border border-blue-500/30 p-3 rounded-xl flex items-center gap-3">
+                              <Anchor className="w-5 h-5 text-blue-400" />
+                              <div>
+                                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">CAPTAIN CONTROLS</p>
+                                  <p className="text-xs text-slate-300">You can edit team name.</p>
+                              </div>
+                          </div>
+                      )}
+
                       <div className="space-y-3">
                           <div className="flex justify-between items-end">
                               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">OPERATIVES</p>
@@ -101,7 +149,7 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, on
                                   // Compatibility check: m might be a string (legacy) or object (new)
                                   const name = typeof m === 'string' ? m : m.name;
                                   const photo = typeof m === 'string' ? null : m.photo;
-                                  const isCaptain = typeof m === 'string' ? false : m.deviceId === activeLobbyView.captainDeviceId;
+                                  const isMemberCaptain = typeof m === 'string' ? false : m.deviceId === activeLobbyView.captainDeviceId;
 
                                   return (
                                       <div key={i} className="bg-slate-800/50 p-3 rounded-xl border border-slate-700 flex items-center justify-between">
@@ -111,7 +159,7 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, on
                                               </div>
                                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{name || 'Unknown Agent'}</span>
                                           </div>
-                                          {isCaptain && <Anchor className="w-3 h-3 text-orange-500" />}
+                                          {isMemberCaptain && <Anchor className="w-3 h-3 text-orange-500" title="Captain" />}
                                       </div>
                                   );
                               })}
@@ -119,7 +167,7 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, onSelectGame, on
                       </div>
                   </div>
                   <div className="p-4 sm:p-6 bg-slate-950 border-t border-slate-800 relative z-10 shrink-0">
-                      <button onClick={() => setActiveLobbyView(null)} className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-2xl uppercase tracking-widest text-[10px]">CLOSE VIEW</button>
+                      <button onClick={() => { setActiveLobbyView(null); if(targetTeamId) onClose(); }} className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-2xl uppercase tracking-widest text-[10px]">RETURN</button>
                   </div>
               </div>
           </div>

@@ -289,6 +289,14 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
           </div>
       ) : (
           <>
+            {onOpenPlaygroundEditor && (
+                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+                    <button onClick={onOpenPlaygroundEditor} className="w-full py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 font-bold rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors flex items-center justify-center gap-2 text-xs uppercase tracking-wide border border-orange-200 dark:border-orange-800">
+                        <LayoutGrid className="w-4 h-4" /> PLAYGROUNDS
+                    </button>
+                </div>
+            )}
+
             <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900 flex-shrink-0 z-[60]">
                 <div>
                     <h2 className="font-bold text-xs text-gray-400 uppercase tracking-wide">Tasks List</h2>
@@ -510,11 +518,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
             </div>
 
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col gap-2 z-[60]">
-                {onOpenPlaygroundEditor && (
-                    <button onClick={onOpenPlaygroundEditor} className="w-full py-3 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-bold rounded-xl hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
-                        <LayoutGrid className="w-4 h-4" /> PLAYGROUNDS
-                    </button>
-                )}
                 <button onClick={onOpenTaskMaster} className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
                     <Library className="w-4 h-4" /> Manage Task Library
                 </button>

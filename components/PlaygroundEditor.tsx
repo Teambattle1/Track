@@ -169,7 +169,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                 <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-6 flex flex-col gap-6 overflow-y-auto z-10">
                     <button 
                         onClick={onOpenLibrary}
-                        className="w-full py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-100 dark:hover:bg-indigo-900/40 flex items-center justify-center gap-2 mb-2"
+                        className="w-full py-3 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-orange-100 dark:hover:bg-orange-900/40 flex items-center justify-center gap-2 mb-2"
                     >
                         <Globe className="w-4 h-4" /> IMPORT FROM LIBRARY
                     </button>
@@ -224,7 +224,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                                 <button 
                                     onClick={handleGenerateIcon}
                                     disabled={isGeneratingIcon}
-                                    className="flex-1 bg-purple-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wide hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 bg-orange-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wide hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
                                 >
                                     {isGeneratingIcon ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
                                     AI GENERATE
@@ -299,7 +299,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                     <p className="text-xs font-bold uppercase tracking-widest text-center">No Playground Selected</p>
                     <button 
                         onClick={onOpenLibrary}
-                        className="py-2 px-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg font-black text-xs uppercase tracking-wide flex items-center gap-2 hover:bg-indigo-100"
+                        className="py-2 px-4 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 rounded-lg font-black text-xs uppercase tracking-wide flex items-center gap-2 hover:bg-orange-100"
                     >
                         <Globe className="w-4 h-4" /> IMPORT FROM LIBRARY
                     </button>

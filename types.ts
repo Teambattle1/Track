@@ -141,6 +141,7 @@ export interface Playground {
   buttonLabel?: string;
   iconId?: IconId;
   iconUrl?: string; // New: Custom icon for the HUD button
+  orientationLock?: 'portrait' | 'landscape' | 'none'; // New: Force orientation
 }
 
 // Template for saving to library

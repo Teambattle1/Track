@@ -43,8 +43,17 @@ const GameHUD: React.FC<GameHUDProps> = ({
   const [showEditBanner, setShowEditBanner] = useState(false);
 
   useEffect(() => {
-      // Persistent banner for Edit mode
-      setShowEditBanner(mode === GameMode.EDIT);
+      let timer: ReturnType<typeof setTimeout>;
+      if (mode === GameMode.EDIT) {
+          setShowEditBanner(true);
+          // Auto-hide after 5 seconds
+          timer = setTimeout(() => {
+              setShowEditBanner(false);
+          }, 5000);
+      } else {
+          setShowEditBanner(false);
+      }
+      return () => clearTimeout(timer);
   }, [mode]);
 
   const mapStyles: { id: MapStyleId; label: string; icon: any }[] = [
@@ -60,7 +69,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
   return (
     <>
       {showEditBanner && !isMeasuring && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-orange-600/95 text-white px-6 py-3 rounded-full backdrop-blur-md z-[2000] animate-in fade-in slide-in-from-top-4 pointer-events-none shadow-xl border border-white/20 flex items-center gap-3">
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-orange-600/95 text-white px-6 py-3 rounded-full backdrop-blur-md z-[2000] animate-in fade-in slide-in-from-top-4 pointer-events-none shadow-xl border border-white/20 flex items-center gap-3 transition-opacity duration-500">
               <div className="bg-white/20 p-1.5 rounded-full animate-pulse"><Layers className="w-4 h-4 text-white" /></div>
               <span className="text-xs font-black uppercase tracking-widest">
                   EDIT MODE &bull; TAP MAP TO PLACE
@@ -76,8 +85,8 @@ const GameHUD: React.FC<GameHUDProps> = ({
                       key={pg.id}
                       onClick={() => onOpenPlayground?.(pg.id)}
                       className={`h-20 w-20 rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${
-                          pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'
-                      } ${mode === GameMode.PLAY ? 'shadow-[0_0_30px_rgba(147,51,234,0.6)] animate-pulse hover:animate-none hover:scale-110' : 'shadow-2xl hover:scale-105'}`}
+                          pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-orange-500 to-red-600 border-white/30'
+                      } ${mode === GameMode.PLAY ? 'shadow-[0_0_30px_rgba(234,88,12,0.6)] animate-pulse hover:animate-none hover:scale-110' : 'shadow-2xl hover:scale-105'}`}
                   >
                       {pg.iconUrl ? (
                           <img src={pg.iconUrl} className="w-full h-full object-cover" alt={pg.title} />
@@ -94,37 +103,37 @@ const GameHUD: React.FC<GameHUDProps> = ({
           </div>
       )}
 
-      {/* NEW: Team Dashboard Button (Bottom Left) */}
-      {mode === GameMode.PLAY && onOpenTeamDashboard && (
-          <div className="absolute bottom-6 left-4 z-[1000] pointer-events-auto">
-              <button 
-                  onClick={onOpenTeamDashboard}
-                  className="w-16 h-16 bg-slate-900 border-2 border-orange-500 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all group"
-              >
-                  <Shield className="w-8 h-8 text-white group-hover:text-orange-500 transition-colors" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full animate-ping" />
-                  <div className="absolute top-full mt-2 bg-black/80 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      Team Zone
-                  </div>
-              </button>
-          </div>
-      )}
-
+      {/* TOP LEFT CORNER */}
       <div className="absolute top-4 left-4 z-[1000] pointer-events-auto h-12 flex items-center">
-            <div className="relative group">
-                <button 
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  title="Main Menu"
-                  className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 ${isMenuOpen ? 'bg-white text-slate-900' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
+            {mode === GameMode.PLAY && onOpenTeamDashboard ? (
+                // TEAM ZONE BUTTON (Play Mode)
+                <button
+                    onClick={onOpenTeamDashboard}
+                    className="h-12 pl-3 pr-4 bg-slate-900/95 dark:bg-gray-900/95 border-2 border-orange-500 rounded-2xl flex items-center justify-center gap-2.5 shadow-2xl hover:scale-105 active:scale-95 transition-all group"
                 >
-                  <Menu className="w-6 h-6" />
+                    <Shield className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors" />
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">
+                        TEAM ZONE
+                    </span>
                 </button>
-                <div className="absolute top-full left-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap z-[1100]">
-                    Menu
+            ) : (
+                // MENU BUTTON (Edit/Instructor Mode)
+                <div className="relative group">
+                    <button 
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      title="Main Menu"
+                      className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 ${isMenuOpen ? 'bg-white text-slate-900' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
+                    >
+                      <Menu className="w-6 h-6" />
+                    </button>
+                    <div className="absolute top-full left-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap z-[1100]">
+                        Menu
+                    </div>
                 </div>
-            </div>
+            )}
             
-            {isMenuOpen && (
+            {/* Menu Dropdown (Only renders if not in Play Mode or if explicitly open) */}
+            {isMenuOpen && mode !== GameMode.PLAY && (
                 <div className="absolute top-full left-0 mt-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl p-2 min-w-[240px] animate-in slide-in-from-top-2 fade-in duration-200 origin-top-left z-[3000]">
                     <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 mb-1">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Menu</span>
@@ -185,13 +194,15 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">Dashboard</div>
             </button>
         )}
+        
+        {/* Mode Toggle Button - Hidden on mobile when in PLAY mode */}
         <button 
           onClick={toggleMode} 
           title={mode === GameMode.PLAY ? "Enter Edit Mode" : mode === GameMode.EDIT ? "Enter Instructor Mode" : "Return to Play Mode"}
-          className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 group relative ${mode === GameMode.EDIT ? 'bg-orange-600 text-white' : mode === GameMode.INSTRUCTOR ? 'bg-amber-50 text-amber-600' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
+          className={`h-12 w-12 items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 group relative ${mode === GameMode.PLAY ? 'hidden md:flex' : 'flex'} ${mode === GameMode.EDIT ? 'bg-orange-600 text-white' : mode === GameMode.INSTRUCTOR ? 'bg-amber-50 text-amber-600' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
         >
           {mode === GameMode.EDIT ? <Layers className="w-6 h-6" /> : mode === GameMode.INSTRUCTOR ? <GraduationCap className="w-6 h-6" /> : <MapIcon className="w-6 h-6" />}
-          <div className="absolute top-full right-0 mt-2 bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap z-[2000]">
+          <div className="absolute top-full right-0 mt-2 bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap z-[2000] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               {mode === GameMode.PLAY ? 'MODE: PLAY' : mode === GameMode.EDIT ? 'MODE: EDIT' : 'MODE: INST'}
           </div>
         </button>

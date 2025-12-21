@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import GameMap, { GameMapHandle } from './components/GameMap.tsx';
 import TaskModal from './components/TaskModal.tsx';
@@ -22,9 +21,9 @@ import PlaygroundEditor from './components/PlaygroundEditor.tsx';
 import PlaygroundLibraryModal from './components/PlaygroundLibraryModal.tsx';
 import TaskEditor from './components/TaskEditor.tsx';
 import TeamDashboard from './components/TeamDashboard.tsx'; // Import new component
-import { GamePoint, Coordinate, GameState, GameMode, Game, MapStyleId, Language, Team, TaskTemplate, GameAction, PlaygroundTemplate } from './types.ts';
+import { GamePoint, Coordinate, GameState, GameMode, Game, MapStyleId, Language, Team, TaskTemplate, GameAction, PlaygroundTemplate, Playground } from './types.ts';
 import { haversineMeters, isWithinRadius, formatDistance } from './utils/geo.ts';
-import { X, ChevronDown, AlertTriangle, CheckCircle, RefreshCw, Plus, Wand2, Library, MapPin, Ruler, RotateCcw, Check, PenTool } from 'lucide-react';
+import { X, ChevronDown, AlertTriangle, CheckCircle, RefreshCw, Plus, Wand2, Library, MapPin, Ruler, RotateCcw, Check, PenTool, Move } from 'lucide-react';
 import * as db from './services/db.ts';
 import { teamSync } from './services/teamSync.ts';
 
@@ -57,6 +56,8 @@ const App: React.FC = () => {
   const [taskMasterSelectionMode, setTaskMasterSelectionMode] = useState(false);
 
   const [showTeamsModal, setShowTeamsModal] = useState(false);
+  const [teamsModalTargetId, setTeamsModalTargetId] = useState<string | null>(null); // Target team to open directly
+
   const [showGameManager, setShowGameManager] = useState(false); 
   const [showAdminModal, setShowAdminModal] = useState(false); 
   const [showInstructorDashboard, setShowInstructorDashboard] = useState(false); 
@@ -144,6 +145,7 @@ const App: React.FC = () => {
     }
 
     let watchId: number;
+    let retryTimeout: any;
 
     const handlePosition = (pos: GeolocationPosition) => {
         const { latitude, longitude, accuracy } = pos.coords;
@@ -164,33 +166,35 @@ const App: React.FC = () => {
         }
     };
 
-    const startWatching = (highAccuracy: boolean) => {
-        watchId = navigator.geolocation.watchPosition(
-            handlePosition,
-            (err) => {
-                if (highAccuracy && (err.code === 2 || err.code === 3)) {
-                    console.warn("High accuracy geo failed, switching to low accuracy mode.");
-                    navigator.geolocation.clearWatch(watchId);
-                    startWatching(false);
-                } else {
-                    if (err.code !== 2 && err.code !== 3) {
-                        console.error(`Geo Error (${highAccuracy ? 'High' : 'Low'}):`, err.message);
-                    } else {
-                        console.log(`Position update unavailable (${highAccuracy ? 'High' : 'Low'}). Waiting for signal.`);
-                    }
-                }
-            },
-            { 
-                enableHighAccuracy: highAccuracy, 
-                maximumAge: 10000, 
-                timeout: 20000 
-            }
-        );
+    const handleError = (err: GeolocationPositionError) => {
+        console.warn(`Geo Error (${err.code}): ${err.message}`);
+        // Code 2: POSITION_UNAVAILABLE, Code 3: TIMEOUT
+        if (err.code === 2 || err.code === 3) {
+             console.log("Retrying location in 3 seconds...");
+             retryTimeout = setTimeout(() => {
+                 navigator.geolocation.getCurrentPosition(handlePosition, (e) => {
+                     // If retry fails, try low accuracy as fallback
+                     console.warn("High accuracy failed, falling back to low accuracy.");
+                     navigator.geolocation.watchPosition(handlePosition, null, { enableHighAccuracy: false, maximumAge: 30000, timeout: 30000 });
+                 }, { enableHighAccuracy: true, timeout: 10000 });
+             }, 3000);
+        }
     };
 
-    startWatching(true); 
+    watchId = navigator.geolocation.watchPosition(
+        handlePosition,
+        handleError,
+        { 
+            enableHighAccuracy: true, 
+            maximumAge: 5000, // Reduced from 10s to get fresher data
+            timeout: 15000 
+        }
+    );
 
-    return () => navigator.geolocation.clearWatch(watchId);
+    return () => {
+        navigator.geolocation.clearWatch(watchId);
+        clearTimeout(retryTimeout);
+    };
   }, [mode, completedPointIds]); 
 
   const handleStartGame = (gameId: string, teamName: string, userName: string, style: MapStyleId) => {
@@ -224,6 +228,14 @@ const App: React.FC = () => {
           games: prev.games.map(g => g.id === updatedGame.id ? updatedGame : g)
       }));
       db.saveGame(updatedGame);
+  };
+
+  const handleUpdatePlayground = (updatedPlayground: Playground) => {
+      if (!activeGame) return;
+      const updatedPlaygrounds = activeGame.playgrounds?.map(pg => 
+          pg.id === updatedPlayground.id ? updatedPlayground : pg
+      ) || [];
+      updateActiveGame({ ...activeGame, playgrounds: updatedPlaygrounds });
   };
 
   const handleAddManualTask = (overrideLoc?: Coordinate, targetPlaygroundId?: string) => {
@@ -348,9 +360,60 @@ const App: React.FC = () => {
       targetPlaygroundIdRef.current = null;
   };
 
+  // Relocate Game Function
+  const handleRelocateGame = () => {
+      if (!activeGame || !mapRef.current) return;
+      
+      const newCenter = mapRef.current.getCenter();
+      const currentTasks = activeGame.points.filter(p => !p.playgroundId); // Only move map tasks
+      
+      if (currentTasks.length === 0) {
+          alert("No map tasks to move.");
+          return;
+      }
+
+      // Calculate centroid of current tasks
+      let totalLat = 0;
+      let totalLng = 0;
+      currentTasks.forEach(p => {
+          totalLat += p.location.lat;
+          totalLng += p.location.lng;
+      });
+      const centroid = {
+          lat: totalLat / currentTasks.length,
+          lng: totalLng / currentTasks.length
+      };
+
+      // Calculate delta
+      const deltaLat = newCenter.lat - centroid.lat;
+      const deltaLng = newCenter.lng - centroid.lng;
+
+      // Update points
+      const updatedPoints = activeGame.points.map(p => {
+          if (p.playgroundId) return p; // Don't move playground tasks (they don't have GPS coords)
+          return {
+              ...p,
+              location: {
+                  lat: p.location.lat + deltaLat,
+                  lng: p.location.lng + deltaLng
+              }
+          };
+      });
+
+      if (confirm(`Move ${currentTasks.length} tasks to center of screen?`)) {
+          updateActiveGame({ ...activeGame, points: updatedPoints });
+      }
+  };
+
   const activeGame = useMemo(() => {
       return gameState.games.find(g => g.id === gameState.activeGameId);
   }, [gameState.games, gameState.activeGameId]);
+
+  // Calculate Total Tasks for Team Dashboard (On Map)
+  const totalMapPoints = useMemo(() => {
+      if (!activeGame) return 0;
+      return activeGame.points.filter(p => !p.isSectionHeader && !p.playgroundId).length;
+  }, [activeGame]);
 
   const displayPoints = useMemo(() => {
       if (!activeGame) return [];
@@ -736,14 +799,20 @@ const App: React.FC = () => {
                 playgrounds={activeGame?.playgrounds}
                 onOpenPlayground={(id) => setActivePlaygroundId(id)}
                 onOpenTeamDashboard={() => setShowTeamDashboard(true)}
+                onRelocateGame={handleRelocateGame}
               />
               
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 h-12 pointer-events-auto">
                   {mode === GameMode.INSTRUCTOR && (
                     <button onClick={() => setShowGameChooser(true)} className="h-12 bg-orange-600 hover:bg-orange-700 text-white px-5 rounded-2xl shadow-2xl flex items-center justify-center gap-2 border border-white/10 shrink-0"><span className="font-black text-xs uppercase tracking-widest truncate max-w-[150px]">{activeGame?.name || "SELECT"}</span><ChevronDown className="w-4 h-4 opacity-50" /></button>
                   )}
-                  {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
-                      <LocationSearch onSelectLocation={(coord) => mapRef.current?.jumpTo(coord)} onLocateMe={() => { if (gameState.userLocation) mapRef.current?.jumpTo(gameState.userLocation); }} onFitBounds={() => { if (activeGame && activeGame.points.length) mapRef.current?.fitBounds(activeGame.points); }} />
+                  {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
+                      <LocationSearch 
+                        onSelectLocation={(coord) => mapRef.current?.jumpTo(coord)} 
+                        onLocateMe={() => { if (gameState.userLocation) mapRef.current?.jumpTo(gameState.userLocation); }} 
+                        onFitBounds={() => { if (activeGame && activeGame.points.length) mapRef.current?.fitBounds(activeGame.points); }}
+                        hideSearch={mode === GameMode.PLAY} 
+                      />
                   )}
               </div>
 
@@ -881,13 +950,24 @@ const App: React.FC = () => {
               onClose={() => setActivePlaygroundId(null)}
               onPointClick={setSelectedPoint}
               mode={mode}
+              onUpdatePlayground={handleUpdatePlayground}
+              onEditPlayground={() => {
+                  setActivePlaygroundId(null);
+                  setShowPlaygroundEditor(true);
+              }}
           />
       )}
 
-      {showTeamDashboard && gameState.teamId && gameState.activeGameId && (
+      {showTeamDashboard && gameState.activeGameId && (
           <TeamDashboard 
               teamId={gameState.teamId} 
-              gameId={gameState.activeGameId} 
+              gameId={gameState.activeGameId}
+              totalMapPoints={totalMapPoints}
+              onOpenAgents={() => {
+                  setTeamsModalTargetId(gameState.teamId || null);
+                  setShowTeamDashboard(false);
+                  setShowTeamsModal(true);
+              }}
               onClose={() => setShowTeamDashboard(false)} 
           />
       )}
@@ -1002,11 +1082,15 @@ const App: React.FC = () => {
           <TeamsModal 
             gameId={gameState.activeGameId} 
             games={gameState.games} 
+            targetTeamId={teamsModalTargetId}
             onSelectGame={(id) => {
                 setGameState(prev => ({ ...prev, activeGameId: id }));
                 localStorage.setItem(STORAGE_KEY_GAME_ID, id);
             }} 
-            onClose={() => setShowTeamsModal(false)} 
+            onClose={() => {
+                setShowTeamsModal(false);
+                setTeamsModalTargetId(null);
+            }} 
           />
       )}
       {showAdminModal && <AdminModal games={gameState.games} onClose={() => setShowAdminModal(false)} onDeleteGame={(id) => db.deleteGame(id).then(refreshData)} />}

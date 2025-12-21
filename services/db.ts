@@ -3,7 +3,21 @@ import { supabase } from '../lib/supabase.ts';
 import { Game, TaskTemplate, TaskList, Team, TeamMemberData, PlaygroundTemplate } from '../types.ts';
 
 const logError = (context: string, error: any) => {
-    const message = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+    // Attempt to extract meaningful message
+    let message = 'Unknown Error';
+    if (error) {
+        if (typeof error === 'string') message = error;
+        else if (error.message) message = error.message;
+        else if (error.code) message = `Error Code: ${error.code}`;
+        else {
+            try {
+                message = JSON.stringify(error);
+            } catch (e) {
+                message = String(error);
+            }
+        }
+    }
+
     if (message.includes('Failed to fetch')) {
         console.warn(`[Supabase] Network connection failed in '${context}'. Check internet and API keys.`);
     } else if (error?.code === '42P01' || message.includes('Could not find the table')) {

@@ -32,8 +32,8 @@ const ICON_COLORS: Record<IconId, string> = {
  * Generates a Leaflet DivIcon based on the icon ID and state.
  * We use SVGs as strings because Leaflet doesn't render React components directly easily.
  */
-export const getLeafletIcon = (iconId: IconId, isUnlocked: boolean, isCompleted: boolean, label?: string, hasActions?: boolean) => {
-  const color = isCompleted ? '#22c55e' : (isUnlocked ? '#eab308' : ICON_COLORS[iconId] || '#3b82f6');
+export const getLeafletIcon = (iconId: IconId, isUnlocked: boolean, isCompleted: boolean, label?: string, hasActions?: boolean, forcedColor?: string) => {
+  const color = forcedColor || (isCompleted ? '#22c55e' : (isUnlocked ? '#eab308' : ICON_COLORS[iconId] || '#3b82f6'));
   const size = isUnlocked ? 40 : 32;
   
   // Simple SVG strings for the markers to avoid heavy react-dom/server dependencies in browser

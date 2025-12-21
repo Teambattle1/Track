@@ -155,6 +155,13 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
                      (point.logic?.onCorrect?.length || 0) > 0 || 
                      (point.logic?.onIncorrect?.length || 0) > 0;
 
+  // In Instructor mode, we want points to appear Red (like locked/not-completed) but showing their actual icon
+  // effectively treating "isUnlocked" as true for icon visibility, but using Red color scheme.
+  const visualIsUnlocked = mode === GameMode.INSTRUCTOR ? true : point.isUnlocked;
+  const visualIsCompleted = mode === GameMode.INSTRUCTOR ? false : point.isCompleted;
+  // Override icon color for Instructor mode to be Red
+  const forcedColor = mode === GameMode.INSTRUCTOR ? '#ef4444' : undefined;
+
   useEffect(() => {
       if (markerRef.current && !isDraggingRef.current) {
           markerRef.current.setLatLng([point.location.lat, point.location.lng]);
@@ -233,10 +240,30 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
       }
   }, [isSelected, isDraggable]);
 
+  // Determine circle color
+  const circleColor = isSelected ? '#4f46e5' : (forcedColor || (visualIsUnlocked ? (visualIsCompleted ? '#22c55e' : '#eab308') : '#ef4444'));
+
   return (
     <>
-      <Marker draggable={isDraggable} eventHandlers={eventHandlers} position={[point.location.lat, point.location.lng]} icon={getLeafletIcon(point.iconId, point.isUnlocked, point.isCompleted, label, hasActions && mode === GameMode.EDIT)} ref={markerRef} />
-      <Circle ref={circleRef} center={[point.location.lat, point.location.lng]} radius={point.radiusMeters} pathOptions={{ color: isSelected ? '#4f46e5' : (point.isUnlocked ? (point.isCompleted ? '#22c55e' : '#eab308') : '#ef4444'), fillColor: isSelected ? '#6366f1' : (point.isUnlocked ? (point.isCompleted ? '#22c55e' : '#eab308') : '#ef4444'), fillOpacity: showGeofence ? (isSelected ? 0.4 : 0.2) : 0.1, weight: showGeofence ? (isSelected ? 3 : 2) : 1, dashArray: point.isUnlocked ? undefined : '5, 5' }} />
+      <Marker 
+        draggable={isDraggable} 
+        eventHandlers={eventHandlers} 
+        position={[point.location.lat, point.location.lng]} 
+        icon={getLeafletIcon(point.iconId, visualIsUnlocked, visualIsCompleted, label, hasActions && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR), forcedColor)} 
+        ref={markerRef} 
+      />
+      <Circle 
+        ref={circleRef} 
+        center={[point.location.lat, point.location.lng]} 
+        radius={point.radiusMeters} 
+        pathOptions={{ 
+            color: circleColor, 
+            fillColor: circleColor, 
+            fillOpacity: showGeofence ? (isSelected ? 0.4 : 0.2) : 0.1, 
+            weight: showGeofence ? (isSelected ? 3 : 2) : 1, 
+            dashArray: visualIsUnlocked ? undefined : '5, 5' 
+        }} 
+      />
     </>
   );
 };

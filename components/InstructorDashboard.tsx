@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Game, Team, TeamMember, Coordinate } from '../types';
-import { X, Users, MessageSquare, Send, RefreshCw, Radio, MapPin, CheckCircle, Trophy, ListChecks, Plus, Minus, Gamepad2 } from 'lucide-react';
+import { Game, Team, TeamMember, Coordinate, GamePoint } from '../types';
+import { X, Users, MessageSquare, Send, RefreshCw, Radio, MapPin, CheckCircle, Trophy, ListChecks, Plus, Minus, Gamepad2, ArrowRight } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
@@ -24,6 +24,9 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null); // null = All Teams
   const [sending, setSending] = useState(false);
   const [viewTab, setViewTab] = useState<'MAP' | 'LIST'>('MAP');
+  
+  // Point Selection for details (Mobile friendly)
+  const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
   
   // Track location history for tails (Last 5 mins)
   const [locationHistory, setLocationHistory] = useState<Record<string, LocationHistoryItem[]>>({});
@@ -147,6 +150,38 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       return stats;
   }, [game.points, teams]);
 
+  // Logic Links Visualization for Instructor
+  const logicLinks = useMemo(() => {
+      const links: { from: Coordinate; to: Coordinate; color?: string }[] = [];
+      game.points.forEach(p => {
+          if (p.logic?.onCorrect) {
+              p.logic.onCorrect.forEach(action => {
+                  if (action.type === 'unlock' && action.targetId) {
+                      const target = game.points.find(tp => tp.id === action.targetId);
+                      if (target) links.push({ from: p.location, to: target.location, color: '#22c55e' });
+                  }
+              });
+          }
+          if (p.logic?.onIncorrect) {
+              p.logic.onIncorrect.forEach(action => {
+                  if (action.type === 'unlock' && action.targetId) {
+                      const target = game.points.find(tp => tp.id === action.targetId);
+                      if (target) links.push({ from: p.location, to: target.location, color: '#ef4444' });
+                  }
+              });
+          }
+          if (p.logic?.onOpen) {
+              p.logic.onOpen.forEach(action => {
+                  if (action.type === 'unlock' && action.targetId) {
+                      const target = game.points.find(tp => tp.id === action.targetId);
+                      if (target) links.push({ from: p.location, to: target.location, color: '#3b82f6' });
+                  }
+              });
+          }
+      });
+      return links;
+  }, [game.points]);
+
   const handleSendMessage = () => {
       if (!broadcastMsg.trim()) return;
       setSending(true);
@@ -172,7 +207,12 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       setShowTeamControl(true);
   };
 
+  const handlePointClick = (point: GamePoint) => {
+      setSelectedPointId(point.id);
+  };
+
   const selectedTeam = teams.find(t => t.id === selectedTeamId);
+  const selectedPoint = game.points.find(p => p.id === selectedPointId);
   const visiblePlaygrounds = game.playgrounds?.filter(p => p.buttonVisible) || [];
 
   return (
@@ -222,11 +262,13 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                             teams={teamLocations}
                             teamTrails={teamTrails} // Pass movement history
                             pointLabels={pointStats}
+                            logicLinks={logicLinks}
                             accuracy={null}
                             mode={2 as any} // INSTRUCTOR Mode
                             mapStyle="osm"
-                            onPointClick={() => {}} // Could show task details if needed
+                            onPointClick={handlePointClick} 
                             onTeamClick={handleTeamClickOnMap}
+                            selectedPointId={selectedPointId}
                         />
                         
                         {/* Instructor Playground Controls */}
@@ -248,6 +290,36 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                         </div>
                                     </button>
                                 ))}
+                            </div>
+                        )}
+
+                        {/* Task Details Popover (Bottom Sheet style for Mobile) */}
+                        {selectedPoint && (
+                            <div className="absolute bottom-0 left-0 right-0 z-[1100] bg-slate-900 border-t border-orange-500 rounded-t-3xl shadow-2xl p-6 animate-in slide-in-from-bottom duration-300">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-[10px] bg-orange-600 text-white px-2 py-0.5 rounded font-black uppercase tracking-wide">{selectedPoint.activationTypes.join(', ')}</span>
+                                            <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-black uppercase tracking-wide">{selectedPoint.points} PTS</span>
+                                        </div>
+                                        <h3 className="text-lg font-black text-white uppercase">{selectedPoint.title}</h3>
+                                    </div>
+                                    <button onClick={() => setSelectedPointId(null)} className="p-1 bg-slate-800 rounded-full text-slate-400 hover:text-white">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="bg-slate-800 p-3 rounded-xl">
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">QUESTION / TASK</p>
+                                        <p className="text-sm text-slate-200" dangerouslySetInnerHTML={{ __html: selectedPoint.task.question }} />
+                                    </div>
+                                    <div className="bg-green-900/20 border border-green-800 p-3 rounded-xl">
+                                        <p className="text-[10px] font-bold text-green-500 uppercase mb-1">SOLUTION / ANSWER</p>
+                                        <p className="text-sm font-bold text-green-300">
+                                            {selectedPoint.task.answer || selectedPoint.task.correctAnswers?.join(', ') || selectedPoint.task.range?.correctValue || "No explicit answer"}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>

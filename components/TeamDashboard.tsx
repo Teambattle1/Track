@@ -2,15 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import { Team, Game } from '../types';
 import * as db from '../services/db';
-import { X, Trophy, Target, CheckCircle, Users, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, Trophy, Target, CheckCircle, Users, ChevronUp, ChevronDown, AlertCircle } from 'lucide-react';
 
 interface TeamDashboardProps {
-  teamId: string;
+  teamId?: string;
   gameId: string;
+  totalMapPoints: number;
+  onOpenAgents: () => void;
   onClose: () => void;
 }
 
-const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, onClose }) => {
+const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, totalMapPoints, onOpenAgents, onClose }) => {
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [leaderboard, setLeaderboard] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +23,13 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, onClose }
             const teams = await db.fetchTeams(gameId);
             const sorted = teams.sort((a, b) => b.score - a.score);
             setLeaderboard(sorted);
-            const myTeam = sorted.find(t => t.id === teamId);
+            
+            // If teamId is provided, find that team. 
+            // Otherwise (testing mode), default to the first team (leader).
+            const myTeam = teamId 
+                ? sorted.find(t => t.id === teamId) 
+                : sorted[0];
+                
             setCurrentTeam(myTeam || null);
         } catch (e) {
             console.error(e);
@@ -34,17 +42,40 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, onClose }
     return () => clearInterval(interval);
   }, [teamId, gameId]);
 
-  if (!currentTeam) return null;
+  if (loading && !currentTeam) {
+      return (
+        <div className="fixed inset-0 z-[2500] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        </div>
+      );
+  }
 
-  const myRankIndex = leaderboard.findIndex(t => t.id === teamId);
+  if (!currentTeam) {
+      return (
+        <div className="fixed inset-0 z-[2500] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center max-w-sm w-full shadow-2xl">
+                <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-8 h-8 text-slate-500" />
+                </div>
+                <h2 className="text-xl font-black text-white mb-2 uppercase tracking-widest">NO TEAMS FOUND</h2>
+                <p className="text-slate-400 mb-6 text-sm">Join or create a team to view the dashboard.</p>
+                <button onClick={onClose} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl uppercase tracking-widest text-xs transition-colors">CLOSE</button>
+            </div>
+        </div>
+      );
+  }
+
+  const myRankIndex = leaderboard.findIndex(t => t.id === currentTeam.id);
   const rank = myRankIndex + 1;
   
   const neighborAbove = leaderboard[myRankIndex - 1];
   const neighborBelow = leaderboard[myRankIndex + 1];
 
+  const tasksCompleted = currentTeam.completedPointIds?.length || 0;
+
   return (
-    <div className="fixed inset-0 z-[2500] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 animate-in slide-in-from-bottom-10">
-      <div className="w-full max-w-md flex flex-col h-full sm:h-auto sm:max-h-[85vh] bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative">
+    <div className="fixed inset-0 z-[2500] bg-slate-950/95 backdrop-blur-md flex items-center justify-center sm:p-4 animate-in slide-in-from-bottom-10">
+      <div className="w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-md flex flex-col bg-slate-900 border-x-0 border-y-0 sm:border border-slate-800 sm:rounded-3xl overflow-hidden shadow-2xl relative">
           {/* Header */}
           <div className="p-6 bg-slate-950 border-b border-slate-800 flex justify-between items-center shrink-0">
               <div className="flex flex-col">
@@ -72,13 +103,21 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, onClose }
               <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center">
                       <CheckCircle className="w-8 h-8 text-green-500 mb-2" />
-                      <span className="text-2xl font-black text-white">{currentTeam.completedPointIds?.length || 0}</span>
+                      <span className="text-2xl font-black text-white">
+                          {tasksCompleted}/{totalMapPoints}
+                      </span>
                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">TASKS DONE</span>
                   </div>
-                  <div className="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center">
-                      <Users className="w-8 h-8 text-blue-500 mb-2" />
+                  <div 
+                    onClick={onOpenAgents}
+                    className="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center cursor-pointer hover:bg-slate-750 hover:border-orange-500/50 transition-all group"
+                  >
+                      <div className="relative">
+                        <Users className="w-8 h-8 text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
+                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-slate-800" />
+                      </div>
                       <span className="text-2xl font-black text-white">{currentTeam.members.length}</span>
-                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">AGENTS</span>
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-400 transition-colors">EDIT AGENTS</span>
                   </div>
               </div>
 

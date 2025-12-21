@@ -27,7 +27,7 @@ const PlaygroundLibraryModal: React.FC<PlaygroundLibraryModalProps> = ({ onClose
             <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-950">
                 <div>
                     <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
-                        <Globe className="w-6 h-6 text-indigo-500" /> GLOBAL PLAYGROUNDS
+                        <Globe className="w-6 h-6 text-orange-500" /> GLOBAL PLAYGROUNDS
                     </h2>
                     <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mt-1">IMPORT READY-MADE VIRTUAL ZONES</p>
                 </div>
@@ -70,7 +70,7 @@ const PlaygroundLibraryModal: React.FC<PlaygroundLibraryModalProps> = ({ onClose
                                     <div className="mt-auto">
                                         <button 
                                             onClick={() => onImport(tpl)}
-                                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-black text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg transition-colors"
+                                            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-black text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg transition-colors"
                                         >
                                             <Download className="w-4 h-4" /> IMPORT TO GAME
                                         </button>
