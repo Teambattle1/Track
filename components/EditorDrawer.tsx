@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GamePoint, TaskList, Coordinate, Game } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2 } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -33,8 +33,9 @@ interface EditorDrawerProps {
   userLocation?: Coordinate | null;
   onFitBounds: () => void;
   onHoverPoint?: (point: GamePoint | null) => void;
-  onOpenPlaygroundEditor?: () => void; // New prop
+  onOpenPlaygroundEditor?: () => void;
   initialExpanded?: boolean;
+  onAddTask?: (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId?: string) => void;
 }
 
 const SortablePointItem: React.FC<{ 
@@ -181,12 +182,87 @@ const SortablePointItem: React.FC<{
   );
 };
 
+const ZoneSection = ({ 
+    id,
+    title, 
+    icon: Icon, 
+    count, 
+    isCollapsed, 
+    onToggle, 
+    children, 
+    onAdd,
+    activeMenu,
+    onSetActiveMenu
+}: { 
+    id: string,
+    title: string, 
+    icon: any, 
+    count: number, 
+    isCollapsed: boolean, 
+    onToggle: () => void, 
+    children?: React.ReactNode, 
+    onAdd: (type: 'MANUAL' | 'AI' | 'LIBRARY') => void,
+    activeMenu: boolean,
+    onSetActiveMenu: (open: boolean) => void
+}) => {
+    const { setNodeRef, isOver } = useDroppable({ id });
+
+    return (
+        <div ref={setNodeRef} className={`mb-2 rounded-xl transition-colors ${isOver ? 'bg-orange-50 dark:bg-orange-900/20 ring-2 ring-orange-500' : ''}`}>
+            <div 
+                onClick={onToggle}
+                className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+            >
+                <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-orange-500" />
+                    <span className="text-xs font-black uppercase text-gray-700 dark:text-gray-200 tracking-wide">{title}</span>
+                    <span className="text-[10px] font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded text-gray-500">{count}</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
+            </div>
+            
+            {!isCollapsed && (
+                <div className="mt-2 pl-2 border-l-2 border-gray-200 dark:border-gray-800 ml-3">
+                    {children}
+                    
+                    {/* Add Task Button for this Zone */}
+                    <div className="relative mt-2">
+                        <button 
+                            onClick={() => onSetActiveMenu(!activeMenu)}
+                            className="w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-400 hover:text-orange-500 hover:border-orange-500 font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all"
+                        >
+                            <Plus className="w-3 h-3" /> Add Task Here
+                        </button>
+                        
+                        {activeMenu && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 animate-in slide-in-from-top-1 overflow-hidden">
+                                <button onClick={() => { onAdd('MANUAL'); onSetActiveMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
+                                    <div className="bg-orange-100 dark:bg-orange-900/30 p-1.5 rounded-lg"><Plus className="w-4 h-4 text-orange-600" /></div>
+                                    <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">New Blank Task</span>
+                                </button>
+                                <button onClick={() => { onAdd('AI'); onSetActiveMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-t border-gray-100 dark:border-gray-700">
+                                    <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-lg"><Wand2 className="w-4 h-4 text-purple-600" /></div>
+                                    <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">AI Generator</span>
+                                </button>
+                                <button onClick={() => { onAdd('LIBRARY'); onSetActiveMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-t border-gray-100 dark:border-gray-700">
+                                    <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg"><Library className="w-4 h-4 text-blue-600" /></div>
+                                    <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">From Library</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const EditorDrawer: React.FC<EditorDrawerProps> = ({
   onClose,
   activeGame,
   activeGameName,
-  points,
-  allPoints = [],
+  points, // This is technically "displayPoints" passed from App
+  allPoints = [], // This is the full list from activeGame
   games,
   onSelectGame,
   onOpenGameChooser,
@@ -206,17 +282,36 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   onFitBounds,
   onHoverPoint,
   onOpenPlaygroundEditor,
-  initialExpanded = false
+  initialExpanded = false,
+  onAddTask,
+  userLocation
 }) => {
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [isExpanded, setIsExpanded] = useState(initialExpanded); 
   const [isSaved, setIsSaved] = useState(false);
   const [clearConfirm, setClearConfirm] = useState(false);
+  
+  // Grouping State
+  const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': true }); // Default collapsed
+  const [activeAddMenu, setActiveAddMenu] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialExpanded) setIsExpanded(true);
   }, [initialExpanded]);
+
+  // Initialize collapse state for playgrounds once loaded
+  useEffect(() => {
+      if (activeGame?.playgrounds) {
+          setCollapsedZones(prev => {
+              const next = { ...prev };
+              activeGame.playgrounds?.forEach(pg => {
+                  if (next[pg.id] === undefined) next[pg.id] = true;
+              });
+              return next;
+          });
+      }
+  }, [activeGame?.playgrounds]);
 
   const activeSourceList = taskLists.find(l => l.id === sourceListId);
   
@@ -227,12 +322,63 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = points.findIndex((p) => p.id === active.id);
-      const newIndex = points.findIndex((p) => p.id === over.id);
-      if (oldIndex !== -1 && newIndex !== -1) {
-        onReorderPoints(arrayMove(points, oldIndex, newIndex));
-      }
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const activePoint = allPoints.find(p => p.id === activeId);
+    if (!activePoint) return;
+
+    let targetPlaygroundId: string | undefined = undefined;
+    let isReorder = false;
+
+    // Determine target zone
+    if (overId === 'zone-map') {
+        targetPlaygroundId = undefined;
+    } else if (overId.startsWith('zone-pg-')) {
+        targetPlaygroundId = overId.replace('zone-pg-', '');
+    } else {
+        // Dropped on another Item
+        const overPoint = allPoints.find(p => p.id === overId);
+        if (overPoint) {
+            targetPlaygroundId = overPoint.playgroundId;
+            isReorder = true;
+        } else {
+            return; // Unknown drop target
+        }
+    }
+
+    if (activePoint.playgroundId !== targetPlaygroundId) {
+        // Move to new zone
+        const updatedPoints = allPoints.map(p => {
+            if (p.id === activeId) {
+                return {
+                    ...p,
+                    playgroundId: targetPlaygroundId,
+                    // Reset position if moving to map (use center or user loc), or set default if moving to playground
+                    location: targetPlaygroundId ? { lat: 0, lng: 0 } : (userLocation || { lat: 0, lng: 0 }),
+                    playgroundPosition: targetPlaygroundId ? { x: 50, y: 50 } : undefined,
+                    playgroundScale: targetPlaygroundId ? 1 : undefined
+                };
+            }
+            return p;
+        });
+
+        if (isReorder) {
+             const oldIndex = updatedPoints.findIndex(p => p.id === activeId);
+             const overIndex = updatedPoints.findIndex(p => p.id === overId);
+             onReorderPoints(arrayMove(updatedPoints, oldIndex, overIndex));
+        } else {
+             onReorderPoints(updatedPoints);
+        }
+    } else {
+        // Same zone, simple reorder
+        if (isReorder && activeId !== overId) {
+            const oldIndex = allPoints.findIndex(p => p.id === activeId);
+            const newIndex = allPoints.findIndex(p => p.id === overId);
+            onReorderPoints(arrayMove(allPoints, oldIndex, newIndex));
+        }
     }
   };
 
@@ -243,14 +389,16 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
     setTimeout(() => setIsSaved(false), 3000);
   };
 
-  const placedCount = activeSourceList ? (allPoints || points).filter(p => activeSourceList.tasks.some(t => t.title === p.title)).length : 0;
-  const totalCount = activeSourceList ? activeSourceList.tasks.length : 0;
-  const remaining = totalCount - placedCount;
-  const isExhausted = activeSourceList && remaining <= 0;
+  const toggleZone = (id: string) => {
+      setCollapsedZones(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
-  const availableTags = Array.from(new Set(allPoints.flatMap(p => p.tags || []))).sort();
-  const availableLists = taskLists.filter(list => allPoints.some(p => list.tasks.some(t => t.title === p.title)));
-  const orphanPoints = allPoints.filter(p => !taskLists.some(list => list.tasks.some(t => t.title === p.title)));
+  // Group Points
+  const mapPoints = allPoints.filter(p => !p.playgroundId);
+  const playgroundGroups = activeGame?.playgrounds?.map(pg => ({
+      ...pg,
+      points: allPoints.filter(p => p.playgroundId === pg.id)
+  })) || [];
 
   const isFiltered = filterState.mode !== 'ALL';
 
@@ -325,195 +473,99 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                         {isFiltered ? <Eye className="w-4 h-4" /> : <Filter className="w-4 h-4 opacity-70" />}
                         <span className="text-xs font-bold uppercase tracking-wider">
                             {isFiltered ? 
-                                (filterState.mode === 'TAG' ? `TAG: ${filterState.value}` : `LIST: ${taskLists.find(l => l.id === filterState.value)?.name || (filterState.value === 'orphan' ? 'Unlisted' : 'Unknown')}`) 
+                                (filterState.mode === 'TAG' ? `TAG: ${filterState.value}` : `FILTER ACTIVE`) 
                                 : "FILTER MAP POINTS"}
                         </span>
                     </div>
                     <ChevronDown className={`w-4 h-4 transition-transform ${showFilterMenu ? 'rotate-180' : ''}`} />
                 </button>
 
-                {showFilterMenu && (
+                {showFilterMenu && onSetFilter && (
                     <div className="absolute top-full left-0 right-0 z-[6000] p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-2xl animate-in slide-in-from-top-2 max-h-80 overflow-y-auto">
-                        {isFiltered && onSetFilter && (
-                            <button 
-                                onClick={() => { onSetFilter({ mode: 'ALL', value: '' }); setShowFilterMenu(false); }}
-                                className="w-full mb-3 py-1.5 text-xs font-bold uppercase text-red-500 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                            >
-                                Reset Filter (Show All)
-                            </button>
-                        )}
-
-                        {availableTags.length > 0 && onSetFilter && (
-                            <div className="mb-3">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">BY TAG</p>
-                                <div className="flex flex-wrap gap-1">
-                                    {availableTags.map(tag => (
-                                        <button 
-                                            key={tag}
-                                            onClick={() => { onSetFilter({ mode: 'TAG', value: tag }); setShowFilterMenu(false); }}
-                                            className={`px-2 py-1 rounded text-[10px] uppercase font-bold border transition-colors ${filterState.mode === 'TAG' && filterState.value === tag ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-400'}`}
-                                        >
-                                            {tag}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {onSetFilter && (availableLists.length > 0 || orphanPoints.length > 0) && (
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">BY SOURCE LIST</p>
-                                <div className="flex flex-col gap-1">
-                                    {availableLists.map(list => (
-                                        <button 
-                                            key={list.id}
-                                            onClick={() => { onSetFilter({ mode: 'LIST', value: list.id }); setShowFilterMenu(false); }}
-                                            className={`px-2 py-1.5 rounded text-[10px] uppercase font-bold text-left border flex items-center gap-2 transition-colors ${filterState.mode === 'LIST' && filterState.value === list.id ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-400'}`}
-                                        >
-                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: list.color }}></div>
-                                            {list.name}
-                                        </button>
-                                    ))}
-                                    {orphanPoints.length > 0 && (
-                                        <button 
-                                            onClick={() => { onSetFilter({ mode: 'LIST', value: 'orphan' }); setShowFilterMenu(false); }}
-                                            className={`px-2 py-1.5 rounded text-[10px] uppercase font-bold text-left border flex items-center gap-2 transition-colors ${filterState.mode === 'LIST' && filterState.value === 'orphan' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-400'}`}
-                                        >
-                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
-                                            Custom / Unlisted
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                        
-                        {!availableTags.length && !availableLists.length && !orphanPoints.length && (
-                            <div className="text-center py-4 text-gray-400">
-                                <p className="text-[10px] uppercase font-bold">No filters available</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 relative z-[40]">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Map Click Behavior</label>
-                <button 
-                    onClick={() => setShowSourceMenu(!showSourceMenu)}
-                    className={`w-full p-2 rounded-xl border flex items-center gap-2 text-left transition-all ${isExhausted ? 'border-red-300 bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-400'}`}
-                >
-                    <div className={`p-1.5 rounded-lg ${activeSourceList ? 'text-white' : 'bg-gray-100 text-gray-500'}`} style={{ backgroundColor: activeSourceList?.color }}>
-                        <MousePointerClick className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="font-bold text-xs text-gray-800 dark:text-gray-200 truncate uppercase">
-                            {activeSourceList ? activeSourceList.name : 'Place New (Empty)'}
-                        </p>
-                        {activeSourceList && (
-                            <p className={`text-[10px] font-bold uppercase ${isExhausted ? 'text-red-500' : 'text-green-500'}`}>
-                                {isExhausted ? 'All placed!' : `${remaining} remaining`}
-                            </p>
-                        )}
-                    </div>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                </button>
-
-                {showSourceMenu && (
-                    <div className="absolute top-full left-4 right-4 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto z-[5000]">
-                        <button onClick={() => { onSetSourceListId(''); setShowSourceMenu(false); }} className="w-full p-2 text-left text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 uppercase">
-                            <div className="p-1 rounded bg-gray-200 dark:bg-gray-700"><Plus className="w-3 h-3" /></div>
-                            Place New (Empty Task)
-                            {!sourceListId && <Check className="w-3 h-3 ml-auto text-blue-500" />}
+                        <button 
+                            onClick={() => { onSetFilter({ mode: 'ALL', value: '' }); setShowFilterMenu(false); }}
+                            className="w-full mb-2 py-2 text-xs font-bold uppercase text-red-500 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                            Reset Filter (Show All)
                         </button>
-                        <div className="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
-                        {taskLists.map(list => {
-                                const lPlaced = (allPoints || points).filter(p => list.tasks.some(t => t.title === p.title)).length;
-                                const lTotal = list.tasks.length;
-                                const ListIcon = list.iconId ? ICON_COMPONENTS[list.iconId] : Plus; 
-                                
-                                return (
-                                    <button key={list.id} onClick={() => { onSetSourceListId(list.id); setShowSourceMenu(false); }} className="w-full p-2 text-left flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 uppercase">
-                                        <div className="w-1 h-8 rounded-full" style={{ backgroundColor: list.color }}></div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-1">
-                                                {list.iconId && <ListIcon className="w-3 h-3 text-gray-500" />}
-                                                <p className="font-bold text-xs text-gray-800 dark:text-gray-200 truncate">{list.name}</p>
-                                            </div>
-                                            <p className="text-[10px] text-gray-500">{lTotal - lPlaced} left</p>
-                                        </div>
-                                        {sourceListId === list.id && <Check className="w-3 h-3 text-blue-500" />}
-                                    </button>
-                                );
-                        })}
+                        {/* Simplified filter menu for now */}
+                        <div className="text-center text-[10px] text-gray-400 p-2">Use map filter bar for advanced options.</div>
                     </div>
                 )}
             </div>
 
+            {/* Main Content Area - Scrollable */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900/50 z-0">
-                <div className="flex justify-between items-center mb-3">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {isFiltered ? `Found ${points.length} of ${allPoints.length}` : `Map Points (${points.length})`}
-                    </label>
-                    <button 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            if (clearConfirm) {
-                                if (isFiltered) onClearMap(points.map(p => p.id));
-                                else onClearMap();
-                                setClearConfirm(false);
-                            } else {
-                                setClearConfirm(true);
-                                setTimeout(() => setClearConfirm(false), 3000);
-                            }
-                        }}
-                        className={`text-[10px] font-bold flex items-center gap-1 uppercase tracking-wider transition-all ${
-                            clearConfirm 
-                                ? 'bg-red-600 text-white px-3 py-1 rounded animate-pulse shadow-md' 
-                                : (isFiltered ? 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded' : 'text-red-500 hover:text-red-600')
-                        }`}
-                    >
-                        {clearConfirm ? (
-                            "CONFIRM DELETE?"
-                        ) : (
-                            <>
-                                <Eraser className="w-3 h-3" /> {isFiltered ? `Delete ${points.length} Visible` : 'Clear All'}
-                            </>
-                        )}
-                    </button>
-                </div>
-
-                {isFiltered && (
-                    <div className="mb-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 rounded-lg text-[10px] text-indigo-600 dark:text-indigo-400 text-center font-bold uppercase">
-                        Filter active • Sorting disabled
-                    </div>
-                )}
-
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={points.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                        <div className="space-y-1">
-                            {points.length === 0 && (
-                                <div className="text-center py-8 text-gray-400">
-                                    <p className="text-xs uppercase tracking-wide">
-                                        {isFiltered ? "No points match filter." : "Tap map to place tasks."}
-                                    </p>
-                                </div>
-                            )}
-                            {points.map((point, index) => (
-                                <SortablePointItem 
-                                    key={point.id} 
-                                    point={point} 
-                                    index={index}
-                                    isSelected={point.id === selectedPointId}
-                                    isDragDisabled={isFiltered} 
-                                    onEdit={onEditPoint}
-                                    onSelect={onSelectPoint}
-                                    onDelete={onDeletePoint}
-                                    onHover={(p) => onHoverPoint && onHoverPoint(p)}
-                                    taskLists={taskLists}
-                                />
-                            ))}
-                        </div>
+                    
+                    {/* MAP ZONE */}
+                    <SortableContext items={mapPoints.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                        <ZoneSection 
+                            id="zone-map"
+                            title="ON MAP" 
+                            icon={Map} 
+                            count={mapPoints.length} 
+                            isCollapsed={!!collapsedZones['map']} 
+                            onToggle={() => toggleZone('map')}
+                            activeMenu={activeAddMenu === 'map'}
+                            onSetActiveMenu={(open) => setActiveAddMenu(open ? 'map' : null)}
+                            onAdd={(type) => onAddTask && onAddTask(type)}
+                        >
+                            <div className="space-y-1">
+                                {mapPoints.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks on map yet. Drop items here.</div>}
+                                {mapPoints.map((point, index) => (
+                                    <SortablePointItem 
+                                        key={point.id} 
+                                        point={point} 
+                                        index={index}
+                                        isSelected={point.id === selectedPointId}
+                                        isDragDisabled={isFiltered} 
+                                        onEdit={onEditPoint}
+                                        onSelect={onSelectPoint}
+                                        onDelete={onDeletePoint}
+                                        onHover={(p) => onHoverPoint && onHoverPoint(p)}
+                                        taskLists={taskLists}
+                                    />
+                                ))}
+                            </div>
+                        </ZoneSection>
                     </SortableContext>
+
+                    {/* PLAYGROUND ZONES */}
+                    {playgroundGroups.map(pg => (
+                        <SortableContext key={pg.id} items={pg.points.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                            <ZoneSection 
+                                id={`zone-pg-${pg.id}`}
+                                title={pg.title} 
+                                icon={Gamepad2} 
+                                count={pg.points.length} 
+                                isCollapsed={!!collapsedZones[pg.id]} 
+                                onToggle={() => toggleZone(pg.id)}
+                                activeMenu={activeAddMenu === pg.id}
+                                onSetActiveMenu={(open) => setActiveAddMenu(open ? pg.id : null)}
+                                onAdd={(type) => onAddTask && onAddTask(type, pg.id)}
+                            >
+                                <div className="space-y-1">
+                                    {pg.points.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks in this playground. Drop items here.</div>}
+                                    {pg.points.map((point, index) => (
+                                        <SortablePointItem 
+                                            key={point.id} 
+                                            point={point} 
+                                            index={index}
+                                            isSelected={point.id === selectedPointId}
+                                            isDragDisabled={isFiltered} 
+                                            onEdit={onEditPoint}
+                                            onSelect={onSelectPoint}
+                                            onDelete={onDeletePoint}
+                                            onHover={(p) => onHoverPoint && onHoverPoint(p)}
+                                            taskLists={taskLists}
+                                        />
+                                    ))}
+                                </div>
+                            </ZoneSection>
+                        </SortableContext>
+                    ))}
+
                 </DndContext>
             </div>
 

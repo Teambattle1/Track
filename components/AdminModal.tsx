@@ -25,7 +25,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ games, onClose, onDeleteGame })
 
   const sqlCode = `-- COPY THIS INTO THE SUPABASE SQL EDITOR TO FIX DATABASE ISSUES
 
--- 1. GAMES Table (Stores full game JSON including playgrounds)
+-- 1. GAMES Table
 CREATE TABLE IF NOT EXISTS public.games (
     id TEXT PRIMARY KEY,
     data JSONB,
@@ -53,7 +53,7 @@ ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public teams access" ON public.teams;
 CREATE POLICY "Public teams access" ON public.teams FOR ALL USING (true) WITH CHECK (true);
 
--- 3. LIBRARY Table (Task Templates)
+-- 3. LIBRARY Table
 CREATE TABLE IF NOT EXISTS public.library (
     id TEXT PRIMARY KEY,
     data JSONB,
@@ -63,7 +63,7 @@ ALTER TABLE public.library ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public library access" ON public.library;
 CREATE POLICY "Public library access" ON public.library FOR ALL USING (true) WITH CHECK (true);
 
--- 4. TASK_LISTS Table (Grouped Templates)
+-- 4. TASK_LISTS Table
 CREATE TABLE IF NOT EXISTS public.task_lists (
     id TEXT PRIMARY KEY,
     data JSONB,
@@ -73,7 +73,27 @@ ALTER TABLE public.task_lists ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public task_lists access" ON public.task_lists;
 CREATE POLICY "Public task_lists access" ON public.task_lists FOR ALL USING (true) WITH CHECK (true);
 
--- 5. PLAYGROUND_LIBRARY Table (Saved Playgrounds)
+-- 5. ACCOUNT_USERS Table
+CREATE TABLE IF NOT EXISTS public.account_users (
+    id TEXT PRIMARY KEY,
+    data JSONB,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+ALTER TABLE public.account_users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public account_users access" ON public.account_users;
+CREATE POLICY "Public account_users access" ON public.account_users FOR ALL USING (true) WITH CHECK (true);
+
+-- 6. ACCOUNT_INVITES Table
+CREATE TABLE IF NOT EXISTS public.account_invites (
+    id TEXT PRIMARY KEY,
+    data JSONB,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+ALTER TABLE public.account_invites ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public account_invites access" ON public.account_invites;
+CREATE POLICY "Public account_invites access" ON public.account_invites FOR ALL USING (true) WITH CHECK (true);
+
+-- 7. PLAYGROUND_LIBRARY Table
 CREATE TABLE IF NOT EXISTS public.playground_library (
     id TEXT PRIMARY KEY,
     title TEXT,
@@ -86,8 +106,145 @@ ALTER TABLE public.playground_library ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public playground library access" ON public.playground_library;
 CREATE POLICY "Public playground library access" ON public.playground_library FOR ALL USING (true) WITH CHECK (true);
 
--- 6. Enable Realtime for TEAMS
--- Note: This might throw an error if already added, which is fine to ignore, or check first.
+-- 8. HIGH PERFORMANCE TAG PURGE FUNCTION
+CREATE OR REPLACE FUNCTION public.purge_tag_globally(tag_to_purge TEXT)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- Update Library Templates
+    UPDATE public.library
+    SET data = jsonb_set(
+        data, 
+        '{tags}', 
+        (SELECT jsonb_agg(x) FROM jsonb_array_elements(data->'tags') x WHERE lower(x::text) != lower('"' || tag_to_purge || '"'))
+    )
+    WHERE data->'tags' @> ('["' || tag_to_purge || '"]')::jsonb;
+
+    -- Update Games Points
+    UPDATE public.games
+    SET data = (
+        SELECT jsonb_set(
+            games.data, 
+            '{points}', 
+            jsonb_agg(
+                jsonb_set(
+                    p, 
+                    '{tags}', 
+                    COALESCE((SELECT jsonb_agg(t) FROM jsonb_array_elements(p->'tags') t WHERE lower(t::text) != lower('"' || tag_to_purge || '"')), '[]'::jsonb)
+                )
+            )
+        )
+        FROM jsonb_array_elements(games.data->'points') p
+    )
+    WHERE games.data->'points' @> ('[{"tags": ["' || tag_to_purge || '"]}]')::jsonb;
+
+    -- Update Task Lists
+    UPDATE public.task_lists
+    SET data = (
+        SELECT jsonb_set(
+            task_lists.data, 
+            '{tasks}', 
+            jsonb_agg(
+                jsonb_set(
+                    t, 
+                    '{tags}', 
+                    COALESCE((SELECT jsonb_agg(tag) FROM jsonb_array_elements(t->'tags') tag WHERE lower(tag::text) != lower('"' || tag_to_purge || '"')), '[]'::jsonb)
+                )
+            )
+        )
+        FROM jsonb_array_elements(task_lists.data->'tasks') t
+    )
+    WHERE task_lists.data->'tasks' @> ('[{"tags": ["' || tag_to_purge || '"]}]')::jsonb;
+END;
+$$;
+
+-- 9. TAG RENAME FUNCTION
+CREATE OR REPLACE FUNCTION public.rename_tag_globally(old_tag TEXT, new_tag TEXT)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- Update Library Templates
+    UPDATE public.library
+    SET data = jsonb_set(
+        data, 
+        '{tags}', 
+        (
+            SELECT jsonb_agg(
+                CASE 
+                    WHEN lower(x::text) = lower('"' || old_tag || '"') THEN to_jsonb(new_tag)
+                    ELSE x 
+                END
+            ) 
+            FROM jsonb_array_elements(data->'tags') x
+        )
+    )
+    WHERE data->'tags' @> ('["' || old_tag || '"]')::jsonb;
+
+    -- Update Games Points
+    UPDATE public.games
+    SET data = (
+        SELECT jsonb_set(
+            games.data, 
+            '{points}', 
+            jsonb_agg(
+                jsonb_set(
+                    p, 
+                    '{tags}', 
+                    COALESCE(
+                        (
+                            SELECT jsonb_agg(
+                                CASE 
+                                    WHEN lower(t::text) = lower('"' || old_tag || '"') THEN to_jsonb(new_tag)
+                                    ELSE t 
+                                END
+                            ) 
+                            FROM jsonb_array_elements(p->'tags') t
+                        ), 
+                        '[]'::jsonb
+                    )
+                )
+            )
+        )
+        FROM jsonb_array_elements(games.data->'points') p
+    )
+    WHERE games.data->'points' @> ('[{"tags": ["' || old_tag || '"]}]')::jsonb;
+
+    -- Update Task Lists
+    UPDATE public.task_lists
+    SET data = (
+        SELECT jsonb_set(
+            task_lists.data, 
+            '{tasks}', 
+            jsonb_agg(
+                jsonb_set(
+                    t, 
+                    '{tags}', 
+                    COALESCE(
+                        (
+                            SELECT jsonb_agg(
+                                CASE 
+                                    WHEN lower(tag::text) = lower('"' || old_tag || '"') THEN to_jsonb(new_tag)
+                                    ELSE tag 
+                                END
+                            ) 
+                            FROM jsonb_array_elements(t->'tags') tag
+                        ), 
+                        '[]'::jsonb
+                    )
+                )
+            )
+        )
+        FROM jsonb_array_elements(task_lists.data->'tasks') t
+    )
+    WHERE task_lists.data->'tasks' @> ('[{"tags": ["' || old_tag || '"]}]')::jsonb;
+END;
+$$;
+
+-- 10. Enable Realtime for TEAMS
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'teams') THEN
@@ -129,6 +286,16 @@ END $$;`;
 
           {showSql && (
               <div className="bg-black rounded-xl p-4 border border-slate-700 mb-4 relative">
+                  <div className="bg-amber-900/30 border border-amber-500/50 p-3 rounded-lg mb-3 flex gap-3 items-start">
+                      <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+                      <div>
+                          <p className="text-[10px] text-amber-200 font-bold uppercase mb-1">SUPABASE WARNING</p>
+                          <p className="text-[10px] text-amber-100/80">
+                              Supabase will warn you about "Destructive Operations". This is because the script updates security policies. 
+                              <br/><strong>It is safe to click "Run this query".</strong>
+                          </p>
+                      </div>
+                  </div>
                   <pre className="text-[10px] text-green-400 font-mono overflow-x-auto whitespace-pre-wrap max-h-40">
                       {sqlCode}
                   </pre>

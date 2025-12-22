@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkles, AlertCircle, Ban, Edit2, Globe, Tag, Image as ImageIcon, Home, Search, Hash } from 'lucide-react';
 import { TaskTemplate } from '../types';
-import { generateAiTasks, generateAiImage, findCompanyDomain } from '../services/ai';
+import { generateAiTasks, generateAiImage, searchLogoUrl } from '../services/ai';
 import { ICON_COMPONENTS } from '../utils/icons';
 
 interface AiTaskGeneratorProps {
@@ -39,42 +39,16 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks }
       setError(null);
       
       try {
-          const domain = await findCompanyDomain(topic);
-          
-          if (domain) {
-              const checkImage = (url: string): Promise<boolean> => {
-                  return new Promise(resolve => {
-                      const img = new Image();
-                      img.onload = () => resolve(true);
-                      img.onerror = () => resolve(false);
-                      img.src = url;
-                  });
-              };
-
-              const clearbitUrl = `https://logo.clearbit.com/${domain}`;
-              if (await checkImage(clearbitUrl)) {
-                  setLogoUrl(clearbitUrl);
-                  setUseLogoForTasks(true);
-                  setIsGeneratingLogo(false);
-                  return;
-              }
-
-              const googleUrl = `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=256`;
-              if (await checkImage(googleUrl)) {
-                  setLogoUrl(googleUrl);
-                  setUseLogoForTasks(true);
-                  setIsGeneratingLogo(false);
-                  return;
-              }
-
-              setError(`Domain found (${domain}) but no logo available.`);
-              setIsGeneratingLogo(false);
+          const url = await searchLogoUrl(topic);
+          if (url) {
+              setLogoUrl(url);
+              setUseLogoForTasks(true);
           } else {
-              setError("Could not identify a company domain for this topic.");
-              setIsGeneratingLogo(false);
+              setError("Could not find a logo for this topic.");
           }
       } catch (e) {
           setError("Error searching for logo.");
+      } finally {
           setIsGeneratingLogo(false);
       }
   };
@@ -196,7 +170,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks }
   const stripHtml = (html: any) => typeof html === 'string' ? html.replace(/<[^>]*>?/gm, '') : '';
 
   return (
-    <div className="fixed inset-0 z-[3500] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[3600] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-gray-900 w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
         
         {/* Header */}

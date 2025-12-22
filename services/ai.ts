@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { TaskTemplate, IconId, TaskType } from "../types";
 
 // Schema to ensure Gemini returns data compatible with our App
@@ -94,10 +94,44 @@ const singleTaskSchema = {
   required: ["title", "question", "type", "iconId"]
 };
 
+// Helper for Exponential Backoff Retry
+async function makeRequestWithRetry<T>(requestFn: () => Promise<T>, maxRetries = 3, delay = 2000): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await requestFn();
+    } catch (error: any) {
+      const msg = error.message || String(error);
+      const isRateLimit = msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests');
+      
+      if (isRateLimit && i < maxRetries - 1) {
+        console.warn(`AI Rate limit hit. Retrying in ${delay / 1000} seconds... (Attempt ${i + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error(`Failed after ${maxRetries} retries due to rate limiting.`);
+}
+
+const handleAiError = (error: any) => {
+    const msg = error.message || String(error);
+    
+    // Check specifically for quota errors to suppress loud console errors if they bubble up past retry
+    if (msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests')) {
+        console.warn("AI Quota/Rate Limit hit (logging suppressed).");
+        // Throw a user-friendly error that the UI can catch and display gracefully
+        throw new Error("AI Service is currently busy (Quota Exceeded). Please wait a moment and try again.");
+    }
+
+    console.error("AI Error:", error);
+    throw error;
+};
+
 export const generateAiTasks = async (topic: string, count: number = 5, language: string = 'English', additionalTag?: string): Promise<TaskTemplate[]> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
-  // Create a timeout promise (90 seconds for larger batch generation)
   const timeoutPromise = new Promise<never>((_, reject) => {
     const id = setTimeout(() => {
       clearTimeout(id);
@@ -106,7 +140,7 @@ export const generateAiTasks = async (topic: string, count: number = 5, language
   });
 
   try {
-    const apiCallPromise = ai.models.generateContent({
+    const apiCallPromise = makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Create exactly ${count} diverse and fun scavenger hunt/quiz tasks for a location-based game.
       Topic: "${topic}"
@@ -120,23 +154,27 @@ export const generateAiTasks = async (topic: string, count: number = 5, language
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
-        thinkingConfig: { thinkingBudget: 0 }, // Disable thinking for maximum speed and lower latency
+        thinkingConfig: { thinkingBudget: 0 },
         systemInstruction: "You are a professional game designer for 'TeamAction', a location-based GPS adventure. You specialize in creating concise, engaging, and localized tasks.",
       },
-    });
+    }));
 
     const response = await Promise.race([apiCallPromise, timeoutPromise]);
     const rawData = JSON.parse(response.text || "[]");
 
     return rawData.map((item: any, index: number) => {
-      const tags = ['ai-generated', ...topic.split(' ').map(s => s.toLowerCase().replace(/[^a-z0-9]/g, ''))];
-      if (additionalTag) tags.push(additionalTag);
+      // Logic for tags: "AI", Country (Language), and optional Auto-Tag
+      const countryTag = language.split(' ')[0]; // Extracts "Danish" from "Danish (Dansk)"
+      const tags = ['AI', countryTag];
+      if (additionalTag && additionalTag.trim()) {
+          tags.push(additionalTag.trim());
+      }
 
       return {
         id: `ai-${Date.now()}-${index}`,
         title: item.title,
         iconId: (item.iconId as IconId) || 'default',
-        tags: tags.filter(t => t.length > 1),
+        tags: tags,
         createdAt: Date.now(),
         points: 100,
         task: {
@@ -170,8 +208,8 @@ export const generateAiTasks = async (topic: string, count: number = 5, language
       };
     });
   } catch (error) {
-    console.error("AI Generation Error:", error);
-    throw error;
+    handleAiError(error);
+    return []; // Should throw, but Typescript needs return
   }
 };
 
@@ -184,7 +222,7 @@ export const generateTaskFromImage = async (base64Image: string): Promise<TaskTe
     const mimeType = matches[1];
     const data = matches[2];
 
-    const response = await ai.models.generateContent({
+    const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: {
         parts: [
@@ -204,7 +242,7 @@ export const generateTaskFromImage = async (base64Image: string): Promise<TaskTe
         responseSchema: singleTaskSchema,
         thinkingConfig: { thinkingBudget: 0 }
       }
-    });
+    }));
 
     const item = JSON.parse(response.text || "{}");
     if (!item.title) return null;
@@ -213,7 +251,7 @@ export const generateTaskFromImage = async (base64Image: string): Promise<TaskTe
         id: `ai-img-${Date.now()}`,
         title: item.title,
         iconId: (item.iconId as IconId) || 'camera',
-        tags: ['image-generated', ...(item.tags || [])],
+        tags: ['AI', 'Image'],
         createdAt: Date.now(),
         points: 100,
         task: {
@@ -247,7 +285,7 @@ export const generateTaskFromImage = async (base64Image: string): Promise<TaskTe
         }
     };
   } catch (error) {
-    console.error("AI Image Task Generation Error:", error);
+    handleAiError(error);
     return null;
   }
 };
@@ -255,10 +293,10 @@ export const generateTaskFromImage = async (base64Image: string): Promise<TaskTe
 export const generateAiImage = async (prompt: string, style: string = 'cartoon'): Promise<string | null> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
-        const response = await ai.models.generateContent({
+        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
             model: 'gemini-2.5-flash-image', 
             contents: `A simple, flat, vector illustration for a game task: ${prompt}. Style: ${style}. Minimal background, high contrast.`,
-        });
+        }));
         
         if (response.candidates?.[0]?.content?.parts) {
             for (const part of response.candidates[0].content.parts) {
@@ -269,7 +307,7 @@ export const generateAiImage = async (prompt: string, style: string = 'cartoon')
         }
         return null;
     } catch (e) {
-        console.error("Image Generation Error", e);
+        handleAiError(e);
         return null;
     }
 };
@@ -277,13 +315,39 @@ export const generateAiImage = async (prompt: string, style: string = 'cartoon')
 export const findCompanyDomain = async (query: string): Promise<string | null> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     try {
-        const response = await ai.models.generateContent({
+        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: `Return ONLY the official website domain for: "${query}" (e.g. google.com). If not a company or not found, return "null".`,
             config: { thinkingConfig: { thinkingBudget: 0 } }
-        });
+        }));
         const text = response.text?.trim() || "";
         return text !== "null" && text.includes('.') ? text : null;
+    } catch (e) {
+        return null;
+    }
+};
+
+export const searchLogoUrl = async (query: string): Promise<string | null> => {
+    try {
+        const domain = await findCompanyDomain(query);
+        if (!domain) return null;
+
+        const checkImage = (url: string): Promise<boolean> => {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        };
+
+        const clearbitUrl = `https://logo.clearbit.com/${domain}`;
+        if (await checkImage(clearbitUrl)) return clearbitUrl;
+
+        const googleUrl = `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=256`;
+        if (await checkImage(googleUrl)) return googleUrl;
+
+        return null;
     } catch (e) {
         return null;
     }

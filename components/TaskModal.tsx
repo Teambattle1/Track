@@ -14,9 +14,23 @@ interface TaskModalProps {
   isInstructorMode?: boolean;
   mode?: GameMode;
   onOpenActions?: () => void;
+  onTaskOpen?: () => void;
+  onTaskIncorrect?: () => void;
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ point, onClose, onComplete, onPenalty, onUnlock, distance, isInstructorMode = false, mode, onOpenActions }) => {
+const TaskModal: React.FC<TaskModalProps> = ({ 
+    point, 
+    onClose, 
+    onComplete, 
+    onPenalty, 
+    onUnlock, 
+    distance, 
+    isInstructorMode = false, 
+    mode, 
+    onOpenActions,
+    onTaskOpen,
+    onTaskIncorrect
+}) => {
   const [answer, setAnswer] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [sliderValue, setSliderValue] = useState<number>(point?.task.range?.min || 0);
@@ -47,6 +61,14 @@ const TaskModal: React.FC<TaskModalProps> = ({ point, onClose, onComplete, onPen
   const isDoubleTrouble = useMemo(() => {
       return point?.logic?.onOpen?.some(action => action.type === 'double_trouble');
   }, [point]);
+
+  // Logic Trigger: ON OPEN
+  useEffect(() => {
+      if (point && !isEditMode && onTaskOpen) {
+          // Trigger the open logic (e.g. locks, messages, etc.)
+          onTaskOpen();
+      }
+  }, [point?.id, isEditMode]);
 
   // Subscribe to Realtime Updates
   useEffect(() => {
@@ -137,6 +159,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ point, onClose, onComplete, onPen
           onComplete(point.id, finalScore);
           onClose();
       } else {
+          // Logic Trigger: ON INCORRECT
+          if (onTaskIncorrect) onTaskIncorrect();
+
           if (isDoubleTrouble && onPenalty) {
               onPenalty(point.points);
               setErrorMsg(`DOUBLE TROUBLE! Incorrect answer. You lost ${point.points} points.`);
@@ -443,7 +468,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ point, onClose, onComplete, onPen
   };
 
   return (
-    <div className="fixed inset-0 z-[1400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[2600] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}

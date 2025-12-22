@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { GameMode, MapStyleId, Language, Playground } from '../types';
-import { Map as MapIcon, Layers, GraduationCap, Menu, X, Globe, Moon, Sun, Library, Users, Home, LayoutDashboard, Ruler, Gamepad2, Shield } from 'lucide-react';
+import { GameMode, MapStyleId, Language, Playground, TimerConfig } from '../types';
+import { Map as MapIcon, Layers, GraduationCap, Menu, X, Globe, Moon, Sun, Library, Users, Home, LayoutDashboard, Ruler, Gamepad2, Shield, Clock, Move, MapPin } from 'lucide-react';
 
 interface GameHUDProps {
   accuracy: number | null;
@@ -21,7 +21,80 @@ interface GameHUDProps {
   playgrounds?: Playground[];
   onOpenPlayground?: (id: string) => void;
   onOpenTeamDashboard?: () => void;
+  onRelocateGame?: () => void;
+  isRelocating?: boolean;
+  timerConfig?: TimerConfig; // NEW
+  gameStartedAt?: number; // NEW - passed from App if available (team start time)
 }
+
+// Timer Sub-component
+const TimerDisplay = ({ config, startTime }: { config: TimerConfig, startTime?: number }) => {
+    const [displayTime, setDisplayTime] = useState("--:--");
+    const [statusColor, setStatusColor] = useState("text-white");
+
+    useEffect(() => {
+        if (config.mode === 'none') return;
+
+        const updateTimer = () => {
+            const now = Date.now();
+            let seconds = 0;
+
+            if (config.mode === 'countup') {
+                // Count up from start time (default to now if undefined for preview)
+                const start = startTime || now; 
+                seconds = Math.floor((now - start) / 1000);
+            } else if (config.mode === 'countdown') {
+                const start = startTime || now;
+                const durationSec = (config.durationMinutes || 60) * 60;
+                const elapsed = Math.floor((now - start) / 1000);
+                seconds = durationSec - elapsed;
+            } else if (config.mode === 'scheduled_end') {
+                if (config.endTime) {
+                    const end = new Date(config.endTime).getTime();
+                    seconds = Math.floor((end - now) / 1000);
+                }
+            }
+
+            // Formatting
+            if (seconds < 0) {
+                if (config.mode === 'countup') seconds = Math.abs(seconds); // Should ideally be positive
+                else seconds = 0; // Timer finished
+            }
+
+            // Colors
+            if (config.mode !== 'countup' && seconds < 300) setStatusColor("text-red-500 animate-pulse"); // Last 5 mins
+            else setStatusColor("text-white");
+
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+
+            if (h > 0) {
+                setDisplayTime(`${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+            } else {
+                setDisplayTime(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+            }
+        };
+
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+        return () => clearInterval(interval);
+    }, [config, startTime]);
+
+    if (config.mode === 'none') return null;
+
+    return (
+        <div className="absolute top-16 md:top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-md border border-slate-700 px-4 py-1.5 rounded-xl shadow-xl flex flex-col items-center min-w-[100px] z-[500] pointer-events-none">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">
+                {config.title || "TIMER"}
+            </span>
+            <div className={`text-xl font-mono font-black leading-none flex items-center gap-2 ${statusColor}`}>
+                <Clock className="w-4 h-4 opacity-50" />
+                {displayTime}
+            </div>
+        </div>
+    );
+};
 
 const GameHUD: React.FC<GameHUDProps> = ({ 
   mode, 
@@ -37,7 +110,11 @@ const GameHUD: React.FC<GameHUDProps> = ({
   onToggleMeasure,
   playgrounds,
   onOpenPlayground,
-  onOpenTeamDashboard
+  onOpenTeamDashboard,
+  onRelocateGame,
+  isRelocating,
+  timerConfig,
+  gameStartedAt
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showEditBanner, setShowEditBanner] = useState(false);
@@ -68,11 +145,25 @@ const GameHUD: React.FC<GameHUDProps> = ({
 
   return (
     <>
-      {showEditBanner && !isMeasuring && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-orange-600/95 text-white px-6 py-3 rounded-full backdrop-blur-md z-[2000] animate-in fade-in slide-in-from-top-4 pointer-events-none shadow-xl border border-white/20 flex items-center gap-3 transition-opacity duration-500">
+      {/* TIMER DISPLAY - Shows in all modes if configured */}
+      {timerConfig && (
+          <TimerDisplay config={timerConfig} startTime={gameStartedAt} />
+      )}
+
+      {showEditBanner && !isMeasuring && !isRelocating && (
+          <div className="fixed bottom-32 left-1/2 -translate-x-1/2 bg-orange-600/95 text-white px-6 py-3 rounded-full backdrop-blur-md z-[2000] animate-in fade-in slide-in-from-bottom-4 pointer-events-none shadow-xl border border-white/20 flex items-center gap-3 transition-opacity duration-500">
               <div className="bg-white/20 p-1.5 rounded-full animate-pulse"><Layers className="w-4 h-4 text-white" /></div>
               <span className="text-xs font-black uppercase tracking-widest">
                   EDIT MODE &bull; TAP MAP TO PLACE
+              </span>
+          </div>
+      )}
+
+      {isRelocating && (
+          <div className="fixed bottom-32 left-1/2 -translate-x-1/2 bg-green-600/95 text-white px-6 py-3 rounded-full backdrop-blur-md z-[2000] animate-in fade-in slide-in-from-bottom-4 pointer-events-none shadow-xl border border-white/20 flex items-center gap-3 transition-opacity duration-500">
+              <div className="bg-white/20 p-1.5 rounded-full animate-pulse"><Move className="w-4 h-4 text-white" /></div>
+              <span className="text-xs font-black uppercase tracking-widest">
+                  RELOCATING &bull; DRAG MAP TO NEW CENTER
               </span>
           </div>
       )}
@@ -104,7 +195,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
       )}
 
       {/* TOP LEFT CORNER */}
-      <div className="absolute top-4 left-4 z-[1000] pointer-events-auto h-12 flex items-center">
+      <div className="absolute top-4 left-4 z-[1000] pointer-events-auto h-12 flex items-center gap-2">
             {mode === GameMode.PLAY && onOpenTeamDashboard ? (
                 // TEAM ZONE BUTTON (Play Mode)
                 <button
@@ -131,6 +222,17 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     </div>
                 </div>
             )}
+
+            {/* HOME BUTTON (Edit Mode Only) */}
+            {mode === GameMode.EDIT && (
+                <button 
+                    onClick={onBackToHub}
+                    title="Back to Hub"
+                    className="h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 bg-slate-900/95 dark:bg-gray-800 text-white"
+                >
+                    <Home className="w-6 h-6" />
+                </button>
+            )}
             
             {/* Menu Dropdown (Only renders if not in Play Mode or if explicitly open) */}
             {isMenuOpen && mode !== GameMode.PLAY && (
@@ -152,28 +254,66 @@ const GameHUD: React.FC<GameHUDProps> = ({
                         <button onClick={() => { onOpenTaskMaster(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 text-slate-300 hover:text-amber-400 transition-colors text-left font-bold text-xs uppercase tracking-wide border-b border-white/5 mb-1" title="Task Library">
                             <Library className="w-4 h-4" /> TASKS
                         </button>
-                        <div className="p-2 bg-slate-900/50 rounded-xl mt-1">
-                            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest block mb-2 px-1">Map Style</span>
-                            <div className="grid grid-cols-2 gap-1">
-                                {mapStyles.map((style) => (
-                                    <button
-                                        key={style.id}
-                                        onClick={() => { onSetMapStyle(style.id); setIsMenuOpen(false); }}
-                                        title={`Switch to ${style.label}`}
-                                        className={`flex items-center gap-1.5 p-2 rounded-lg text-[9px] font-black uppercase transition-all border ${mapStyle === style.id ? 'bg-orange-600 border-orange-500 text-white shadow-lg' : 'bg-slate-900 border-white/5 text-slate-400 hover:text-white'}`}
-                                    >
-                                        <style.icon className="w-3 h-3" /> {style.id}
-                                    </button>
-                                ))}
+                        
+                        {/* Map Style Selector in Menu (Only if NOT in Edit mode, as Edit mode has it in top right) */}
+                        {mode !== GameMode.EDIT && (
+                            <div className="p-2 bg-slate-900/50 rounded-xl mt-1">
+                                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest block mb-2 px-1">Map Style</span>
+                                <div className="grid grid-cols-2 gap-1">
+                                    {mapStyles.map((style) => (
+                                        <button
+                                            key={style.id}
+                                            onClick={() => { onSetMapStyle(style.id); setIsMenuOpen(false); }}
+                                            title={`Switch to ${style.label}`}
+                                            className={`flex items-center gap-1.5 p-2 rounded-lg text-[9px] font-black uppercase transition-all border ${mapStyle === style.id ? 'bg-orange-600 border-orange-500 text-white shadow-lg' : 'bg-slate-900 border-white/5 text-slate-400 hover:text-white'}`}
+                                        >
+                                            <style.icon className="w-3 h-3" /> {style.id}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}
       </div>
 
       <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2 h-12 pointer-events-auto">
-        {mode === GameMode.EDIT && onToggleMeasure && (
+        
+        {/* MAP STYLE SELECTORS (Edit Mode Only) */}
+        {mode === GameMode.EDIT && (
+            <div className="flex bg-slate-900/95 dark:bg-gray-800 rounded-2xl border border-white/10 p-1 mr-2 shadow-2xl h-12 items-center">
+                {mapStyles.map((style) => (
+                    <button
+                        key={style.id}
+                        onClick={() => onSetMapStyle(style.id)}
+                        title={style.label}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${mapStyle === style.id ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                    >
+                        <style.icon className="w-5 h-5" />
+                    </button>
+                ))}
+            </div>
+        )}
+
+        {mode === GameMode.EDIT && onRelocateGame && (
+            <button
+                onClick={onRelocateGame}
+                title={isRelocating ? "Place Pins Here" : "Relocate All Tasks"}
+                className={`w-12 h-12 shadow-2xl rounded-2xl flex items-center justify-center transition-all border group relative ${
+                    isRelocating 
+                    ? 'bg-green-600 text-white border-green-500 animate-pulse hover:bg-green-700' 
+                    : 'bg-slate-900/95 dark:bg-gray-800 text-blue-500 border-blue-500/50 hover:bg-blue-600 hover:text-white'
+                }`}
+            >
+                {isRelocating ? <MapPin className="w-6 h-6" /> : <Move className="w-6 h-6" />}
+                <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">
+                    {isRelocating ? "PASTE PINS" : "RELOCATE ALL"}
+                </div>
+            </button>
+        )}
+
+        {mode === GameMode.EDIT && onToggleMeasure && !isRelocating && (
             <button
                 onClick={onToggleMeasure}
                 title={isMeasuring ? "Stop Measuring" : "Measure Distance"}

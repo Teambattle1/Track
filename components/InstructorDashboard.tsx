@@ -81,14 +81,12 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
           members.forEach(m => {
               if (!m.location) return;
               
-              // Find team for this member (Checking local state 'teams')
-              // Note: teams state might be stale if new team just joined, but it refreshes every 10s
-              // We rely on polling for team structure
-              const team = teams.find(t => t.members.includes(m.userName));
+              // Find team for this member
+              const team = teams.find(t => t.members.some(mem => mem.name === m.userName));
               if (team) {
                   if (!next[team.id]) next[team.id] = [];
                   
-                  // Avoid duplicate pushes if location hasn't changed effectively (simple check)
+                  // Avoid duplicate pushes if location hasn't changed effectively
                   const lastLoc = next[team.id][next[team.id].length - 1];
                   if (!lastLoc || lastLoc.lat !== m.location.lat || lastLoc.lng !== m.location.lng) {
                       next[team.id].push({ ...m.location, timestamp: now });
@@ -111,7 +109,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       
       teams.forEach(team => {
           // Find online members for this team
-          const teamOnlineMembers = onlineMembers.filter(m => team.members.includes(m.userName) && m.location);
+          const teamOnlineMembers = onlineMembers.filter(m => team.members.some(mem => mem.name === m.userName) && m.location);
           
           if (teamOnlineMembers.length > 0) {
               // Calculate average location
@@ -154,11 +152,12 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   const logicLinks = useMemo(() => {
       const links: { from: Coordinate; to: Coordinate; color?: string }[] = [];
       game.points.forEach(p => {
+          if (!p.location) return;
           if (p.logic?.onCorrect) {
               p.logic.onCorrect.forEach(action => {
                   if (action.type === 'unlock' && action.targetId) {
                       const target = game.points.find(tp => tp.id === action.targetId);
-                      if (target) links.push({ from: p.location, to: target.location, color: '#22c55e' });
+                      if (target && target.location) links.push({ from: p.location, to: target.location, color: '#22c55e' });
                   }
               });
           }
@@ -166,15 +165,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
               p.logic.onIncorrect.forEach(action => {
                   if (action.type === 'unlock' && action.targetId) {
                       const target = game.points.find(tp => tp.id === action.targetId);
-                      if (target) links.push({ from: p.location, to: target.location, color: '#ef4444' });
-                  }
-              });
-          }
-          if (p.logic?.onOpen) {
-              p.logic.onOpen.forEach(action => {
-                  if (action.type === 'unlock' && action.targetId) {
-                      const target = game.points.find(tp => tp.id === action.targetId);
-                      if (target) links.push({ from: p.location, to: target.location, color: '#3b82f6' });
+                      if (target && target.location) links.push({ from: p.location, to: target.location, color: '#ef4444' });
                   }
               });
           }
@@ -214,6 +205,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   const selectedTeam = teams.find(t => t.id === selectedTeamId);
   const selectedPoint = game.points.find(p => p.id === selectedPointId);
   const visiblePlaygrounds = game.playgrounds?.filter(p => p.buttonVisible) || [];
+  const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId);
 
   return (
     <div className="fixed inset-0 z-[2000] bg-slate-900 text-white flex flex-col animate-in fade-in duration-300">
@@ -257,10 +249,10 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                     <div className="flex-1 bg-slate-800 relative">
                         <GameMap 
                             ref={mapRef}
-                            userLocation={null} // Instructor doesn't need their own location centered
+                            userLocation={null}
                             points={game.points}
                             teams={teamLocations}
-                            teamTrails={teamTrails} // Pass movement history
+                            teamTrails={teamTrails}
                             pointLabels={pointStats}
                             logicLinks={logicLinks}
                             accuracy={null}
@@ -293,7 +285,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                             </div>
                         )}
 
-                        {/* Task Details Popover (Bottom Sheet style for Mobile) */}
+                        {/* Task Details Popover */}
                         {selectedPoint && (
                             <div className="absolute bottom-0 left-0 right-0 z-[1100] bg-slate-900 border-t border-orange-500 rounded-t-3xl shadow-2xl p-6 animate-in slide-in-from-bottom duration-300">
                                 <div className="flex justify-between items-start mb-4">
@@ -345,7 +337,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                     </div>
                                     <div className="border-t border-slate-700 pt-3 flex flex-wrap gap-1">
                                         {team.members.map((m, i) => (
-                                            <span key={i} className="text-[10px] bg-slate-900 text-slate-300 px-2 py-1 rounded">{m}</span>
+                                            <span key={i} className="text-[10px] bg-slate-900 text-slate-300 px-2 py-1 rounded">{m.name}</span>
                                         ))}
                                     </div>
                                 </div>
@@ -355,7 +347,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                 )}
             </div>
 
-            {/* Right: Broadcast Center (Always visible on desktop, hidden if modal open on mobile) */}
+            {/* Right: Broadcast Center */}
             <div className="hidden md:flex w-80 bg-slate-800 border-l border-slate-700 flex-col z-20 shadow-2xl">
                 <div className="p-6 bg-slate-900 border-b border-slate-700">
                     <h3 className="font-black text-white uppercase tracking-wider flex items-center gap-2 mb-1">
@@ -386,8 +378,6 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
         {showTeamControl && selectedTeam && (
             <div className="fixed inset-0 z-[3000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
                 <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl overflow-hidden flex flex-col shadow-2xl max-h-[90vh]">
-                    
-                    {/* Modal Header */}
                     <div className="p-5 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
                         <div>
                             <h2 className="text-xl font-black text-white uppercase tracking-wider">{selectedTeam.name}</h2>
@@ -398,7 +388,6 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                         </button>
                     </div>
 
-                    {/* Tabs */}
                     <div className="flex border-b border-slate-800 bg-slate-900">
                         <button onClick={() => setControlTab('CHAT')} className={`flex-1 py-4 text-xs font-bold uppercase border-b-2 transition-colors ${controlTab === 'CHAT' ? 'border-blue-500 text-blue-500' : 'border-transparent text-slate-500 hover:text-white'}`}>
                             <MessageSquare className="w-4 h-4 mx-auto mb-1" /> CHAT
@@ -411,10 +400,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                         </button>
                     </div>
 
-                    {/* Modal Content */}
                     <div className="p-6 bg-slate-900 flex-1 overflow-y-auto">
-                        
-                        {/* CHAT TAB */}
                         {controlTab === 'CHAT' && (
                             <div className="flex flex-col gap-4">
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">SEND MESSAGE TO {selectedTeam.name}</label>
@@ -434,14 +420,12 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                             </div>
                         )}
 
-                        {/* SCORE TAB */}
                         {controlTab === 'SCORE' && (
                             <div className="flex flex-col gap-6 items-center py-6">
                                 <div className="text-center">
                                     <div className="text-6xl font-black text-white mb-2">{selectedTeam.score}</div>
                                     <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">CURRENT POINTS</span>
                                 </div>
-                                
                                 <div className="w-full bg-slate-800 p-6 rounded-2xl border border-slate-700">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 block text-center">ADJUST SCORE</label>
                                     <div className="flex items-center gap-4">
@@ -460,15 +444,10 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                             <Plus className="w-6 h-6" />
                                         </button>
                                     </div>
-                                    <div className="flex justify-between mt-4">
-                                        <button onClick={() => handleUpdateScore(-500)} className="text-xs text-red-400 font-bold hover:text-white">-500</button>
-                                        <button onClick={() => handleUpdateScore(500)} className="text-xs text-green-400 font-bold hover:text-white">+500</button>
-                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* TASKS TAB */}
                         {controlTab === 'TASKS' && (
                             <div className="space-y-3">
                                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">TASK HISTORY</p>
@@ -491,19 +470,18 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                 })}
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>
         )}
 
         {/* Instructor Playground Viewer */}
-        {activePlaygroundId && (
+        {activePlaygroundId && activePlayground && (
             <PlaygroundModal 
-                playground={game.playgrounds?.find(p => p.id === activePlaygroundId)!}
+                playground={activePlayground}
                 points={game.points}
                 onClose={() => setActivePlaygroundId(null)}
-                onPointClick={() => {}} // Instructor just views, no interaction needed usually
+                onPointClick={() => {}} 
                 mode={2 as any} // INSTRUCTOR
             />
         )}

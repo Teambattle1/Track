@@ -34,6 +34,7 @@ export interface Team {
   updatedAt: string;
   captainDeviceId?: string; 
   isStarted?: boolean; 
+  startedAt?: number; // New: Timestamp when team started playing
 }
 
 export interface TeamMemberData {
@@ -171,7 +172,9 @@ export interface GamePoint {
   // Playground Specific
   playgroundId?: string; // If set, does NOT appear on map
   playgroundPosition?: { x: number; y: number }; // Percentage 0-100
-  
+  playgroundScale?: number; // Scale multiplier (default 1)
+  isHiddenBeforeScan?: boolean; // New: Task is invisible to players until explicitly unlocked/scanned
+
   // Appearance
   iconId: IconId;
   areaColor?: string;
@@ -208,6 +211,11 @@ export interface TaskTemplate {
   feedback?: TaskFeedback;
   settings?: TaskSettings;
   logic?: TaskLogic;
+  
+  // Client Submission Fields
+  submissionStatus?: 'pending' | 'approved' | 'rejected';
+  submitterName?: string;
+  isNew?: boolean; // UI flag for "New since last login"
 }
 
 export interface TaskList {
@@ -220,16 +228,41 @@ export interface TaskList {
   imageUrl?: string; // Cover image for the list card
   usageCount?: number; // Track popularity
   createdAt: number;
+  
+  // Client Task List Fields
+  isClientList?: boolean;
+  shareToken?: string;
 }
+
+// --- NEW CONFIG TYPES ---
+export interface ClientInfo {
+  name: string;
+  logoUrl?: string;
+  playingDate?: string; // ISO Date String
+}
+
+export type TimerMode = 'none' | 'countdown' | 'countup' | 'scheduled_end';
+
+export interface TimerConfig {
+  mode: TimerMode;
+  durationMinutes?: number; // For countdown
+  endTime?: string; // ISO Date String for scheduled_end
+  title?: string; // Optional label for timer (e.g. "TIME REMAINING")
+}
+// ------------------------
 
 export interface Game {
   id: string;
   name: string;
   description: string;
   points: GamePoint[];
-  playgrounds?: Playground[]; // New
+  playgrounds?: Playground[]; 
   createdAt: number;
   defaultMapStyle?: MapStyleId;
+  
+  // New Metadata
+  client?: ClientInfo;
+  timerConfig?: TimerConfig;
 }
 
 export interface GameState {

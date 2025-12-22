@@ -32,7 +32,7 @@ const ICON_COLORS: Record<IconId, string> = {
  * Generates a Leaflet DivIcon based on the icon ID and state.
  * We use SVGs as strings because Leaflet doesn't render React components directly easily.
  */
-export const getLeafletIcon = (iconId: IconId, isUnlocked: boolean, isCompleted: boolean, label?: string, hasActions?: boolean, forcedColor?: string) => {
+export const getLeafletIcon = (iconId: IconId, isUnlocked: boolean, isCompleted: boolean, label?: string, hasActions?: boolean, forcedColor?: string, isHidden?: boolean) => {
   const color = forcedColor || (isCompleted ? '#22c55e' : (isUnlocked ? '#eab308' : ICON_COLORS[iconId] || '#3b82f6'));
   const size = isUnlocked ? 40 : 32;
   
@@ -56,8 +56,13 @@ export const getLeafletIcon = (iconId: IconId, isUnlocked: boolean, isCompleted:
       html += `<div style="position: absolute; top: -5px; right: -5px; background-color: #0f172a; color: white; font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 9999px; border: 1px solid white;">${label}</div>`;
   }
 
+  // Purple Hidden Badge (Top Left)
+  if (isHidden) {
+      html += `<div style="position: absolute; top: -4px; left: -4px; width: 14px; height: 14px; background-color: #8b5cf6; border-radius: 50%; border: 2px solid white; z-index: 11; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><svg viewBox="0 0 24 24" width="8" height="8" stroke="white" stroke-width="4" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg></div>`;
+  }
+
+  // Red Logic Badge (Top Right or Bottom Left to avoid collision)
   if (hasActions) {
-      // Red glowing badge top left
       html += `<div class="animate-pulse" style="position: absolute; top: -2px; left: -2px; width: 12px; height: 12px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 8px 2px rgba(239,68,68,0.8); border: 2px solid white; z-index: 10;"></div>`;
   }
   

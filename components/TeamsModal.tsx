@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { Team, Game } from '../types';
 import * as db from '../services/db';
@@ -66,10 +65,12 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
   const filteredGames = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return games.filter(g => {
+    const gamesArr = Array.isArray(games) ? games : [];
+    
+    return gamesArr.filter(g => {
         const gDate = new Date(g.createdAt);
         gDate.setHours(0, 0, 0, 0);
-        const isCompleted = g.points.length > 0 && g.points.every(p => p.isCompleted);
+        const isCompleted = g.points?.length > 0 && g.points.every(p => p.isCompleted);
         if (tab === 'COMPLETED') return isCompleted;
         if (isCompleted) return false; 
         if (tab === 'TODAY') return gDate.getTime() === today.getTime();
@@ -159,7 +160,7 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                               </div>
                                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{name || 'Unknown Agent'}</span>
                                           </div>
-                                          {isMemberCaptain && <Anchor className="w-3 h-3 text-orange-500" title="Captain" />}
+                                          {isMemberCaptain && <div title="Captain"><Anchor className="w-3 h-3 text-orange-500" /></div>}
                                       </div>
                                   );
                               })}
@@ -209,7 +210,8 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
       );
   }
 
-  const selectedGame = games.find(g => g.id === gameId);
+  const gamesArr = Array.isArray(games) ? games : [];
+  const selectedGame = gamesArr.find(g => g.id === gameId);
 
   return (
     <div className="fixed inset-0 z-[1500] bg-black/80 backdrop-blur-sm flex items-center justify-center sm:p-4 animate-in fade-in">
@@ -238,7 +240,7 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
             </div>
             {showGameSwitch && (
                 <div className="bg-slate-950 border-b border-slate-800 p-2 max-h-40 overflow-y-auto animate-in slide-in-from-top-2 relative z-20 shrink-0">
-                    {games.map(g => (
+                    {gamesArr.map(g => (
                         <button key={g.id} onClick={() => { onSelectGame(g.id); setShowGameSwitch(false); }} className={`w-full p-2 text-left text-[10px] font-black uppercase rounded hover:bg-slate-800 transition-colors ${g.id === gameId ? 'text-blue-500' : 'text-slate-400'}`}>{g.name}</button>
                     ))}
                 </div>

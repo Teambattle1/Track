@@ -1,10 +1,9 @@
-
 import React from 'react';
-import { Users, Plus, Library, Map, Database, PlayCircle, Target, ChevronDown, ArrowLeft } from 'lucide-react';
+import { Users, Plus, Library, Map, Database, PlayCircle, Target, ChevronDown, ArrowLeft, LayoutDashboard } from 'lucide-react';
 
 interface CreatorHubProps {
   activeGameName?: string;
-  onAction: (action: 'PLAY' | 'CREATE' | 'EDIT' | 'TEAM' | 'TASKS' | 'ADMIN') => void;
+  onAction: (action: 'PLAY' | 'CREATE' | 'EDIT' | 'TEAM' | 'TASKS' | 'ADMIN' | 'DASHBOARD') => void;
   onChooseGame: () => void;
   onBack: () => void;
   version: string;
@@ -55,6 +54,20 @@ const CreatorHub: React.FC<CreatorHubProps> = ({ activeGameName, onAction, onCho
           </div>
 
           <div className="flex flex-col gap-4">
+              {/* PRIMARY DASHBOARD ACCESS */}
+              <button 
+                onClick={() => onAction('DASHBOARD')}
+                className="group relative h-20 bg-blue-600 hover:bg-blue-700 rounded-2xl flex items-center justify-center overflow-hidden shadow-xl transition-transform hover:scale-[1.02] border-2 border-blue-400/50 mb-2"
+              >
+                  <div className="flex items-center gap-4">
+                      <LayoutDashboard className="w-8 h-8 text-white drop-shadow-md group-hover:scale-110 transition-transform" />
+                      <div className="text-left">
+                          <span className="block text-xl font-black text-white tracking-widest leading-none uppercase">Open Dashboard</span>
+                          <span className="block text-[9px] font-bold text-blue-200 mt-1 uppercase">Central Management Workspace</span>
+                      </div>
+                  </div>
+              </button>
+
               <button 
                 onClick={() => onAction('PLAY')}
                 className="group relative h-24 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl flex items-center justify-center overflow-hidden shadow-xl transition-transform hover:scale-[1.02] border-2 border-orange-500/50"

@@ -13,7 +13,7 @@ import {
   Copy, KeyRound, ChevronDown, ChevronsUpDown, RotateCw, Type, 
   Palette, Bold, Italic, Underline, MonitorPlay, Speaker, MapPin, 
   Settings, Zap, MessageSquare, Clock, Globe, Lock, Check, Wand2, Hash,
-  Edit2, MousePointerClick
+  Edit2, MousePointerClick, EyeOff, Eye
 } from 'lucide-react';
 
 interface TaskEditorProps {
@@ -64,6 +64,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     areaColor: point.areaColor || '',
     completionLogic: point.completionLogic || 'remove_any',
     instructorNotes: point.instructorNotes || '',
+    isHiddenBeforeScan: point.isHiddenBeforeScan || false,
     task: {
         type: 'text',
         options: [],
@@ -370,6 +371,27 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    </button>
                                ))}
                            </div>
+
+                           <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                               <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4">VISIBILITY SETTINGS</label>
+                               <button
+                                   type="button"
+                                   onClick={() => setEditedPoint({...editedPoint, isHiddenBeforeScan: !editedPoint.isHiddenBeforeScan})}
+                                   className={`w-full p-4 rounded-2xl border-2 flex items-center gap-4 text-left transition-all ${editedPoint.isHiddenBeforeScan ? 'bg-purple-50 border-purple-500 dark:bg-purple-900/20' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:border-purple-200'}`}
+                               >
+                                   <div className={`p-3 rounded-xl ${editedPoint.isHiddenBeforeScan ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}>
+                                       {editedPoint.isHiddenBeforeScan ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                                   </div>
+                                   <div className="flex-1 min-w-0">
+                                       <span className="block font-black text-sm uppercase tracking-wide">HIDDEN UNTIL SCAN</span>
+                                       <span className="text-[10px] text-gray-500 uppercase font-bold">Task is invisible to team until scanned or logic-unlocked</span>
+                                   </div>
+                                   <div className={`w-12 h-6 rounded-full relative transition-colors ${editedPoint.isHiddenBeforeScan ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                                       <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${editedPoint.isHiddenBeforeScan ? 'left-7' : 'left-1'}`} />
+                                   </div>
+                               </button>
+                           </div>
+
                            {editedPoint.activationTypes.includes('radius') && (
                                <div className="p-5 bg-gray-50 dark:bg-gray-850 rounded-2xl border-2 border-gray-100 dark:border-gray-800">
                                    <div className="flex justify-between items-center mb-4">
