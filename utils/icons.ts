@@ -41,13 +41,19 @@ export const getLeafletIcon = (
     forcedColor?: string, 
     isHidden?: boolean,
     score?: number, // New: Score display
-    iconUrl?: string // New: Custom Icon URL
+    iconUrl?: string, // New: Custom Icon URL
+    isPlaygroundActivator?: boolean // New: Glow effect for playground activators
 ) => {
   const color = forcedColor || (isCompleted ? '#22c55e' : (isUnlocked ? '#eab308' : ICON_COLORS[iconId] || '#3b82f6'));
   const size = isUnlocked ? 40 : 32;
   
   // Base container style
-  let html = `<div style="filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3)); transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center;">`;
+  // If isPlaygroundActivator is true, add a heavy orange glow and border
+  const glowStyle = isPlaygroundActivator 
+    ? `filter: drop-shadow(0px 0px 8px #f97316); border-radius: 50%; box-shadow: 0 0 0 3px #f97316, 0 0 15px 5px rgba(249, 115, 22, 0.6); animation: pulse-orange 2s infinite;`
+    : `filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));`;
+
+  let html = `<div style="${glowStyle} transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%;">`;
 
   if (iconUrl) {
       // CUSTOM ICON RENDERER
@@ -69,14 +75,14 @@ export const getLeafletIcon = (
       html += svgContent;
   }
   
-  // ID Label - Centered ABOVE the icon (pill shape)
+  // ID Label - Centered ABOVE the icon (pill shape) - Moved higher (top: -24px) to avoid overlap
   if (label) {
-      html += `<div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 8px; border: 1px solid white; z-index: 20; white-space: nowrap;">${label}</div>`;
+      html += `<div style="position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 8px; border: 1px solid white; z-index: 20; white-space: nowrap;">${label}</div>`;
   }
 
-  // Score Badge - Top Right
+  // Score Badge - Bottom Center (bottom: -16px) to separate from label
   if (score !== undefined) {
-      html += `<div style="position: absolute; top: -8px; right: -12px; background-color: #3b82f6; color: white; font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; border: 1px solid white; box-shadow: 0 2px 2px rgba(0,0,0,0.2); z-index: 21;">${score}</div>`;
+      html += `<div style="position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); background-color: #3b82f6; color: white; font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; border: 1px solid white; box-shadow: 0 2px 2px rgba(0,0,0,0.2); z-index: 21;">${score}</div>`;
   }
 
   // Hidden Badge - Top Left (Purple Eye)

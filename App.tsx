@@ -233,29 +233,29 @@ const App: React.FC = () => {
                       }
                   }
                   
-                  // Open Playground Links
-                  if (action.type === 'open_playground' && action.targetId) {
-                      const targetPg = playgroundMarkers.find(pg => pg.id === action.targetId);
-                      if (targetPg) {
-                          links.push({ 
-                              from: p.location, 
-                              to: targetPg.location, 
-                              color: '#3b82f6', 
-                              type: 'open_playground' 
-                          });
-                      }
-                  }
+                  // NOTE: 'open_playground' links are now handled visually by icons/buttons, removed lines here.
               });
           });
-          
-          // Implicit Connection: Task belonging to playground -> connect to playground marker
-          // ONLY if tasks have GPS (0,0 tasks in playground don't need lines) - usually playground tasks are virtual (0,0)
-          // BUT: If the task is a physical trigger for a playground, it's covered by 'open_playground' action above.
-          // This block is for visualization of task->playground relationship if desired, but standard is via logic.
       });
 
       return { links, playgroundMarkers };
   }, [activeGame, gameState.userLocation]);
+
+  // Determine highlighted playground (if selected point activates it)
+  const targetPlaygroundId = useMemo(() => {
+      if (!selectedPoint && !editingPoint) return undefined;
+      const pt = selectedPoint || editingPoint;
+      if (!pt) return undefined;
+
+      const actions = [
+          ...(pt.logic?.onOpen || []),
+          ...(pt.logic?.onCorrect || []),
+          ...(pt.logic?.onIncorrect || [])
+      ];
+      
+      const pgAction = actions.find(a => a.type === 'open_playground');
+      return pgAction?.targetId;
+  }, [selectedPoint, editingPoint]);
 
 
   // --- INITIALIZATION ---
@@ -657,10 +657,6 @@ const App: React.FC = () => {
                   alert("Please select a session first.");
                   return;
               }
-              // Keep landing open or close? Usually chat is an overlay. 
-              // We'll close landing so chat is visible over map, or keep landing if it's dashboard style.
-              // Let's keep landing visible if we want, but ChatDrawer is z-5000 now.
-              // But user said "link to new chatmodule", implies navigation.
               setShowChatDrawer(true);
               break;
           case 'TEAM_LOBBY':
@@ -779,6 +775,7 @@ const App: React.FC = () => {
               hiddenPlaygroundIds={mode === GameMode.PLAY ? hiddenPlaygroundIds : []}
               onToggleChat={() => setShowChatDrawer(prev => !prev)}
               unreadMessagesCount={unreadMessagesCount}
+              targetPlaygroundId={targetPlaygroundId} // NEW: Highlight logic target
           />
       )}
 

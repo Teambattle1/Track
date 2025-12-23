@@ -38,6 +38,7 @@ interface GameHUDProps {
   hiddenPlaygroundIds?: string[]; // New: List of hidden playgrounds
   onToggleChat?: () => void; // New: Chat Toggle
   unreadMessagesCount?: number; // New: Unread count
+  targetPlaygroundId?: string; // New: ID of playground activated by currently selected point
 }
 
 // Timer Sub-component
@@ -137,7 +138,8 @@ const GameHUD: React.FC<GameHUDProps> = ({
   onToggleScores,
   hiddenPlaygroundIds = [],
   onToggleChat,
-  unreadMessagesCount = 0
+  unreadMessagesCount = 0,
+  targetPlaygroundId // Recieving logic target
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showEditBanner, setShowEditBanner] = useState(false);
@@ -218,23 +220,30 @@ const GameHUD: React.FC<GameHUDProps> = ({
                   const iconId = pg.iconId || 'default';
                   const Icon = ICON_COMPONENTS[iconId];
                   const size = pg.buttonSize || 80;
+                  // If this playground is targeted by the current selection logic, glow heavily
+                  const isTargeted = pg.id === targetPlaygroundId;
 
                   return (
                       <button
                           key={pg.id}
                           onClick={() => onOpenPlayground?.(pg.id)}
                           style={{ width: size, height: size }}
-                          className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${
+                          className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-visible ${
                               pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-orange-500 to-red-600 border-white/30'
-                          } ${mode === GameMode.PLAY ? 'shadow-[0_0_30px_rgba(234,88,12,0.6)] animate-pulse hover:animate-none hover:scale-110' : 'shadow-2xl hover:scale-105'}`}
+                          } ${
+                              isTargeted 
+                                ? 'shadow-[0_0_20px_rgba(249,115,22,0.6)] ring-4 ring-orange-500 ring-offset-2 ring-offset-black scale-110' 
+                                : (mode === GameMode.PLAY ? 'shadow-[0_0_30px_rgba(234,88,12,0.6)] animate-pulse hover:animate-none hover:scale-110' : 'shadow-2xl hover:scale-105')
+                          }`}
                       >
                           {pg.iconUrl ? (
-                              <img src={pg.iconUrl} className="w-full h-full object-cover" alt={pg.title} />
+                              <img src={pg.iconUrl} className="w-full h-full object-cover rounded-[1.3rem]" alt={pg.title} />
                           ) : (
                               <Icon className="w-1/2 h-1/2 text-white" />
                           )}
                           
-                          <div className={`absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10 ${mode === GameMode.EDIT ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          {/* Label Logic: Show in Editor, OR show on Hover in Play Mode */}
+                          <div className={`absolute -bottom-10 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10 ${mode === GameMode.EDIT ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                               {pg.title}
                           </div>
                       </button>

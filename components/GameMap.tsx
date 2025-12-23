@@ -45,8 +45,8 @@ interface GameMapProps {
   pointLabels?: Record<string, string>; 
   measurePath?: Coordinate[];
   logicLinks?: { from: Coordinate; to: Coordinate; color?: string; type?: 'onOpen' | 'onCorrect' | 'onIncorrect' | 'open_playground' }[]; 
-  playgroundMarkers?: { id: string; location: Coordinate; title: string; iconId: string }[]; // New prop
-  dependentPointIds?: string[]; // IDs of points that are locked/hidden by default (targets of actions)
+  playgroundMarkers?: { id: string; location: Coordinate; title: string; iconId: string }[]; 
+  dependentPointIds?: string[]; 
   accuracy: number | null;
   mode: GameMode;
   mapStyle: MapStyleId;
@@ -77,9 +77,7 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
   useEffect(() => {
     if (initializedRef.current) return;
 
-    // In EDIT or INSTRUCTOR mode, prioritize fitting bounds to existing points if they exist.
     if ((mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && points.length > 0) {
-        // Filter out (0,0) coordinates which are default for new tasks
         const validPoints = points.filter(p => p.location.lat !== 0 || p.location.lng !== 0);
         
         if (validPoints.length > 0) {
@@ -93,7 +91,6 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
         }
     }
 
-    // Default: Center on user location if available
     if (center) {
       map.setView([center.lat, center.lng], 16);
       initializedRef.current = true;
@@ -107,7 +104,6 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
     const map = useMap();
     useImperativeHandle(handleRef, () => ({
         fitBounds: (pts: GamePoint[]) => {
-            // Filter out default 0,0 coordinates to prevent zooming out to world view
             const validPts = pts.filter(p => p.location.lat !== 0 || p.location.lng !== 0);
             
             if (validPts.length === 0) return;
@@ -168,7 +164,7 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
   const isDraggingRef = useRef(false);
   const hoverTimeoutRef = useRef<number | null>(null);
   const map = useMap(); 
-  // Disable individual drag when relocating all
+  
   const isDraggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !isRelocating;
   const showGeofence = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !isRelocating;
 
@@ -176,11 +172,14 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
                      (point.logic?.onCorrect?.length || 0) > 0 || 
                      (point.logic?.onIncorrect?.length || 0) > 0;
 
-  // In Instructor mode, we want points to appear Red (like locked/not-completed) but showing their actual icon
-  // effectively treating "isUnlocked" as true for icon visibility, but using Red color scheme.
+  // Determine if this task opens a playground
+  const isPlaygroundActivator = (point.logic?.onOpen?.some(a => a.type === 'open_playground') || 
+                                 point.logic?.onCorrect?.some(a => a.type === 'open_playground') ||
+                                 point.logic?.onIncorrect?.some(a => a.type === 'open_playground')) &&
+                                 (mode === GameMode.EDIT); // Only verify activation glow in Edit mode for clarity
+
   const visualIsUnlocked = mode === GameMode.INSTRUCTOR ? true : point.isUnlocked;
   const visualIsCompleted = mode === GameMode.INSTRUCTOR ? false : point.isCompleted;
-  // Override icon color for Instructor mode to be Red
   const forcedColor = mode === GameMode.INSTRUCTOR ? '#ef4444' : undefined;
 
   useEffect(() => {
@@ -301,7 +300,8 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
             forcedColor, 
             point.isHiddenBeforeScan,
             mode === GameMode.EDIT && showScore ? point.points : undefined, 
-            point.iconUrl
+            point.iconUrl,
+            isPlaygroundActivator
         )} 
         ref={markerRef} 
       >
@@ -444,10 +444,12 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
             
             {logicLinks && logicLinks.map((link, idx) => {
                 if (!link.from || !link.to || typeof link.from.lat !== 'number' || typeof link.to.lat !== 'number') return null;
+                // FILTER: Do not show lines for open_playground to reduce clutter
+                if (link.type === 'open_playground') return null;
+
                 const key = `link-${link.from.lat.toFixed(5)}-${link.from.lng.toFixed(5)}-${link.to.lat.toFixed(5)}-${link.to.lng.toFixed(5)}-${link.color}-${link.type}`;
-                
                 const color = link.color || '#eab308';
-                const dashArray = link.type === 'open_playground' ? '5, 15' : '10, 10'; 
+                const dashArray = '10, 10'; 
 
                 return (
                     <Polyline 
@@ -455,7 +457,7 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
                         positions={[[link.from.lat, link.from.lng], [link.to.lat, link.to.lng]]} 
                         pathOptions={{ 
                             color: color, 
-                            weight: link.type === 'open_playground' ? 4 : 3, 
+                            weight: 3, 
                             dashArray: dashArray, 
                             opacity: 0.8 
                         }} 
@@ -471,7 +473,7 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
                         pg.iconId as any || 'default', 
                         true, 
                         false, 
-                        undefined, // No ID label
+                        undefined, 
                         false, 
                         '#3b82f6', 
                         false
@@ -488,7 +490,6 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
                         }
                     }}
                 >
-                    {/* Permanent Tooltip Label */}
                     <Tooltip direction="bottom" offset={[0, 20]} opacity={1} permanent className="custom-leaflet-tooltip">
                         <div className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest shadow-lg border-2 border-white">
                             {pg.title}
