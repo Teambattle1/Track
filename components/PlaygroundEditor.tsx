@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Playground, GamePoint, Game, PlaygroundTemplate, IconId } from '../types';
-import { X, Plus, Upload, Trash2, Image as ImageIcon, Globe, LayoutTemplate, Grid, Magnet, ZoomIn, ZoomOut, Maximize, Move, Scaling, Save, Check, Maximize2, MousePointer2, HelpCircle, CheckCircle, EyeOff, Smartphone, Tablet, Lock, Edit2, RotateCw, Hash, Home } from 'lucide-react';
+import { X, Plus, Upload, Trash2, Image as ImageIcon, Globe, LayoutTemplate, Grid, Magnet, ZoomIn, ZoomOut, Maximize, Move, Scaling, Save, Check, Maximize2, MousePointer2, HelpCircle, CheckCircle, EyeOff, Smartphone, Tablet, Lock, Edit2, RotateCw, Hash, Home, RefreshCw } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import * as db from '../services/db';
 
@@ -12,22 +12,22 @@ interface PlaygroundEditorProps {
   onEditPoint: (point: GamePoint) => void;
   onPointClick?: (point: GamePoint) => void;
   onAddTask: (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId: string) => void;
-  onOpenLibrary: () => void;
+  onOpenLibrary: (playgroundId: string) => void;
   showScores?: boolean;
   onToggleScores?: () => void;
   onHome?: () => void;
-  onSaveTemplate?: (name: string) => void; // Optional: If provided, enables template editing mode
+  onSaveTemplate?: (name: string) => void; 
+  isTemplateMode?: boolean;
 }
 
-const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame, onClose, onEditPoint, onPointClick, onAddTask, onOpenLibrary, showScores, onToggleScores, onHome, onSaveTemplate }) => {
+const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame, onClose, onEditPoint, onPointClick, onAddTask, onOpenLibrary, showScores, onToggleScores, onHome, onSaveTemplate, isTemplateMode = false }) => {
   const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(game.playgrounds?.[0]?.id || null);
   const [isUploading, setIsUploading] = useState(false);
   const [showAddTaskMenu, setShowAddTaskMenu] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [activePointId, setActivePointId] = useState<string | null>(null);
-  const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
-
+  
   // Template Save Modal State
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [templateName, setTemplateName] = useState('');
@@ -64,8 +64,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
   const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId);
   const playgroundPoints = game.points.filter(p => p.playgroundId === activePlaygroundId);
   const selectedPoint = playgroundPoints.find(p => p.id === activePointId);
-
-  const isTemplateMode = !!onSaveTemplate;
 
   // --- ZOOM HANDLING (Wheel) ---
   useEffect(() => {
@@ -243,9 +241,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
 
   const handleOpenSaveModal = () => {
       if (!activePlayground) return;
-      // In template mode, we might want to save immediately, but modal is good for confirming name/title.
-      // If we are editing an existing template, we might skip modal if we don't change title?
-      // For consistency, let's open modal to confirm name.
+      
+      // If we are in TEMPLATE MODE, we just save/update immediately with current title.
+      if (isTemplateMode && onSaveTemplate) {
+          onSaveTemplate(activePlayground.title);
+          return;
+      }
+
+      // If we are saving a game playground as a NEW template, open modal
       setTemplateName(activePlayground.title);
       setShowSaveModal(true);
   };
@@ -253,8 +256,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
   const handleSaveAsTemplate = async () => {
       if (!activePlayground || !templateName.trim()) return;
 
-      if (onSaveTemplate) {
-          // Template Mode: Delegate save to parent with just the name
+      if (onSaveTemplate && !isTemplateMode) {
+          // Logic for callback if provided but not in strict edit mode (rare case)
           onSaveTemplate(templateName);
           setShowSaveModal(false);
       } else {
@@ -534,9 +537,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                                                 <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-lg"><Globe className="w-4 h-4 text-purple-600" /></div>
                                                 <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">AI Generator</span>
                                             </button>
-                                            <button onClick={() => { onOpenLibrary(); setShowAddTaskMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-t border-gray-100 dark:border-gray-700 transition-colors">
+                                            <button onClick={() => { onOpenLibrary(activePlayground.id); setShowAddTaskMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-t border-gray-100 dark:border-gray-700 transition-colors">
                                                 <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg"><LayoutTemplate className="w-4 h-4 text-blue-600" /></div>
-                                                <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">From Global Library</span>
+                                                <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">From Task Library</span>
                                             </button>
                                         </div>
                                     )}
@@ -548,9 +551,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                             <button 
                                 onClick={handleOpenSaveModal}
-                                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg mb-2 hover:scale-105 active:scale-95 transition-all"
+                                className={`w-full py-3 text-white rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg mb-2 hover:scale-105 active:scale-95 transition-all ${isTemplateMode ? 'bg-green-600 hover:bg-green-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                             >
-                                <Save className="w-4 h-4" /> {isTemplateMode ? 'SAVE TEMPLATE' : 'SAVE AS TEMPLATE'}
+                                {isTemplateMode ? <RefreshCw className="w-4 h-4" /> : <Save className="w-4 h-4" />} 
+                                {isTemplateMode ? 'UPDATE TEMPLATE' : 'SAVE AS TEMPLATE'}
                             </button>
                             {!isTemplateMode && (
                                 <button 
@@ -575,7 +579,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
             {/* Editor Canvas */}
             <div 
                 ref={containerRef}
-                className="flex-1 relative overflow-hidden bg-[#1e1e1e] cursor-grab active:cursor-grabbing flex items-center justify-center"
+                className={`flex-1 relative overflow-hidden bg-[#1e1e1e] cursor-grab active:cursor-grabbing flex items-center justify-center`}
                 onPointerDown={(e) => handlePointerDown(e, 'PAN')}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -671,7 +675,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
             <div className="fixed inset-0 z-[3000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
                 <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 w-full max-w-md rounded-2xl shadow-2xl p-6">
                     <h3 className="text-lg font-black uppercase text-gray-900 dark:text-white mb-4">
-                        {isTemplateMode ? 'SAVE TEMPLATE CHANGES' : 'SAVE AS GLOBAL TEMPLATE'}
+                        SAVE AS GLOBAL TEMPLATE
                     </h3>
                     
                     <div className="space-y-4">
