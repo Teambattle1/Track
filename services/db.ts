@@ -418,3 +418,10 @@ export const savePlaygroundTemplate = async (template: PlaygroundTemplate) => {
         if (error) logError('savePlaygroundTemplate', error);
     } catch (e) { logError('savePlaygroundTemplate', e); }
 };
+
+export const deletePlaygroundTemplate = async (id: string) => {
+    try {
+        const { error } = await supabase.from('playground_library').delete().eq('id', id);
+        if (error) logError('deletePlaygroundTemplate', error);
+    } catch (e) { logError('deletePlaygroundTemplate', e); }
+};

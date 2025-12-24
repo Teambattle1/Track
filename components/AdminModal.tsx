@@ -53,6 +53,22 @@ ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public teams access" ON public.teams;
 CREATE POLICY "Public teams access" ON public.teams FOR ALL USING (true) WITH CHECK (true);
 
+-- MIGRATION: Ensure columns exist if table was created previously
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'teams' AND column_name = 'completed_point_ids') THEN
+        ALTER TABLE public.teams ADD COLUMN completed_point_ids TEXT[] DEFAULT '{}';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'teams' AND column_name = 'captain_device_id') THEN
+        ALTER TABLE public.teams ADD COLUMN captain_device_id TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'teams' AND column_name = 'is_started') THEN
+        ALTER TABLE public.teams ADD COLUMN is_started BOOLEAN DEFAULT false;
+    END IF;
+END $$;
+
 -- 3. LIBRARY Table
 CREATE TABLE IF NOT EXISTS public.library (
     id TEXT PRIMARY KEY,
@@ -296,7 +312,7 @@ END $$;`;
                           </p>
                       </div>
                   </div>
-                  <pre className="text-[10px] text-green-400 font-mono overflow-x-auto whitespace-pre-wrap max-h-40">
+                  <pre className="text-[10px] text-green-400 font-mono overflow-x-auto whitespace-pre-wrap max-h-60 custom-scrollbar">
                       {sqlCode}
                   </pre>
                   <button 

@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Gamepad2, LayoutTemplate, ListChecks, 
   ExternalLink, Plus, ChevronRight, Settings, Clock, Star,
   Search, Filter, ChevronDown, User, Lock, Eye, MoreHorizontal,
-  CheckCircle2, Globe, Tag, Info, UserCircle, X, Users, Link, Copy, ClipboardList, Send, ArrowLeft
+  CheckCircle2, Globe, Tag, Info, UserCircle, X, Users, Link, Copy, ClipboardList, Send, ArrowLeft, Home
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -17,13 +17,14 @@ interface DashboardProps {
   taskLibrary?: TaskTemplate[]; // Added to prop interface
   onBack: () => void;
   onAction: (action: 'CREATE' | 'CREATE_FROM_TEMPLATE' | 'EDIT_GAME' | 'VIEW_TEMPLATES' | 'VIEW_TASKS' | 'REFRESH_DATA') => void;
+  onSelectGame?: (id: string) => void; // New prop
   userName: string;
   initialTab?: 'dashboard' | 'games' | 'templates' | 'tasks' | 'users' | 'tags' | 'client';
   onDeleteTagGlobally?: (tagName: string) => Promise<void>;
   onRenameTagGlobally?: (oldTag: string, newTag: string) => Promise<void>;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [], onBack, onAction, userName, initialTab = 'dashboard', onDeleteTagGlobally, onRenameTagGlobally }) => {
+const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [], onBack, onAction, onSelectGame, userName, initialTab = 'dashboard', onDeleteTagGlobally, onRenameTagGlobally }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'games' | 'templates' | 'tasks' | 'users' | 'tags' | 'client'>(initialTab as any);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -85,6 +86,14 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
       alert("Link copied to clipboard!");
   };
 
+  const handleGameClick = (id: string) => {
+      if (onSelectGame) {
+          onSelectGame(id);
+      } else {
+          onAction('EDIT_GAME'); // Fallback behavior
+      }
+  };
+
   // --- RENDERERS ---
 
   const renderClientHub = () => {
@@ -99,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
                   </div>
                   <button 
                       onClick={() => setIsCreatingClientList(true)}
-                      className="px-6 py-3 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-lg shadow-[#00adef]/20 flex items-center gap-2"
+                      className="px-6 py-3 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-lg shadow-[#00adef]/20 flex items-center gap-2 hover:scale-105 active:scale-95"
                   >
                       <Plus className="w-4 h-4" /> CREATE NEW PORTAL
                   </button>
@@ -121,7 +130,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
                       </div>
                       <div className="flex gap-2 mt-6">
                           <button onClick={() => setIsCreatingClientList(false)} className="px-4 py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-xs uppercase tracking-wide hover:bg-slate-700 transition-colors">CANCEL</button>
-                          <button onClick={handleCreateClientList} className="px-6 py-3 bg-green-600 text-white font-bold rounded-xl text-xs uppercase tracking-wide hover:bg-green-700 transition-colors shadow-lg">CREATE</button>
+                          <button onClick={handleCreateClientList} className="px-6 py-3 bg-green-600 text-white font-bold rounded-xl text-xs uppercase tracking-wide hover:bg-green-700 transition-colors shadow-lg hover:scale-105">CREATE</button>
                       </div>
                   </div>
               )}
@@ -135,7 +144,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
                   )}
 
                   {clientLists.map(list => (
-                      <div key={list.id} className="bg-[#141414] border border-white/5 rounded-2xl p-6 shadow-xl flex flex-col hover:border-white/10 transition-all group">
+                      <div key={list.id} className="bg-[#141414] border border-white/5 rounded-2xl p-6 shadow-xl flex flex-col hover:border-white/10 transition-all group hover:-translate-y-1">
                           <div className="flex justify-between items-start mb-4">
                               <div className="flex items-center gap-3">
                                   <div className="w-12 h-12 bg-[#00adef]/10 rounded-xl flex items-center justify-center border border-[#00adef]/20">
@@ -185,7 +194,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 bg-[#141414] border border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-center shadow-xl group">
           <div className="relative mb-8">
-            <div className="w-24 h-24 bg-[#1a1a1a] rounded-[1.5rem] flex items-center justify-center relative z-10 border border-white/10 shadow-2xl">
+            <div className="w-24 h-24 bg-[#1a1a1a] rounded-[1.5rem] flex items-center justify-center relative z-10 border border-white/10 shadow-2xl transition-transform group-hover:scale-105">
               <Gamepad2 className="w-12 h-12 text-white group-hover:scale-110 transition-transform duration-500" />
             </div>
             <Star className="absolute -top-4 -right-4 w-4 h-4 text-blue-400 animate-pulse" />
@@ -194,8 +203,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
           </div>
           <h2 className="text-3xl font-black mb-10 tracking-tight">Create a new game</h2>
           <div className="flex gap-4 w-full max-w-sm">
-            <button onClick={() => onAction('CREATE')} className="flex-1 py-4 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/10">New from scratch</button>
-            <button onClick={() => { setActiveTab('templates'); }} className="flex-1 py-4 bg-transparent border-2 border-[#00adef]/40 hover:border-[#00adef] text-[#00adef] font-black uppercase text-xs tracking-widest rounded-xl transition-all">New from tasklist</button>
+            <button onClick={() => onAction('CREATE')} className="flex-1 py-4 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/10 hover:scale-105 active:scale-95">New from scratch</button>
+            <button onClick={() => { setActiveTab('templates'); }} className="flex-1 py-4 bg-transparent border-2 border-[#00adef]/40 hover:border-[#00adef] text-[#00adef] font-black uppercase text-xs tracking-widest rounded-xl transition-all hover:scale-105 active:scale-95">New from tasklist</button>
           </div>
         </div>
 
@@ -206,7 +215,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
           </div>
           <div className="space-y-4">
             {featuredTemplates.length > 0 ? featuredTemplates.map(tpl => (
-              <div className="flex items-center gap-4 group cursor-pointer" onClick={() => { setActiveTab('templates'); }}>
+              <div className="flex items-center gap-4 group cursor-pointer hover:translate-x-1 transition-transform" onClick={() => { setActiveTab('templates'); }}>
                 <div className="w-12 h-12 bg-[#2d2d2d] rounded-xl overflow-hidden shrink-0 border border-white/5 group-hover:border-blue-500/50 transition-colors">
                   {tpl.imageUrl ? <img src={tpl.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><LayoutTemplate className="w-5 h-5" /></div>}
                 </div>
@@ -224,7 +233,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
         </div>
         <div className="divide-y divide-white/5">
           {recentGames.length > 0 ? recentGames.map(game => (
-            <div key={game.id} className="p-6 hover:bg-white/[0.02] transition-colors flex items-center justify-between group cursor-pointer" onClick={() => onAction('EDIT_GAME')}>
+            <div key={game.id} className="p-6 hover:bg-white/[0.05] transition-colors flex items-center justify-between group cursor-pointer" onClick={() => handleGameClick(game.id)}>
               <div>
                 <h4 className="font-black text-sm uppercase tracking-wide group-hover:text-[#00adef] transition-colors">{game.name}</h4>
                 <p className="text-[10px] text-gray-600 font-mono mt-1 uppercase">{game.id}</p>
@@ -246,11 +255,11 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
         <div className="flex gap-3 w-full sm:w-auto">
           <button 
             onClick={() => onAction('CREATE')}
-            className="flex-1 sm:flex-none px-6 py-2.5 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-widest rounded-lg transition-all shadow-lg"
+            className="flex-1 sm:flex-none px-6 py-2.5 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-widest rounded-lg transition-all shadow-lg hover:scale-105 active:scale-95"
           >
             New game from scratch
           </button>
-          <button className="flex-1 sm:flex-none px-6 py-2.5 bg-[#1a1a1a] border border-white/10 text-white font-black uppercase text-xs tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 hover:bg-[#252525]">
+          <button className="flex-1 sm:flex-none px-6 py-2.5 bg-[#1a1a1a] border border-white/10 text-white font-black uppercase text-xs tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 hover:bg-[#252525] hover:scale-105 active:scale-95">
             How to create tasklists? <ExternalLink className="w-3 h-3" />
           </button>
         </div>
@@ -280,7 +289,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
             </div>
           ))}
         </div>
-        <button className="px-6 py-2.5 bg-[#1a1a1a] border border-white/10 text-gray-400 font-black uppercase text-xs tracking-widest rounded-lg transition-all flex items-center gap-2 hover:bg-[#252525] hover:text-white">
+        <button className="px-6 py-2.5 bg-[#1a1a1a] border border-white/10 text-gray-400 font-black uppercase text-xs tracking-widest rounded-lg transition-all flex items-center gap-2 hover:bg-[#252525] hover:text-white hover:scale-105 active:scale-95">
           More my tasklists <ChevronRight className="w-3 h-3" />
         </button>
       </div>
@@ -328,7 +337,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
         {/* Rows */}
         <div className="divide-y divide-white/5 bg-[#141414]">
           {gamesArr.map(game => (
-            <div key={game.id} className="grid grid-cols-[48px_1fr_80px_80px_80px_100px_100px_100px_140px_140px_80px_100px] gap-4 px-6 py-6 items-center hover:bg-white/[0.01] transition-colors group" onClick={() => onAction('EDIT_GAME')}>
+            <div key={game.id} className="grid grid-cols-[48px_1fr_80px_80px_80px_100px_100px_100px_140px_140px_80px_100px] gap-4 px-6 py-6 items-center hover:bg-white/[0.05] transition-colors group cursor-pointer" onClick={() => handleGameClick(game.id)}>
               <div className="flex items-center justify-center"><div className="w-4 h-4 border border-white/10 rounded hover:border-blue-500 cursor-pointer"></div></div>
               
               <div className="min-w-0 pr-4">
@@ -354,7 +363,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
               <div className="text-xs font-bold text-gray-400 text-center">0</div>
 
               <div className="flex items-center justify-end gap-3">
-                <button className="relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full bg-green-600/20 border border-green-500/30 transition-colors focus-visible:outline-none">
+                <button className="relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full bg-green-600/20 border border-green-500/30 transition-colors focus-visible:outline-none hover:scale-110 active:scale-95">
                   <span className="translate-x-5 inline-block h-3 w-3 transform rounded-full bg-green-500 transition-transform duration-200 ease-in-out" />
                 </button>
                 <button className="p-1.5 text-gray-500 hover:text-white transition-colors" title="External Link"><ExternalLink className="w-4 h-4" /></button>
@@ -381,9 +390,10 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
       <nav className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#141414] shrink-0">
         <button 
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2d2d2d] hover:bg-[#3d3d3d] rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all border border-white/5 hover:border-white/10"
+            className="flex items-center gap-2 px-3 py-2 bg-[#2d2d2d] hover:bg-[#3d3d3d] rounded-xl transition-all border border-white/5 hover:border-white/10 hover:scale-105 active:scale-95"
+            title="Back to Home"
         >
-            <ArrowLeft className="w-4 h-4" /> BACK
+            <Home className="w-5 h-5 text-white" />
         </button>
       </nav>
 

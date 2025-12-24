@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Users, Plus, Library, Map, Database, PlayCircle, Target, ChevronDown, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { Users, Plus, Library, Map, Database, PlayCircle, Target, ChevronDown, ArrowLeft, LayoutDashboard, Home } from 'lucide-react';
 
 interface CreatorHubProps {
   activeGameName?: string;
@@ -19,8 +20,9 @@ const CreatorHub: React.FC<CreatorHubProps> = ({ activeGameName, onAction, onCho
           <button 
             onClick={onBack}
             className="absolute top-4 left-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-all flex items-center gap-2 group"
+            title="Back to Home"
           >
-              <ArrowLeft className="w-4 h-4" />
+              <Home className="w-5 h-5" />
           </button>
 
           <div className="text-center mb-8">

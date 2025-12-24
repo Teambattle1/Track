@@ -5,7 +5,7 @@ import {
   UserCircle, Settings, MapPin, ChevronRight, Play,
   LayoutDashboard, LayoutTemplate, LayoutGrid, UserPlus,
   Monitor, Tag, Radar, Plus, Database, ArrowLeft,
-  Briefcase, Boxes, ClipboardList, PenTool, Globe, Server, ChevronDown, Link, QrCode, MessageSquare, Anchor
+  Briefcase, Boxes, ClipboardList, PenTool, Globe, Server, ChevronDown, Link, QrCode, MessageSquare, Anchor, Home
 } from 'lucide-react';
 import { Game } from '../types';
 
@@ -34,7 +34,7 @@ const NavCard = ({
 }) => (
   <button 
     onClick={onClick}
-    className="group relative bg-slate-900 border border-slate-800 rounded-[1.5rem] p-5 text-left transition-all hover:scale-[1.03] hover:border-white/20 hover:bg-slate-850 shadow-xl overflow-hidden flex flex-col h-full"
+    className="group relative bg-slate-900 border border-slate-800 rounded-[1.5rem] p-5 text-left transition-all hover:scale-[1.05] active:scale-95 hover:border-white/20 hover:bg-slate-850 shadow-xl overflow-hidden flex flex-col h-full cursor-pointer hover:shadow-2xl"
   >
     <div className={`absolute -top-4 -right-4 w-24 h-24 rounded-full blur-3xl opacity-5 transition-opacity group-hover:opacity-15 ${color}`} />
     
@@ -52,7 +52,7 @@ const NavCard = ({
         </p>
       </div>
       
-      <div className="mt-6 flex items-center gap-1 text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] group-hover:text-white transition-colors">
+      <div className="mt-6 flex items-center gap-1 text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] group-hover:text-white transition-colors group-hover:translate-x-1">
         ACCESS MODULE <ChevronRight className="w-3 h-3" />
       </div>
     </div>
@@ -72,16 +72,16 @@ const CategoryButton = ({
 }) => (
     <button 
         onClick={onClick}
-        className={`group relative h-40 rounded-[2rem] flex flex-col items-center justify-center overflow-hidden shadow-2xl transition-all hover:scale-[1.02] border-2 ${color}`}
+        className={`group relative h-40 rounded-[2rem] flex flex-col items-center justify-center overflow-hidden shadow-2xl transition-all hover:scale-[1.05] active:scale-95 border-2 hover:shadow-3xl cursor-pointer ${color}`}
     >
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
         <div className="absolute inset-0 bg-gradient-to-br from-black/50 to-transparent" />
         
         <div className="relative z-10 flex flex-col items-center gap-3">
-            <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20 group-hover:scale-110 transition-transform duration-300">
+            <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20 group-hover:scale-110 transition-transform duration-300 group-hover:bg-white/20">
                 <Icon className="w-10 h-10 text-white" />
             </div>
-            <span className="text-2xl font-black text-white uppercase tracking-[0.2em] drop-shadow-md">
+            <span className="text-2xl font-black text-white uppercase tracking-[0.2em] drop-shadow-md group-hover:tracking-[0.25em] transition-all">
                 {title}
             </span>
         </div>
@@ -126,7 +126,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
       switch(view) {
           case 'GAMES':
               return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <NavCard 
                           title="GAMES" 
                           subtitle="SESSION HUB" 
@@ -142,8 +142,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           onClick={() => onAction('EDIT_GAME')}
                       />
                       <NavCard 
-                          title="PLAYGROUNDS" 
-                          subtitle="VIRTUAL SCENARIOS" 
+                          title="PLAYGROUND TEMPLATES" 
+                          subtitle="GLOBAL LIBRARY" 
                           icon={LayoutGrid} 
                           color="bg-violet-500"
                           onClick={() => onAction('PLAYGROUNDS')}
@@ -185,7 +185,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               );
           case 'TASKS':
               return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <NavCard 
                           title="TASKS" 
                           subtitle="LIBRARY AI HUB" 
@@ -225,20 +225,13 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               );
           case 'ADMIN':
               return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                       <NavCard 
                           title="USERS" 
                           subtitle="ACCESS & ROLES" 
                           icon={UserCircle} 
                           color="bg-purple-500"
                           onClick={() => onAction('USERS')}
-                      />
-                      <NavCard 
-                          title="DASHBOARD" 
-                          subtitle="ANALYTICS" 
-                          icon={Monitor} 
-                          color="bg-indigo-500"
-                          onClick={() => onAction('DASHBOARD')}
                       />
                       <NavCard 
                           title="DATABASE / SQL" 
@@ -271,7 +264,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 <LayoutDashboard className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-black tracking-tight leading-none mb-1">SYSTEM DASHBOARD</h1>
+                <h1 className="text-3xl font-black tracking-tight leading-none mb-1">ADMIN</h1>
                 <p className="text-[10px] font-black text-slate-500 tracking-[0.4em] uppercase">TEAMACTION COMMAND CENTER</p>
               </div>
             </div>
@@ -281,14 +274,14 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 <div className="relative">
                     <button 
                         onClick={() => setShowGameMenu(!showGameMenu)}
-                        className={`flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-lg shadow-orange-900/20 transition-all font-black uppercase text-xs tracking-widest border ${activeGame ? 'border-orange-500' : 'border-red-500 animate-pulse'}`}
+                        className={`flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-lg shadow-orange-900/20 transition-all font-black uppercase text-xs tracking-widest border hover:scale-105 active:scale-95 ${activeGame ? 'border-orange-500' : 'border-red-500 animate-pulse'}`}
                     >
                         <span className="max-w-[200px] truncate">{activeGame ? activeGame.name : "SELECT SESSION"}</span>
                         <ChevronDown className={`w-4 h-4 transition-transform ${showGameMenu ? 'rotate-180' : ''}`} />
                     </button>
                     
                     {showGameMenu && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 max-h-80 overflow-y-auto">
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 max-h-80 overflow-y-auto animate-in slide-in-from-top-2">
                             {games.length === 0 && <div className="p-4 text-xs text-slate-500 font-bold text-center">NO GAMES FOUND</div>}
                             {games.map(game => (
                                 <button
@@ -308,9 +301,10 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 {view !== 'HOME' && (
                     <button 
                         onClick={() => setView('HOME')}
-                        className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-xl uppercase tracking-widest text-xs flex items-center gap-2 transition-colors border border-slate-700"
+                        className="p-3 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-xl uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:scale-105 active:scale-95 border border-slate-700"
+                        title="Back to Home"
                     >
-                        <ArrowLeft className="w-4 h-4" /> BACK TO HOME
+                        <Home className="w-5 h-5" />
                     </button>
                 )}
             </div>

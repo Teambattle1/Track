@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Game, MapStyleId, Language, Coordinate, Team } from '../types';
-import { Play, Users, MapPin, Globe, ArrowLeft, LogOut, Plus, Search, RefreshCw, Clock, User, Hash, Camera, ChevronDown, QrCode, Image as ImageIcon, X } from 'lucide-react';
+import { Play, Users, MapPin, Globe, ArrowLeft, LogOut, Plus, Search, RefreshCw, Clock, User, Hash, Camera, ChevronDown, QrCode, Image as ImageIcon, X, Home } from 'lucide-react';
 import { t } from '../utils/i18n';
 import { haversineMeters } from '../utils/geo';
 import * as db from '../services/db';
@@ -204,8 +204,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 </div>
 
                 <div className="p-6 z-10 text-center pb-8">
-                    <button onClick={onBack} className="text-slate-600 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
-                        BACK TO HUB
+                    <button onClick={onBack} title="Back to Hub" className="text-slate-600 hover:text-white transition-colors">
+                        <Home className="w-6 h-6" />
                     </button>
                 </div>
             </div>

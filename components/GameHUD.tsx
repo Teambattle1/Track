@@ -10,7 +10,7 @@ interface GameHUDProps {
   accuracy: number | null;
   mode: GameMode;
   toggleMode: () => void;
-  onSetMode?: (mode: GameMode) => void; // New prop for direct mode switching
+  onSetMode?: (mode: GameMode) => void; 
   onOpenGameManager: () => void;
   onOpenTaskMaster: () => void;
   onOpenTeams: () => void;
@@ -292,12 +292,12 @@ const GameHUD: React.FC<GameHUDProps> = ({
                           key={pg.id}
                           onClick={() => onOpenPlayground?.(pg.id)}
                           style={{ width: size, height: size }}
-                          className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-visible ${
+                          className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-visible hover:scale-110 active:scale-95 ${
                               pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-orange-500 to-red-600 border-white/30'
                           } ${
                               isTargeted 
                                 ? 'shadow-[0_0_20px_rgba(249,115,22,0.6)] ring-4 ring-orange-500 ring-offset-2 ring-offset-black scale-110' 
-                                : (mode === GameMode.PLAY ? 'shadow-[0_0_30px_rgba(234,88,12,0.6)] animate-pulse hover:animate-none hover:scale-110' : 'shadow-2xl hover:scale-105')
+                                : (mode === GameMode.PLAY ? 'shadow-[0_0_30px_rgba(234,88,12,0.6)] animate-pulse hover:animate-none' : 'shadow-2xl')
                           }`}
                       >
                           {pg.iconUrl ? (
@@ -333,7 +333,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
             {mode === GameMode.PLAY && onOpenTeamDashboard ? (
                 <button
                     onClick={onOpenTeamDashboard}
-                    className="h-12 pl-3 pr-4 bg-slate-900/95 dark:bg-gray-900/95 border-2 border-orange-500 rounded-2xl flex items-center justify-center gap-2.5 shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+                    className="h-12 pl-3 pr-4 bg-slate-900/95 dark:bg-gray-900/95 border-2 border-orange-500 rounded-2xl flex items-center justify-center gap-2.5 shadow-2xl hover:scale-105 active:scale-95 transition-all group hover:bg-slate-800"
                 >
                     <Shield className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors" />
                     <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">
@@ -345,36 +345,33 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     <button 
                       onClick={() => setIsMenuOpen(!isMenuOpen)}
                       title="Main Menu"
-                      className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 ${isMenuOpen ? 'bg-white text-slate-900' : 'bg-slate-900/95 dark:bg-gray-800 text-white'}`}
+                      className={`h-12 w-12 flex items-center justify-center shadow-2xl rounded-2xl transition-all border border-white/10 hover:scale-105 active:scale-95 hover:border-white/30 ${isMenuOpen ? 'bg-white text-slate-900' : 'bg-slate-900/95 dark:bg-gray-800 text-white hover:bg-slate-800'}`}
                     >
-                      <Menu className="w-6 h-6" />
+                      {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
                 </div>
             )}
-
-            {/* Note: Home button removed from Editor Mode as requested */}
             
             {/* Menu Dropdown */}
             {isMenuOpen && mode !== GameMode.PLAY && (
-                <div className="absolute top-full left-0 mt-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl p-2 min-w-[240px] animate-in slide-in-from-top-2 fade-in duration-200 origin-top-left z-[3000]">
+                <div className="absolute top-14 left-0 bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-2 min-w-[240px] animate-in slide-in-from-top-2 fade-in duration-200 origin-top-left z-[3000]">
                     <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 mb-1">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Menu</span>
-                        <button onClick={() => setIsMenuOpen(false)} className="text-slate-500 hover:text-white"><X className="w-4 h-4" /></button>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">MENU</span>
                     </div>
-                    <div className="flex flex-col gap-1 mb-2">
-                        <button onClick={() => { onBackToHub(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide border-b border-white/5 mb-1">
+                    <div className="flex flex-col gap-1">
+                        <button onClick={() => { onBackToHub(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
                             <Home className="w-4 h-4" /> HUB
                         </button>
-                        <button onClick={() => { onOpenTeams(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 transition-colors text-left font-bold text-xs uppercase tracking-wide">
+                        <button onClick={() => { onOpenTeams(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
                             <Users className="w-4 h-4" /> TEAMS
                         </button>
-                        <button onClick={() => { onOpenGameManager(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
+                        <button onClick={() => { onOpenGameManager(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
                             <LayoutDashboard className="w-4 h-4" /> GAMES
                         </button>
-                        <button onClick={() => { if(onOpenTeamDashboard) onOpenTeamDashboard(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
+                        <button onClick={() => { if(onOpenTeamDashboard) onOpenTeamDashboard(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
                             <MessageSquare className="w-4 h-4" /> CHAT / STATUS
                         </button>
-                        <button onClick={() => { onOpenTaskMaster(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 text-slate-300 hover:text-amber-400 transition-colors text-left font-bold text-xs uppercase tracking-wide border-b border-white/5 mb-1">
+                        <button onClick={() => { onOpenTaskMaster(); setIsMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors text-left font-bold text-xs uppercase tracking-wide">
                             <Library className="w-4 h-4" /> TASKS
                         </button>
                     </div>
@@ -406,21 +403,21 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 <div className="flex gap-1 bg-slate-800/80 p-1 rounded-xl">
                     <button 
                         onClick={() => handleSetMode(GameMode.EDIT)} 
-                        className={`p-2 rounded-lg transition-all ${mode === GameMode.EDIT ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                        className={`p-2 rounded-lg transition-all hover:scale-110 active:scale-95 ${mode === GameMode.EDIT ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
                         title="Editor Mode"
                     >
                         <Layers className="w-4 h-4" />
                     </button>
                     <button 
                         onClick={() => handleSetMode(GameMode.INSTRUCTOR)} 
-                        className={`p-2 rounded-lg transition-all ${mode === GameMode.INSTRUCTOR ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                        className={`p-2 rounded-lg transition-all hover:scale-110 active:scale-95 ${mode === GameMode.INSTRUCTOR ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
                         title="Instructor Mode"
                     >
                         <GraduationCap className="w-4 h-4" />
                     </button>
                     <button 
                         onClick={() => handleSetMode(GameMode.PLAY)} 
-                        className={`p-2 rounded-lg transition-all ${mode === GameMode.PLAY ? 'bg-orange-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                        className={`p-2 rounded-lg transition-all hover:scale-110 active:scale-95 ${mode === GameMode.PLAY ? 'bg-orange-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
                         title="Team Mode"
                     >
                         <Shield className="w-4 h-4" />
@@ -437,7 +434,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     <button
                         onClick={onToggleChat}
                         title="Chat"
-                        className={`w-10 h-10 flex items-center justify-center shadow-lg rounded-xl transition-all border border-white/10 hover:scale-105 active:scale-95 relative ${unreadMessagesCount > 0 ? 'bg-orange-600 text-white animate-pulse' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                        className={`w-10 h-10 flex items-center justify-center shadow-lg rounded-xl transition-all border border-white/10 hover:scale-110 active:scale-95 relative ${unreadMessagesCount > 0 ? 'bg-orange-600 text-white animate-pulse' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}`}
                     >
                         <MessageSquare className="w-5 h-5" />
                         {unreadMessagesCount > 0 && (
@@ -451,7 +448,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     <button 
                       onClick={onOpenInstructorDashboard} 
                       title="Dashboard"
-                      className="w-10 h-10 bg-slate-800 text-amber-500 shadow-lg rounded-xl flex items-center justify-center transition-all border border-amber-500/50 hover:bg-amber-500 hover:text-white hover:scale-105 active:scale-95"
+                      className="w-10 h-10 bg-slate-800 text-amber-500 shadow-lg rounded-xl flex items-center justify-center transition-all border border-amber-500/50 hover:bg-amber-500 hover:text-white hover:scale-110 active:scale-95"
                     >
                         <LayoutDashboard className="w-5 h-5" />
                     </button>
@@ -469,7 +466,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <button
                                     onClick={onAddDangerZone}
                                     title="Add Danger Zone"
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:bg-red-600 hover:text-white transition-colors border border-white/5"
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:bg-red-600 hover:text-white transition-all border border-white/5 hover:scale-110 active:scale-95"
                                 >
                                     <Skull className="w-5 h-5" />
                                 </button>
@@ -478,7 +475,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <button 
                                     onClick={onToggleScores}
                                     title="Toggle Scores"
-                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors border border-white/5 ${showScores ? 'text-blue-400 bg-blue-900/30' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10'}`}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border border-white/5 hover:scale-110 active:scale-95 ${showScores ? 'text-blue-400 bg-blue-900/30' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10'}`}
                                 >
                                     <Hash className="w-5 h-5" />
                                 </button>
@@ -494,7 +491,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <button 
                                     onClick={onFitBounds}
                                     title="Fit Tasks"
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10 transition-colors border border-white/5"
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10 transition-all border border-white/5 hover:scale-110 active:scale-95"
                                 >
                                     <Maximize className="w-5 h-5" />
                                 </button>
@@ -503,7 +500,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <button 
                                     onClick={onLocateMe}
                                     title="My Location"
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10 transition-colors border border-white/5"
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10 transition-all border border-white/5 hover:scale-110 active:scale-95"
                                 >
                                     <Target className="w-5 h-5" />
                                 </button>
@@ -520,7 +517,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                     key={style.id}
                                     onClick={() => onSetMapStyle(style.id)}
                                     title={style.label}
-                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border border-white/5 ${mapStyle === style.id ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10'}`}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border border-white/5 hover:scale-110 active:scale-95 ${mapStyle === style.id ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10'}`}
                                 >
                                     <style.icon className="w-5 h-5" />
                                 </button>
@@ -529,12 +526,12 @@ const GameHUD: React.FC<GameHUDProps> = ({
                         
                         <div className="w-full h-px bg-white/5 mb-2"></div>
 
-                        <div className="grid grid-cols-2 gap-2 w-full">
+                        <div className="grid grid-cols-2 gap-2">
                             {onRelocateGame && (
                                 <button
                                     onClick={onRelocateGame}
                                     title={isRelocating ? "Place Pins" : "Relocate"}
-                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border ${isRelocating ? 'bg-green-600 text-white border-green-500 animate-pulse' : 'bg-slate-800 text-blue-500 border-blue-500/30 hover:bg-blue-600 hover:text-white'}`}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border hover:scale-110 active:scale-95 ${isRelocating ? 'bg-green-600 text-white border-green-500 animate-pulse' : 'bg-slate-800 text-blue-500 border-blue-500/30 hover:bg-blue-600 hover:text-white'}`}
                                 >
                                     {isRelocating ? <MapPin className="w-5 h-5" /> : <Move className="w-5 h-5" />}
                                 </button>
@@ -543,7 +540,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <button
                                     onClick={onToggleMeasure}
                                     title={isMeasuring ? "Stop" : "Measure"}
-                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border ${isMeasuring ? 'bg-pink-600 text-white border-pink-500' : 'bg-slate-800 text-pink-500 border-pink-500/30 hover:bg-pink-600 hover:text-white'}`}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border hover:scale-110 active:scale-95 ${isMeasuring ? 'bg-pink-600 text-white border-pink-500' : 'bg-slate-800 text-pink-500 border-pink-500/30 hover:bg-pink-600 hover:text-white'}`}
                                 >
                                     <Ruler className="w-5 h-5" />
                                 </button>
