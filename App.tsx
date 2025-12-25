@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   Game, GameState, GameMode, GamePoint, Coordinate, 
@@ -84,6 +83,7 @@ const App: React.FC = () => {
 
   // Instructor specific state
   const [instructorTeams, setInstructorTeams] = useState<Team[]>([]);
+  const [chatTargetTeamId, setChatTargetTeamId] = useState<string | undefined>(undefined);
 
   const [mapStyle, setMapStyle] = useState<MapStyleId>('osm');
   const [language, setLanguage] = useState<Language>('English');
@@ -1464,6 +1464,12 @@ const App: React.FC = () => {
                   localStorage.setItem(STORAGE_KEY_GAME_ID, id);
               }}
               isAdmin={teamsModalAdmin}
+              onChatWithTeam={(teamId) => {
+                  setChatTargetTeamId(teamId);
+                  setShowChatDrawer(true);
+              }}
+              chatHistory={chatHistory}
+              onUpdateGame={updateActiveGame}
           />
       )}
 
@@ -1499,13 +1505,15 @@ const App: React.FC = () => {
       {/* Global Chat Drawer */}
       <ChatDrawer 
           isOpen={showChatDrawer} 
-          onClose={() => setShowChatDrawer(false)}
+          onClose={() => { setShowChatDrawer(false); setChatTargetTeamId(undefined); }}
           messages={chatHistory}
           gameId={activeGame?.id || ''}
           mode={mode}
           userName={gameState.userName || 'Anonymous'}
           teamId={gameState.teamId}
           teams={instructorTeams} // Pass fetched teams to Chat Drawer
+          selectedTeamId={chatTargetTeamId} // Pass the specific team target
+          isInstructor={showLanding || mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT} // Editors are also Instructors
       />
 
       {showAdminModal && (

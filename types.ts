@@ -274,6 +274,8 @@ export interface Game {
   createdAt: number;
   defaultMapStyle?: MapStyleId;
   showOtherTeams?: boolean; // New: Toggle to show teams to other teams
+  showTaskDetailsToPlayers?: boolean; // New: Toggle detailed task list in lobby
+  showRankingToPlayers?: boolean; // New: Toggle Leaderboard visibility
   
   // New Metadata
   client?: ClientInfo;

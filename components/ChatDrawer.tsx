@@ -14,6 +14,7 @@ interface ChatDrawerProps {
   teamId?: string;
   teams?: Team[]; // List of teams for instructor to select from
   selectedTeamId?: string; // Pre-selected team from external trigger
+  isInstructor?: boolean; // Force instructor mode (e.g. from Hub)
 }
 
 const ChatDrawer: React.FC<ChatDrawerProps> = ({ 
@@ -25,7 +26,8 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
   userName,
   teamId,
   teams = [],
-  selectedTeamId
+  selectedTeamId,
+  isInstructor = false
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
@@ -34,6 +36,9 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Determine if we are in instructor mode (either by GameMode or explicit prop)
+  const isInstructorMode = mode === GameMode.INSTRUCTOR || isInstructor;
 
   // Sync prop to state when drawer opens or prop changes
   useEffect(() => {
@@ -55,7 +60,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
     if (!newMessage.trim()) return;
     setIsSending(true);
 
-    const urgentFlag = mode === GameMode.INSTRUCTOR ? isUrgent : false;
+    const urgentFlag = isInstructorMode ? isUrgent : false;
     
     // Send to specific team channel if selected, otherwise global
     teamSync.sendChatMessage(gameId, newMessage, targetTeamId, urgentFlag);
@@ -84,7 +89,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
           <div>
             <h2 className="text-sm font-black text-white uppercase tracking-widest">Mission Comms</h2>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">
-              {mode === GameMode.INSTRUCTOR ? 'Instructor Channel' : 'Team Feed'}
+              {isInstructorMode ? 'Instructor Channel' : 'Team Feed'}
             </p>
           </div>
         </div>
@@ -94,7 +99,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
       </div>
 
       {/* Instructor Recipient Selector */}
-      {mode === GameMode.INSTRUCTOR && (
+      {isInstructorMode && (
           <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 relative z-20">
               <button 
                 onClick={() => setShowTeamSelector(!showTeamSelector)}
@@ -139,7 +144,11 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
           </div>
         ) : (
           messages.map((msg) => {
-            const isMe = msg.sender === (mode === GameMode.INSTRUCTOR ? 'Instructor' : userName);
+            // Determine if message is from "me"
+            // If instructor mode, "me" is 'Instructor'
+            // If player mode, "me" is userName
+            const isMe = msg.sender === (isInstructorMode ? 'Instructor' : userName);
+            
             return (
               <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                 <div className={`flex items-center gap-2 mb-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -173,7 +182,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
       {/* Input Area */}
       <div className="p-4 bg-slate-950 border-t border-slate-800 shrink-0">
-        {mode === GameMode.INSTRUCTOR && (
+        {isInstructorMode && (
           <div className="flex items-center gap-2 mb-3">
              <button 
                 onClick={() => setIsUrgent(!isUrgent)}

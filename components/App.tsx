@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   Game, GameState, GameMode, GamePoint, Coordinate, 
   MapStyleId, Language, Team, TaskTemplate, TaskList, TaskType, ChatMessage, DangerZone, PlaygroundTemplate 
-} from '../types';
-import * as db from '../services/db';
-import { teamSync } from '../services/teamSync';
-import { haversineMeters } from '../utils/geo';
-import { seedDatabase, seedTeams } from '../utils/demoContent';
+} from './types';
+import * as db from './services/db';
+import { teamSync } from './services/teamSync';
+import { haversineMeters } from './utils/geo';
+import { seedDatabase, seedTeams } from './utils/demoContent';
 
 // Components
 import GameMap, { GameMapHandle } from './components/GameMap';
@@ -150,6 +151,9 @@ const App: React.FC = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]); 
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0); 
   const [showInstructorDashboard, setShowInstructorDashboard] = useState(false);
+
+  // Captain Status Tracking
+  const [isCaptain, setIsCaptain] = useState(false);
 
   const mapRef = useRef<GameMapHandle>(null);
   const saveTimeoutRef = useRef<any>(null); 
@@ -375,6 +379,36 @@ const App: React.FC = () => {
         window.removeEventListener('keypress', updateActivity);
     };
   }, [showChatDrawer]);
+
+  // --- CAPTAIN STATUS MONITORING ---
+  useEffect(() => {
+      // Periodic check for captain status
+      if (gameState.activeGameId && gameState.teamName) {
+          const checkCaptain = async () => {
+              const teamId = `team-${gameState.teamName?.replace(/\s+/g, '-').toLowerCase()}-${gameState.activeGameId}`;
+              const team = await db.fetchTeam(teamId);
+              if (team) {
+                  const amICaptain = team.captainDeviceId === teamSync.getDeviceId();
+                  // Trigger alert if I just became captain
+                  if (amICaptain && !isCaptain) {
+                      setMessagePopup({
+                          id: `cmd-${Date.now()}`,
+                          gameId: team.gameId,
+                          message: "YOU ARE NOW IN COMMAND OF THE TEAM!",
+                          sender: "SYSTEM",
+                          timestamp: Date.now(),
+                          isUrgent: true
+                      });
+                  }
+                  setIsCaptain(amICaptain);
+              }
+          };
+          
+          checkCaptain();
+          const interval = setInterval(checkCaptain, 5000);
+          return () => clearInterval(interval);
+      }
+  }, [gameState.activeGameId, gameState.teamName, isCaptain]);
 
   // --- DANGER ZONE MONITORING ---
   useEffect(() => {
@@ -1468,6 +1502,8 @@ const App: React.FC = () => {
                   setChatTargetTeamId(teamId);
                   setShowChatDrawer(true);
               }}
+              chatHistory={chatHistory} 
+              onUpdateGame={updateActiveGame} 
           />
       )}
 
@@ -1511,6 +1547,7 @@ const App: React.FC = () => {
           teamId={gameState.teamId}
           teams={instructorTeams} // Pass fetched teams to Chat Drawer
           selectedTeamId={chatTargetTeamId} // Pass the specific team target
+          isInstructor={showLanding || mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT} // Editors are also Instructors
       />
 
       {showAdminModal && (

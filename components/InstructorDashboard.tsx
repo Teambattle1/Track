@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Game, Team, TeamMember, Coordinate, GamePoint, GameMode, TeamStatus } from '../types';
-import { X, Users, Eye, EyeOff, CheckCircle, Trophy, Minus, Plus, ToggleLeft, ToggleRight, Radio } from 'lucide-react';
+import { X, Users, Eye, EyeOff, CheckCircle, Trophy, Minus, Plus, ToggleLeft, ToggleRight, Radio, Crown } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
@@ -32,6 +32,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   
   // New Toggle: Show Teams to Teams
   const [showOtherTeams, setShowOtherTeams] = useState(game.showOtherTeams || false);
+  const [showRanking, setShowRanking] = useState(game.showRankingToPlayers || false);
 
   // Track location history for tails and speed calculation
   const [locationHistory, setLocationHistory] = useState<Record<string, LocationHistoryItem[]>>({});
@@ -113,6 +114,12 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       // Persist setting
       await db.saveGame({ ...game, showOtherTeams: newVal });
   };
+
+  const toggleShowRanking = async () => {
+      const newVal = !showRanking;
+      setShowRanking(newVal);
+      await db.saveGame({ ...game, showRankingToPlayers: newVal });
+  }
 
   const teamLocations = useMemo(() => {
       if (!showTeams) return [];
@@ -268,6 +275,15 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                     >
                         {showOtherTeams ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />} 
                         VIS TEAMS TIL TEAMS
+                    </button>
+
+                    <button 
+                        onClick={toggleShowRanking}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase transition-colors ${showRanking ? 'bg-purple-900/30 border-purple-500 text-purple-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}
+                        title="Show/Hide Ranking List for Players"
+                    >
+                        {showRanking ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />} 
+                        REVEAL RANKING TO TEAMS
                     </button>
                 </div>
             )}
