@@ -13,11 +13,23 @@ interface AiTaskGeneratorProps {
   playgrounds?: Playground[];
   taskLists?: TaskList[];
   initialPlaygroundId?: string | null;
+  targetMode?: 'GAME' | 'LIBRARY' | 'LIST'; // New prop to control context
 }
 
-const LANGUAGES = ['English', 'Danish (Dansk)', 'German (Deutsch)', 'Spanish (Español)', 'French (Français)'];
+const LANGUAGES = [
+  '🇬🇧 English',
+  '🇩🇰 Danish (Dansk)',
+  '🇩🇪 German (Deutsch)',
+  '🇪🇸 Spanish (Español)',
+  '🇫🇷 French (Français)',
+  '🇸🇪 Swedish (Svenska)',
+  '🇳🇴 Norwegian (Norsk)',
+  '🇳🇱 Dutch (Nederlands)',
+  '🇧🇪 Belgian (Vlaams)',
+  '🇮🇱 Hebrew (Ivrit)'
+];
 
-const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, onAddToLibrary, onAddTasksToList, playgrounds = [], taskLists = [], initialPlaygroundId = null }) => {
+const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, onAddToLibrary, onAddTasksToList, playgrounds = [], taskLists = [], initialPlaygroundId = null, targetMode = 'GAME' }) => {
   const [topic, setTopic] = useState('');
   const [language, setLanguage] = useState('English');
   const [taskCount, setTaskCount] = useState(5);
@@ -39,6 +51,13 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [selectedPlaygroundId, setSelectedPlaygroundId] = useState<string | null>(initialPlaygroundId || (playgrounds.length > 0 ? playgrounds[0].id : null));
   const [selectedTaskListId, setSelectedTaskListId] = useState<string>('');
   const [saveToLibrary, setSaveToLibrary] = useState(true);
+
+  // If mode is LIST or LIBRARY, default behavior adjustments
+  useEffect(() => {
+      if (targetMode === 'LIST' || targetMode === 'LIBRARY') {
+          setSaveToLibrary(true); // Always true for these modes essentially
+      }
+  }, [targetMode]);
 
   const isActiveRef = useRef(false);
   const topicInputRef = useRef<HTMLTextAreaElement>(null);
@@ -66,6 +85,10 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
+    if (!autoTag.trim()) {
+        setError("Tag is required for filtering.");
+        return;
+    }
     
     setIsGenerating(true);
     setError(null);
@@ -175,22 +198,32 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const handleFinalize = () => {
       if (approvedTasks.length === 0) return;
 
-      // 1. Add to Library if checked
-      if (saveToLibrary && onAddToLibrary) {
-          onAddToLibrary(approvedTasks);
-      }
-
-      // 2. Add to Task List if selected
-      if (selectedTaskListId && onAddTasksToList) {
-          onAddTasksToList(selectedTaskListId, approvedTasks);
-      }
-
-      // 3. Add to Game (Map or Playground)
-      // Always add to game unless user specifically wants "Library Only" (which we don't have a toggle for yet, so we assume add to game)
-      if (destinationType === 'PLAYGROUND' && selectedPlaygroundId) {
-          onAddTasks(approvedTasks, selectedPlaygroundId);
+      // Logic based on target mode
+      if (targetMode === 'LIST') {
+          // Parent handles list creation with these tasks
+          onAddTasks(approvedTasks, null); 
+      } else if (targetMode === 'LIBRARY') {
+          // Just save to library
+          if (onAddToLibrary) onAddToLibrary(approvedTasks);
       } else {
-          onAddTasks(approvedTasks, null); // Null means Map
+          // Default GAME Mode
+          
+          // 1. Add to Library if checked
+          if (saveToLibrary && onAddToLibrary) {
+              onAddToLibrary(approvedTasks);
+          }
+
+          // 2. Add to Task List if selected
+          if (selectedTaskListId && onAddTasksToList) {
+              onAddTasksToList(selectedTaskListId, approvedTasks);
+          }
+
+          // 3. Add to Game (Map or Playground)
+          if (destinationType === 'PLAYGROUND' && selectedPlaygroundId) {
+              onAddTasks(approvedTasks, selectedPlaygroundId);
+          } else {
+              onAddTasks(approvedTasks, null); // Null means Map
+          }
       }
 
       onClose();
@@ -213,7 +246,9 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
             </div>
             <div>
               <h2 className="text-xl font-bold uppercase tracking-wider">AI TASK GENERATOR</h2>
-              <p className="text-xs text-orange-100 uppercase tracking-wide">POWERED BY GOOGLE GEMINI</p>
+              <p className="text-xs text-orange-100 uppercase tracking-wide">
+                  {targetMode === 'LIST' ? 'CREATING NEW TASK LIST' : (targetMode === 'LIBRARY' ? 'ADDING TO GLOBAL LIBRARY' : 'ADDING TO GAME')}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
@@ -310,22 +345,22 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                             />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block flex items-center gap-1">
-                                <Tag className="w-3 h-3" /> AUTO-TAG
+                            <label className={`text-xs font-bold uppercase tracking-wider mb-1 block flex items-center gap-1 ${!autoTag ? 'text-red-500' : 'text-gray-500'}`}>
+                                <Tag className="w-3 h-3" /> AUTO-TAG *
                             </label>
                             <input 
                                 type="text" 
                                 value={autoTag}
                                 onChange={(e) => setAutoTag(e.target.value)}
-                                placeholder="e.g. 'hard'"
-                                className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                placeholder="Required..."
+                                className={`w-full p-2 rounded-lg border ${!autoTag ? 'border-red-300 dark:border-red-900' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none`}
                             />
                         </div>
                     </div>
 
                     <button 
                         onClick={handleGenerate}
-                        disabled={isGenerating || !topic.trim()}
+                        disabled={isGenerating || !topic.trim() || !autoTag.trim()}
                         className="w-full bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-xl font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 uppercase tracking-wide"
                     >
                         {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -374,73 +409,88 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                 </div>
 
                 {/* DESTINATION SETTINGS & FINISH */}
-                <div className="space-y-3 shrink-0 bg-gray-100 dark:bg-gray-750 p-3 rounded-xl border border-gray-200 dark:border-gray-600">
-                    <div>
-                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest block mb-2">WHERE TO SAVE?</label>
-                        <div className="flex gap-1 mb-2">
-                            <button 
-                                onClick={() => setDestinationType('MAP')}
-                                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase flex flex-col items-center gap-1 border-2 ${destinationType === 'MAP' ? 'bg-white dark:bg-gray-800 border-orange-500 text-orange-600' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                            >
-                                <Map className="w-4 h-4" /> GAME MAP
-                            </button>
-                            <button 
-                                onClick={() => setDestinationType('PLAYGROUND')}
-                                disabled={playgrounds.length === 0}
-                                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase flex flex-col items-center gap-1 border-2 ${destinationType === 'PLAYGROUND' ? 'bg-white dark:bg-gray-800 border-blue-500 text-blue-600' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50'}`}
-                            >
-                                <LayoutGrid className="w-4 h-4" /> PLAYGROUND
-                            </button>
+                {targetMode === 'GAME' && (
+                    <div className="space-y-3 shrink-0 bg-gray-100 dark:bg-gray-750 p-3 rounded-xl border border-gray-200 dark:border-gray-600">
+                        <div>
+                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest block mb-2">WHERE TO SAVE?</label>
+                            <div className="flex gap-1 mb-2">
+                                <button 
+                                    onClick={() => setDestinationType('MAP')}
+                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase flex flex-col items-center gap-1 border-2 ${destinationType === 'MAP' ? 'bg-white dark:bg-gray-800 border-orange-500 text-orange-600' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                                >
+                                    <Map className="w-4 h-4" /> GAME MAP
+                                </button>
+                                <button 
+                                    onClick={() => setDestinationType('PLAYGROUND')}
+                                    disabled={playgrounds.length === 0}
+                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase flex flex-col items-center gap-1 border-2 ${destinationType === 'PLAYGROUND' ? 'bg-white dark:bg-gray-800 border-blue-500 text-blue-600' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50'}`}
+                                >
+                                    <LayoutGrid className="w-4 h-4" /> PLAYGROUND
+                                </button>
+                            </div>
+
+                            {destinationType === 'PLAYGROUND' && playgrounds.length > 0 && (
+                                <select 
+                                    value={selectedPlaygroundId || ''}
+                                    onChange={(e) => setSelectedPlaygroundId(e.target.value)}
+                                    className="w-full p-2 text-xs font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none mb-2"
+                                >
+                                    {playgrounds.map(pg => (
+                                        <option key={pg.id} value={pg.id}>{pg.title}</option>
+                                    ))}
+                                </select>
+                            )}
+
+                            <div className="border-t border-gray-200 dark:border-gray-600 my-2 pt-2">
+                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest block mb-1">ADD TO TASK LIST</label>
+                                <select 
+                                    value={selectedTaskListId}
+                                    onChange={(e) => setSelectedTaskListId(e.target.value)}
+                                    className="w-full p-2 text-xs font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none mb-2"
+                                >
+                                    <option value="">(None - Just add to Game)</option>
+                                    {taskLists.map(list => (
+                                        <option key={list.id} value={list.id}>{list.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <label className="flex items-center gap-2 cursor-pointer p-1">
+                                <input 
+                                    type="checkbox" 
+                                    checked={saveToLibrary} 
+                                    onChange={(e) => setSaveToLibrary(e.target.checked)}
+                                    className="rounded text-orange-600 focus:ring-orange-500 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                                />
+                                <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase">ALSO SAVE TO LIBRARY</span>
+                            </label>
                         </div>
 
-                        {destinationType === 'PLAYGROUND' && playgrounds.length > 0 && (
-                            <select 
-                                value={selectedPlaygroundId || ''}
-                                onChange={(e) => setSelectedPlaygroundId(e.target.value)}
-                                className="w-full p-2 text-xs font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none mb-2"
-                            >
-                                {playgrounds.map(pg => (
-                                    <option key={pg.id} value={pg.id}>{pg.title}</option>
-                                ))}
-                            </select>
-                        )}
-
-                        <div className="border-t border-gray-200 dark:border-gray-600 my-2 pt-2">
-                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest block mb-1">ADD TO TASK LIST</label>
-                            <select 
-                                value={selectedTaskListId}
-                                onChange={(e) => setSelectedTaskListId(e.target.value)}
-                                className="w-full p-2 text-xs font-bold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg outline-none mb-2"
-                            >
-                                <option value="">(None - Just add to Game)</option>
-                                {taskLists.map(list => (
-                                    <option key={list.id} value={list.id}>{list.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <label className="flex items-center gap-2 cursor-pointer p-1">
-                            <input 
-                                type="checkbox" 
-                                checked={saveToLibrary} 
-                                onChange={(e) => setSaveToLibrary(e.target.checked)}
-                                className="rounded text-orange-600 focus:ring-orange-500 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                            />
-                            <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase">ALSO SAVE TO LIBRARY</span>
-                        </label>
+                        <button 
+                            onClick={handleFinalize}
+                            disabled={approvedTasks.length === 0}
+                            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-black shadow-lg disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-2 uppercase tracking-wide text-xs"
+                        >
+                            <Save className="w-4 h-4" /> IMPORT {approvedTasks.length} TASKS
+                        </button>
                     </div>
+                )}
 
-                    <button 
-                        onClick={handleFinalize}
-                        disabled={approvedTasks.length === 0}
-                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-black shadow-lg disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-2 uppercase tracking-wide text-xs"
-                    >
-                        <Save className="w-4 h-4" /> IMPORT {approvedTasks.length} TASKS
-                    </button>
-                </div>
+                {targetMode !== 'GAME' && (
+                    <div className="shrink-0 p-3">
+                        <button 
+                            onClick={handleFinalize}
+                            disabled={approvedTasks.length === 0}
+                            className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-black shadow-lg disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-2 uppercase tracking-wide text-xs"
+                        >
+                            <Save className="w-4 h-4" /> 
+                            {targetMode === 'LIST' ? 'CREATE LIST WITH TASKS' : 'SAVE TO GLOBAL LIBRARY'}
+                        </button>
+                    </div>
+                )}
             </div>
 
-            {/* Right Panel: Proposals */}
+            {/* Right Panel: Proposals (same as before) */}
             <div className="w-full md:w-2/3 bg-white dark:bg-gray-900 p-5 flex flex-col h-full overflow-hidden relative">
                 {isGenerating && (
                     <div className="absolute inset-0 z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md flex flex-col items-center justify-center text-orange-600 animate-in fade-in duration-300">

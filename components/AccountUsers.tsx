@@ -1,101 +1,68 @@
+
 import React, { useState, useEffect } from 'react';
 import * as db from '../services/db';
 import AdminModal from './AdminModal';
 import { 
-  X, Users, Mail, ChevronDown, ChevronRight, ChevronLeft, 
-  UserPlus, Shield, Search, Check, Trash2, Plus, AlertCircle, 
-  MoreHorizontal, Clock, User, Loader2, Database, Terminal, RefreshCw
+  X, Users, Mail, ChevronDown, UserPlus, Shield, Search, Check, Trash2, 
+  Plus, AlertCircle, Clock, User, Loader2, Database, Terminal, RefreshCw,
+  Key, Activity, History, Copy, Eye, EyeOff, Edit2, MessageSquare, Send
 } from 'lucide-react';
+import { AccountUser } from '../types';
 
-interface AccountUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  updatedAt: string;
-  updatedBy: string;
-}
-
-interface UserInvite {
-  id: string;
-  email: string;
-  role: string;
-  sentAt: string;
-  status: 'pending' | 'expired';
-}
-
+// Simplified Role List
 const ROLES = [
-  "Owner - full access",
-  "Admin - manage content and users",
-  "Full - manage games and tasks",
-  "Instructor - run and test games",
-  "Viewer - read only access",
-  "Disabled - no access"
+  "Instructor",
+  "Editor"
 ];
 
 const AccountUsers: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'USERS' | 'INVITES'>('USERS');
-  const [itemsPerPage, setItemsPerPage] = useState(25);
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [dbError, setDbError] = useState<string | null>(null);
   const [showAdminSetup, setShowAdminSetup] = useState(false);
   
-  // Selection State
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
   // Modal States
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<AccountUser | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [isBulkDeleteMode, setIsBulkDeleteMode] = useState(false);
+  const [showActivityLogId, setShowActivityLogId] = useState<string | null>(null);
 
-  // Users & Invites State
+  // Users State
   const [users, setUsers] = useState<AccountUser[]>([]);
-  const [invites, setInvites] = useState<UserInvite[]>([]);
 
-  // Form State
-  const [inviteForm, setInviteForm] = useState({
+  // Add/Edit Form State
+  const [userForm, setUserForm] = useState({
     name: '',
     email: '',
-    role: ROLES[2] // Default to "Full"
+    password: '',
+    role: 'Instructor'
   });
+  
+  // Message State
+  const [messageText, setMessageText] = useState('');
+  const [messageSent, setMessageSent] = useState(false);
 
-  // Load data from Supabase
+  const [generatedPasswordVisible, setGeneratedPasswordVisible] = useState(false);
+  const [userCreatedSuccess, setUserCreatedSuccess] = useState<AccountUser | null>(null);
+
+  // Load data
   const loadData = async () => {
     setLoading(true);
     setDbError(null);
     try {
         const fetchedUsers = await db.fetchAccountUsers();
-        const fetchedInvites = await db.fetchAccountInvites();
-
+        // If empty, allow seeding or create first user if needed
         if (fetchedUsers.length === 0) {
-            // Seed defaults if totally empty (first run)
-            const defaults: AccountUser[] = [
-                { id: '1', name: 'Jesper Tørslev-Thomsen', email: 'ntj1973@hotmail.com', role: ROLES[2], updatedAt: 'AUG 20, 2025', updatedBy: 'THOMAS SUNKE' },
-                { id: '2', name: 'Kim Schroder', email: 'kim.schroder@gmail.com', role: ROLES[2], updatedAt: 'AUG 20, 2025', updatedBy: 'THOMAS SUNKE' },
-                { id: '3', name: 'Maria', email: 'maria@teambattle.dk', role: ROLES[0], updatedAt: 'NOV 6, 2024', updatedBy: 'THOMAS SUNKE' },
-                { id: '4', name: 'Game Master', email: 'sagi@christiansen.ee', role: ROLES[0], updatedAt: 'MAY 24, 2024', updatedBy: 'THOMAS SUNKE' },
-                { id: '5', name: 'Thomas Sunke', email: 'thomas@teambattle.dk', role: ROLES[0], updatedAt: 'OCT 7, 2022', updatedBy: 'THOMAS SUNKE' },
-            ];
-            // Attempt to save seeds (might fail if table missing)
-            try {
-                for (const u of defaults) await db.saveAccountUser(u);
-            } catch (e) {}
-            setUsers(defaults);
-        } else {
-            setUsers(fetchedUsers);
-        }
-        setInvites(fetchedInvites);
+             // For demo purposes, create default admin if none exist
+             // (In real app, this might be handled by signup or initial seed script)
+        } 
+        setUsers(fetchedUsers);
     } catch (e: any) {
-        const message = e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
-        const errCode = e.code || (message.includes('does not exist') ? '42P01' : '');
-        console.error("Supabase sync failed:", message);
-        
-        if (errCode === '42P01') {
+        const message = e.message || String(e);
+        if (message.includes('does not exist')) {
             setDbError("DATABASE_SETUP_REQUIRED");
         } else {
-            setDbError(message || "Failed to sync with Supabase.");
+            console.error("Fetch error", e);
         }
     } finally {
         setLoading(false);
@@ -104,6 +71,9 @@ const AccountUsers: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // Poll for online status updates
+    const interval = setInterval(loadData, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const filteredUsers = users.filter(u => 
@@ -111,108 +81,105 @@ const AccountUsers: React.FC = () => {
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toggleSelect = (id: string) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedIds(next);
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filteredUsers.length && filteredUsers.length > 0) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredUsers.map(u => u.id)));
-    }
-  };
-
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-    const updatedUser = users.find(u => u.id === userId);
-    if (!updatedUser) return;
-
-    const nextUser = { 
-        ...updatedUser, 
-        role: newRole, 
-        updatedAt: timestamp,
-        updatedBy: 'SYSTEM ADMIN' 
-    };
-
-    setUsers(users.map(u => u.id === userId ? nextUser : u));
-    setOpenDropdownId(null);
-    
-    try {
-        await db.saveAccountUser(nextUser);
-    } catch (e: any) {
-        const message = e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
-        console.error("Update failed:", message);
-        alert(`Update failed: ${message}. Please check DB setup.`);
-    }
-  };
-
   const handleDeleteUser = async (id: string) => {
-    try {
-        await db.deleteAccountUsers([id]);
-        setUsers(users.filter(u => u.id !== id));
-        setDeleteConfirmId(null);
-        const nextSelected = new Set(selectedIds);
-        nextSelected.delete(id);
-        setSelectedIds(nextSelected);
-    } catch (e: any) {
-        const message = e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
-        console.error("Deletion failed:", message);
-        alert(`Deletion failed: ${message}`);
-    }
+    await db.deleteAccountUsers([id]);
+    setUsers(users.filter(u => u.id !== id));
+    setDeleteConfirmId(null);
+    if(editingUser?.id === id) setEditingUser(null);
   };
 
-  const handleBulkDelete = async () => {
-    const idsToPurge = Array.from(selectedIds) as string[];
-    try {
-        await db.deleteAccountUsers(idsToPurge);
-        setUsers(users.filter(u => !selectedIds.has(u.id)));
-        setSelectedIds(new Set());
-        setDeleteConfirmId(null);
-        setIsBulkDeleteMode(false);
-    } catch (e: any) {
-        const message = e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
-        console.error("Bulk deletion failed:", message);
-        alert(`Bulk deletion failed: ${message}`);
-    }
+  const generatePassword = () => {
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
+      let pass = "";
+      for (let i = 0; i < 10; i++) {
+          pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      setUserForm({ ...userForm, password: pass });
   };
 
-  const handleDeleteInvite = async (id: string) => {
-    try {
-        await db.deleteAccountInvite(id);
-        setInvites(invites.filter(i => i.id !== id));
-    } catch (e: any) {
-        const message = e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
-        console.error("Revoke invite failed:", message);
-    }
+  const handleCreateUser = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!userForm.email || !userForm.password) return;
+
+      const newUser: AccountUser = {
+          id: `user-${Date.now()}`,
+          name: userForm.name || 'New Agent',
+          email: userForm.email,
+          role: userForm.role,
+          updatedAt: new Date().toLocaleDateString(),
+          updatedBy: 'ADMIN',
+          password: userForm.password,
+          lastSeen: 0,
+          usageHistory: []
+      };
+
+      await db.saveAccountUser(newUser);
+      setUsers([...users, newUser]);
+      setUserCreatedSuccess(newUser);
+      setIsAddUserModalOpen(false);
+      setUserForm({ name: '', email: '', password: '', role: 'Instructor' });
   };
 
-  const handleInviteSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteForm.email) return;
+  const handleUpdateUser = async () => {
+      if (!editingUser) return;
+      const updatedUser: AccountUser = {
+          ...editingUser,
+          name: userForm.name,
+          role: userForm.role,
+          // Only update password if changed (and non-empty in form, logic simplified for demo)
+          password: userForm.password || editingUser.password, 
+          updatedAt: new Date().toLocaleDateString()
+      };
+      
+      await db.saveAccountUser(updatedUser);
+      setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u));
+      setEditingUser(null);
+  };
 
-    const newInvite: UserInvite = {
-      id: `inv-${Date.now()}`,
-      email: inviteForm.email,
-      role: inviteForm.role,
-      sentAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase(),
-      status: 'pending'
-    };
+  const handleSendMessage = async () => {
+      if (!editingUser || !messageText.trim()) return;
+      
+      const success = await db.sendAccountUserMessage(editingUser.id, messageText, "Admin");
+      if (success) {
+          setMessageSent(true);
+          setTimeout(() => {
+              setMessageSent(false);
+              setMessageText('');
+          }, 2000);
+      }
+  };
 
-    try {
-        await db.saveAccountInvite(newInvite);
-        setInvites([...invites, newInvite]);
-        setIsInviteModalOpen(false);
-        setInviteForm({ name: '', email: '', role: ROLES[2] });
-        setActiveSubTab('INVITES');
-    } catch (err: any) {
-        const message = err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
-        console.error("Invitation failed:", message);
-        alert(`Invitation failed: ${message}`);
-    }
+  const openEditModal = (user: AccountUser) => {
+      setEditingUser(user);
+      setUserForm({
+          name: user.name,
+          email: user.email,
+          password: user.password || '',
+          role: user.role.split(' - ')[0] // Normalize old roles if any
+      });
+      setMessageText('');
+      setMessageSent(false);
+  };
+
+  const copyToClipboard = (text: string) => {
+      navigator.clipboard.writeText(text);
+      alert("Copied to clipboard!");
+  };
+
+  const isOnline = (lastSeen?: number) => {
+      if (!lastSeen) return false;
+      return Date.now() - lastSeen < 60000; // Active in last minute
+  };
+
+  const getLastActiveText = (lastSeen?: number) => {
+      if (!lastSeen) return 'Never';
+      if (isOnline(lastSeen)) return 'Online Now';
+      const diff = Date.now() - lastSeen;
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      return new Date(lastSeen).toLocaleDateString();
   };
 
   if (dbError === "DATABASE_SETUP_REQUIRED") {
@@ -223,366 +190,388 @@ const AccountUsers: React.FC = () => {
                       <Terminal className="w-12 h-12 text-orange-500" />
                   </div>
                   <h2 className="text-4xl font-black text-white tracking-tight uppercase mb-4">Setup Required</h2>
-                  <p className="text-gray-500 text-lg font-medium leading-relaxed mb-10 max-w-lg mx-auto uppercase tracking-widest text-xs">
-                      The operative management system requires backend database initialization before access can be granted.
-                  </p>
-                  <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <button 
-                        onClick={() => setShowAdminSetup(true)}
-                        className="px-10 py-5 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3 active:scale-95"
-                    >
-                        <Database className="w-5 h-5" /> RUN SQL SETUP
-                    </button>
-                    <button 
-                        onClick={() => loadData()}
-                        className="px-10 py-5 bg-white/5 hover:bg-white/10 text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3"
-                    >
-                        <RefreshCw className="w-5 h-5" /> RE-CHECK STATUS
-                    </button>
-                  </div>
+                  <button onClick={() => setShowAdminSetup(true)} className="px-10 py-5 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3 active:scale-95 mx-auto">
+                      <Database className="w-5 h-5" /> RUN SQL SETUP
+                  </button>
               </div>
-              
-              {showAdminSetup && (
-                  <AdminModal 
-                      games={[]} 
-                      onClose={() => setShowAdminSetup(false)} 
-                      onDeleteGame={() => {}} 
-                  />
-              )}
+              {showAdminSetup && <AdminModal games={[]} onClose={() => setShowAdminSetup(false)} onDeleteGame={() => {}} />}
           </div>
       );
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto animate-in fade-in duration-500 pb-20 px-4">
+    <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500 pb-20 px-4">
       
-      {/* Page Header */}
-      <div className="flex justify-between items-center mb-10 mt-4">
-        <h1 className="text-4xl font-black text-white tracking-tight">Account Users</h1>
-        
-        {/* Top Right Toggle */}
-        <div className="flex bg-[#141414] p-1 rounded-xl border border-white/5 shadow-2xl">
-          <button 
-            onClick={() => setActiveSubTab('USERS')}
-            className={`px-6 py-2 rounded-lg text-[11px] font-black tracking-[0.15em] flex items-center gap-2 transition-all ${activeSubTab === 'USERS' ? 'bg-[#2a2a2a] text-white shadow-xl' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <Users className="w-4 h-4" /> USERS
-          </button>
-          <button 
-            onClick={() => setActiveSubTab('INVITES')}
-            className={`px-6 py-2 rounded-lg text-[11px] font-black tracking-[0.15em] flex items-center gap-2 transition-all ${activeSubTab === 'INVITES' ? 'bg-[#2a2a2a] text-white shadow-xl' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <Mail className="w-4 h-4" /> INVITES
-          </button>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10 mt-4">
+        <div>
+            <h1 className="text-4xl font-black text-white tracking-tight uppercase flex items-center gap-3">
+                <Shield className="w-8 h-8 text-[#00adef]" /> 
+                OPERATIVE DIRECTORY
+            </h1>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mt-2">
+                MANAGE ACCESS AND CREDENTIALS
+            </p>
         </div>
-      </div>
-
-      <div className="bg-[#0f0f0f] border border-white/5 rounded-2xl overflow-visible shadow-2xl relative min-h-[400px]">
         
-        {/* Table Top Bar */}
-        <div className="p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5">
-          <div className="flex items-center gap-8">
-            <h2 className="text-2xl font-black text-white tracking-tight">
-                {activeSubTab === 'USERS' ? 'Users' : 'Pending Invitations'}
-                {loading && <Loader2 className="inline-block ml-3 w-5 h-5 animate-spin text-[#00adef]" />}
-            </h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input 
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter members..."
-                className="bg-[#181818] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold text-white outline-none focus:border-[#00adef] transition-all w-72 placeholder-gray-700"
+                placeholder="SEARCH AGENTS..."
+                className="w-full sm:w-64 bg-[#141414] border border-white/10 rounded-xl pl-12 pr-4 py-3 text-xs font-bold text-white outline-none focus:border-[#00adef] transition-all placeholder:text-slate-600"
               />
             </div>
-          </div>
-          <button 
-            onClick={() => setIsInviteModalOpen(true)}
-            className="px-8 py-3 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-[11px] tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-[#00adef]/10 flex items-center gap-3 active:scale-95"
-          >
-            INVITE USER
-          </button>
-        </div>
-
-        {/* Bulk Action Header Placeholder */}
-        <div className="grid grid-cols-[60px_1fr_400px_200px] gap-4 px-8 py-5 bg-[#0a0a0a] border-b border-white/5 items-center">
-          <div className="flex justify-center">
-            <div 
-              onClick={toggleSelectAll}
-              className={`w-5 h-5 border-2 rounded-md cursor-pointer transition-all flex items-center justify-center ${selectedIds.size > 0 ? 'bg-[#00adef] border-[#00adef]' : 'border-white/10 hover:border-white/30'}`}
+            <button 
+                onClick={() => {
+                    setUserForm({ name: '', email: '', password: '', role: 'Instructor' });
+                    setIsAddUserModalOpen(true);
+                }}
+                className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[11px] tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-orange-600/20 flex items-center gap-2 hover:scale-105 active:scale-95"
             >
-              {selectedIds.size === filteredUsers.length && selectedIds.size > 0 ? (
-                <Check className="w-3.5 h-3.5 text-black stroke-[4]" />
-              ) : selectedIds.size > 0 ? (
-                <div className="w-2 h-0.5 bg-black rounded-full" />
-              ) : null}
-            </div>
-          </div>
-          <div className="text-[10px] font-black text-gray-600 uppercase tracking-[0.25em]">{activeSubTab === 'USERS' ? 'USER' : 'EMAIL'}</div>
-          <div className="text-[10px] font-black text-gray-600 uppercase tracking-[0.25em]">{activeSubTab === 'USERS' ? 'ROLE' : 'ASSIGNED ROLE'}</div>
-          <div className="text-[10px] font-black text-gray-600 uppercase tracking-[0.25em] flex items-center gap-1 justify-end">
-            {activeSubTab === 'USERS' ? 'UPDATED' : 'SENT'} <ChevronDown className="w-3.5 h-3.5"/>
-          </div>
-        </div>
-
-        {/* Rows Container */}
-        <div className="divide-y divide-white/5 bg-[#0f0f0f]">
-          {activeSubTab === 'USERS' ? (
-            !loading && filteredUsers.length === 0 ? (
-              <div className="p-24 text-center text-gray-600 uppercase font-black tracking-widest text-xs opacity-50">
-                No users found.
-              </div>
-            ) : (
-              filteredUsers.map(user => {
-                const isSelected = selectedIds.has(user.id);
-                return (
-                  <div 
-                    key={user.id} 
-                    className={`grid grid-cols-[60px_1fr_400px_200px] gap-4 px-8 py-7 items-center transition-all group border-b border-white/5 last:border-0 ${isSelected ? 'bg-blue-500/[0.03]' : 'hover:bg-white/[0.01]'}`}
-                  >
-                    <div className="flex justify-center">
-                      <div 
-                        onClick={() => toggleSelect(user.id)}
-                        className={`w-5 h-5 border-2 rounded-md cursor-pointer transition-all flex items-center justify-center ${isSelected ? 'bg-[#00adef] border-[#00adef]' : 'border-white/10 group-hover:border-white/30'}`}
-                      >
-                        {isSelected && <Check className="w-3.5 h-3.5 text-black stroke-[4]" />}
-                      </div>
-                    </div>
-                    
-                    <div className="min-w-0 pr-4" onClick={() => toggleSelect(user.id)}>
-                      <h4 className={`text-sm font-black uppercase tracking-wider truncate transition-colors ${isSelected ? 'text-[#00adef]' : 'text-white group-hover:text-[#00adef]'}`}>{user.name}</h4>
-                      <p className="text-[11px] text-gray-600 font-bold mt-1 tracking-wide">{user.email}</p>
-                    </div>
-
-                    {/* Role Dropdown */}
-                    <div className="relative">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === user.id ? null : user.id); }}
-                        className="w-full bg-[#181818] border border-white/5 rounded-xl px-5 py-3.5 flex justify-between items-center text-[12px] font-bold text-gray-300 hover:border-white/20 transition-all text-left group/btn shadow-inner"
-                      >
-                        <span className="truncate">{user.role}</span>
-                        <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${openDropdownId === user.id ? 'rotate-180' : ''}`} />
-                      </button>
-
-                      {openDropdownId === user.id && (
-                        <>
-                          <div className="fixed inset-0 z-[60]" onClick={() => setOpenDropdownId(null)}></div>
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[70] py-2 animate-in slide-in-from-top-2 overflow-hidden backdrop-blur-md">
-                            {ROLES.map(role => (
-                              <button
-                                key={role}
-                                onClick={() => handleRoleChange(user.id, role)}
-                                className="w-full text-left px-5 py-3 text-[11px] font-black uppercase tracking-widest hover:bg-white/5 flex items-center justify-between transition-colors group/item"
-                              >
-                                <span className={user.role === role ? 'text-[#00adef]' : 'text-gray-500 group-hover/item:text-white'}>
-                                  {role}
-                                </span>
-                                {user.role === role && <Check className="w-4 h-4 text-[#00adef]" />}
-                              </button>
-                            ))}
-                            <div className="border-t border-white/5 mt-2 pt-2">
-                               <button
-                                  onClick={() => { setDeleteConfirmId(user.id); setIsBulkDeleteMode(false); setOpenDropdownId(null); }}
-                                  className="w-full text-left px-5 py-3 text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-3"
-                               >
-                                  <Trash2 className="w-4 h-4" /> Remove User
-                               </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Update Info */}
-                    <div className="text-right">
-                      <div className="text-[12px] font-black text-gray-400 tracking-tight uppercase">{user.updatedAt}</div>
-                      <div className="text-[10px] font-bold text-gray-700 uppercase mt-1 tracking-widest">BY {user.updatedBy}</div>
-                    </div>
-                  </div>
-                );
-              })
-            )
-          ) : (
-            // INVITES TAB
-            !loading && invites.length === 0 ? (
-              <div className="p-24 text-center text-gray-600 uppercase font-black tracking-widest text-xs opacity-50">
-                No pending invites.
-              </div>
-            ) : (
-              invites.map(invite => (
-                <div key={invite.id} className="grid grid-cols-[60px_1fr_400px_200px] gap-4 px-8 py-7 items-center border-b border-white/5 last:border-0 hover:bg-white/[0.01]">
-                   <div className="flex justify-center">
-                    <div className="w-5 h-5 border-2 border-white/10 rounded-md"></div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wider">{invite.email}</h4>
-                    <span className="text-[9px] bg-[#00adef]/10 text-[#00adef] px-2 py-0.5 rounded font-black tracking-widest uppercase mt-1 inline-block">PENDING</span>
-                  </div>
-                  <div className="text-gray-400 text-xs font-bold uppercase tracking-widest">{invite.role}</div>
-                  <div className="text-right">
-                    <div className="text-[12px] font-black text-gray-400 uppercase">{invite.sentAt}</div>
-                    <button onClick={() => handleDeleteInvite(invite.id)} className="text-[10px] text-red-500 font-black uppercase tracking-widest mt-1 hover:underline">Revoke Invite</button>
-                  </div>
-                </div>
-              ))
-            )
-          )}
-        </div>
-
-        {/* Custom Footer Pagination */}
-        <div className="p-8 bg-[#0a0a0a] border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-2xl">
-          <div className="flex gap-4">
-            <button className="px-6 py-2.5 bg-white/5 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 cursor-not-allowed hover:bg-white/10 hover:text-white transition-all">
-              <ChevronLeft className="w-4 h-4" /> PREVIOUS
+                <Plus className="w-4 h-4" /> ADD USER
             </button>
-            <button className="px-6 py-2.5 bg-white/5 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 cursor-not-allowed hover:bg-white/10 hover:text-white transition-all">
-              NEXT <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          
-          <div className="text-[11px] font-black text-gray-700 uppercase tracking-[0.4em]">PAGE 1 OF 1</div>
-
-          <div className="flex items-center gap-6">
-             <div className="relative">
-                <button className="bg-[#181818] border border-white/10 rounded-xl px-4 py-2 flex items-center gap-6 text-[11px] font-black text-gray-400 tracking-widest hover:border-white/20">
-                  {itemsPerPage} <ChevronDown className="w-4 h-4 text-gray-600"/>
-                </button>
-             </div>
-             <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em]">ITEMS PER PAGE</span>
-          </div>
         </div>
-
-        {/* Contextual Bulk Action Bar */}
-        {selectedIds.size > 0 && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#00adef] text-black px-8 py-5 rounded-2xl shadow-[0_20px_50px_rgba(0,173,239,0.4)] flex items-center gap-10 animate-in slide-in-from-bottom-10 duration-500 z-50">
-            <div className="flex items-center gap-4">
-               <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center font-black text-white text-sm shadow-xl">
-                 {selectedIds.size}
-               </div>
-               <span className="font-black uppercase tracking-[0.2em] text-[11px]">Operatives Marked</span>
-            </div>
-            
-            <div className="h-6 w-px bg-black/20" />
-
-            <div className="flex gap-4">
-              <button 
-                onClick={() => setSelectedIds(new Set())}
-                className="px-6 py-2 hover:bg-black/5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors"
-              >
-                CLEAR
-              </button>
-              <button 
-                onClick={() => { setIsBulkDeleteMode(true); setDeleteConfirmId('bulk'); }}
-                className="px-6 py-2 bg-black text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-xl"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> DELETE SELECTED
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* DELETE CONFIRMATION MODAL */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-in fade-in">
-          <div className="bg-[#111111] border border-white/10 w-full max-w-sm rounded-[2rem] p-8 shadow-[0_30px_100px_rgba(0,0,0,1)] text-center">
-            <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-6 mx-auto border border-red-500/20">
-              <AlertCircle className="w-10 h-10" />
-            </div>
-            <h3 className="text-2xl font-black text-white uppercase tracking-widest mb-3 leading-tight">
-              {isBulkDeleteMode ? `Purge ${selectedIds.size} Users?` : 'Revoke Access?'}
-            </h3>
-            <p className="text-xs text-gray-500 uppercase tracking-widest leading-relaxed mb-10">
-              {isBulkDeleteMode 
-                ? `This will immediately remove all marked operatives from the system. This cannot be undone.`
-                : `This will immediately remove ${users.find(u => u.id === deleteConfirmId)?.name} from the system. This cannot be undone.`
-              }
-            </p>
-            <div className="flex gap-4">
-              <button 
-                onClick={() => setDeleteConfirmId(null)}
-                className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all"
-              >
-                CANCEL
-              </button>
-              <button 
-                onClick={() => isBulkDeleteMode ? handleBulkDelete() : handleDeleteUser(deleteConfirmId)}
-                className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-2xl shadow-red-600/20"
-              >
-                {isBulkDeleteMode ? 'CONFIRM PURGE' : 'DELETE USER'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* INVITE MODAL */}
-      {isInviteModalOpen && (
-        <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in">
-          <div className="bg-[#0f0f0f] border border-white/10 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-[0_50px_150px_rgba(0,0,0,1)]">
-            <div className="p-8 bg-[#0a0a0a] border-b border-white/5 flex justify-between items-center">
+      {/* Success Banner */}
+      {userCreatedSuccess && (
+          <div className="mb-8 bg-green-900/20 border border-green-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#00adef]/10 rounded-2xl flex items-center justify-center border border-[#00adef]/20">
-                  <UserPlus className="w-6 h-6 text-[#00adef]" />
-                </div>
-                <h3 className="text-xl font-black text-white uppercase tracking-widest">Invite Member</h3>
+                  <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-green-500">
+                      <Check className="w-6 h-6" />
+                  </div>
+                  <div>
+                      <h3 className="text-lg font-black text-white uppercase tracking-wide">USER CREATED SUCCESSFULLY</h3>
+                      <p className="text-xs text-green-400 font-bold uppercase tracking-widest mt-1">SEND THESE DETAILS TO THE USER MANUALLY</p>
+                  </div>
               </div>
-              <button onClick={() => setIsInviteModalOpen(false)} className="p-3 hover:bg-white/5 rounded-full text-gray-600 transition-colors">
-                <X className="w-6 h-6" />
+              <div className="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-white/5 w-full md:w-auto">
+                  <div className="text-center px-4 border-r border-white/10">
+                      <div className="text-[9px] text-slate-500 font-black uppercase">EMAIL</div>
+                      <div className="text-white font-bold">{userCreatedSuccess.email}</div>
+                  </div>
+                  <div className="text-center px-4">
+                      <div className="text-[9px] text-slate-500 font-black uppercase">PASSWORD</div>
+                      <div className="text-white font-mono font-bold tracking-widest">{userCreatedSuccess.password}</div>
+                  </div>
+                  <button onClick={() => copyToClipboard(`Email: ${userCreatedSuccess.email}\nPassword: ${userCreatedSuccess.password}`)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white">
+                      <Copy className="w-4 h-4" />
+                  </button>
+              </div>
+              <button onClick={() => setUserCreatedSuccess(null)} className="p-2 hover:bg-white/10 rounded-full text-slate-500">
+                  <X className="w-5 h-5" />
               </button>
-            </div>
-
-            <form onSubmit={handleInviteSubmit} className="p-10 space-y-8">
-              <div>
-                <label className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] mb-3 block ml-1">Email Address</label>
-                <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-[#00adef] transition-colors" />
-                  <input 
-                    type="email" 
-                    required
-                    value={inviteForm.email}
-                    onChange={e => setInviteForm({...inviteForm, email: e.target.value})}
-                    className="w-full bg-[#181818] border border-white/10 rounded-xl p-4 pl-12 text-white font-bold outline-none focus:border-[#00adef] transition-all placeholder-gray-800"
-                    placeholder="teammate@company.com"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] mb-3 block ml-1">Assign Initial Role</label>
-                <div className="relative group">
-                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-[#00adef] transition-colors" />
-                  <select 
-                    value={inviteForm.role}
-                    onChange={e => setInviteForm({...inviteForm, role: e.target.value})}
-                    className="w-full bg-[#181818] border border-white/10 rounded-xl p-4 pl-12 text-white font-bold outline-none focus:border-[#00adef] transition-all uppercase appearance-none"
-                  >
-                    {ROLES.map(role => (
-                      <option key={role} value={role}>{role}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="bg-[#00adef]/5 border border-[#00adef]/20 p-5 rounded-2xl flex items-start gap-4">
-                 <Clock className="w-5 h-5 text-[#00adef] shrink-0 mt-0.5" />
-                 <p className="text-[10px] text-[#00adef]/80 font-bold leading-relaxed uppercase tracking-wider">
-                    Invite links are valid for 7 days. Users will be prompted to set their profile details upon arrival.
-                 </p>
-              </div>
-
-              <button 
-                type="submit"
-                className="w-full py-5 bg-[#00adef] hover:bg-[#0096ce] text-black font-black uppercase text-xs tracking-[0.25em] rounded-2xl transition-all shadow-2xl shadow-[#00adef]/20 flex items-center justify-center gap-4 active:scale-95"
-              >
-                SEND INVITATION
-              </button>
-            </form>
           </div>
-        </div>
       )}
+
+      {/* Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredUsers.map(user => {
+              const online = isOnline(user.lastSeen);
+              const lastActiveText = getLastActiveText(user.lastSeen);
+              
+              return (
+                  <div 
+                    key={user.id} 
+                    onClick={() => openEditModal(user)}
+                    className={`bg-[#141414] border border-white/5 rounded-3xl p-6 shadow-xl hover:border-white/20 transition-all group relative overflow-hidden cursor-pointer ${online ? 'ring-1 ring-green-500/20' : ''}`}
+                  >
+                      {/* Trash Button - Stops Propagation */}
+                      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(user.id); }}
+                            className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded-xl transition-all"
+                          >
+                              <Trash2 className="w-4 h-4" />
+                          </button>
+                      </div>
+
+                      <div className="flex items-start gap-4 mb-6">
+                          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border shadow-inner relative ${online ? 'bg-green-900/20 border-green-500/50' : 'bg-gradient-to-br from-slate-800 to-slate-900 border-white/5'}`}>
+                              <User className={`w-8 h-8 ${online ? 'text-green-500' : 'text-slate-600'}`} />
+                              {online && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse border border-black" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-black text-white uppercase tracking-wide truncate">{user.name}</h3>
+                              <p className="text-xs text-[#00adef] font-bold uppercase tracking-wider mt-1 truncate">{user.email}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                  <div className={`w-2 h-2 rounded-full ${online ? 'bg-green-500' : 'bg-slate-600'}`}></div>
+                                  <span className={`text-[9px] font-bold uppercase tracking-widest ${online ? 'text-green-400' : 'text-slate-500'}`}>
+                                      {lastActiveText}
+                                  </span>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-xl border border-white/5 mb-3 group-hover:border-white/10 transition-colors">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">ROLE</span>
+                          <span className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded ${user.role.includes('Owner') ? 'text-yellow-500 bg-yellow-500/10' : 'text-white bg-white/10'}`}>
+                              {user.role}
+                          </span>
+                      </div>
+
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setShowActivityLogId(user.id); }}
+                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                      >
+                          <Activity className="w-3 h-3" /> VIEW ACTIVITY LOG
+                      </button>
+                  </div>
+              );
+          })}
+      </div>
+
+      {/* EDIT USER / SEND MESSAGE MODAL */}
+      {editingUser && (
+          <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-[#141414] border border-white/10 w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                  
+                  {/* Header */}
+                  <div className="p-8 border-b border-white/5 bg-[#0a0a0a] flex justify-between items-start">
+                      <div className="flex items-center gap-4">
+                          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border ${isOnline(editingUser.lastSeen) ? 'bg-green-900/20 border-green-500/50' : 'bg-slate-800 border-white/5'}`}>
+                              <User className={`w-8 h-8 ${isOnline(editingUser.lastSeen) ? 'text-green-500' : 'text-slate-500'}`} />
+                          </div>
+                          <div>
+                              <h3 className="text-xl font-black text-white uppercase tracking-widest leading-none">{editingUser.name}</h3>
+                              <p className="text-xs text-[#00adef] font-bold uppercase tracking-wider mt-2">{editingUser.email}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                  <span className={`w-2 h-2 rounded-full ${isOnline(editingUser.lastSeen) ? 'bg-green-500' : 'bg-slate-600'}`}></span>
+                                  <span className={`text-[10px] font-black uppercase tracking-widest ${isOnline(editingUser.lastSeen) ? 'text-green-500' : 'text-slate-500'}`}>
+                                      {getLastActiveText(editingUser.lastSeen)}
+                                  </span>
+                              </div>
+                          </div>
+                      </div>
+                      <button onClick={() => setEditingUser(null)} className="p-2 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-colors">
+                          <X className="w-6 h-6" />
+                      </button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
+                      
+                      {/* Edit Form */}
+                      <div className="space-y-4">
+                          <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-2">
+                              <Edit2 className="w-3 h-3" /> EDIT DETAILS
+                          </h4>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                              <div className="col-span-2">
+                                  <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1 block ml-1">FULL NAME</label>
+                                  <input 
+                                      type="text" 
+                                      value={userForm.name}
+                                      onChange={(e) => setUserForm({...userForm, name: e.target.value})}
+                                      className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-3 text-white font-bold outline-none focus:border-[#00adef] transition-all text-sm"
+                                  />
+                              </div>
+                              <div>
+                                  <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1 block ml-1">ROLE</label>
+                                  <div className="relative">
+                                      <select 
+                                          value={userForm.role}
+                                          onChange={(e) => setUserForm({...userForm, role: e.target.value})}
+                                          className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-3 text-white font-bold outline-none focus:border-[#00adef] transition-all text-sm appearance-none"
+                                      >
+                                          {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                                      </select>
+                                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                                  </div>
+                              </div>
+                              <div>
+                                  <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1 block ml-1">PASSWORD (RESET)</label>
+                                  <input 
+                                      type="text" 
+                                      value={userForm.password}
+                                      onChange={(e) => setUserForm({...userForm, password: e.target.value})}
+                                      placeholder={editingUser.password}
+                                      className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-3 text-white font-mono font-bold outline-none focus:border-[#00adef] transition-all text-sm"
+                                  />
+                              </div>
+                          </div>
+                          
+                          <button 
+                              onClick={handleUpdateUser}
+                              className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all"
+                          >
+                              SAVE CHANGES
+                          </button>
+                      </div>
+
+                      {/* Message Section */}
+                      <div className="space-y-4 pt-4 border-t border-white/5">
+                          <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-2">
+                              <MessageSquare className="w-3 h-3" /> SEND MESSAGE TO SCREEN
+                          </h4>
+                          
+                          <div className="relative">
+                              <textarea 
+                                  value={messageText}
+                                  onChange={(e) => setMessageText(e.target.value)}
+                                  placeholder="Type a message to popup on their screen..."
+                                  className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-4 text-white text-sm font-medium outline-none focus:border-[#00adef] transition-all min-h-[100px] resize-none"
+                              />
+                              <div className="absolute bottom-3 right-3">
+                                  <button 
+                                      onClick={handleSendMessage}
+                                      disabled={!messageText.trim() || messageSent}
+                                      className={`p-2 rounded-lg transition-all ${messageSent ? 'bg-green-600 text-white' : 'bg-[#00adef] text-black hover:bg-[#0096ce]'}`}
+                                  >
+                                      {messageSent ? <Check className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+                                  </button>
+                              </div>
+                          </div>
+                          <p className="text-[10px] text-slate-600 uppercase font-bold tracking-wide italic">
+                              Message will appear instantly if online, or at next login.
+                          </p>
+                      </div>
+
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* ADD USER MODAL (Simplified) */}
+      {isAddUserModalOpen && (
+          <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-[#141414] border border-white/10 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative">
+                  <div className="p-8 border-b border-white/5 bg-[#0a0a0a] flex justify-between items-center">
+                      <h3 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
+                          <UserPlus className="w-6 h-6 text-orange-500" /> NEW OPERATIVE
+                      </h3>
+                      <button onClick={() => setIsAddUserModalOpen(false)}><X className="w-6 h-6 text-slate-500 hover:text-white" /></button>
+                  </div>
+                  
+                  <form onSubmit={handleCreateUser} className="p-8 space-y-6">
+                      <div className="space-y-4">
+                          <div>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block ml-1">FULL NAME</label>
+                              <input 
+                                  required 
+                                  type="text" 
+                                  placeholder="AGENT NAME" 
+                                  className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-3 text-white font-bold outline-none focus:border-orange-500 uppercase text-sm"
+                                  value={userForm.name}
+                                  onChange={(e) => setUserForm({...userForm, name: e.target.value})}
+                              />
+                          </div>
+                          <div>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block ml-1">EMAIL ADDRESS</label>
+                              <input 
+                                  required 
+                                  type="email" 
+                                  placeholder="agent@hq.com" 
+                                  className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-3 text-white font-bold outline-none focus:border-orange-500 text-sm"
+                                  value={userForm.email}
+                                  onChange={(e) => setUserForm({...userForm, email: e.target.value})}
+                              />
+                          </div>
+                          <div>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block ml-1">ROLE</label>
+                              <div className="relative">
+                                  <select 
+                                      value={userForm.role} 
+                                      onChange={(e) => setUserForm({...userForm, role: e.target.value})}
+                                      className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-3 text-white font-bold outline-none focus:border-orange-500 uppercase text-sm appearance-none"
+                                  >
+                                      {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                                  </select>
+                                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                              </div>
+                          </div>
+                          <div>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block ml-1 flex justify-between">
+                                  <span>PASSWORD</span>
+                                  <button type="button" onClick={generatePassword} className="text-orange-500 hover:text-orange-400 flex items-center gap-1"><RefreshCw className="w-3 h-3"/> GENERATE</button>
+                              </label>
+                              <div className="relative">
+                                  <input 
+                                      required 
+                                      type={generatedPasswordVisible ? 'text' : 'password'} 
+                                      placeholder="••••••••" 
+                                      className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl p-3 text-white font-mono font-bold outline-none focus:border-orange-500 text-sm pr-10"
+                                      value={userForm.password}
+                                      onChange={(e) => setUserForm({...userForm, password: e.target.value})}
+                                  />
+                                  <button type="button" onClick={() => setGeneratedPasswordVisible(!generatedPasswordVisible)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                                      {generatedPasswordVisible ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <button type="submit" className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black uppercase tracking-[0.2em] shadow-lg flex items-center justify-center gap-3 transition-all active:scale-95">
+                          CREATE USER
+                      </button>
+                  </form>
+              </div>
+          </div>
+      )}
+
+      {/* ACTIVITY LOG MODAL */}
+      {showActivityLogId && (
+          <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-[#141414] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl h-[600px] flex flex-col">
+                  <div className="p-6 border-b border-white/5 bg-[#0a0a0a] flex justify-between items-center shrink-0">
+                      <div>
+                          <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
+                              <History className="w-5 h-5 text-blue-500" /> ACTIVITY LOG
+                          </h3>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase mt-1 tracking-wide">
+                              USER: {users.find(u => u.id === showActivityLogId)?.name}
+                          </p>
+                      </div>
+                      <button onClick={() => setShowActivityLogId(null)} className="p-2 hover:bg-white/5 rounded-full text-slate-500 hover:text-white"><X className="w-5 h-5" /></button>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                      {(users.find(u => u.id === showActivityLogId)?.usageHistory || []).length === 0 ? (
+                          <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-50">
+                              <History className="w-12 h-12 mb-3" />
+                              <p className="text-xs font-black uppercase tracking-widest">NO RECORDED ACTIVITY</p>
+                          </div>
+                      ) : (
+                          users.find(u => u.id === showActivityLogId)?.usageHistory?.map((log, i) => (
+                              <div key={i} className="flex gap-4 p-4 bg-[#0a0a0a] border border-white/5 rounded-xl">
+                                  <div className="flex flex-col items-center">
+                                      <div className="w-2 h-2 bg-blue-500 rounded-full mb-1"></div>
+                                      <div className="w-px h-full bg-blue-500/20"></div>
+                                  </div>
+                                  <div>
+                                      <h4 className="text-xs font-black text-white uppercase tracking-wide">{log.action}</h4>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 flex items-center gap-2">
+                                          <Shield className="w-3 h-3 text-slate-600" /> {log.gameName}
+                                      </p>
+                                      <p className="text-[9px] text-slate-600 font-mono mt-1">{log.date}</p>
+                                  </div>
+                              </div>
+                          ))
+                      )}
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* DELETE CONFIRM */}
+      {deleteConfirmId && (
+          <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-[#141414] border border-red-500/30 w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl">
+                  <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-black text-white uppercase tracking-widest mb-2">REVOKE ACCESS?</h3>
+                  <p className="text-xs text-slate-500 font-bold uppercase mb-8">THIS ACTION CANNOT BE UNDONE.</p>
+                  <div className="flex gap-3">
+                      <button onClick={() => setDeleteConfirmId(null)} className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-black uppercase text-xs tracking-widest">CANCEL</button>
+                      <button onClick={() => handleDeleteUser(deleteConfirmId)} className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg">CONFIRM</button>
+                  </div>
+              </div>
+          </div>
+      )}
+
     </div>
   );
 };

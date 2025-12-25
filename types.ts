@@ -17,7 +17,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: 'Owner' | 'Admin' | 'Full' | 'Instructor' | 'Viewer';
+  role: 'Owner' | 'Admin' | 'Instructor' | 'Editor';
 }
 
 // --- Team Sync Types ---
@@ -311,3 +311,32 @@ export enum GameMode {
 }
 
 export type TeamStatus = 'moving' | 'solving' | 'idle';
+
+// --- ACCOUNT USERS ---
+export interface UsageLogEntry {
+    gameName: string;
+    date: string;
+    action: string;
+}
+
+export interface AdminMessage {
+    id: string;
+    text: string;
+    sender: string;
+    timestamp: number;
+    read: boolean;
+}
+
+export interface AccountUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  updatedAt: string;
+  updatedBy: string;
+  // New fields
+  lastSeen?: number; // Timestamp of last activity
+  password?: string; // For display in admin UI (simulated)
+  usageHistory?: UsageLogEntry[];
+  messages?: AdminMessage[];
+}

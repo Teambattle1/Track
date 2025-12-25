@@ -1,5 +1,6 @@
+
 import { supabase } from '../lib/supabase';
-import { Game, TaskTemplate, TaskList, Team, PlaygroundTemplate } from '../types';
+import { Game, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage } from '../types';
 
 const logError = (context: string, error: any) => {
     console.error(`[DB Service] Error in ${context}:`, error);
@@ -359,16 +360,7 @@ export const renameTagGlobally = async (oldTag: string, newTag: string) => {
     }
 };
 
-// --- ACCOUNT USERS & INVITES ---
-
-interface AccountUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  updatedAt: string;
-  updatedBy: string;
-}
+// --- ACCOUNT USERS & MESSAGING ---
 
 interface UserInvite {
   id: string;
@@ -382,11 +374,101 @@ export const fetchAccountUsers = async (): Promise<AccountUser[]> => {
     try {
         const { data, error } = await supabase.from('account_users').select('*');
         if (error) throw error;
-        return data.map((row: any) => ({ ...row.data, id: row.id }));
+        return data.map((row: any) => {
+            const user = row.data as AccountUser;
+            return {
+                ...user,
+                id: row.id,
+                // Do not auto-generate lastActive anymore, rely on database state
+                // Only use mock if field is entirely missing
+                usageHistory: user.usageHistory || generateMockUsageHistory()
+            };
+        });
     } catch (e) {
         logError('fetchAccountUsers', e);
         return [];
     }
+};
+
+export const updateAccountUserActivity = async (userId: string) => {
+    try {
+        const { data, error } = await supabase.from('account_users').select('data').eq('id', userId).single();
+        if (error || !data) return;
+        
+        const userData = data.data as AccountUser;
+        const updatedUser = { ...userData, lastSeen: Date.now() };
+        
+        await supabase.from('account_users').update({ 
+            data: updatedUser,
+            updated_at: new Date().toISOString()
+        }).eq('id', userId);
+    } catch (e) {
+        // Silent fail for activity updates to avoid console spam
+    }
+};
+
+export const sendAccountUserMessage = async (targetUserId: string, messageText: string, senderName: string) => {
+    try {
+        const { data, error } = await supabase.from('account_users').select('data').eq('id', targetUserId).single();
+        if (error || !data) throw new Error("User not found");
+        
+        const userData = data.data as AccountUser;
+        const messages = userData.messages || [];
+        
+        const newMessage: AdminMessage = {
+            id: `msg-${Date.now()}`,
+            text: messageText,
+            sender: senderName,
+            timestamp: Date.now(),
+            read: false
+        };
+        
+        const updatedUser = { ...userData, messages: [...messages, newMessage] };
+        
+        await supabase.from('account_users').update({
+            data: updatedUser,
+            updated_at: new Date().toISOString()
+        }).eq('id', targetUserId);
+        
+        return true;
+    } catch (e) {
+        logError('sendAccountUserMessage', e);
+        return false;
+    }
+};
+
+export const checkAccountUserMessages = async (userId: string): Promise<AdminMessage[]> => {
+    try {
+        const { data, error } = await supabase.from('account_users').select('data').eq('id', userId).single();
+        if (error || !data) return [];
+        
+        const userData = data.data as AccountUser;
+        const messages = userData.messages || [];
+        
+        // Return unread messages
+        const unread = messages.filter(m => !m.read);
+        
+        if (unread.length > 0) {
+            // Mark as read immediately to prevent loop
+            const readMessages = messages.map(m => ({ ...m, read: true }));
+            await supabase.from('account_users').update({
+                data: { ...userData, messages: readMessages }
+            }).eq('id', userId);
+        }
+        
+        return unread;
+    } catch (e) {
+        return [];
+    }
+};
+
+const generateMockUsageHistory = () => {
+    const actions = [
+        { gameName: 'City Hunt 2025', date: 'Oct 12, 2024', action: 'Created Game' },
+        { gameName: 'Team Building Alpha', date: 'Sep 28, 2024', action: 'Managed Session' },
+        { gameName: 'School Run', date: 'Aug 15, 2024', action: 'Edited Tasks' }
+    ];
+    return actions.filter(() => Math.random() > 0.3);
 };
 
 export const saveAccountUser = async (user: AccountUser) => {
@@ -399,6 +481,7 @@ export const saveAccountUser = async (user: AccountUser) => {
         if (error) throw error;
     } catch (e) {
         logError('saveAccountUser', e);
+        throw e;
     }
 };
 
@@ -408,6 +491,7 @@ export const deleteAccountUsers = async (ids: string[]) => {
         if (error) throw error;
     } catch (e) {
         logError('deleteAccountUsers', e);
+        throw e;
     }
 };
 
@@ -432,6 +516,7 @@ export const saveAccountInvite = async (invite: UserInvite) => {
         if (error) throw error;
     } catch (e) {
         logError('saveAccountInvite', e);
+        throw e;
     }
 };
 
@@ -441,5 +526,6 @@ export const deleteAccountInvite = async (id: string) => {
         if (error) throw error;
     } catch (e) {
         logError('deleteAccountInvite', e);
+        throw e;
     }
 };

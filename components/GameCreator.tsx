@@ -32,7 +32,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
   const [timerMode, setTimerMode] = useState<TimerMode>(baseGame?.timerConfig?.mode || 'none');
   const [duration, setDuration] = useState<number>(baseGame?.timerConfig?.durationMinutes || 60);
   const [endDateTime, setEndDateTime] = useState<string>(baseGame?.timerConfig?.endTime || '');
-  const [timerTitle, setTimerTitle] = useState(baseGame?.timerConfig?.title || 'TIME REMAINING');
+  const [timerTitle, setTimerTitle] = useState(baseGame?.timerConfig?.title || 'TIME TO END');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -116,11 +116,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">DESCRIPTION (OPTIONAL)</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">MISSION BRIEFING (SHOWN AT START)</label>
                             <textarea 
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Brief briefing for the players..."
+                                placeholder="Briefing for the players shown as pop-up on start..."
                                 className="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:border-orange-500 outline-none transition-colors h-20 resize-none"
                             />
                         </div>

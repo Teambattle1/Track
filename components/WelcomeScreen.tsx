@@ -60,15 +60,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   const handleStart = () => {
       if (selectedGameId && teamName && userName && userPhoto) {
-          // In a real app, we would save the photo to the team/member profile here
-          // For now, we proceed with the start callback. Ideally pass photo up.
-          // Note: App.tsx handles team creation, we need to pass photo.
-          // Currently App.tsx doesn't take photo arg in handleStartGame, but we persist to DB inside App.
-          // We'll attach it to a temporary storage or pass via extended args if refactored.
-          // For now, assuming App.tsx will be updated or we save to LocalStorage for App to pickup.
-          // Quick Fix: Save to localStorage for retrieval in App.tsx handleStartGame
           localStorage.setItem('geohunt_temp_user_photo', userPhoto);
-          
           onStartGame(selectedGameId, teamName, userName, 'osm');
       }
   };
@@ -154,7 +146,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         
         {/* ==================== VIEW: MAIN MENU ==================== */}
         {mode === 'MENU' && (
-            <div className="flex flex-col h-full items-center">
+            <div className="flex flex-col h-full items-center relative">
+                {/* BACK BUTTON TO HUB */}
+                <button 
+                    onClick={onBack} 
+                    className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-50 hover:scale-110 active:scale-95"
+                    title="Return to Hub"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+
                 <div className="p-6 pt-12 text-center z-10">
                     <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl mx-auto flex items-center justify-center shadow-lg mb-6">
                         <MapPin className="w-8 h-8 text-white" />
@@ -164,7 +165,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     </h1>
                 </div>
 
-                <div className="flex-1 flex flex-col justify-center px-6 gap-6 z-10 max-w-sm w-full">
+                <div className="flex-1 flex flex-col justify-center px-6 gap-6 z-10 max-w-sm w-full pb-20">
                     {/* Create Team Button - ORANGE */}
                     <button 
                         onClick={() => {
@@ -201,7 +202,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </div>
         )}
 
-        {/* ==================== VIEW: CREATE TEAM (Screenshot Match) ==================== */}
+        {/* ==================== VIEW: CREATE TEAM ==================== */}
         {mode === 'CREATE_TEAM' && (
             <div className="flex flex-col h-full items-center bg-slate-950 overflow-y-auto custom-scrollbar">
                 <div className="w-full max-w-sm p-6 flex flex-col items-center pb-20">
@@ -312,7 +313,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </div>
         )}
 
-        {/* ==================== VIEW: JOIN OPTIONS (Screenshot Match) ==================== */}
+        {/* ==================== VIEW: JOIN OPTIONS ==================== */}
         {mode === 'JOIN_OPTIONS' && (
             <div className="flex flex-col h-full items-center justify-center p-6 bg-slate-950">
                 <button onClick={() => setMode('MENU')} className="absolute top-6 left-6 p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white">

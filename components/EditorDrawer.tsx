@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GamePoint, TaskList, Coordinate, Game } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio } from 'lucide-react';
+import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -226,32 +226,6 @@ const ZoneSection = ({
             {!isCollapsed && (
                 <div className="mt-2 pl-2 border-l-2 border-gray-200 dark:border-gray-800 ml-3">
                     {children}
-                    
-                    <div className="relative mt-2">
-                        <button 
-                            onClick={() => onSetActiveMenu(!activeMenu)}
-                            className="w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-400 hover:text-orange-500 hover:border-orange-500 font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all"
-                        >
-                            <Plus className="w-3 h-3" /> Add Task Here
-                        </button>
-                        
-                        {activeMenu && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 animate-in slide-in-from-top-1 overflow-hidden">
-                                <button onClick={() => { onAdd('MANUAL'); onSetActiveMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3">
-                                    <div className="bg-orange-100 dark:bg-orange-900/30 p-1.5 rounded-lg"><Plus className="w-4 h-4 text-orange-600" /></div>
-                                    <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">New Blank Task</span>
-                                </button>
-                                <button onClick={() => { onAdd('AI'); onSetActiveMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-t border-gray-100 dark:border-gray-700">
-                                    <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-lg"><Wand2 className="w-4 h-4 text-purple-600" /></div>
-                                    <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">AI Generator</span>
-                                </button>
-                                <button onClick={() => { onAdd('LIBRARY'); onSetActiveMenu(false); }} className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-t border-gray-100 dark:border-gray-700">
-                                    <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg"><Library className="w-4 h-4 text-blue-600" /></div>
-                                    <span className="text-xs font-bold uppercase text-gray-800 dark:text-white">From Library</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
                 </div>
             )}
         </div>
@@ -296,7 +270,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [showOtherTeams, setShowOtherTeams] = useState(activeGame?.showOtherTeams || false);
   
   // Grouping State
-  const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': true });
+  const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': false });
   const [activeAddMenu, setActiveAddMenu] = useState<string | null>(null);
 
   useEffect(() => {
@@ -312,7 +286,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
           setCollapsedZones(prev => {
               const next = { ...prev };
               activeGame.playgrounds?.forEach(pg => {
-                  if (next[pg.id] === undefined) next[pg.id] = true;
+                  if (next[pg.id] === undefined) next[pg.id] = false; // Default expanded now
               });
               return next;
           });
@@ -531,7 +505,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                             onAdd={(type) => onAddTask && onAddTask(type)}
                         >
                             <div className="space-y-1">
-                                {mapPoints.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks on map yet. Drop items here.</div>}
+                                {mapPoints.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks on map yet. Drop items here or Add New.</div>}
                                 {mapPoints.map((point, index) => (
                                     <SortablePointItem 
                                         key={point.id} 
@@ -565,7 +539,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                 onAdd={(type) => onAddTask && onAddTask(type, pg.id)}
                             >
                                 <div className="space-y-1">
-                                    {pg.points.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks in this playground. Drop items here.</div>}
+                                    {pg.points.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks in this playground. Add items here.</div>}
                                     {pg.points.map((point, index) => (
                                         <SortablePointItem 
                                             key={point.id} 
@@ -589,9 +563,34 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
             </div>
 
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col gap-2 z-[60]">
-                <button onClick={onOpenTaskMaster} className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
-                    <Library className="w-4 h-4" /> Manage Task Library
+                {/* DIRECT ADD BUTTONS */}
+                <div className="grid grid-cols-3 gap-2">
+                    <button 
+                        onClick={() => onAddTask && onAddTask('MANUAL')}
+                        className="py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[10px] uppercase tracking-wide border border-blue-200 dark:border-blue-800"
+                    >
+                        <FilePlus className="w-4 h-4" /> BLANK TASK
+                    </button>
+                    <button 
+                        onClick={() => onAddTask && onAddTask('AI')}
+                        className="py-3 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-bold rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[10px] uppercase tracking-wide border border-purple-200 dark:border-purple-800"
+                    >
+                        <Wand2 className="w-4 h-4" /> AI GENERATE
+                    </button>
+                    <button 
+                        onClick={() => onAddTask && onAddTask('LIBRARY')}
+                        className="py-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[10px] uppercase tracking-wide border border-indigo-200 dark:border-indigo-800"
+                    >
+                        <Library className="w-4 h-4" /> FROM LIB
+                    </button>
+                </div>
+
+                <div className="h-px bg-gray-200 dark:bg-gray-800 my-1"></div>
+
+                <button onClick={onOpenTaskMaster} className="w-full py-2 text-gray-500 dark:text-gray-400 font-bold hover:text-gray-800 dark:hover:text-gray-200 transition-colors flex items-center justify-center gap-2 text-xs uppercase tracking-wide">
+                    Manage Global Library <ChevronRight className="w-3 h-3" />
                 </button>
+
                 <button 
                     onClick={handleSaveClick} 
                     className={`w-full py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm uppercase tracking-wide ${isSaved ? 'bg-green-100 text-green-700 border-2 border-green-500' : 'bg-green-600 text-white hover:bg-green-700 shadow-green-600/20'}`}

@@ -325,7 +325,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                             <span className="leading-none">{pg.title}</span>
                         </button>
                     ))}
-                    {!isTemplateMode && <button onClick={handleCreatePlayground} className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-green-600 hover:bg-green-50 transition-all border border-dashed border-gray-300 dark:border-gray-600 hover:scale-110 active:scale-95"><Plus className="w-4 h-4" /></button>}
+                    {!isTemplateMode && <button onClick={handleCreatePlayground} className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all border border-dashed border-gray-300 dark:border-gray-600 hover:scale-110 active:scale-95" title="Create New Zone"><Plus className="w-4 h-4" /></button>}
                 </div>
             </div>
             

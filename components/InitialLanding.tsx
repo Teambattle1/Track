@@ -5,19 +5,19 @@ import {
   UserCircle, Settings, MapPin, ChevronRight, Play,
   LayoutDashboard, LayoutTemplate, LayoutGrid, UserPlus,
   Monitor, Tag, Radar, Plus, Database, ArrowLeft,
-  Briefcase, Boxes, ClipboardList, PenTool, Globe, Server, ChevronDown, Link, QrCode, MessageSquare, Anchor, Home, Trash2, Map
+  Briefcase, Boxes, ClipboardList, PenTool, Globe, Server, ChevronDown, Link, QrCode, MessageSquare, Anchor, Home, Trash2, Map, Smartphone
 } from 'lucide-react';
 import { Game } from '../types';
 
 interface InitialLandingProps {
-  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW') => void;
+  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR') => void;
   version: string;
   games: Game[];
   activeGameId: string | null;
   onSelectGame: (id: string) => void;
 }
 
-type CategoryView = 'HOME' | 'GAMES' | 'TEAMS' | 'TASKS' | 'ADMIN';
+type CategoryView = 'HOME' | 'GAMES' | 'TEAMS' | 'TASKS' | 'ADMIN' | 'PREVIEW_SELECT';
 
 const NavCard = ({ 
   title, 
@@ -154,18 +154,11 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               return (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <NavCard 
-                          title="TEAM LOGIN" 
-                          subtitle="JOIN MISSION" 
-                          icon={UserPlus} 
-                          color="bg-blue-500"
-                          onClick={() => onAction('TEAMS')}
-                      />
-                      <NavCard 
-                          title="TEAMS MAP VIEW" 
-                          subtitle="COMMAND CENTER" 
-                          icon={Map} 
-                          color="bg-cyan-500"
-                          onClick={() => onAction('TEAMS_MAP_VIEW')}
+                          title="TEAMLOBBY ADMIN" 
+                          subtitle="MONITOR & MANAGE" 
+                          icon={Anchor} 
+                          color="bg-rose-500"
+                          onClick={() => onAction('TEAM_LOBBY')}
                       />
                       <NavCard 
                           title="TEAM CHAT" 
@@ -175,11 +168,18 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           onClick={() => onAction('CHAT')}
                       />
                       <NavCard 
-                          title="TEAMLOBBY ADMIN" 
-                          subtitle="MONITOR & MANAGE" 
-                          icon={Anchor} 
-                          color="bg-rose-500"
-                          onClick={() => onAction('TEAM_LOBBY')}
+                          title="TEAMS MAP VIEW" 
+                          subtitle="COMMAND CENTER" 
+                          icon={Map} 
+                          color="bg-cyan-500"
+                          onClick={() => onAction('TEAMS_MAP_VIEW')}
+                      />
+                      <NavCard 
+                          title="TEAM LOGIN" 
+                          subtitle="JOIN MISSION" 
+                          icon={UserPlus} 
+                          color="bg-blue-500"
+                          onClick={() => onAction('TEAMS')}
                       />
                   </div>
               );
@@ -225,7 +225,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               );
           case 'ADMIN':
               return (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                       <NavCard 
                           title="USERS" 
                           subtitle="ACCESS & ROLES" 
@@ -247,6 +247,37 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           color="bg-red-600"
                           onClick={() => onAction('DELETE_GAMES')} 
                       />
+                      <NavCard 
+                          title="APP PREVIEW" 
+                          subtitle="SIMULATE DEVICES" 
+                          icon={Smartphone} 
+                          color="bg-teal-500"
+                          onClick={() => setView('PREVIEW_SELECT')} 
+                      />
+                  </div>
+              );
+          case 'PREVIEW_SELECT':
+              return (
+                  <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4">
+                      <div className="flex items-center gap-2 text-slate-400 font-bold uppercase text-xs tracking-widest cursor-pointer hover:text-white" onClick={() => setView('ADMIN')}>
+                          <ArrowLeft className="w-4 h-4" /> Back to Admin
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <NavCard 
+                              title="TEAM PREVIEW" 
+                              subtitle="SIMULATE PLAYER VIEW" 
+                              icon={Users} 
+                              color="bg-orange-500"
+                              onClick={() => onAction('PREVIEW_TEAM')}
+                          />
+                          <NavCard 
+                              title="INSTRUCTOR PREVIEW" 
+                              subtitle="SIMULATES INSTRUCTOR VIEW" 
+                              icon={Shield} 
+                              color="bg-indigo-500"
+                              onClick={() => onAction('PREVIEW_INSTRUCTOR')}
+                          />
+                      </div>
                   </div>
               );
           default:
@@ -321,7 +352,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               {view === 'HOME' ? renderHome() : (
                   <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                       <div className="mb-6 flex items-center gap-3 opacity-50">
-                          <span className="text-xs font-black uppercase tracking-widest text-slate-400">{view} MODULES</span>
+                          <span className="text-xs font-black uppercase tracking-widest text-slate-400">{view === 'PREVIEW_SELECT' ? 'PREVIEW MODE' : `${view} MODULES`}</span>
                           <div className="h-px bg-slate-700 flex-1" />
                       </div>
                       {renderCategoryContent()}

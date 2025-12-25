@@ -5,13 +5,14 @@ import { ICON_COMPONENTS } from '../utils/icons';
 import TaskEditor from './TaskEditor';
 import LoquizImporter from './LoquizImporter';
 import QRCode from 'qrcode';
+import AiTaskGenerator from './AiTaskGenerator';
 import { 
     X, Search, Plus, Trash2, Edit2, CheckCircle, 
     LayoutList, Library, Palette, 
     PlayCircle, MapPin, Globe, Filter, 
     CheckSquare, MousePointerClick, RefreshCw, Grid, List, 
     ChevronRight, ChevronDown, Check, Download, AlertCircle,
-    Trophy, Eye, HelpCircle, CheckSquare as CheckIcon, Save, Image as ImageIcon, Upload, Printer, QrCode, ArrowLeft, Gamepad2, LayoutGrid
+    Trophy, Eye, HelpCircle, CheckSquare as CheckIcon, Save, Image as ImageIcon, Upload, Printer, QrCode, ArrowLeft, Gamepad2, LayoutGrid, Wand2
 } from 'lucide-react';
 
 interface TaskMasterProps {
@@ -111,6 +112,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [isUploading, setIsUploading] = useState(false);
     const [isSelectionModeLocal, setIsSelectionModeLocal] = useState(isSelectionMode);
     
+    // AI Generator State
+    const [aiMode, setAiMode] = useState<'LIBRARY' | 'LIST' | null>(null); // LIBRARY = Add to Global List, LIST = Create New Task List
+    
     // State for selecting game to add list to
     const [targetListForGame, setTargetListForGame] = useState<TaskList | null>(null);
     
@@ -120,6 +124,13 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     useEffect(() => {
         setIsSelectionModeLocal(isSelectionMode);
     }, [isSelectionMode]);
+
+    // Auto-enable selection mode if adding to playground (makes "Add" button visible)
+    useEffect(() => {
+        if (initialPlaygroundId) {
+            setIsSelectionModeLocal(true);
+        }
+    }, [initialPlaygroundId]);
 
     // Auto-open list editor if initialEditingListId is provided
     useEffect(() => {
@@ -289,6 +300,28 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         setSelectedTemplateIds([]);
     };
 
+    // AI Generation Handler
+    const handleAiResult = (tasks: TaskTemplate[]) => {
+        if (aiMode === 'LIST') {
+            // Create a new Task List with these tasks
+            const newList: TaskList = {
+                id: `list-${Date.now()}`,
+                name: `AI Generated List ${new Date().toLocaleTimeString()}`,
+                description: `Created via AI Generator. Contains ${tasks.length} tasks.`,
+                color: LIST_COLORS[Math.floor(Math.random() * LIST_COLORS.length)],
+                tasks: tasks,
+                createdAt: Date.now()
+            };
+            onSaveList(newList);
+            setEditingList(newList); // Open for editing
+            setActiveTab('LISTS');
+        } else if (aiMode === 'LIBRARY') {
+            // Save individually to Global Library
+            tasks.forEach(task => onSaveTemplate(task));
+        }
+        setAiMode(null);
+    };
+
     if (editingTemplate) {
         const dummyPoint: any = { ...editingTemplate, location: { lat: 0, lng: 0 }, radiusMeters: 30, activationTypes: ['radius'], isUnlocked: true, isCompleted: false, order: 0 };
         return (
@@ -423,7 +456,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                         </div>
                         <div>
                             <h1 className="text-xl font-black uppercase tracking-wider">TASK MASTER</h1>
-                            <p className="text-[10px] text-blue-300 font-bold uppercase tracking-widest">Library & Tasklists</p>
+                            <p className="text-[10px] text-blue-300 font-bold uppercase tracking-widest">Global Library & Tasklists</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -451,7 +484,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                         onClick={() => setActiveTab('LIBRARY')}
                         className={`px-8 py-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap ${activeTab === 'LIBRARY' ? 'border-blue-600 text-blue-600 bg-white dark:bg-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                     >
-                        Task Library
+                        GLOBAL TASK LIST
                     </button>
                     <button 
                         onClick={() => setActiveTab('LISTS')}
@@ -481,12 +514,32 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     <button onClick={() => setViewMode('LIST')} className={`p-1.5 rounded ${viewMode === 'LIST' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600' : 'text-gray-500'}`}><List className="w-4 h-4"/></button>
                                 </div>
                             )}
-                            <button 
-                                onClick={() => setEditingTemplate({ id: `tpl-${Date.now()}`, title: 'New Task', iconId: 'default', tags: [], createdAt: Date.now(), points: 100, task: { type: 'text', question: 'New Question?' } })}
-                                className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-600/20 transition-all flex items-center gap-2"
-                            >
-                                <Plus className="w-4 h-4" /> Create New
-                            </button>
+                            
+                            {activeTab === 'LIBRARY' && (
+                                <>
+                                    <button 
+                                        onClick={() => setAiMode('LIBRARY')}
+                                        className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-600/20 transition-all flex items-center gap-2"
+                                    >
+                                        <Wand2 className="w-4 h-4" /> AI Task
+                                    </button>
+                                    <button 
+                                        onClick={() => setEditingTemplate({ id: `tpl-${Date.now()}`, title: 'New Task', iconId: 'default', tags: [], createdAt: Date.now(), points: 100, task: { type: 'text', question: 'New Question?' } })}
+                                        className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-orange-600/20 transition-all flex items-center gap-2"
+                                    >
+                                        <Plus className="w-4 h-4" /> Create New
+                                    </button>
+                                </>
+                            )}
+
+                            {activeTab === 'LISTS' && (
+                                <button 
+                                    onClick={() => setAiMode('LIST')}
+                                    className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-600/20 transition-all flex items-center gap-2"
+                                >
+                                    <Wand2 className="w-4 h-4" /> AI Create List
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -730,6 +783,15 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                    <button onClick={() => setTargetListForGame(null)} className="mt-4 text-red-500 text-sm">Cancel</button>
                </div>
             </div>}
+
+            {aiMode && (
+                <AiTaskGenerator 
+                    onClose={() => setAiMode(null)}
+                    onAddTasks={handleAiResult}
+                    onAddToLibrary={(tasks) => handleAiResult(tasks)} // Same logic for now
+                    targetMode={aiMode}
+                />
+            )}
         </div>
     );
 };
