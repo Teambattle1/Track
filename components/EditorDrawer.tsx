@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GamePoint, TaskList, Coordinate, Game } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus } from 'lucide-react';
+import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -38,6 +38,8 @@ interface EditorDrawerProps {
   initialExpanded?: boolean;
   onAddTask?: (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId?: string) => void;
   onExpandChange?: (expanded: boolean) => void; 
+  isGameTemplateMode?: boolean; // New Prop
+  onSaveGameTemplate?: () => void; // New Prop
 }
 
 const SortablePointItem: React.FC<{ 
@@ -261,13 +263,14 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   initialExpanded = false,
   onAddTask,
   userLocation,
-  onExpandChange
+  onExpandChange,
+  isGameTemplateMode = false,
+  onSaveGameTemplate
 }) => {
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [isExpanded, setIsExpanded] = useState(initialExpanded); 
   const [isSaved, setIsSaved] = useState(false);
-  const [showOtherTeams, setShowOtherTeams] = useState(activeGame?.showOtherTeams || false);
   
   // Grouping State
   const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': false });
@@ -291,7 +294,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
               return next;
           });
       }
-      setShowOtherTeams(activeGame?.showOtherTeams || false);
   }, [activeGame]);
 
   const activeSourceList = taskLists.find(l => l.id === sourceListId);
@@ -360,21 +362,19 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
   const handleSaveClick = () => {
     if(!activeGame) return;
-    onSaveGame();
+    
+    if (isGameTemplateMode && onSaveGameTemplate) {
+        onSaveGameTemplate();
+    } else {
+        onSaveGame();
+    }
+    
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
 
   const toggleZone = (id: string) => {
       setCollapsedZones(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const toggleShowOtherTeams = async () => {
-      if (!activeGame) return;
-      const newVal = !showOtherTeams;
-      setShowOtherTeams(newVal);
-      // Persist setting immediately
-      await db.saveGame({ ...activeGame, showOtherTeams: newVal });
   };
 
   const mapPoints = allPoints.filter(p => !p.playgroundId);
@@ -399,11 +399,14 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
       <button 
           onClick={onOpenGameChooser}
-          className={`p-4 text-white text-left flex-shrink-0 relative z-[100] transition-all active:scale-[0.98] ${activeGame ? 'bg-orange-600 hover:bg-orange-700' : 'bg-slate-700 hover:bg-slate-800'}`}
+          disabled={isGameTemplateMode} // Disable switching while editing template
+          className={`p-4 text-white text-left flex-shrink-0 relative z-[100] transition-all active:scale-[0.98] ${isGameTemplateMode ? 'bg-purple-600 cursor-default' : (activeGame ? 'bg-orange-600 hover:bg-orange-700' : 'bg-slate-700 hover:bg-slate-800')}`}
       >
           <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{activeGame ? 'Active Game' : 'No game active'}</span>
-              <ChevronDown className="w-4 h-4 opacity-50" />
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-80">
+                  {isGameTemplateMode ? 'EDITING TEMPLATE' : (activeGame ? 'Active Game' : 'No game active')}
+              </span>
+              {!isGameTemplateMode && <ChevronDown className="w-4 h-4 opacity-50" />}
           </div>
           <h2 className="font-black text-sm uppercase truncate pr-6">{activeGame ? activeGameName : 'SELECT A GAME'}</h2>
       </button>
@@ -449,16 +452,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
             {/* Config & Filters */}
             <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 relative z-[50]">
-                {/* Show Teams Toggle */}
-                <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700/50">
-                    <span className="text-[10px] font-black uppercase text-gray-500 tracking-wide flex items-center gap-1">
-                        <Radio className="w-3 h-3" /> VIS TEAMS TIL TEAMS
-                    </span>
-                    <button onClick={toggleShowOtherTeams} className={`transition-colors ${showOtherTeams ? 'text-green-500' : 'text-gray-400'}`}>
-                        {showOtherTeams ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
-                    </button>
-                </div>
-
                 <button 
                     onClick={() => setShowFilterMenu(!showFilterMenu)}
                     className={`w-full p-3 flex items-center justify-between transition-colors ${isFiltered ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500'}`}
@@ -593,9 +586,9 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
                 <button 
                     onClick={handleSaveClick} 
-                    className={`w-full py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm uppercase tracking-wide ${isSaved ? 'bg-green-100 text-green-700 border-2 border-green-500' : 'bg-green-600 text-white hover:bg-green-700 shadow-green-600/20'}`}
+                    className={`w-full py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm uppercase tracking-wide ${isSaved ? 'bg-green-100 text-green-700 border-2 border-green-500' : (isGameTemplateMode ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-green-600 text-white hover:bg-green-700 shadow-green-600/20')}`}
                 >
-                    {isSaved ? <><div className="flex items-center gap-2"><Check className="w-4 h-4" /> GAME SAVED!</div></> : <><div className="flex items-center gap-2"><Save className="w-4 h-4" /> Save Game</div></>}
+                    {isSaved ? <><div className="flex items-center gap-2"><Check className="w-4 h-4" /> {isGameTemplateMode ? 'TEMPLATE UPDATED!' : 'GAME SAVED!'}</div></> : (isGameTemplateMode ? <><div className="flex items-center gap-2"><RefreshCw className="w-4 h-4" /> Update Template</div></> : <><div className="flex items-center gap-2"><Save className="w-4 h-4" /> Save Game</div></>)}
                 </button>
             </div>
           </>

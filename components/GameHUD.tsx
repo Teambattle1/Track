@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GameMode, MapStyleId, Language, Playground, TimerConfig, Coordinate } from '../types';
-import { Map as MapIcon, Layers, GraduationCap, Menu, X, Globe, Moon, Sun, Library, Users, Home, LayoutDashboard, Ruler, Gamepad2, Shield, Clock, Move, MapPin, Maximize, Target, Hash, MessageSquare, Skull, Siren, AlertTriangle, GripHorizontal } from 'lucide-react';
+import { Map as MapIcon, Layers, GraduationCap, Menu, X, Globe, Moon, Sun, Library, Users, Home, LayoutDashboard, Ruler, Gamepad2, Shield, Clock, Move, MapPin, Maximize, Target, Hash, MessageSquare, Skull, Siren, AlertTriangle, GripHorizontal, ToggleLeft, ToggleRight } from 'lucide-react';
 import { formatDistance } from '../utils/geo';
 import LocationSearch from './LocationSearch';
 import { ICON_COMPONENTS } from '../utils/icons';
@@ -42,6 +42,8 @@ interface GameHUDProps {
   targetPlaygroundId?: string; 
   onAddDangerZone?: () => void; 
   activeDangerZone?: { id: string; enteredAt: number; timeRemaining: number } | null; 
+  showOtherTeams?: boolean;
+  onToggleShowOtherTeams?: () => void;
 }
 
 // Timer Sub-component
@@ -142,7 +144,9 @@ const GameHUD: React.FC<GameHUDProps> = ({
   unreadMessagesCount = 0,
   targetPlaygroundId, 
   onAddDangerZone,
-  activeDangerZone
+  activeDangerZone,
+  showOtherTeams,
+  onToggleShowOtherTeams
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showEditBanner, setShowEditBanner] = useState(false);
@@ -478,6 +482,23 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                     className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all border border-white/5 hover:scale-110 active:scale-95 ${showScores ? 'text-blue-400 bg-blue-900/30' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10'}`}
                                 >
                                     <Hash className="w-5 h-5" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* SETTINGS SECTION (Moved from Drawer) */}
+                    <div className="w-full pt-2 border-t border-white/10 mt-1 flex flex-col items-center">
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1.5">SETTINGS</span>
+                        <div className="grid grid-cols-1 gap-2">
+                            {onToggleShowOtherTeams && (
+                                <button 
+                                    onClick={onToggleShowOtherTeams}
+                                    title="Show Teams to Teams"
+                                    className={`w-full py-2 flex items-center justify-center gap-2 rounded-xl transition-all border border-white/5 hover:scale-105 active:scale-95 ${showOtherTeams ? 'text-green-400 bg-green-900/30' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-white/10'}`}
+                                >
+                                    {showOtherTeams ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                                    <span className="text-[8px] font-black uppercase">VIS TEAMS</span>
                                 </button>
                             )}
                         </div>

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Playground, GamePoint, Game, PlaygroundTemplate, IconId } from '../types';
-import { X, Plus, Upload, Trash2, Image as ImageIcon, Globe, LayoutTemplate, Grid, Magnet, ZoomIn, ZoomOut, Maximize, Move, Scaling, Save, Check, Maximize2, MousePointer2, HelpCircle, CheckCircle, EyeOff, Smartphone, Tablet, Lock, Edit2, RotateCw, Hash, Home, RefreshCw } from 'lucide-react';
+import { X, Plus, Upload, Trash2, Image as ImageIcon, Globe, LayoutTemplate, Grid, Magnet, ZoomIn, ZoomOut, Maximize, Move, Scaling, Save, Check, Maximize2, MousePointer2, HelpCircle, CheckCircle, EyeOff, Smartphone, Tablet, Lock, Edit2, RotateCw, Hash, Home, RefreshCw, LayoutGrid } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import * as db from '../services/db';
 
@@ -18,12 +18,14 @@ interface PlaygroundEditorProps {
   onHome?: () => void;
   onSaveTemplate?: (name: string) => Promise<void> | void; 
   isTemplateMode?: boolean;
+  onAddZoneFromLibrary?: () => void; // New Prop
 }
 
-const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame, onClose, onEditPoint, onPointClick, onAddTask, onOpenLibrary, showScores, onToggleScores, onHome, onSaveTemplate, isTemplateMode = false }) => {
+const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame, onClose, onEditPoint, onPointClick, onAddTask, onOpenLibrary, showScores, onToggleScores, onHome, onSaveTemplate, isTemplateMode = false, onAddZoneFromLibrary }) => {
   const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(game.playgrounds?.[0]?.id || null);
   const [isUploading, setIsUploading] = useState(false);
   const [showAddTaskMenu, setShowAddTaskMenu] = useState(false);
+  const [showAddZoneMenu, setShowAddZoneMenu] = useState(false); // New Dropdown State
   const [showGrid, setShowGrid] = useState(true);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [activePointId, setActivePointId] = useState<string | null>(null);
@@ -206,6 +208,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
       onUpdateGame({ ...game, playgrounds: updatedPlaygrounds });
       setActivePlaygroundId(newPlayground.id);
       setView({ x: 0, y: 0, scale: 1 });
+      setShowAddZoneMenu(false);
   };
 
   const handleDeletePlayground = (id: string) => {
@@ -325,7 +328,39 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({ game, onUpdateGame,
                             <span className="leading-none">{pg.title}</span>
                         </button>
                     ))}
-                    {!isTemplateMode && <button onClick={handleCreatePlayground} className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all border border-dashed border-gray-300 dark:border-gray-600 hover:scale-110 active:scale-95" title="Create New Zone"><Plus className="w-4 h-4" /></button>}
+                    {!isTemplateMode && (
+                        <div className="relative">
+                            <button 
+                                onClick={() => setShowAddZoneMenu(!showAddZoneMenu)}
+                                className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all border border-dashed border-gray-300 dark:border-gray-600 hover:scale-110 active:scale-95" 
+                                title="Add New Zone"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                            
+                            {showAddZoneMenu && (
+                                <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-30 min-w-[200px] overflow-hidden animate-in fade-in slide-in-from-top-1">
+                                    <button 
+                                        onClick={handleCreatePlayground}
+                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-xs font-bold uppercase transition-colors"
+                                    >
+                                        <Plus className="w-3 h-3 text-orange-500" />
+                                        ADD NEW PLAYGROUND
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            if (onAddZoneFromLibrary) onAddZoneFromLibrary();
+                                            setShowAddZoneMenu(false);
+                                        }}
+                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-xs font-bold uppercase border-t border-gray-100 dark:border-gray-700 transition-colors"
+                                    >
+                                        <Globe className="w-3 h-3 text-blue-500" />
+                                        FROM TEMPLATES
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
             

@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useRef } from 'react';
 import { Game, TaskList, GamePoint } from '../types';
-import { X, Calendar, CheckCircle, Play, MapPin, ChevronRight, Trophy, LayoutTemplate, Gamepad2, Save, RefreshCw, Home, Plus, Zap, Clock, AlertTriangle, Search, Filter, MoreHorizontal, Settings, Edit2, LayoutList, Trash2, Check, Upload, Image as ImageIcon, LayoutGrid, Layers, Grid, List as ListIcon } from 'lucide-react';
+import { X, Calendar, CheckCircle, Play, MapPin, ChevronRight, Trophy, LayoutTemplate, Gamepad2, Save, RefreshCw, Home, Plus, Zap, Clock, AlertTriangle, Search, Filter, MoreHorizontal, Settings, Edit2, LayoutList, Trash2, Check, Upload, Image as ImageIcon, LayoutGrid, Layers, Grid, List as ListIcon, Map } from 'lucide-react';
 
 interface GameChooserProps {
   games: Game[];
@@ -16,6 +16,7 @@ interface GameChooserProps {
   onEditTemplate?: (id: string) => void; 
   onUpdateList?: (list: TaskList) => Promise<void>; 
   onDeleteList?: (id: string) => Promise<void>; 
+  onEditTemplateContent?: (templateId: string) => void; // New prop
 }
 
 type MainView = 'GAMES' | 'TEMPLATES';
@@ -33,7 +34,8 @@ const GameChooser: React.FC<GameChooserProps> = ({
   onEditGame,
   onEditTemplate,
   onUpdateList,
-  onDeleteList
+  onDeleteList,
+  onEditTemplateContent
 }) => {
   const [mainView, setMainView] = useState<MainView>('GAMES');
   const [sessionTab, setSessionTab] = useState<SessionTab>('TODAY');
@@ -690,13 +692,23 @@ const GameChooser: React.FC<GameChooserProps> = ({
                               >
                                   <Trash2 className="w-4 h-4" /> DELETE
                               </button>
-                              <div className="flex-1"></div>
                               <button 
                                   onClick={() => { handleCreateFromTemplate(editingTemplate); setEditingTemplate(null); }}
                                   className="flex-1 sm:flex-none px-6 py-4 bg-slate-800 text-white hover:bg-slate-700 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-105"
                               >
                                   <Plus className="w-4 h-4" /> CREATE GAME
                               </button>
+                              
+                              {/* NEW: Edit Content Button */}
+                              {onEditTemplateContent && (
+                                <button 
+                                    onClick={() => { onEditTemplateContent(editingTemplate.id); setEditingTemplate(null); }}
+                                    className="flex-1 sm:flex-none px-6 py-4 bg-purple-600 text-white hover:bg-purple-700 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg hover:scale-105"
+                                >
+                                    <Map className="w-4 h-4" /> EDIT CONTENT
+                                </button>
+                              )}
+
                               <button 
                                   onClick={saveTemplateChanges}
                                   disabled={!templateForm.name.trim() || isSavingTemplate}

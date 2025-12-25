@@ -36,7 +36,7 @@ interface TaskMasterProps {
     onOpenPlaygroundManager?: () => void;
 }
 
-const LIST_COLORS = ['#3b82f6', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#8b5cf6', '#d946ef', '#f43f5e', '#64748b'];
+const LIST_COLORS = ['#3b82f6', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e', '#64748b'];
 
 // Helper to get color styles for task type badges
 const getTypeStyles = (type: string) => {
@@ -220,18 +220,20 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const handleAddToPlayground = () => {
         if (selectedTemplateIds.length === 0) return;
 
-        if (initialPlaygroundId && activeGameId && onAddTasksToGame) {
-            // Contextual Playground exists
+        if (activeGameId && onAddTasksToGame) {
             const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
-            onAddTasksToGame(activeGameId, selectedTasks, initialPlaygroundId);
+            
+            if (initialPlaygroundId) {
+                // Add to specific existing zone
+                onAddTasksToGame(activeGameId, selectedTasks, initialPlaygroundId);
+            } else {
+                // Add to NEW zone
+                onAddTasksToGame(activeGameId, selectedTasks, 'CREATE_NEW');
+            }
+            
             setSelectedTemplateIds([]);
             setIsSelectionModeLocal(false);
             onClose();
-        } else {
-            // No specific playground context -> Open Manager (to pick global template or manage)
-            if (onOpenPlaygroundManager) {
-                onOpenPlaygroundManager();
-            }
         }
     };
 
