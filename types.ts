@@ -18,8 +18,9 @@ export interface TeamMember {
   userName: string;
   lastSeen: number;
   location?: Coordinate; 
-  photoUrl?: string; // New: Profile photo
-  role?: 'captain' | 'member'; // New: Role identification
+  photoUrl?: string; 
+  role?: 'captain' | 'member'; 
+  isSolving?: boolean; // New: Tracks if user is currently in a task modal
 }
 
 export interface Team {
@@ -27,14 +28,14 @@ export interface Team {
   gameId: string;
   name: string;
   joinCode?: string;
-  photoUrl?: string; // Team-wide photo/logo
-  members: TeamMemberData[]; // Updated: Detailed member data
+  photoUrl?: string; 
+  members: TeamMemberData[]; 
   score: number;
   completedPointIds?: string[];
   updatedAt: string;
   captainDeviceId?: string; 
   isStarted?: boolean; 
-  startedAt?: number; // New: Timestamp when team started playing
+  startedAt?: number; 
 }
 
 export interface TeamMemberData {
@@ -58,7 +59,7 @@ export interface ChatMessage {
   message: string;
   sender: string;
   timestamp: number;
-  isUrgent?: boolean; // New: Urgent flag
+  isUrgent?: boolean; 
 }
 
 export interface TeamSyncState {
@@ -139,30 +140,30 @@ export interface Playground {
   id: string;
   title: string;
   imageUrl?: string;
-  backgroundStyle?: 'cover' | 'contain' | 'stretch'; // New: Background fit style
-  buttonVisible: boolean; // If true, shows in HUD
+  backgroundStyle?: 'cover' | 'contain' | 'stretch'; 
+  buttonVisible: boolean; 
   buttonLabel?: string;
   iconId?: IconId;
-  iconUrl?: string; // New: Custom icon for the HUD button
-  buttonSize?: number; // Size in pixels for the HUD button
-  orientationLock?: 'portrait' | 'landscape' | 'none'; // New: Force orientation
-  location?: Coordinate; // New: Fixed location on the map for the playground marker
+  iconUrl?: string; 
+  buttonSize?: number; 
+  orientationLock?: 'portrait' | 'landscape' | 'none'; 
+  location?: Coordinate; 
 }
 
 export interface DangerZone {
   id: string;
   location: Coordinate;
   radius: number;
-  penalty: number; // Points deducted
-  duration: number; // Seconds to escape
+  penalty: number; 
+  duration: number; 
 }
 
 // Template for saving to library
 export interface PlaygroundTemplate {
   id: string;
   title: string;
-  playgroundData: Playground; // The playground settings
-  tasks: GamePoint[]; // The tasks relative to this playground
+  playgroundData: Playground; 
+  tasks: GamePoint[]; 
   createdAt: number;
   isGlobal: boolean;
 }
@@ -181,15 +182,15 @@ export interface GamePoint {
   manualUnlockCode?: string; 
   
   // Playground Specific
-  playgroundId?: string; // If set, does NOT appear on map
-  playgroundPosition?: { x: number; y: number }; // Percentage 0-100
-  playgroundScale?: number; // Scale multiplier (default 1)
-  isHiddenBeforeScan?: boolean; // New: Task is invisible to players until explicitly unlocked/scanned
+  playgroundId?: string; 
+  playgroundPosition?: { x: number; y: number }; 
+  playgroundScale?: number; 
+  isHiddenBeforeScan?: boolean; 
 
   // Appearance
   iconId: IconId;
-  iconUrl?: string; // Custom uploaded pin
-  areaColor?: string; // Custom radius color
+  iconUrl?: string; 
+  areaColor?: string; 
 
   // Logic & Scoring
   points: number;
@@ -227,7 +228,7 @@ export interface TaskTemplate {
   // Client Submission Fields
   submissionStatus?: 'pending' | 'approved' | 'rejected';
   submitterName?: string;
-  isNew?: boolean; // UI flag for "New since last login"
+  isNew?: boolean; 
 }
 
 export interface TaskList {
@@ -237,8 +238,8 @@ export interface TaskList {
   tasks: TaskTemplate[];
   color: string; 
   iconId?: IconId;
-  imageUrl?: string; // Cover image for the list card
-  usageCount?: number; // Track popularity
+  imageUrl?: string; 
+  usageCount?: number; 
   createdAt: number;
   
   // Client Task List Fields
@@ -250,16 +251,16 @@ export interface TaskList {
 export interface ClientInfo {
   name: string;
   logoUrl?: string;
-  playingDate?: string; // ISO Date String
+  playingDate?: string; 
 }
 
 export type TimerMode = 'none' | 'countdown' | 'countup' | 'scheduled_end';
 
 export interface TimerConfig {
   mode: TimerMode;
-  durationMinutes?: number; // For countdown
-  endTime?: string; // ISO Date String for scheduled_end
-  title?: string; // Optional label for timer (e.g. "TIME REMAINING")
+  durationMinutes?: number; 
+  endTime?: string; 
+  title?: string; 
 }
 // ------------------------
 
@@ -269,9 +270,10 @@ export interface Game {
   description: string;
   points: GamePoint[];
   playgrounds?: Playground[]; 
-  dangerZones?: DangerZone[]; // New: Hostile areas
+  dangerZones?: DangerZone[]; 
   createdAt: number;
   defaultMapStyle?: MapStyleId;
+  showOtherTeams?: boolean; // New: Toggle to show teams to other teams
   
   // New Metadata
   client?: ClientInfo;
@@ -297,3 +299,5 @@ export enum GameMode {
   EDIT = 'EDIT',
   INSTRUCTOR = 'INSTRUCTOR'
 }
+
+export type TeamStatus = 'moving' | 'solving' | 'idle';

@@ -13,6 +13,7 @@ class TeamSyncService {
   private deviceId: string = '';
   private userName: string = 'Anonymous'; 
   private userLocation: Coordinate | null = null; // Track local location
+  private isSolving: boolean = false; // Track solving status locally
   
   private votes: Record<string, TaskVote[]> = {}; 
   private members: Map<string, TeamMember> = new Map();
@@ -149,13 +150,20 @@ class TeamSyncService {
       // Optionally trigger immediate presence update if needed, but 5s interval is usually fine for battery
   }
 
+  // Called by TaskModal when opening/closing a task
+  public updateStatus(isSolving: boolean) {
+      this.isSolving = isSolving;
+      this.sendPresence();
+  }
+
   private sendPresence() {
       if(!this.channel) return;
       const me: TeamMember = {
           deviceId: this.deviceId,
           userName: this.userName,
           lastSeen: Date.now(),
-          location: this.userLocation || undefined
+          location: this.userLocation || undefined,
+          isSolving: this.isSolving
       };
       this.channel.send({
           type: 'broadcast',
@@ -177,8 +185,9 @@ class TeamSyncService {
         deviceId: vote.deviceId, 
         userName: vote.userName, 
         lastSeen: Date.now(),
-        // Preserve location if we have it already, vote doesn't carry loc usually
-        location: this.members.get(vote.deviceId)?.location
+        // Preserve location and solving status if we have it already
+        location: this.members.get(vote.deviceId)?.location,
+        isSolving: this.members.get(vote.deviceId)?.isSolving
     });
     this.notifyMemberListeners();
 

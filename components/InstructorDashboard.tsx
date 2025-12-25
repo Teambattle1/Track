@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Game, Team, TeamMember, Coordinate, GamePoint, GameMode } from '../types';
-import { X, Users, Eye, EyeOff, CheckCircle, Trophy, Minus, Plus } from 'lucide-react';
+import { Game, Team, TeamMember, Coordinate, GamePoint, GameMode, TeamStatus } from '../types';
+import { X, Users, Eye, EyeOff, CheckCircle, Trophy, Minus, Plus, ToggleLeft, ToggleRight, Radio } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
 import PlaygroundModal from './PlaygroundModal';
 import { ICON_COMPONENTS } from '../utils/icons';
+import { haversineMeters } from '../utils/geo';
 
 interface InstructorDashboardProps {
   game: Game;
@@ -28,8 +29,11 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   // Visibility Toggles
   const [showTeams, setShowTeams] = useState(true);
   const [showTasks, setShowTasks] = useState(true);
+  
+  // New Toggle: Show Teams to Teams
+  const [showOtherTeams, setShowOtherTeams] = useState(game.showOtherTeams || false);
 
-  // Track location history for tails
+  // Track location history for tails and speed calculation
   const [locationHistory, setLocationHistory] = useState<Record<string, LocationHistoryItem[]>>({});
   
   // Interactive Modal State (for Map clicks)
@@ -46,7 +50,6 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       setLoading(true);
       try {
           const data = await db.fetchTeams(game.id);
-          // Sort teams by score descending (Leaderboard)
           const sorted = data.sort((a, b) => b.score - a.score);
           setTeams(sorted);
       } catch (e) {
@@ -77,15 +80,26 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
           const next = { ...prev };
           members.forEach(m => {
               if (!m.location) return;
-              const team = teams.find(t => t.members.some(mem => mem.name === m.userName));
+              // Find which team this member belongs to
+              const team = teams.find(t => t.members.some(mem => mem.name === m.userName || mem.deviceId === m.deviceId));
+              
               if (team) {
-                  if (!next[team.id]) next[team.id] = [];
-                  const lastLoc = next[team.id][next[team.id].length - 1];
-                  if (!lastLoc || lastLoc.lat !== m.location.lat || lastLoc.lng !== m.location.lng) {
-                      next[team.id].push({ ...m.location, timestamp: now });
+                  // Only track if this member is the captain (or first member if no captain)
+                  const isCaptain = team.captainDeviceId 
+                      ? team.captainDeviceId === m.deviceId 
+                      : team.members[0]?.deviceId === m.deviceId;
+
+                  if (isCaptain) {
+                      if (!next[team.id]) next[team.id] = [];
+                      const lastLoc = next[team.id][next[team.id].length - 1];
+                      // Simple de-dupe
+                      if (!lastLoc || lastLoc.lat !== m.location.lat || lastLoc.lng !== m.location.lng) {
+                          next[team.id].push({ ...m.location, timestamp: now });
+                      }
                   }
               }
           });
+          // Cleanup old history
           Object.keys(next).forEach(teamId => {
               next[teamId] = next[teamId].filter(loc => loc.timestamp > fiveMinutesAgo);
           });
@@ -93,20 +107,53 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       });
   };
 
+  const toggleShowOtherTeams = async () => {
+      const newVal = !showOtherTeams;
+      setShowOtherTeams(newVal);
+      // Persist setting
+      await db.saveGame({ ...game, showOtherTeams: newVal });
+  };
+
   const teamLocations = useMemo(() => {
       if (!showTeams) return [];
-      const locs: { team: Team, location: Coordinate }[] = [];
+      const locs: { team: Team, location: Coordinate, status: TeamStatus }[] = [];
+      
       teams.forEach(team => {
-          const teamOnlineMembers = onlineMembers.filter(m => team.members.some(mem => mem.name === m.userName) && m.location);
-          if (teamOnlineMembers.length > 0) {
-              const avgLat = teamOnlineMembers.reduce((sum, m) => sum + (m.location?.lat || 0), 0) / teamOnlineMembers.length;
-              const avgLng = teamOnlineMembers.reduce((sum, m) => sum + (m.location?.lng || 0), 0) / teamOnlineMembers.length;
-              locs.push({ team: team, location: { lat: avgLat, lng: avgLng } });
+          // Identify Captain
+          const captainId = team.captainDeviceId || (team.members.length > 0 ? team.members[0].deviceId : null);
+          if (!captainId) return;
+
+          const captainMember = onlineMembers.find(m => m.deviceId === captainId);
+          if (captainMember && captainMember.location) {
+              
+              // Calculate Status
+              let status: TeamStatus = 'idle';
+              
+              if (captainMember.isSolving) {
+                  status = 'solving';
+              } else {
+                  // Check movement in last 20 seconds
+                  const history = locationHistory[team.id] || [];
+                  const recentMoves = history.filter(h => Date.now() - h.timestamp < 20000);
+                  
+                  if (recentMoves.length >= 2) {
+                      const dist = haversineMeters(recentMoves[0], recentMoves[recentMoves.length - 1]);
+                      // If moved more than 5 meters in 20 seconds, consider moving
+                      if (dist > 5) status = 'moving';
+                  }
+              }
+
+              locs.push({ 
+                  team: team, 
+                  location: captainMember.location,
+                  status: status
+              });
           }
       });
       return locs;
-  }, [teams, onlineMembers, showTeams]);
+  }, [teams, onlineMembers, showTeams, locationHistory]);
 
+  // Trails only for Captains
   const teamTrails = useMemo(() => {
       if (!showTeams) return {};
       const trails: Record<string, Coordinate[]> = {};
@@ -116,16 +163,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       return trails;
   }, [locationHistory, showTeams]);
 
-  const pointStats = useMemo(() => {
-      const stats: Record<string, string> = {};
-      const totalTeams = teams.length;
-      game.points.forEach(point => {
-          const visitedCount = teams.filter(t => t.completedPointIds?.includes(point.id)).length;
-          stats[point.id] = `${visitedCount}/${totalTeams}`;
-      });
-      return stats;
-  }, [game.points, teams]);
-
+  // ... (Logic Links and Dependent Points logic remains unchanged)
   const logicLinks = useMemo(() => {
       if (!showTasks) return [];
       const links: { from: Coordinate; to: Coordinate; color?: string; type?: 'onOpen' | 'onCorrect' | 'onIncorrect' }[] = [];
@@ -164,6 +202,16 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       return Array.from(targets);
   }, [game.points]);
 
+  const pointStats = useMemo(() => {
+      const stats: Record<string, string> = {};
+      const totalTeams = teams.length;
+      game.points.forEach(point => {
+          const visitedCount = teams.filter(t => t.completedPointIds?.includes(point.id)).length;
+          stats[point.id] = `${visitedCount}/${totalTeams}`;
+      });
+      return stats;
+  }, [game.points, teams]);
+
   const handleUpdateScore = async (delta: number) => {
       if (selectedTeamId) {
           await db.updateTeamScore(selectedTeamId, delta);
@@ -197,7 +245,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
             </div>
             
             {viewTab === 'MAP' && (
-                <div className="flex gap-2 mx-4 hidden md:flex">
+                <div className="flex gap-2 mx-4 hidden md:flex items-center">
                     <button 
                         onClick={() => setShowTeams(!showTeams)}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase transition-colors ${showTeams ? 'bg-blue-900/30 border-blue-500 text-blue-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}
@@ -209,6 +257,17 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase transition-colors ${showTasks ? 'bg-orange-900/30 border-orange-500 text-orange-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}
                     >
                         {showTasks ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />} TASKS
+                    </button>
+                    
+                    <div className="h-6 w-px bg-slate-700 mx-2"></div>
+
+                    <button 
+                        onClick={toggleShowOtherTeams}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase transition-colors ${showOtherTeams ? 'bg-green-900/30 border-green-500 text-green-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}
+                        title="Enable to let teams see each other on their maps"
+                    >
+                        {showOtherTeams ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />} 
+                        VIS TEAMS TIL TEAMS
                     </button>
                 </div>
             )}
@@ -256,6 +315,25 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                             selectedPointId={selectedPointId}
                         />
                         
+                        {/* Legend for Status */}
+                        <div className="absolute top-16 right-4 z-[1000] bg-slate-900/90 p-3 rounded-xl border border-slate-700 shadow-xl backdrop-blur-md pointer-events-none">
+                            <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">STATUS LEGEND</h4>
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-green-500 border border-white animate-pulse"></div>
+                                    <span className="text-[10px] font-bold text-slate-300 uppercase">MOVING</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500 border border-white"></div>
+                                    <span className="text-[10px] font-bold text-slate-300 uppercase">SOLVING TASK</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500 border border-white"></div>
+                                    <span className="text-[10px] font-bold text-slate-300 uppercase">IDLE / STANDING</span>
+                                </div>
+                            </div>
+                        </div>
+
                         {visiblePlaygrounds.length > 0 && (
                             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] flex gap-4 pointer-events-auto items-end">
                                 {visiblePlaygrounds.map(pg => {
@@ -334,7 +412,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
             </div>
         </div>
 
-        {/* TEAM CONTROL MODAL (When clicking map team or list item) */}
+        {/* TEAM CONTROL MODAL */}
         {showTeamControl && selectedTeam && (
             <div className="fixed inset-0 z-[3000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
                 <div className="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl overflow-hidden flex flex-col shadow-2xl">

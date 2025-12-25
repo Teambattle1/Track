@@ -13,6 +13,7 @@ interface ChatDrawerProps {
   userName: string;
   teamId?: string;
   teams?: Team[]; // List of teams for instructor to select from
+  selectedTeamId?: string; // Pre-selected team from external trigger
 }
 
 const ChatDrawer: React.FC<ChatDrawerProps> = ({ 
@@ -23,7 +24,8 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
   mode,
   userName,
   teamId,
-  teams = []
+  teams = [],
+  selectedTeamId
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
@@ -32,6 +34,15 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Sync prop to state when drawer opens or prop changes
+  useEffect(() => {
+      if (selectedTeamId) {
+          setTargetTeamId(selectedTeamId);
+      } else {
+          setTargetTeamId(null);
+      }
+  }, [selectedTeamId, isOpen]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {

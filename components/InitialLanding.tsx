@@ -160,23 +160,17 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           color="bg-blue-500"
                           onClick={() => onAction('TEAMS')}
                       />
+                      {/* Team Zone removed as requested */}
                       <NavCard 
-                          title="TEAM ZONE" 
-                          subtitle="STATUS MONITOR" 
-                          icon={Shield} 
-                          color="bg-cyan-500"
-                          onClick={() => onAction('TEAMZONE')}
-                      />
-                      <NavCard 
-                          title="MISSION CHAT" 
+                          title="TEAM CHAT" 
                           subtitle="COMMS CHANNEL" 
                           icon={MessageSquare} 
                           color="bg-indigo-500"
                           onClick={() => onAction('CHAT')}
                       />
                       <NavCard 
-                          title="TEAM LOBBY" 
-                          subtitle="ADMIN ACCESS" 
+                          title="TEAMLOBBY ADMIN" 
+                          subtitle="MONITOR & MANAGE" 
                           icon={Anchor} 
                           color="bg-rose-500"
                           onClick={() => onAction('TEAM_LOBBY')}
@@ -271,8 +265,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 <LayoutDashboard className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-black tracking-tight leading-none mb-1">ADMIN</h1>
-                <p className="text-[10px] font-black text-slate-500 tracking-[0.4em] uppercase">TEAMACTION COMMAND CENTER</p>
+                <h1 className="text-3xl font-black tracking-tight leading-none mb-1">COMMAND CENTER</h1>
+                <p className="text-[10px] font-black text-slate-500 tracking-[0.4em] uppercase">TEAMACTION MANAGEMENT</p>
               </div>
             </div>
             

@@ -220,13 +220,6 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             // No specific playground context -> Open Manager (to pick global template or manage)
             if (onOpenPlaygroundManager) {
                 onOpenPlaygroundManager();
-                // We keep selection open or close? 
-                // Usually we'd want to *apply* selection to the playground we pick... 
-                // but the PlaygroundManager is for templates. 
-                // For now just open it as requested.
-                // Or if user just wants to add to *some* playground in active game:
-                // We could show a picker here. 
-                // But following the prompt "or else open GLOBAL PLAYGROUND template list".
             }
         }
     };
@@ -257,13 +250,38 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
 
     const handleUseList = (e: React.MouseEvent, list: TaskList) => {
         e.stopPropagation();
-        if (isSelectionModeLocal && onSelectTasksForGame) {
-            // DIRECTLY ADD TO ZONE IF IN SELECTION MODE
-            onSelectTasksForGame(list.tasks);
-        } else {
-            // OTHERWISE OPEN GAME CHOOSER POPUP
-            setTargetListForGame(list);
+        
+        // Scenario 1: Selection Mode Active (Local)
+        if (isSelectionModeLocal) {
+            // Auto-select all tasks in this list for the selection buffer
+            const newSelected = [...selectedTemplateIds];
+            let addedCount = 0;
+            list.tasks.forEach(t => {
+                if (!newSelected.includes(t.id)) {
+                    newSelected.push(t.id);
+                    addedCount++;
+                }
+            });
+            setSelectedTemplateIds(newSelected);
+            return;
         }
+
+        // Scenario 2: Explicit Selection Mode from Parent
+        if (onSelectTasksForGame) {
+            onSelectTasksForGame(list.tasks);
+            return;
+        }
+
+        // Scenario 3: Contextual Add (e.g. Editing a specific Playground)
+        // If we have an active game and are targeting a playground, add directly without popup.
+        if (activeGameId && initialPlaygroundId && onAddTasksToGame) {
+            onAddTasksToGame(activeGameId, list.tasks, initialPlaygroundId);
+            onClose();
+            return;
+        }
+
+        // Scenario 4: Standard "Add to Game" (opens chooser)
+        setTargetListForGame(list);
     };
 
     const toggleSelectionMode = () => {
@@ -663,7 +681,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                 onClick={(e) => handleUseList(e, list)}
                                                 className={`pointer-events-auto w-full py-2 text-white font-black uppercase text-[10px] tracking-widest rounded-lg transition-all shadow-lg flex items-center justify-center gap-1 group-hover:translate-y-0 translate-y-2 opacity-0 group-hover:opacity-100 duration-300 ${isSelectionModeLocal ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-600 hover:bg-orange-700'}`}
                                             >
-                                                {isSelectionModeLocal ? "ADD TO ZONE" : "USE IN GAME"} <ChevronRight className="w-3 h-3" />
+                                                {isSelectionModeLocal ? "SELECT ALL" : (initialPlaygroundId ? "ADD TO CURRENT ZONE" : "USE IN GAME")} <ChevronRight className="w-3 h-3" />
                                             </button>
                                         </div>
                                     </div>
@@ -694,7 +712,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 className="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 border border-orange-500/50"
                             >
                                 <LayoutGrid className="w-4 h-4" /> 
-                                {initialPlaygroundId ? 'ADD TO PLAYGROUND' : 'ADD TO NEW ZONE'}
+                                {initialPlaygroundId ? 'ADD TO CURRENT ZONE' : 'ADD TO NEW ZONE'}
                             </button>
                         </div>
                     </div>
