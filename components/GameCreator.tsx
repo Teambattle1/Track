@@ -1,7 +1,7 @@
 
-import React, { useState, useRef } from 'react';
-import { Game, TimerConfig, TimerMode } from '../types';
-import { X, Gamepad2, Calendar, Building2, Upload, Search, Loader2, Clock, Hourglass, StopCircle, CheckCircle, Image as ImageIcon, Save, Edit } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Game, TimerConfig, TimerMode, MapStyleId, Language } from '../types';
+import { X, Gamepad2, Calendar, Building2, Upload, Search, Loader2, Clock, Hourglass, StopCircle, CheckCircle, Image as ImageIcon, Save, Edit, Map, Layers, Globe } from 'lucide-react';
 import { searchLogoUrl } from '../services/ai';
 
 interface GameCreatorProps {
@@ -10,9 +10,22 @@ interface GameCreatorProps {
   baseGame?: Game; // Optional for edit mode in future
 }
 
+const MAP_STYLES: { id: MapStyleId; label: string }[] = [
+    { id: 'osm', label: 'Standard' },
+    { id: 'satellite', label: 'Satellite' },
+    { id: 'dark', label: 'Dark Mode' },
+    { id: 'light', label: 'Light Mode' },
+    { id: 'winter', label: 'Winter (Norway)' },
+    { id: 'clean', label: 'Clean' },
+    { id: 'voyager', label: 'Voyager' }
+];
+
+const LANGUAGES: Language[] = ['English', 'Danish', 'German', 'Spanish'];
+
 const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }) => {
   const [name, setName] = useState(baseGame?.name || '');
   const [description, setDescription] = useState(baseGame?.description || '');
+  const [language, setLanguage] = useState<Language>(baseGame?.language || 'English');
   
   // Client Info
   const [clientName, setClientName] = useState(baseGame?.client?.name || '');
@@ -34,7 +47,30 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
   const [endDateTime, setEndDateTime] = useState<string>(baseGame?.timerConfig?.endTime || '');
   const [timerTitle, setTimerTitle] = useState(baseGame?.timerConfig?.title || 'TIME TO END');
 
+  // Map Config
+  const [selectedMapStyle, setSelectedMapStyle] = useState<MapStyleId>(baseGame?.defaultMapStyle || 'osm');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync state with baseGame if it changes (e.g. when opening edit mode)
+  useEffect(() => {
+      if (baseGame) {
+          setName(baseGame.name);
+          setDescription(baseGame.description);
+          setLanguage(baseGame.language || 'English');
+          setClientName(baseGame.client?.name || '');
+          setClientLogo(baseGame.client?.logoUrl || '');
+          setPlayingDate(baseGame.client?.playingDate || new Date(baseGame.createdAt).toISOString().split('T')[0]);
+          setSelectedMapStyle(baseGame.defaultMapStyle || 'osm');
+          
+          if (baseGame.timerConfig) {
+              setTimerMode(baseGame.timerConfig.mode);
+              setDuration(baseGame.timerConfig.durationMinutes || 60);
+              setEndDateTime(baseGame.timerConfig.endTime || '');
+              setTimerTitle(baseGame.timerConfig.title || 'TIME TO END');
+          }
+      }
+  }, [baseGame]);
 
   const handleLogoSearch = async () => {
       if (!clientName.trim()) return;
@@ -63,6 +99,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
       const newGameData: Partial<Game> = {
           name,
           description,
+          language,
+          defaultMapStyle: selectedMapStyle,
           client: {
               name: clientName,
               logoUrl: clientLogo,
@@ -96,7 +134,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-900">
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-900 custom-scrollbar">
                 
                 {/* 1. Basic Info */}
                 <section>
@@ -123,6 +161,23 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
                                 placeholder="Briefing for the players shown as pop-up on start..."
                                 className="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:border-orange-500 outline-none transition-colors h-20 resize-none"
                             />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">GAME LANGUAGE</label>
+                            <div className="relative">
+                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <select 
+                                    value={language}
+                                    onChange={(e) => setLanguage(e.target.value as Language)}
+                                    className="w-full pl-10 p-3 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none transition-colors uppercase appearance-none"
+                                >
+                                    {LANGUAGES.map(lang => (
+                                        <option key={lang} value={lang}>{lang}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-1 italic">This sets the language for all app menus and buttons for players.</p>
                         </div>
                     </div>
                 </section>
@@ -197,10 +252,30 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
                     </div>
                 </section>
 
-                {/* 3. Timing Block */}
+                {/* 3. Map Visuals */}
                 <section className="bg-slate-800/50 p-5 rounded-2xl border border-slate-800">
                     <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <span className="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px]">3</span>
+                        MAP VISUALS
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {MAP_STYLES.map(style => (
+                            <button
+                                key={style.id}
+                                onClick={() => setSelectedMapStyle(style.id)}
+                                className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${selectedMapStyle === style.id ? 'bg-blue-600 border-blue-400 text-white ring-2 ring-blue-500/20' : 'bg-slate-800 border-slate-700 text-slate-500 hover:bg-slate-750 hover:text-white'}`}
+                            >
+                                <Layers className="w-5 h-5" />
+                                <span className="text-[9px] font-black uppercase tracking-wide">{style.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </section>
+
+                {/* 4. Timing Block */}
+                <section className="bg-slate-800/50 p-5 rounded-2xl border border-slate-800">
+                    <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px]">4</span>
                         TIMING CONFIGURATION
                     </h3>
                     

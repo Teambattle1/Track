@@ -8,7 +8,7 @@ export type IconId = 'default' | 'star' | 'flag' | 'trophy' | 'camera' | 'questi
 
 export type TaskType = 'text' | 'multiple_choice' | 'checkbox' | 'boolean' | 'slider' | 'dropdown' | 'multi_select_dropdown';
 
-export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'light';
+export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'light' | 'ancient' | 'clean' | 'voyager' | 'winter';
 
 export type Language = 'English' | 'Danish' | 'German' | 'Spanish';
 
@@ -156,6 +156,7 @@ export interface Playground {
   buttonSize?: number; 
   orientationLock?: 'portrait' | 'landscape' | 'none'; 
   location?: Coordinate; 
+  showLabels?: boolean; // New: Toggle label visibility
 }
 
 export interface DangerZone {
@@ -276,6 +277,7 @@ export interface Game {
   id: string;
   name: string;
   description: string;
+  language?: Language; // New: Game specific language
   points: GamePoint[];
   playgrounds?: Playground[]; 
   dangerZones?: DangerZone[]; 

@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { GamePoint, TaskList, Coordinate, Game } from '../types';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { GamePoint, TaskList, Coordinate, Game, GameMode } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw } from 'lucide-react';
+import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw, Users, Shield } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -38,8 +38,8 @@ interface EditorDrawerProps {
   initialExpanded?: boolean;
   onAddTask?: (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId?: string) => void;
   onExpandChange?: (expanded: boolean) => void; 
-  isGameTemplateMode?: boolean; // New Prop
-  onSaveGameTemplate?: () => void; // New Prop
+  isGameTemplateMode?: boolean; 
+  onSaveGameTemplate?: () => void; 
 }
 
 const SortablePointItem: React.FC<{ 
@@ -88,7 +88,8 @@ const SortablePointItem: React.FC<{
       if (startX.current === null || isDragging) return;
       const currentX = e.touches[0].clientX;
       const diff = currentX - startX.current;
-      if (diff > 0) {
+      // In LEFT drawer mode, dragging RIGHT (positive diff) reveals delete on left
+      if (diff > 0) { 
           setDragOffset(Math.min(diff, 150)); 
       }
   };
@@ -272,7 +273,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [isExpanded, setIsExpanded] = useState(initialExpanded); 
   const [isSaved, setIsSaved] = useState(false);
   
-  // Grouping State
   const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': false });
   const [activeAddMenu, setActiveAddMenu] = useState<string | null>(null);
 
@@ -295,8 +295,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
           });
       }
   }, [activeGame]);
-
-  const activeSourceList = taskLists.find(l => l.id === sourceListId);
   
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -387,8 +385,9 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
   return (
     <div 
-        className={`absolute top-0 left-0 bottom-0 z-[1100] w-full sm:w-[320px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col border-r border-gray-200 dark:border-gray-800 pointer-events-auto transition-transform duration-300 ease-in-out ${isExpanded ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 bottom-0 z-[2100] w-full sm:w-[320px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col border-r border-gray-200 dark:border-gray-800 pointer-events-auto transition-transform duration-300 ease-in-out ${isExpanded ? 'translate-x-0' : '-translate-x-full'}`}
     >
+      {/* Toggle Button moved to the Right of the Left Drawer */}
       <button 
         onClick={() => setIsExpanded(!isExpanded)}
         className="absolute left-full top-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 w-8 h-24 rounded-r-xl shadow-lg border-y border-r border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center pointer-events-auto"
@@ -399,7 +398,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
       <button 
           onClick={onOpenGameChooser}
-          disabled={isGameTemplateMode} // Disable switching while editing template
+          disabled={isGameTemplateMode} 
           className={`p-4 text-white text-left flex-shrink-0 relative z-[100] transition-all active:scale-[0.98] ${isGameTemplateMode ? 'bg-purple-600 cursor-default' : (activeGame ? 'bg-orange-600 hover:bg-orange-700' : 'bg-slate-700 hover:bg-slate-800')}`}
       >
           <div className="flex justify-between items-center mb-1">
@@ -450,7 +449,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 </div>
             </div>
 
-            {/* Config & Filters */}
             <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 relative z-[50]">
                 <button 
                     onClick={() => setShowFilterMenu(!showFilterMenu)}
@@ -480,11 +478,8 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 )}
             </div>
 
-            {/* Main Content Area - Scrollable */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900/50 z-0">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    
-                    {/* MAP ZONE */}
                     <SortableContext items={mapPoints.map(p => p.id)} strategy={verticalListSortingStrategy}>
                         <ZoneSection 
                             id="zone-map"
@@ -517,7 +512,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                         </ZoneSection>
                     </SortableContext>
 
-                    {/* PLAYGROUND ZONES */}
                     {playgroundGroups.map(pg => (
                         <SortableContext key={pg.id} items={pg.points.map(p => p.id)} strategy={verticalListSortingStrategy}>
                             <ZoneSection 
@@ -551,12 +545,10 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                             </ZoneSection>
                         </SortableContext>
                     ))}
-
                 </DndContext>
             </div>
 
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col gap-2 z-[60]">
-                {/* DIRECT ADD BUTTONS */}
                 <div className="grid grid-cols-3 gap-2">
                     <button 
                         onClick={() => onAddTask && onAddTask('MANUAL')}

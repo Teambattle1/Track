@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Loader2, MapPin, X, Target, Maximize } from 'lucide-react';
+import { Search, Loader2, MapPin, X, Target, Maximize, Hash } from 'lucide-react';
 import { Coordinate } from '../types';
 
 interface LocationSearchProps {
@@ -9,10 +9,21 @@ interface LocationSearchProps {
   onFitBounds?: () => void;
   className?: string;
   hideSearch?: boolean;
-  labelButtons?: boolean; // New prop
+  labelButtons?: boolean;
+  onToggleScores?: () => void;
+  showScores?: boolean;
 }
 
-const LocationSearch: React.FC<LocationSearchProps> = ({ onSelectLocation, onLocateMe, onFitBounds, className = "", hideSearch = false, labelButtons = false }) => {
+const LocationSearch: React.FC<LocationSearchProps> = ({ 
+    onSelectLocation, 
+    onLocateMe, 
+    onFitBounds, 
+    className = "", 
+    hideSearch = false, 
+    labelButtons = false,
+    onToggleScores,
+    showScores
+}) => {
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<any[]>([]);
@@ -40,10 +51,22 @@ const LocationSearch: React.FC<LocationSearchProps> = ({ onSelectLocation, onLoc
     setQuery(res.display_name);
   };
 
+  // Restyled Square Action Button
+  const ActionButton = ({ onClick, icon: Icon, label, colorClass, active = false }: { onClick: () => void, icon: any, label: string, colorClass: string, active?: boolean }) => (
+      <button 
+        onClick={onClick} 
+        className={`w-12 h-12 rounded-2xl shadow-lg border flex flex-col items-center justify-center transition-all active:scale-95 group pointer-events-auto ${active ? 'bg-orange-600 border-orange-500 hover:bg-orange-500' : 'bg-[#1a202c] border-slate-700 hover:border-slate-500 hover:bg-slate-800'}`}
+        title={label}
+      >
+        <Icon className={`w-5 h-5 mb-0.5 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+        <span className={`text-[8px] font-black uppercase tracking-widest hidden sm:block leading-none ${active ? 'text-white' : 'text-slate-500 group-hover:text-white'}`}>{label}</span>
+      </button>
+  );
+
   return (
-    <div className={`flex items-center gap-2 pointer-events-auto h-12 ${className}`}>
+    <div className={`flex items-center gap-2 pointer-events-auto ${className}`}>
       {!hideSearch && (
-        <div className="relative w-full min-w-[180px] sm:w-[260px] h-full">
+        <div className="relative w-full min-w-[180px] sm:w-[260px] h-12">
           <form onSubmit={handleSearch} className="group relative flex items-center h-full">
             <div className="absolute left-3.5 text-gray-400 group-focus-within:text-orange-500 transition-colors z-10">
               {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -53,15 +76,13 @@ const LocationSearch: React.FC<LocationSearchProps> = ({ onSelectLocation, onLoc
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search location..."
-              title="Search for a place on the map"
-              className="w-full h-full pl-10 pr-10 bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-orange-500/50 transition-all text-white font-bold"
+              className="w-full h-full pl-10 pr-10 bg-[#1a202c] dark:bg-gray-900 backdrop-blur-md border-2 border-slate-700 hover:border-slate-600 rounded-2xl shadow-xl text-xs sm:text-sm outline-none focus:border-orange-500 transition-all text-white font-bold placeholder:text-slate-500"
             />
             {query && (
               <button 
                 type="button" 
                 onClick={() => { setQuery(''); setResults([]); setShowResults(false); }} 
-                title="Clear Search"
-                className="absolute right-3 p-1.5 text-gray-400 hover:text-gray-200 z-10 bg-white/5 rounded-lg"
+                className="absolute right-3 p-1.5 text-gray-400 hover:text-white z-10 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -85,37 +106,17 @@ const LocationSearch: React.FC<LocationSearchProps> = ({ onSelectLocation, onLoc
         </div>
       )}
 
-      <div className="flex gap-2 h-full">
-          {onLocateMe && (
-            <div className="relative group h-full">
-              <button 
-                onClick={onLocateMe} 
-                title="Locate Me (GPS)"
-                className="h-full aspect-square bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md text-blue-400 rounded-2xl shadow-2xl border border-white/10 flex flex-col items-center justify-center hover:bg-slate-800 transition-all active:scale-95" 
-                aria-label="Locate Me"
-              >
-                <Target className="w-5 h-5" />
-                {labelButtons && <span className="text-[8px] font-black uppercase mt-0.5">LOCATE</span>}
-              </button>
-              {!labelButtons && <div className="absolute bottom-full mb-2 right-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">My Location</div>}
-            </div>
-          )}
+      {onLocateMe && (
+        <ActionButton onClick={onLocateMe} icon={Target} label="LOCATE" colorClass="" />
+      )}
 
-          {onFitBounds && (
-            <div className="relative group h-full">
-              <button 
-                onClick={onFitBounds} 
-                title="Show All Tasks"
-                className="h-full aspect-square bg-slate-900/95 dark:bg-gray-850 backdrop-blur-md text-orange-400 rounded-2xl shadow-2xl border border-white/10 flex flex-col items-center justify-center hover:bg-slate-800 transition-all active:scale-95" 
-                aria-label="Fit Map to Tasks"
-              >
-                <Maximize className="w-5 h-5" />
-                {labelButtons && <span className="text-[8px] font-black uppercase mt-0.5">FIT MAP</span>}
-              </button>
-              {!labelButtons && <div className="absolute bottom-full mb-2 right-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-slate-950 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-xl border border-white/10 whitespace-nowrap">View All</div>}
-            </div>
-          )}
-      </div>
+      {onFitBounds && (
+        <ActionButton onClick={onFitBounds} icon={Maximize} label="FIT" colorClass="" />
+      )}
+
+      {onToggleScores && (
+        <ActionButton onClick={onToggleScores} icon={Hash} label="SCORES" colorClass="" active={showScores} />
+      )}
     </div>
   );
 };

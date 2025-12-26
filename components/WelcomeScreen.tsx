@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Game, MapStyleId, Language, Coordinate, Team } from '../types';
-import { Play, Users, MapPin, Globe, ArrowLeft, LogOut, Plus, Search, RefreshCw, Clock, User, Hash, Camera, ChevronDown, QrCode, Image as ImageIcon, X, Home, Check } from 'lucide-react';
+import { Play, Users, MapPin, Globe, ArrowLeft, LogOut, Plus, Search, RefreshCw, Clock, User, Hash, Camera, ChevronDown, QrCode, Image as ImageIcon, X, Home, Check, Shield } from 'lucide-react';
 import { t } from '../utils/i18n';
 import { haversineMeters } from '../utils/geo';
 import * as db from '../services/db';
@@ -11,7 +11,7 @@ import AvatarCreator from './AvatarCreator';
 interface WelcomeScreenProps {
   games: Game[];
   userLocation: Coordinate | null;
-  onStartGame: (gameId: string, teamName: string, userName: string, style: MapStyleId) => void;
+  onStartGame: (gameId: string, teamName: string, userName: string, teamPhoto: string | null, style: MapStyleId) => void;
   onSetMapStyle: (style: MapStyleId) => void;
   language: Language;
   onSetLanguage: (lang: Language) => void;
@@ -36,6 +36,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   // Selection State
   const [selectedGameId, setSelectedGameId] = useState<string>(games[0]?.id || '');
   const [teamName, setTeamName] = useState('');
+  const [teamPhoto, setTeamPhoto] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   
@@ -61,7 +62,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const handleStart = () => {
       if (selectedGameId && teamName && userName && userPhoto) {
           localStorage.setItem('geohunt_temp_user_photo', userPhoto);
-          onStartGame(selectedGameId, teamName, userName, 'osm');
+          onStartGame(selectedGameId, teamName, userName, teamPhoto, 'osm');
       }
   };
 
@@ -225,9 +226,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     )}
 
                     {/* Form Container */}
-                    <div className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col gap-5 shadow-xl">
+                    <div className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col gap-6 shadow-xl">
                         
-                        {/* Game Select */}
+                        {/* 1. Game Select */}
                         <div>
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">SELECT GAME</label>
                             <div className="relative">
@@ -244,59 +245,94 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                             </div>
                         </div>
 
-                        {/* Team Name */}
-                        <div>
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">TEAM NAME</label>
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><Users className="w-4 h-4" /></div>
-                                <input 
-                                    type="text" 
-                                    value={teamName}
-                                    onChange={(e) => setTeamName(e.target.value)}
-                                    placeholder="ENTER TEAM NAME..."
-                                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide focus:border-blue-500 transition-colors placeholder-slate-600"
-                                />
-                            </div>
-                        </div>
-
-                        {/* User Name */}
-                        <div>
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">YOUR NAME</label>
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500"><User className="w-4 h-4" /></div>
-                                <input 
-                                    type="text" 
-                                    value={userName}
-                                    onChange={(e) => setUserName(e.target.value)}
-                                    placeholder="OPERATIVE NAME..."
-                                    className="w-full bg-slate-800/50 border border-orange-500/50 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide focus:border-orange-500 transition-colors placeholder-slate-600 shadow-[0_0_10px_rgba(234,88,12,0.1)]"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Profile Photo - AI Generator */}
-                        <div>
-                            <div className="flex justify-between items-center mb-2 ml-1">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">PROFILE AVATAR</label>
-                                <span className={`text-[9px] font-black uppercase tracking-widest ${userPhoto ? 'text-green-500' : 'text-red-500'}`}>{userPhoto ? 'READY' : 'REQUIRED'}</span>
-                            </div>
-                            
-                            {!userPhoto ? (
-                                <AvatarCreator 
-                                    onConfirm={(img) => setUserPhoto(img)} 
-                                />
-                            ) : (
-                                <div className="flex items-center gap-4 bg-slate-800 p-3 rounded-2xl border border-slate-700">
-                                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-green-500">
-                                        <img src={userPhoto} className="w-full h-full object-cover" alt="Profile" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-xs font-bold text-white uppercase mb-1">AVATAR SET</p>
-                                        <button onClick={() => setUserPhoto(null)} className="text-[10px] font-black text-slate-400 uppercase hover:text-white underline">CHANGE</button>
-                                    </div>
-                                    <Check className="w-6 h-6 text-green-500 mr-2" />
+                        {/* 2. Team Name & Avatar */}
+                        <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                            <div>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">TEAM NAME</label>
+                                <div className="relative">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><Users className="w-4 h-4" /></div>
+                                    <input 
+                                        type="text" 
+                                        value={teamName}
+                                        onChange={(e) => setTeamName(e.target.value)}
+                                        placeholder="ENTER TEAM NAME..."
+                                        className="w-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide focus:border-blue-500 transition-colors placeholder-slate-600"
+                                    />
                                 </div>
-                            )}
+                            </div>
+
+                            {/* Team Avatar (New Requirement) */}
+                            <div>
+                                <div className="flex justify-between items-center mb-2 ml-1">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TEAM AVATAR</label>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest ${teamPhoto ? 'text-green-500' : 'text-slate-600'}`}>{teamPhoto ? 'READY' : 'OPTIONAL'}</span>
+                                </div>
+                                
+                                {!teamPhoto ? (
+                                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-2">
+                                        <AvatarCreator 
+                                            onConfirm={(img) => setTeamPhoto(img)} 
+                                            title="CREATE YOUR TEAM"
+                                            placeholder="e.g. Cyberpunk Wolf Pack Neon"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-4 bg-slate-800 p-3 rounded-2xl border border-slate-700">
+                                        <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-green-500">
+                                            <img src={teamPhoto} className="w-full h-full object-cover" alt="Team" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-xs font-bold text-white uppercase mb-1">TEAM PHOTO SET</p>
+                                            <button onClick={() => setTeamPhoto(null)} className="text-[10px] font-black text-slate-400 uppercase hover:text-white underline">CHANGE</button>
+                                        </div>
+                                        <Check className="w-6 h-6 text-green-500 mr-2" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 3. User Name & Avatar */}
+                        <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                            <div>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">YOUR NAME</label>
+                                <div className="relative">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500"><User className="w-4 h-4" /></div>
+                                    <input 
+                                        type="text" 
+                                        value={userName}
+                                        onChange={(e) => setUserName(e.target.value)}
+                                        placeholder="OPERATIVE NAME..."
+                                        className="w-full bg-slate-800/50 border border-orange-500/50 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide focus:border-orange-500 transition-colors placeholder-slate-600 shadow-[0_0_10px_rgba(234,88,12,0.1)]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between items-center mb-2 ml-1">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">PROFILE AVATAR</label>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest ${userPhoto ? 'text-green-500' : 'text-red-500'}`}>{userPhoto ? 'READY' : 'REQUIRED'}</span>
+                                </div>
+                                
+                                {!userPhoto ? (
+                                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-2">
+                                        <AvatarCreator 
+                                            onConfirm={(img) => setUserPhoto(img)} 
+                                            title="CREATE YOUR AGENT"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-4 bg-slate-800 p-3 rounded-2xl border border-slate-700">
+                                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-green-500">
+                                            <img src={userPhoto} className="w-full h-full object-cover" alt="Profile" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-xs font-bold text-white uppercase mb-1">AVATAR SET</p>
+                                            <button onClick={() => setUserPhoto(null)} className="text-[10px] font-black text-slate-400 uppercase hover:text-white underline">CHANGE</button>
+                                        </div>
+                                        <Check className="w-6 h-6 text-green-500 mr-2" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Submit Button */}

@@ -1,6 +1,12 @@
 
 import { supabase } from '../lib/supabase';
 import { Game, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage } from '../types';
+import { DEMO_TASKS, DEMO_LISTS, getDemoGames } from '../utils/demoContent';
+
+const isNetworkError = (e: any) => {
+    const msg = e?.message || String(e);
+    return msg.includes('Failed to fetch') || msg.includes('Network request failed') || msg.includes('NetworkError');
+};
 
 const logError = (context: string, error: any) => {
     // Check for "Table not found" (Postgres code 42P01)
@@ -23,6 +29,10 @@ export const fetchGames = async (): Promise<Game[]> => {
         if (!data) return [];
         return data.map((row: any) => ({ ...row.data, id: row.id }));
     } catch (e) {
+        if (isNetworkError(e)) {
+            console.warn('[DB Service] Network unavailable. Using offline demo games.');
+            return getDemoGames();
+        }
         logError('fetchGames', e);
         return [];
     }
@@ -72,6 +82,10 @@ export const fetchTeams = async (gameId: string): Promise<Team[]> => {
             completedPointIds: row.completed_point_ids || []
         }));
     } catch (e) {
+        if (isNetworkError(e)) {
+            // No offline teams support yet, return empty
+            return [];
+        }
         logError('fetchTeams', e);
         return [];
     }
@@ -216,6 +230,10 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
         if (!data) return [];
         return data.map((row: any) => ({ ...row.data, id: row.id }));
     } catch (e) {
+        if (isNetworkError(e)) {
+            console.warn('[DB Service] Network unavailable. Using offline library.');
+            return DEMO_TASKS;
+        }
         logError('fetchLibrary', e);
         return [];
     }
@@ -251,6 +269,10 @@ export const fetchTaskLists = async (): Promise<TaskList[]> => {
         if (!data) return [];
         return data.map((row: any) => ({ ...row.data, id: row.id }));
     } catch (e) {
+        if (isNetworkError(e)) {
+            console.warn('[DB Service] Network unavailable. Using offline task lists.');
+            return DEMO_LISTS;
+        }
         logError('fetchTaskLists', e);
         return [];
     }

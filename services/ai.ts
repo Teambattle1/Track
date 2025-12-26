@@ -135,11 +135,12 @@ const handleAiError = (error: any) => {
 export const generateAiTasks = async (topic: string, count: number = 5, language: string = 'English', additionalTag?: string): Promise<TaskTemplate[]> => {
   const ai = new GoogleGenAI({ apiKey: getApiKey() });
   
+  // Increased timeout to 180 seconds (3 minutes) to handle model latency
   const timeoutPromise = new Promise<never>((_, reject) => {
     const id = setTimeout(() => {
       clearTimeout(id);
       reject(new Error("Request timed out. The AI model is taking too long to respond."));
-    }, 90000);
+    }, 180000);
   });
 
   try {

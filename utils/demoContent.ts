@@ -1,7 +1,7 @@
 
 import { TaskTemplate, TaskList, IconId, Team, TeamMemberData, Game } from '../types';
-import * as db from '../services/db';
 
+// Helper for creating consistent demo tasks
 const createDemoTask = (
   idSuffix: string, 
   title: string, 
@@ -59,18 +59,12 @@ export const DEMO_LISTS: TaskList[] = [
   }
 ];
 
-export const seedDatabase = async () => {
-  let count = 0;
-  try {
-    // 1. Save Tasks & Lists
-    for (const task of DEMO_TASKS) { await db.saveTemplate(task); count++; }
-    for (const list of DEMO_LISTS) { await db.saveTaskList(list); }
-
-    // 2. Create "Simon's Game"
-    const simonGameId = `game-simon-${Date.now()}`;
+export const getDemoGames = (): Game[] => {
+    // 1. Create "Simon's Game"
+    const simonGameId = `game-simon-demo`;
     const simonGame: Game = {
         id: simonGameId,
-        name: "Simon's Game",
+        name: "Simon's Game (Offline)",
         description: "A demo game with pre-loaded teams and scores.",
         createdAt: Date.now(),
         points: DEMO_TASKS.map((t, i) => ({
@@ -86,35 +80,126 @@ export const seedDatabase = async () => {
         })),
         client: { name: "Demo Corp", playingDate: new Date().toISOString() }
     };
-    await db.saveGame(simonGame);
 
-    // 3. Create Teams for Simon's Game
-    const teamsData = [
-        { name: 'Team Alpha', score: 1500, color: 'red' },
-        { name: 'Team Bravo', score: 1200, color: 'blue' },
-        { name: 'Team Charlie', score: 800, color: 'green' },
-        { name: 'Team Delta', score: 2300, color: 'yellow' } // The Leader
+    // 2. Create "Sjusjøen Ski Quest" Demo (Crosscountry)
+    const skiGameId = `game-sjusjoen-demo`;
+    const skiTasksData = [
+        {
+            title: "Sjusjøen Start",
+            question: "You are standing at the gateway to the mountain plateau. Find the large trail map sign. What implies the 'Birkebeiner' direction?",
+            type: "multiple_choice",
+            options: ["South", "North-West", "East", "Straight Down"],
+            answer: "North-West",
+            icon: "flag",
+            lat: 61.1594, lng: 10.6944
+        },
+        {
+            title: "Midtfjell Break",
+            question: "Locate the warming hut at Midtfjell. Take a picture of the cabin.",
+            type: "text", // Photo simulated via text/upload
+            icon: "camera",
+            lat: 61.1650, lng: 10.6700
+        },
+        {
+            title: "Birkebeiner History",
+            question: "In 1206, two warriors carried the baby prince Haakon IV on skis. What were they called?",
+            type: "text",
+            answer: "Birkebeiners",
+            icon: "question",
+            lat: 61.1736, lng: 10.6319
+        },
+        {
+            title: "Nordseter Crossing",
+            question: "Find the intersection near Nordseter Fjellkirke. What color is the church?",
+            type: "multiple_choice",
+            options: ["Red", "White", "Brown", "Black"],
+            answer: "Brown",
+            icon: "star",
+            lat: 61.1780, lng: 10.6350
+        }
     ];
 
-    for (const t of teamsData) {
-        const teamId = `team-${t.name.replace(/\s+/g, '-').toLowerCase()}-${simonGameId}`;
-        const team: Team = {
-            id: teamId,
-            gameId: simonGameId,
-            name: t.name,
-            joinCode: Math.floor(1000 + Math.random() * 9000).toString(),
-            score: t.score,
-            members: [
-                { name: `Agent ${t.name.split(' ')[1]} 1`, deviceId: `dev-${t.name}-1` },
-                { name: `Agent ${t.name.split(' ')[1]} 2`, deviceId: `dev-${t.name}-2` }
-            ],
-            updatedAt: new Date().toISOString(),
-            isStarted: true
-        };
-        await db.registerTeam(team);
+    // CALCULATE TOMORROW FOR PLANNED GAMES TAB
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const skiGame: Game = {
+        id: skiGameId,
+        name: "Sjusjøen Ski Quest (Offline)",
+        description: "A cross-country ski adventure in the Norwegian mountains. Test your endurance and trivia knowledge!",
+        createdAt: Date.now(),
+        defaultMapStyle: 'winter',
+        points: skiTasksData.map((t, i) => ({
+            ...createDemoTask(`ski-${i}`, t.title, t.type, t.question, t.icon as IconId, { 
+                options: t.options, 
+                answer: t.answer 
+            }),
+            id: `p-ski-${i}`,
+            location: { lat: t.lat, lng: t.lng },
+            radiusMeters: 50,
+            activationTypes: ['radius'],
+            isUnlocked: true,
+            isCompleted: false,
+            order: i,
+            points: 150
+        })),
+        client: { 
+            name: "Ski Team Norway", 
+            playingDate: tomorrow.toISOString() // Sets date to tomorrow
+        }
+    };
+
+    return [simonGame, skiGame];
+};
+
+export const seedDatabase = async () => {
+  // Use dynamic import to avoid circular dependency
+  const db = await import('../services/db');
+  
+  let count = 0;
+  try {
+    // 1. Save Tasks & Lists
+    for (const task of DEMO_TASKS) { await db.saveTemplate(task); count++; }
+    for (const list of DEMO_LISTS) { await db.saveTaskList(list); }
+
+    // 2. Create Games from demo generator
+    const games = getDemoGames();
+    
+    for (const game of games) {
+        // Remove "(Offline)" for database version
+        const dbGame = { ...game, name: game.name.replace(' (Offline)', '') };
+        await db.saveGame(dbGame);
+
+        // 3. Create Teams for Simon's Game
+        if (game.id.includes('simon')) {
+            const teamsData = [
+                { name: 'Team Alpha', score: 1500, color: 'red' },
+                { name: 'Team Bravo', score: 1200, color: 'blue' },
+                { name: 'Team Charlie', score: 800, color: 'green' },
+                { name: 'Team Delta', score: 2300, color: 'yellow' } // The Leader
+            ];
+
+            for (const t of teamsData) {
+                const teamId = `team-${t.name.replace(/\s+/g, '-').toLowerCase()}-${game.id}`;
+                const team: Team = {
+                    id: teamId,
+                    gameId: game.id,
+                    name: t.name,
+                    joinCode: Math.floor(1000 + Math.random() * 9000).toString(),
+                    score: t.score,
+                    members: [
+                        { name: `Agent ${t.name.split(' ')[1]} 1`, deviceId: `dev-${t.name}-1` },
+                        { name: `Agent ${t.name.split(' ')[1]} 2`, deviceId: `dev-${t.name}-2` }
+                    ],
+                    updatedAt: new Date().toISOString(),
+                    isStarted: true
+                };
+                await db.registerTeam(team);
+            }
+        }
     }
 
-    return { success: true, message: `Created "Simon's Game" with 4 teams.` };
+    return { success: true, message: `Database seeded successfully.` };
   } catch (e: any) {
     console.error(e);
     return { success: false, message: `Error seeding data: ${e.message}` };

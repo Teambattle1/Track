@@ -12,7 +12,7 @@ import {
     PlayCircle, MapPin, Globe, Filter, 
     CheckSquare, MousePointerClick, RefreshCw, Grid, List, 
     ChevronRight, ChevronDown, Check, Download, AlertCircle,
-    Trophy, Eye, HelpCircle, CheckSquare as CheckIcon, Save, Image as ImageIcon, Upload, Printer, QrCode, ArrowLeft, Gamepad2, LayoutGrid, Wand2
+    Trophy, Eye, HelpCircle, CheckSquare as CheckIcon, Save, Image as ImageIcon, Upload, Printer, QrCode, ArrowLeft, Gamepad2, LayoutGrid, Wand2, Calendar, Clock, AlertTriangle
 } from 'lucide-react';
 
 interface TaskMasterProps {
@@ -117,7 +117,17 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     
     // State for selecting game to add list to
     const [targetListForGame, setTargetListForGame] = useState<TaskList | null>(null);
+    const [gameSelectorTab, setGameSelectorTab] = useState<'TODAY' | 'PLANNED' | 'COMPLETED'>('TODAY');
     
+    // Confirmation Modal State
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        isAlert?: boolean;
+        onConfirm: () => void;
+    } | null>(null);
+
     const listImageInputRef = useRef<HTMLInputElement>(null);
 
     // Sync local selection mode if prop changes
@@ -173,6 +183,60 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         return filtered;
     }, [library, searchQuery]);
 
+    const filteredTargetGames = useMemo(() => {
+        if (!games) return [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return games.filter(g => {
+            const dateStr = g.client?.playingDate || g.createdAt;
+            const gDate = new Date(dateStr);
+            gDate.setHours(0, 0, 0, 0);
+            
+            // Check completion
+            const isFinished = g.points.length > 0 && g.points.every(p => p.isCompleted);
+            const isOverdue = gDate.getTime() < today.getTime();
+            const isToday = gDate.getTime() === today.getTime();
+            const isFuture = gDate.getTime() > today.getTime();
+
+            if (gameSelectorTab === 'COMPLETED') return isFinished || isOverdue;
+            if (isFinished || isOverdue) return false;
+            if (gameSelectorTab === 'TODAY') return isToday;
+            if (gameSelectorTab === 'PLANNED') return isFuture;
+            
+            return true;
+        }).sort((a, b) => b.createdAt - a.createdAt);
+    }, [games, gameSelectorTab]);
+
+    // Helpers for custom dialogs
+    const showAlert = (title: string, message: string) => {
+        setConfirmDialog({
+            isOpen: true,
+            title,
+            message,
+            isAlert: true,
+            onConfirm: () => setConfirmDialog(null)
+        });
+    };
+
+    const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+        setConfirmDialog({
+            isOpen: true,
+            title,
+            message,
+            onConfirm: () => {
+                onConfirm();
+                setConfirmDialog(null);
+            }
+        });
+    };
+
+    // Helper to check for duplicate tasks by Title+Question
+    const filterDuplicates = (game: Game, tasks: TaskTemplate[]) => {
+        const existingSignatures = new Set(game.points.map(p => `${p.title?.trim()}|${p.task.question?.trim()}`));
+        return tasks.filter(t => !existingSignatures.has(`${t.title?.trim()}|${t.task.question?.trim()}`));
+    };
+
     const handleImportLoquizTasks = async (tasks: TaskTemplate[]) => {
         for (const task of tasks) {
             await onSaveTemplate(task);
@@ -209,8 +273,35 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
 
         if (activeGameId && onAddTasksToGame) {
             const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
+            // Check duplicates against active game
+            const gameToCheck = games?.find(g => g.id === activeGameId);
+            let tasksToAdd = selectedTasks;
+
+            if (gameToCheck) {
+                const uniqueTasks = filterDuplicates(gameToCheck, selectedTasks);
+                if (uniqueTasks.length < selectedTasks.length) {
+                    const duplicates = selectedTasks.length - uniqueTasks.length;
+                    if (uniqueTasks.length === 0) {
+                        showAlert("Duplicate Tasks", "All selected tasks are already in this game.");
+                        return;
+                    }
+                    
+                    showConfirm(
+                        "Duplicate Tasks Found", 
+                        `${duplicates} tasks are already in this game. Add the remaining ${uniqueTasks.length} tasks?`,
+                        () => {
+                            onAddTasksToGame(activeGameId, uniqueTasks, null);
+                            setSelectedTemplateIds([]);
+                            setIsSelectionModeLocal(false);
+                            onClose();
+                        }
+                    );
+                    return;
+                }
+            }
+
             // Force Map (null playgroundId)
-            onAddTasksToGame(activeGameId, selectedTasks, null);
+            onAddTasksToGame(activeGameId, tasksToAdd, null);
             setSelectedTemplateIds([]);
             setIsSelectionModeLocal(false);
             onClose();
@@ -223,12 +314,42 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         if (activeGameId && onAddTasksToGame) {
             const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
             
+            // Check duplicates against active game
+            const gameToCheck = games?.find(g => g.id === activeGameId);
+            let tasksToAdd = selectedTasks;
+
+            if (gameToCheck) {
+                const uniqueTasks = filterDuplicates(gameToCheck, selectedTasks);
+                if (uniqueTasks.length < selectedTasks.length) {
+                    const duplicates = selectedTasks.length - uniqueTasks.length;
+                    if (uniqueTasks.length === 0) {
+                        showAlert("Duplicate Tasks", "All selected tasks are already in this game.");
+                        return;
+                    }
+                    showConfirm(
+                        "Duplicate Tasks Found",
+                        `${duplicates} tasks are already in this game. Add the remaining ${uniqueTasks.length} tasks?`,
+                        () => {
+                            if (initialPlaygroundId) {
+                                onAddTasksToGame(activeGameId, uniqueTasks, initialPlaygroundId);
+                            } else {
+                                onAddTasksToGame(activeGameId, uniqueTasks, 'CREATE_NEW');
+                            }
+                            setSelectedTemplateIds([]);
+                            setIsSelectionModeLocal(false);
+                            onClose();
+                        }
+                    );
+                    return;
+                }
+            }
+
             if (initialPlaygroundId) {
                 // Add to specific existing zone
-                onAddTasksToGame(activeGameId, selectedTasks, initialPlaygroundId);
+                onAddTasksToGame(activeGameId, tasksToAdd, initialPlaygroundId);
             } else {
                 // Add to NEW zone
-                onAddTasksToGame(activeGameId, selectedTasks, 'CREATE_NEW');
+                onAddTasksToGame(activeGameId, tasksToAdd, 'CREATE_NEW');
             }
             
             setSelectedTemplateIds([]);
@@ -288,6 +409,28 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         // Scenario 3: Contextual Add (e.g. Editing a specific Playground)
         // If we have an active game and are targeting a playground, add directly without popup.
         if (activeGameId && initialPlaygroundId && onAddTasksToGame) {
+            const gameToCheck = games?.find(g => g.id === activeGameId);
+            
+            if (gameToCheck) {
+                const uniqueTasks = filterDuplicates(gameToCheck, list.tasks);
+                if (uniqueTasks.length < list.tasks.length) {
+                    const duplicates = list.tasks.length - uniqueTasks.length;
+                    if (uniqueTasks.length === 0) {
+                        showAlert("Duplicate Tasks", "All tasks from this list are already in the active game.");
+                        return;
+                    }
+                    showConfirm(
+                        "Duplicate Tasks Found",
+                        `${duplicates} tasks are already in the active game. Add the remaining ${uniqueTasks.length} tasks?`,
+                        () => {
+                            onAddTasksToGame(activeGameId, uniqueTasks, initialPlaygroundId);
+                            onClose();
+                        }
+                    );
+                    return;
+                }
+            }
+
             onAddTasksToGame(activeGameId, list.tasks, initialPlaygroundId);
             onClose();
             return;
@@ -710,7 +853,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                             <Edit2 className="w-3 h-3" />
                                         </button>
                                         <button 
-                                            onClick={(e) => { e.stopPropagation(); onDeleteList(list.id); }}
+                                            onClick={(e) => { e.stopPropagation(); showConfirm("Delete List?", "Are you sure you want to delete this task list?", () => onDeleteList(list.id)); }}
                                             className="p-2 bg-red-600/80 hover:bg-red-600 text-white rounded-full backdrop-blur-sm transition-colors"
                                             title="Delete List"
                                         >
@@ -775,16 +918,88 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             </div>
             
             {showLoquizImporter && <LoquizImporter onClose={() => setShowLoquizImporter(false)} onImportTasks={handleImportLoquizTasks} />}
-            {targetListForGame && <div onClick={() => setTargetListForGame(null)} className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-               {/* Simplified mock of target list selector to save XML space, functionally covered by original component code */}
-               <div className="bg-slate-900 p-6 rounded-3xl" onClick={e => e.stopPropagation()}>
-                   <h3 className="text-white font-bold mb-4">Add to Game</h3>
-                   {games?.map(g => (
-                       <button key={g.id} onClick={() => { onAddTasksToGame?.(g.id, targetListForGame.tasks); setTargetListForGame(null); }} className="block w-full text-left p-3 hover:bg-white/10 text-white rounded mb-1">{g.name}</button>
-                   ))}
-                   <button onClick={() => setTargetListForGame(null)} className="mt-4 text-red-500 text-sm">Cancel</button>
-               </div>
-            </div>}
+            
+            {targetListForGame && (
+                <div onClick={() => setTargetListForGame(null)} className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+                   <div className="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+                       <div className="p-6 border-b border-slate-800 bg-slate-950 flex justify-between items-center shrink-0">
+                           <div>
+                               <h3 className="text-xl font-black text-white uppercase tracking-wider mb-1">SELECT TARGET SESSION</h3>
+                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">ADDING {targetListForGame.tasks.length} TASKS FROM "{targetListForGame.name}"</p>
+                           </div>
+                           <button onClick={() => setTargetListForGame(null)} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-white transition-colors"><X className="w-5 h-5"/></button>
+                       </div>
+
+                       <div className="px-6 pt-4 bg-slate-900 shrink-0">
+                           <div className="flex bg-slate-800 p-1 rounded-xl">
+                               {[
+                                   { id: 'TODAY', label: 'TODAY', icon: Clock },
+                                   { id: 'PLANNED', label: 'PLANNED', icon: Calendar },
+                                   { id: 'COMPLETED', label: 'DONE', icon: CheckCircle }
+                               ].map(tab => (
+                                   <button
+                                       key={tab.id}
+                                       onClick={() => setGameSelectorTab(tab.id as any)}
+                                       className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all ${gameSelectorTab === tab.id ? 'bg-orange-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                                   >
+                                       <tab.icon className="w-3 h-3" /> {tab.label}
+                                   </button>
+                               ))}
+                           </div>
+                       </div>
+
+                       <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-slate-900 custom-scrollbar">
+                           {filteredTargetGames.length === 0 ? (
+                               <div className="text-center py-10 text-slate-500 font-bold uppercase text-xs tracking-widest opacity-50">
+                                   No {gameSelectorTab.toLowerCase()} games found
+                               </div>
+                           ) : (
+                               filteredTargetGames.map(g => (
+                                   <button 
+                                       key={g.id} 
+                                       onClick={() => { 
+                                           const uniqueTasks = filterDuplicates(g, targetListForGame.tasks);
+                                           if (uniqueTasks.length < targetListForGame.tasks.length) {
+                                               const duplicates = targetListForGame.tasks.length - uniqueTasks.length;
+                                               if (uniqueTasks.length === 0) {
+                                                   showAlert("Duplicate Tasks", `All tasks from "${targetListForGame.name}" are already in "${g.name}"!`);
+                                                   return;
+                                               }
+                                               
+                                               showConfirm(
+                                                   "Duplicate Tasks Found",
+                                                   `${duplicates} tasks are already in "${g.name}". Add the remaining ${uniqueTasks.length} tasks?`,
+                                                   () => {
+                                                       onAddTasksToGame?.(g.id, uniqueTasks);
+                                                       setTargetListForGame(null);
+                                                   }
+                                               );
+                                           } else {
+                                               onAddTasksToGame?.(g.id, targetListForGame.tasks); 
+                                               setTargetListForGame(null);
+                                           }
+                                       }} 
+                                       className="w-full text-left p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-orange-500/50 rounded-xl transition-all group shadow-md hover:shadow-orange-500/10 flex justify-between items-center"
+                                   >
+                                       <div>
+                                            <h4 className="font-bold text-white text-sm uppercase group-hover:text-orange-500 transition-colors">{g.name}</h4>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase mt-1 flex items-center gap-2">
+                                                <Calendar className="w-3 h-3" /> {new Date(g.client?.playingDate || g.createdAt).toLocaleDateString()}
+                                            </p>
+                                       </div>
+                                       <div className="flex items-center gap-2">
+                                           <span className="text-[10px] bg-slate-900 text-slate-400 px-2 py-1 rounded font-bold uppercase border border-slate-700">
+                                               {g.points.length} TASKS
+                                           </span>
+                                           <ArrowLeft className="w-4 h-4 text-orange-500 rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                       </div>
+                                   </button>
+                               ))
+                           )}
+                       </div>
+                   </div>
+                </div>
+            )}
 
             {aiMode && (
                 <AiTaskGenerator 
@@ -793,6 +1008,35 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                     onAddToLibrary={(tasks) => handleAiResult(tasks)} // Same logic for now
                     targetMode={aiMode}
                 />
+            )}
+
+            {/* Custom Modal Rendering */}
+            {confirmDialog && confirmDialog.isOpen && (
+                <div className="fixed inset-0 z-[7000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+                    <div className="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center animate-in zoom-in-95">
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${confirmDialog.isAlert ? 'bg-orange-900/20 text-orange-500' : 'bg-blue-900/20 text-blue-500'}`}>
+                            <AlertTriangle className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">{confirmDialog.title}</h3>
+                        <p className="text-sm text-slate-400 font-medium mb-6">{confirmDialog.message}</p>
+                        <div className="flex gap-3">
+                            {!confirmDialog.isAlert && (
+                                <button 
+                                    onClick={() => setConfirmDialog(null)}
+                                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl font-bold uppercase text-xs tracking-widest transition-colors"
+                                >
+                                    CANCEL
+                                </button>
+                            )}
+                            <button 
+                                onClick={confirmDialog.onConfirm}
+                                className={`flex-1 py-3 text-white rounded-xl font-bold uppercase text-xs tracking-widest transition-colors ${confirmDialog.isAlert ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                            >
+                                {confirmDialog.isAlert ? 'OK' : 'CONFIRM'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

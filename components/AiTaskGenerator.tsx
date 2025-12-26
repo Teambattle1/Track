@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkles, AlertCircle, Ban, Edit2, Globe, Tag, Image as ImageIcon, Home, Search, Hash, Save, Library, Gamepad2, Map, LayoutGrid, ArrowRight, LayoutList } from 'lucide-react';
-import { TaskTemplate, Playground, TaskList } from '../types';
+import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkles, AlertCircle, Ban, Edit2, Globe, Tag, Image as ImageIcon, Home, Search, Hash, Save, Library, Gamepad2, Map, LayoutGrid, ArrowRight, LayoutList, Settings2, Target, Circle, Palette, MapPin } from 'lucide-react';
+import { TaskTemplate, Playground, TaskList, IconId } from '../types';
 import { generateAiTasks, generateAiImage, searchLogoUrl } from '../services/ai';
 import { ICON_COMPONENTS } from '../utils/icons';
 
@@ -30,6 +30,17 @@ const LANGUAGES = [
   '🇮🇱 Hebrew (Ivrit)'
 ];
 
+const BATCH_COLORS = [
+    { name: 'None', value: '' },
+    { name: 'Emerald', value: '#10b981' },
+    { name: 'Blue', value: '#3b82f6' },
+    { name: 'Red', value: '#ef4444' },
+    { name: 'Orange', value: '#f97316' },
+    { name: 'Purple', value: '#8b5cf6' },
+    { name: 'Gray', value: '#64748b' },
+    { name: 'Yellow', value: '#eab308' },
+];
+
 const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, onAddToLibrary, onAddTasksToList, onCreateListWithTasks, playgrounds = [], taskLists = [], initialPlaygroundId = null, targetMode = 'GAME' }) => {
   const [topic, setTopic] = useState('');
   const [language, setLanguage] = useState('🇩🇰 Danish (Dansk)');
@@ -53,6 +64,12 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [selectedTaskListId, setSelectedTaskListId] = useState<string>('');
   const [newListName, setNewListName] = useState('');
   const [saveToLibrary, setSaveToLibrary] = useState(true);
+
+  // Batch Settings
+  const [batchIcon, setBatchIcon] = useState<IconId | 'auto'>('auto');
+  const [batchColor, setBatchColor] = useState<string>('');
+  const [batchRadius, setBatchRadius] = useState<number>(30);
+  const [batchPoints, setBatchPoints] = useState<number>(100);
 
   // If mode is LIST or LIBRARY, default behavior adjustments
   useEffect(() => {
@@ -177,36 +194,47 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const handleSaveApproved = () => {
       if (approvedTasks.length === 0) return;
 
+      // Apply batch settings
+      const finalTasks = approvedTasks.map(t => ({
+          ...t,
+          iconId: batchIcon !== 'auto' ? batchIcon : t.iconId,
+          points: batchPoints,
+          // We attach these as custom properties that onAddTasks in App.tsx will look for
+          // Using casting to bypass strict TaskTemplate check for these transient props
+          radiusMeters: batchRadius,
+          areaColor: batchColor
+      })) as TaskTemplate[];
+
       // 1. Add to Game (Map or Playground)
       if (targetMode === 'GAME') {
           if (destinationType === 'MAP') {
-              onAddTasks(approvedTasks, null);
+              onAddTasks(finalTasks, null);
           } else {
               // 'PLAYGROUND'
               // selectedPlaygroundId could be 'CREATE_NEW' or an ID
-              onAddTasks(approvedTasks, selectedPlaygroundId);
+              onAddTasks(finalTasks, selectedPlaygroundId);
           }
       } 
       // 2. Add to Library
       else if (targetMode === 'LIBRARY' && onAddToLibrary) {
-          onAddToLibrary(approvedTasks);
+          onAddToLibrary(finalTasks);
       }
       // 3. Add to List / Create List
       else if (targetMode === 'LIST') {
           if (selectedTaskListId === 'NEW') {
               if (onCreateListWithTasks && newListName) {
-                  onCreateListWithTasks(newListName, approvedTasks);
+                  onCreateListWithTasks(newListName, finalTasks);
               }
           } else {
               if (onAddTasksToList && selectedTaskListId) {
-                  onAddTasksToList(selectedTaskListId, approvedTasks);
+                  onAddTasksToList(selectedTaskListId, finalTasks);
               }
           }
       }
 
       // Also save to library if checkbox checked (and we didn't just do it via LIBRARY mode)
       if (saveToLibrary && targetMode !== 'LIBRARY' && onAddToLibrary) {
-          onAddToLibrary(approvedTasks);
+          onAddToLibrary(finalTasks);
       }
 
       onClose();
@@ -409,6 +437,80 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                             >
                                 {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
                             </select>
+                        </div>
+
+                        {/* Batch Settings */}
+                        <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-1">
+                                <Settings2 className="w-3 h-3" /> TASK DEFAULTS
+                            </label>
+                            
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div>
+                                    <label className="text-[9px] font-bold text-slate-500 uppercase mb-1 block">POINTS</label>
+                                    <div className="flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2">
+                                        <Target className="w-3 h-3 text-orange-500 mr-2" />
+                                        <input 
+                                            type="number"
+                                            value={batchPoints}
+                                            onChange={(e) => setBatchPoints(parseInt(e.target.value))}
+                                            className="w-full bg-transparent py-2 text-white font-bold text-xs outline-none"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-bold text-slate-500 uppercase mb-1 block">RADIUS (M)</label>
+                                    <div className="flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2">
+                                        <Circle className="w-3 h-3 text-blue-500 mr-2" />
+                                        <input 
+                                            type="number"
+                                            value={batchRadius}
+                                            onChange={(e) => setBatchRadius(parseInt(e.target.value))}
+                                            className="w-full bg-transparent py-2 text-white font-bold text-xs outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="text-[9px] font-bold text-slate-500 uppercase mb-1 block flex items-center gap-1"><MapPin className="w-3 h-3" /> ICON</label>
+                                <div className="grid grid-cols-5 gap-1.5">
+                                    <button 
+                                        onClick={() => setBatchIcon('auto')}
+                                        className={`aspect-square rounded border flex items-center justify-center transition-all ${batchIcon === 'auto' ? 'bg-purple-600 border-purple-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500'}`}
+                                        title="AI Auto-Select"
+                                    >
+                                        <Sparkles className="w-4 h-4" />
+                                    </button>
+                                    {Object.keys(ICON_COMPONENTS).slice(0, 4).map((iconKey) => {
+                                        const Icon = ICON_COMPONENTS[iconKey as IconId];
+                                        return (
+                                            <button
+                                                key={iconKey}
+                                                onClick={() => setBatchIcon(iconKey as IconId)}
+                                                className={`aspect-square rounded border flex items-center justify-center transition-all ${batchIcon === iconKey ? 'bg-orange-600 border-orange-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500'}`}
+                                            >
+                                                <Icon className="w-4 h-4" />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-[9px] font-bold text-slate-500 uppercase mb-1 block flex items-center gap-1"><Palette className="w-3 h-3" /> AREA COLOR</label>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {BATCH_COLORS.map((c) => (
+                                        <button 
+                                            key={c.name}
+                                            onClick={() => setBatchColor(c.value)}
+                                            className={`w-5 h-5 rounded-full border-2 transition-all ${batchColor === c.value ? 'border-white scale-110 shadow-sm' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}
+                                            style={{ backgroundColor: c.value || '#334155' }}
+                                            title={c.name}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <button 

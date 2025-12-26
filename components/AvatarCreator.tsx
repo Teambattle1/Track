@@ -7,9 +7,11 @@ interface AvatarCreatorProps {
     onConfirm: (base64: string) => void;
     onCancel?: () => void;
     initialImage?: string | null;
+    title?: string;
+    placeholder?: string;
 }
 
-const AvatarCreator: React.FC<AvatarCreatorProps> = ({ onConfirm, onCancel, initialImage }) => {
+const AvatarCreator: React.FC<AvatarCreatorProps> = ({ onConfirm, onCancel, initialImage, title = "CREATE YOUR AGENT", placeholder = "e.g. Cyberpunk ninja cat blue" }) => {
     const [keywords, setKeywords] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(initialImage || null);
@@ -42,7 +44,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ onConfirm, onCancel, init
     return (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95">
             <h3 className="text-lg font-black text-white uppercase tracking-widest mb-4 text-center">
-                CREATE YOUR AGENT
+                {title}
             </h3>
 
             <div className="flex justify-center mb-6">
@@ -63,14 +65,14 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ onConfirm, onCancel, init
             <div className="space-y-4">
                 <div>
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
-                        DESCRIBE YOURSELF (5 WORDS)
+                        DESCRIBE (5 WORDS)
                     </label>
                     <div className="flex gap-2">
                         <input 
                             type="text" 
                             value={keywords}
                             onChange={(e) => setKeywords(e.target.value)}
-                            placeholder="e.g. Cyberpunk ninja cat blue"
+                            placeholder={placeholder}
                             className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-bold outline-none focus:border-orange-500 transition-colors"
                             onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
                         />
@@ -110,7 +112,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ onConfirm, onCancel, init
                             onClick={() => onConfirm(previewImage)}
                             className="py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-black uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-green-900/20"
                         >
-                            <CheckCircle className="w-3 h-3" /> COOL, LETS GO!
+                            <CheckCircle className="w-3 h-3" /> CONFIRM
                         </button>
                     </div>
                 )}

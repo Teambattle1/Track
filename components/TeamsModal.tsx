@@ -3,7 +3,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Team, Game, ChatMessage, GamePoint } from '../types';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
-import { X, Users, RefreshCw, Hash, ChevronRight, Calendar, Clock, CheckCircle, ChevronDown, Anchor, Play, Edit2, Check, AlertCircle, Camera, Shield, MessageSquare, MapPin, LayoutGrid, CheckSquare, Upload, User, ToggleLeft, ToggleRight, List, AlertTriangle, Radio, Crown, Trophy, Star } from 'lucide-react';
+import { X, Users, RefreshCw, Hash, ChevronRight, Calendar, Clock, CheckCircle, ChevronDown, Anchor, Play, Edit2, Check, AlertCircle, Camera, Shield, MessageSquare, MapPin, LayoutGrid, CheckSquare, Upload, User, ToggleLeft, ToggleRight, List, AlertTriangle, Radio, Crown, Trophy, Star, Activity, PauseCircle, XCircle } from 'lucide-react';
 import AvatarCreator from './AvatarCreator';
 
 interface TeamsModalProps {
@@ -86,6 +86,11 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
 
   useEffect(() => {
     loadTeams(gameId);
+    // Refresh status periodically
+    const interval = setInterval(() => {
+       if (gameId) loadTeams(gameId); 
+    }, 60000); // 1 minute refresh
+    return () => clearInterval(interval);
   }, [gameId]);
 
   // Auto-open target team if provided
@@ -110,7 +115,10 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
   };
 
   const handleMakeCaptain = async (memberDeviceId: string) => {
-      if (!activeLobbyView || !memberDeviceId) return;
+      if (!activeLobbyView || !memberDeviceId) {
+          console.warn("Cannot promote: No active lobby or missing device ID", { activeLobbyView, memberDeviceId });
+          return;
+      }
       if (!confirm("Promote this member to Captain? You will lose command.")) return;
       
       await db.updateTeamCaptain(activeLobbyView.id, memberDeviceId);
@@ -142,19 +150,9 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
       setActiveLobbyView(prev => {
           if (!prev) return null;
           const newMembers = prev.members.map(m => {
-              let mId = '';
-              if (typeof m === 'string') {
-                  try {
-                      const p = JSON.parse(m);
-                      mId = p.deviceId || p.DEVICEID || '';
-                  } catch { mId = ''; }
-              } else {
-                  mId = m.deviceId;
-              }
-
-              if (mId === avatarTargetMemberId) {
-                  const mName = typeof m === 'string' ? (JSON.parse(m).name || m) : m.name;
-                  return { name: mName, deviceId: mId, photo: base64 };
+              const { deviceId, name } = resolveMember(m);
+              if (deviceId === avatarTargetMemberId) {
+                  return { name, deviceId, photo: base64 };
               }
               return m;
           });
@@ -169,23 +167,6 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
       setAvatarTargetMemberId(memberId);
       setShowAvatarModal(true);
   };
-
-  const filteredGames = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const gamesArr = Array.isArray(games) ? games : [];
-    
-    return gamesArr.filter(g => {
-        const gDate = new Date(g.createdAt);
-        gDate.setHours(0, 0, 0, 0);
-        const isCompleted = g.points?.length > 0 && g.points.every(p => p.isCompleted);
-        if (tab === 'COMPLETED') return isCompleted;
-        if (isCompleted) return false; 
-        if (tab === 'TODAY') return gDate.getTime() === today.getTime();
-        if (tab === 'PLANNED') return gDate.getTime() !== today.getTime();
-        return true;
-    }).sort((a, b) => b.createdAt - a.createdAt);
-  }, [games, tab]);
 
   // Helper to calculate team progress breakdown
   const getTeamProgress = (team: Team) => {
@@ -216,32 +197,80 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
       };
   };
 
-  // Helper to safely parse member data from potentially mixed formats
+  // --- TEAM STATUS LOGIC ---
+  const getTeamStatusConfig = (team: Team) => {
+      if (!team.isStarted) {
+          return { label: 'LOBBY', color: 'bg-amber-500/20 text-amber-400', icon: Clock, animate: false };
+      }
+
+      const now = Date.now();
+      const lastUpdate = new Date(team.updatedAt).getTime();
+      const diffMinutes = (now - lastUpdate) / (1000 * 60);
+
+      if (diffMinutes > 30) {
+          return { label: 'INACTIVE', color: 'bg-red-500/20 text-red-400', icon: XCircle, animate: false };
+      }
+      if (diffMinutes > 10) {
+          return { label: 'IDLE', color: 'bg-yellow-500/20 text-yellow-400', icon: PauseCircle, animate: false };
+      }
+      return { label: 'ACTIVE', color: 'bg-green-500/20 text-green-400', icon: Activity, animate: true };
+  };
+
+  // Robustly parse member data handling double/triple serialization
   const resolveMember = (m: any) => {
+      // 1. Unwind serialization layers
+      let data = m;
+      // Loop a few times to unwrap nested JSON strings (e.g. "{\"name\":\"...\"}")
+      let attempts = 0;
+      while (typeof data === 'string' && (data.trim().startsWith('{') || data.trim().startsWith('"')) && attempts < 5) {
+          try {
+              const parsed = JSON.parse(data);
+              data = parsed;
+          } catch {
+              break; 
+          }
+          attempts++;
+      }
+
+      // 2. Default values
       let name = "Unknown Agent";
       let deviceId = "";
       let photo = null;
 
-      if (typeof m === 'string') {
-          // Try to parse if it looks like JSON (starts with {)
-          if (m.trim().startsWith('{')) {
-              try {
-                  const parsed = JSON.parse(m);
-                  // Handle uppercase keys from legacy data
-                  name = parsed.name || parsed.NAME || parsed.Name || m;
-                  deviceId = parsed.deviceId || parsed.DEVICEID || parsed.DeviceId || "";
-                  photo = parsed.photo || parsed.PHOTO || parsed.Photo || null;
-              } catch (e) {
-                  name = m; // Fallback to raw string
+      if (typeof data === 'object' && data !== null) {
+          // 3. Extract fields (handle case sensitivity and potential nested JSON in name field)
+          const candidateName = data.name || data.NAME || data.Name;
+          const candidateId = data.deviceId || data.DEVICEID || data.DeviceId;
+          const candidatePhoto = data.photo || data.PHOTO || data.Photo;
+
+          // Attempt to fix nested name objects if present
+          if (candidateName) {
+              if (typeof candidateName === 'string' && candidateName.trim().startsWith('{')) {
+                  try {
+                      const parsedNameObj = JSON.parse(candidateName);
+                      name = parsedNameObj.name || parsedNameObj.NAME || "Unknown";
+                      // Opportunistic ID recovery if ID is missing at top level
+                      if (!candidateId && (parsedNameObj.deviceId || parsedNameObj.DEVICEID)) {
+                          deviceId = parsedNameObj.deviceId || parsedNameObj.DEVICEID;
+                      }
+                  } catch {
+                      name = candidateName;
+                  }
+              } else if (typeof candidateName === 'object') {
+                  name = candidateName.name || candidateName.NAME || "Unknown";
+              } else {
+                  name = String(candidateName);
               }
-          } else {
-              name = m;
           }
-      } else if (typeof m === 'object' && m !== null) {
-          name = m.name || "Unknown";
-          deviceId = m.deviceId || "";
-          photo = m.photo || null;
+
+          if (candidateId) deviceId = candidateId;
+          if (candidatePhoto) photo = candidatePhoto;
+
+      } else {
+          // Fallback if data ended up as a primitive string
+          name = String(data);
       }
+
       return { name, deviceId, photo };
   };
 
@@ -288,6 +317,8 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                           {sortedTeams.map((team, idx) => {
                               const stats = getTeamProgress(team);
                               const rank = idx + 1;
+                              const statusConfig = getTeamStatusConfig(team);
+                              const StatusIcon = statusConfig.icon;
                               
                               return (
                                   <div 
@@ -319,8 +350,9 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                                   <span className="text-[10px] font-bold text-slate-300 bg-black/50 px-2 py-0.5 rounded backdrop-blur-sm uppercase flex items-center gap-1">
                                                       <Users className="w-3 h-3" /> {team.members.length} MEMBERS
                                                   </span>
-                                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm uppercase ${team.isStarted ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                      {team.isStarted ? 'ACTIVE' : 'LOBBY'}
+                                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm uppercase flex items-center gap-1 ${statusConfig.color}`}>
+                                                      <StatusIcon className={`w-3 h-3 ${statusConfig.animate ? 'animate-pulse' : ''}`} />
+                                                      {statusConfig.label}
                                                   </span>
                                               </div>
                                           </div>
@@ -399,9 +431,8 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
           msg.targetTeamId === activeLobbyView.id
       ).slice(-15); // Show last 15 messages
 
-      const unreadCount = teamChats.length; // Simplified for now, could track last read
+      const unreadCount = teamChats.length; 
 
-      // Determine visibility settings
       const showRankingsToPlayers = isAdmin || (activeGame?.showRankingToPlayers || false);
       const showTaskDetails = isAdmin || (activeGame?.showTaskDetailsToPlayers);
 
@@ -412,23 +443,26 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
           points: activeGame.points.filter(p => p.playgroundId === pg.id)
       })) || [];
 
-      // Extract Bonus Tasks (items in completedPointIds starting with 'bonus-')
       const bonusIds = activeLobbyView.completedPointIds?.filter(id => id.startsWith('bonus-')) || [];
 
       // Calculate Rank
       const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
       const myRank = sortedTeams.findIndex(t => t.id === activeLobbyView.id) + 1;
+      const hasRankings = sortedTeams.length > 0;
+
+      // Status for Single View
+      const statusConfig = getTeamStatusConfig(activeLobbyView);
+      const StatusIcon = statusConfig.icon;
 
       // Sort Members: Captain first
       const sortedMembers = [...activeLobbyView.members].sort((a, b) => {
-          const aId = typeof a === 'string' ? '' : a.deviceId;
-          const bId = typeof b === 'string' ? '' : b.deviceId;
-          if (aId === activeLobbyView.captainDeviceId) return -1;
-          if (bId === activeLobbyView.captainDeviceId) return 1;
+          const aRes = resolveMember(a);
+          const bRes = resolveMember(b);
+          if (aRes.deviceId === activeLobbyView.captainDeviceId) return -1;
+          if (bRes.deviceId === activeLobbyView.captainDeviceId) return 1;
           return 0;
       });
 
-      // Render a task row helper
       const renderTaskRow = (point: GamePoint) => {
           const isCompleted = activeLobbyView.completedPointIds?.includes(point.id);
           return (
@@ -463,8 +497,8 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                   <div className="p-4 sm:p-6 bg-slate-950 border-b border-slate-800 flex justify-between items-center relative z-10 shrink-0">
                       <div className="flex flex-col">
                           <div className="flex items-center gap-2">
-                              <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${activeLobbyView.isStarted ? 'text-green-500 animate-pulse' : 'text-orange-500'}`}>
-                                  {activeLobbyView.isStarted ? 'MISSION ACTIVE' : (isAdmin ? 'ADMIN GHOST MODE' : 'TEAM LOBBY')}
+                              <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${statusConfig.color}`}>
+                                  {statusConfig.label} {isAdmin && '(GHOST)'}
                               </span>
                               {myRank > 0 && (
                                   <span className="text-[10px] font-black uppercase tracking-widest bg-white/10 px-2 rounded text-white">
@@ -529,9 +563,9 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                   <div className="bg-black/40 px-3 py-1.5 rounded-lg text-xs font-black text-white mb-2 inline-block uppercase font-mono tracking-widest border border-white/10">
                                       JOIN CODE: {activeLobbyView.joinCode}
                                   </div>
-                                  <div className={`flex items-center justify-center sm:justify-start gap-2 text-[10px] font-black uppercase ${activeLobbyView.isStarted ? 'text-green-500' : 'text-amber-500'}`}>
-                                      {activeLobbyView.isStarted ? <Play className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                      {activeLobbyView.isStarted ? 'MISSION ACTIVE' : 'LOBBY STANDBY'}
+                                  <div className={`flex items-center justify-center sm:justify-start gap-2 text-[10px] font-black uppercase ${statusConfig.color}`}>
+                                      <StatusIcon className="w-3 h-3" />
+                                      {statusConfig.label}
                                   </div>
                                   <p className="text-[10px] text-slate-500 font-bold uppercase mt-2">
                                       {activeLobbyView.members.length} AGENTS DEPLOYED
@@ -589,11 +623,11 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                               </div>
                                               
                                               <div className="text-center w-full mt-1.5 px-1">
-                                                  <h4 className="font-black text-white text-[10px] uppercase truncate w-full">{name || 'AGENT'}</h4>
+                                                  <h4 className="font-black text-white text-[10px] uppercase truncate w-full">{name}</h4>
                                                   {isMemberCaptain && <span className="text-[8px] font-bold text-yellow-500 uppercase block leading-none mt-0.5">CAPTAIN</span>}
                                                   
                                                   {/* Actions: Enable Promote for Admin OR Current Captain */}
-                                                  {(isAdmin || isCaptain) && !isMemberCaptain && (
+                                                  {(isAdmin || isCaptain) && !isMemberCaptain && deviceId && (
                                                       <button 
                                                         onClick={() => handleMakeCaptain(deviceId)} 
                                                         className="mt-1 text-[8px] font-bold text-slate-500 hover:text-white uppercase border border-slate-700 hover:border-white px-1 rounded transition-colors w-full"
@@ -660,9 +694,13 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                       <div className="mb-4">
                                           <button 
                                               onClick={() => setShowLeaderboard(!showLeaderboard)}
-                                              className={`w-full py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${showLeaderboard ? 'bg-purple-900/30 border-purple-500 text-purple-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'}`}
+                                              className={`w-full py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all 
+                                                  ${showLeaderboard 
+                                                      ? 'bg-purple-900/30 border-purple-500 text-purple-400' 
+                                                      : (hasRankings ? 'bg-slate-800 border-purple-500/50 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white')
+                                                  }`}
                                           >
-                                              <Trophy className="w-3 h-3" /> {showLeaderboard ? 'HIDE RANKING LIST' : 'SHOW RANKING LIST'}
+                                              <Trophy className={`w-3 h-3 ${hasRankings && !showLeaderboard ? 'text-purple-400' : ''}`} /> {showLeaderboard ? 'HIDE RANKING LIST' : 'SHOW RANKING LIST'}
                                           </button>
                                       </div>
                                   )}
@@ -778,9 +816,8 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
       );
   }
 
-  // --- STANDARD GAME PICKER (Fallback) --- (Omitted as requested to focus on lobby changes, but logically stays similar)
-  // ... (Existing fallback code for game picker if no gameId provided) ...
-  return null; // Should not reach here if gameId is provided
+  // --- STANDARD GAME PICKER (Fallback) --- 
+  return null;
 };
 
 export default TeamsModal;

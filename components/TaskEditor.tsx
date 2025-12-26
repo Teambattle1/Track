@@ -86,6 +86,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     completionLogic: point.completionLogic || 'remove_any',
     instructorNotes: point.instructorNotes || '',
     isHiddenBeforeScan: point.isHiddenBeforeScan || false,
+    radiusMeters: point.radiusMeters || 30, // Ensure radius default
     task: {
         type: 'text',
         options: [],
@@ -155,6 +156,22 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
       setIsGeneratingImage(false);
   };
 
+  const handleGenerateIcon = async () => {
+      const keyword = prompt("Enter a keyword for the icon generation:", editedPoint.title || "");
+      if (!keyword) return;
+
+      setIsGeneratingImage(true);
+      try {
+          const prompt = `A simple, flat vector icon representing: "${keyword}". Minimalist design, solid color, white background, high contrast, suitable for a map pin.`;
+          const img = await generateAiImage(prompt, 'icon');
+          if (img) setEditedPoint(prev => ({ ...prev, iconUrl: img }));
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setIsGeneratingImage(false);
+      }
+  };
+
   const handlePinIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
@@ -183,7 +200,6 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     if (!editedPoint.tags || editedPoint.tags.length === 0) {
         setTagError(true);
         setActiveTab('GENERAL');
-        // Scroll to top or highlight
         return;
     }
     onSave(editedPoint);
@@ -193,7 +209,6 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     const { type, options, answer } = editedPoint.task;
     const correctAnswers = editedPoint.task.correctAnswers || [];
     
-    // ... existing logic for type config (unchanged) ...
     const addOption = () => setEditedPoint(prev => ({...prev, task: {...prev.task, options: [...(prev.task.options||[]), `Option ${(prev.task.options?.length||0)+1}`]}}));
     
     const updateOption = (i: number, val: string) => {
@@ -240,7 +255,6 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                 task: { ...editedPoint.task, correctAnswers: newAnswers }
             });
         } else {
-            // Single choice types
             setEditedPoint({
                 ...editedPoint, 
                 task: { ...editedPoint.task, answer: opt }
@@ -252,7 +266,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
         return (
             <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">CORRECT ANSWER</label>
-                <input type="text" value={editedPoint.task.answer || ''} onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, answer: e.target.value}})} className="w-full p-2 border rounded bg-white dark:bg-gray-700"/>
+                <input type="text" value={editedPoint.task.answer || ''} onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, answer: e.target.value}})} className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"/>
             </div>
         );
     }
@@ -310,7 +324,6 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
         </div>
 
         {isCropping && pendingImage ? (
-           // ... (Cropping UI unchanged) ...
            <div className="flex flex-col h-full bg-black p-4">
               <div className="relative flex-1 rounded-xl overflow-hidden mb-4 border border-gray-700">
                   <Cropper 
@@ -417,7 +430,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                <div>
                                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">TYPE</label>
                                    <div className="relative">
-                                       <select value={editedPoint.task.type} onChange={(e) => setEditedPoint({ ...editedPoint, task: { ...editedPoint.task, type: e.target.value as any } })} className="w-full px-4 py-2.5 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none appearance-none cursor-pointer">
+                                       <select value={editedPoint.task.type} onChange={(e) => setEditedPoint({ ...editedPoint, task: { ...editedPoint.task, type: e.target.value as any } })} className="w-full px-4 py-2.5 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none appearance-none cursor-pointer text-sm">
                                            <option value="text">TEXT INPUT</option>
                                            <option value="multiple_choice">QUIZ (MC)</option>
                                            <option value="boolean">YES / NO</option>
@@ -430,7 +443,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                </div>
                                <div>
                                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">POINTS</label>
-                                   <input type="number" value={editedPoint.points} onChange={(e) => setEditedPoint({ ...editedPoint, points: parseInt(e.target.value) || 0 })} className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none transition-all"/>
+                                   <input type="number" value={editedPoint.points} onChange={(e) => setEditedPoint({ ...editedPoint, points: parseInt(e.target.value) || 0 })} className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none transition-all text-sm"/>
                                </div>
                            </div>
                            <div className="p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl border border-orange-100 dark:border-orange-900/30">
@@ -439,7 +452,6 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                        </div>
                    )}
 
-                   {/* Other tabs remain the same as previous implementation */}
                    {activeTab === 'IMAGE' && (
                        <div className="space-y-6">
                            <div>
@@ -480,25 +492,132 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
                    {activeTab === 'SETTINGS' && (
                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-                           {/* ... Settings Content (Time, Language, Pin, Area) same as previous ... */}
-                           {/* For brevity, reusing the structure from previous implementation */}
-                           <div className="space-y-4">
-                               <div>
-                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
-                                       Time limit <span className="text-gray-300 italic normal-case">- optional</span> <Info className="w-3 h-3" />
-                                   </label>
-                                   <div className="flex">
-                                       <input 
-                                            type="number" 
-                                            placeholder="Set time limit in seconds"
-                                            value={editedPoint.settings?.timeLimitSeconds || ''}
-                                            onChange={(e) => setEditedPoint({...editedPoint, settings: {...editedPoint.settings, timeLimitSeconds: parseInt(e.target.value) || undefined }})}
-                                            className="w-full px-4 py-3 border-2 border-r-0 dark:border-gray-700 rounded-l-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-orange-500 transition-all"
-                                       />
-                                       <span className="bg-gray-100 dark:bg-gray-700 border-2 dark:border-gray-700 border-l-0 rounded-r-xl px-4 flex items-center text-sm font-bold text-gray-500 uppercase">seconds</span>
-                                   </div>
+                           
+                           {/* RADIUS */}
+                           <div>
+                               <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 block flex justify-between">
+                                   <span>TRIGGER RADIUS</span>
+                                   <span className="text-white font-bold">{editedPoint.radiusMeters}m</span>
+                               </label>
+                               <div className="flex items-center gap-4">
+                                   <MapPin className="w-5 h-5 text-slate-500" />
+                                   <input 
+                                       type="range" 
+                                       min="5" 
+                                       max="200" 
+                                       step="5" 
+                                       value={editedPoint.radiusMeters} 
+                                       onChange={(e) => setEditedPoint({...editedPoint, radiusMeters: parseInt(e.target.value)})}
+                                       className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-600"
+                                   />
                                </div>
-                               {/* ... other settings ... */}
+                           </div>
+
+                           {/* MAP ICON */}
+                           <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                               <div className="flex justify-between items-center mb-3">
+                                   <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">MAP PIN ICON</label>
+                                   <div className="flex gap-2">
+                                       <button 
+                                           type="button" 
+                                           onClick={handleGenerateIcon}
+                                           disabled={isGeneratingImage}
+                                           className="text-[9px] font-black bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded flex items-center gap-1 transition-colors"
+                                       >
+                                           {isGeneratingImage ? <Loader2 className="w-3 h-3 animate-spin"/> : <Wand2 className="w-3 h-3" />} AI GEN
+                                       </button>
+                                       <button 
+                                           type="button" 
+                                           onClick={() => pinIconInputRef.current?.click()}
+                                           className="text-[9px] font-black bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 px-2 py-1 rounded flex items-center gap-1 transition-colors"
+                                       >
+                                           <Upload className="w-3 h-3" /> UPLOAD
+                                       </button>
+                                   </div>
+                                   <input ref={pinIconInputRef} type="file" accept="image/*" className="hidden" onChange={handlePinIconUpload} />
+                               </div>
+                               
+                               <div className="grid grid-cols-6 gap-2">
+                                   {Object.keys(ICON_COMPONENTS).map(iconKey => {
+                                       const Icon = ICON_COMPONENTS[iconKey as IconId];
+                                       const isActive = editedPoint.iconId === iconKey && !editedPoint.iconUrl;
+                                       return (
+                                           <button
+                                               key={iconKey}
+                                               type="button"
+                                               onClick={() => setEditedPoint({...editedPoint, iconId: iconKey as IconId, iconUrl: undefined})}
+                                               className={`aspect-square rounded-xl flex items-center justify-center transition-all ${isActive ? 'bg-orange-600 text-white shadow-lg scale-105' : 'bg-white dark:bg-slate-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                                           >
+                                               <Icon className="w-5 h-5" />
+                                           </button>
+                                       )
+                                   })}
+                               </div>
+                               
+                               {editedPoint.iconUrl && (
+                                   <div className="mt-4 flex items-center gap-3 p-3 bg-slate-200 dark:bg-slate-900 rounded-xl border border-orange-500/50">
+                                       <img src={editedPoint.iconUrl} className="w-10 h-10 rounded-full object-cover border-2 border-orange-500" />
+                                       <span className="text-xs font-bold text-orange-600 dark:text-orange-400 flex-1">CUSTOM ICON ACTIVE</span>
+                                       <button type="button" onClick={() => setEditedPoint({...editedPoint, iconUrl: undefined})} className="p-2 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-lg hover:bg-red-200"><Trash2 className="w-4 h-4" /></button>
+                                   </div>
+                               )}
+                           </div>
+
+                           {/* AREA COLOR */}
+                           <div>
+                               <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 mb-3 block uppercase tracking-widest">AREA COLOR (GEOFENCE)</label>
+                               <div className="flex flex-wrap gap-3">
+                                   <button 
+                                       type="button"
+                                       onClick={() => setEditedPoint({...editedPoint, areaColor: undefined})}
+                                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${!editedPoint.areaColor ? 'border-white scale-110 shadow' : 'border-slate-600 opacity-50'}`}
+                                       title="Default"
+                                   >
+                                       <div className="w-full h-0.5 bg-slate-500 rotate-45" />
+                                   </button>
+                                   {AREA_COLORS.map(c => (
+                                       <button
+                                           key={c.value}
+                                           type="button"
+                                           onClick={() => setEditedPoint({...editedPoint, areaColor: c.value})}
+                                           className={`w-8 h-8 rounded-full border-2 transition-all ${editedPoint.areaColor === c.value ? 'border-white scale-110 shadow' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                                           style={{ backgroundColor: c.value }}
+                                           title={c.name}
+                                       />
+                                   ))}
+                               </div>
+                           </div>
+
+                           {/* OTHER SETTINGS (Language, Time Limit) */}
+                           <div className="grid grid-cols-2 gap-4">
+                                {/* Time Limit (Existing) */}
+                                <div>
+                                  <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
+                                      Time limit <Info className="w-3 h-3" />
+                                  </label>
+                                  <div className="flex">
+                                      <input 
+                                           type="number" 
+                                           value={editedPoint.settings?.timeLimitSeconds || ''}
+                                           onChange={(e) => setEditedPoint({...editedPoint, settings: {...editedPoint.settings, timeLimitSeconds: parseInt(e.target.value) || undefined }})}
+                                           className="w-full px-4 py-3 border-2 border-r-0 dark:border-gray-700 rounded-l-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-orange-500 transition-all text-sm"
+                                           placeholder="∞"
+                                      />
+                                      <span className="bg-gray-100 dark:bg-gray-700 border-2 dark:border-gray-700 border-l-0 rounded-r-xl px-3 flex items-center text-[10px] font-bold text-gray-500 uppercase">SEC</span>
+                                  </div>
+                              </div>
+
+                              {/* Language */}
+                              <div>
+                                  <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">LANGUAGE</label>
+                                  <select 
+                                       value={editedPoint.settings?.language || 'English'}
+                                       onChange={(e) => setEditedPoint({...editedPoint, settings: {...editedPoint.settings, language: e.target.value }})}
+                                       className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-orange-500 uppercase text-xs"
+                                  >
+                                      {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+                                  </select>
+                              </div>
                            </div>
                        </div>
                    )}

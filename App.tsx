@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   Game, GameState, GameMode, GamePoint, Coordinate, 
@@ -7,6 +8,7 @@ import * as db from './services/db';
 import { teamSync } from './services/teamSync';
 import { haversineMeters } from './utils/geo';
 import { seedDatabase, seedTeams } from './utils/demoContent';
+import { RotateCw, Loader2 } from 'lucide-react';
 
 // Components
 import GameMap, { GameMapHandle } from './components/GameMap';
@@ -44,6 +46,7 @@ import ChatDrawer from './components/ChatDrawer';
 import DangerZoneModal from './components/DangerZoneModal';
 import AdminModal from './components/AdminModal';
 import DeleteGamesModal from './components/DeleteGamesModal';
+import DeviceSimulator from './components/DeviceSimulator';
 
 // Constants
 const STORAGE_KEY_GAME_ID = 'geohunt_active_game_id';
@@ -69,6 +72,27 @@ const App: React.FC = () => {
       }
       return GameMode.PLAY;
   });
+
+  // Device State for Layout Enforcement
+  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  // Simulation State
+  const [simulatedDeviceConfig, setSimulatedDeviceConfig] = useState<{
+      type: 'mobile' | 'tablet';
+      orientation: 'portrait' | 'landscape';
+      active: boolean;
+      label: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
+      setIsMobile(window.innerWidth < 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [gameState, setGameState] = useState<GameState>({
     activeGameId: null,
@@ -140,6 +164,9 @@ const App: React.FC = () => {
   const [showContextMenu, setShowContextMenu] = useState<{ point: GamePoint } | null>(null);
   const [targetPlaygroundIdForTasks, setTargetPlaygroundIdForTasks] = useState<string | null>(null);
 
+  // Game Editing State
+  const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
+
   // Playground Template Editing
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [activeTemplateGame, setActiveTemplateGame] = useState<Game | null>(null);
@@ -159,6 +186,13 @@ const App: React.FC = () => {
   const activeGame = useMemo(() => 
     activeTemplateGame || (gameState.games.find(g => g.id === gameState.activeGameId) || null)
   , [gameState.games, gameState.activeGameId, activeTemplateGame]);
+
+  // Sync Map Style when Active Game Changes
+  useEffect(() => {
+      if (activeGame && activeGame.defaultMapStyle) {
+          setMapStyle(activeGame.defaultMapStyle);
+      }
+  }, [activeGame?.id]);
 
   const displayPoints = useMemo(() => {
       return activeGame ? activeGame.points : [];
@@ -305,6 +339,7 @@ const App: React.FC = () => {
       }
       localStorage.setItem(STORAGE_KEY_LAST_ACTIVE, Date.now().toString());
 
+      // Fetch Data
       const [fetchedGames, fetchedLibrary, fetchedLists] = await Promise.all([
         db.fetchGames(),
         db.fetchLibrary(),
@@ -321,18 +356,28 @@ const App: React.FC = () => {
           setGameState(prev => ({ ...prev, games: fetchedGames, taskLibrary: fetchedLibrary, taskLists: fetchedLists }));
       }
 
+      // Restore Session
       const storedGameId = localStorage.getItem(STORAGE_KEY_GAME_ID);
       const storedTeamName = localStorage.getItem(STORAGE_KEY_TEAM_NAME);
       const storedUserName = localStorage.getItem(STORAGE_KEY_USER_NAME);
-      // const storedMode = localStorage.getItem(STORAGE_KEY_MODE) as GameMode; // Handled by useState initializer
 
       if (storedGameId) {
-          setGameState(prev => ({ ...prev, activeGameId: storedGameId, teamName: storedTeamName || undefined, userName: storedUserName || undefined }));
-          if (storedTeamName && storedUserName) {
-              teamSync.connect(storedGameId, storedTeamName, storedUserName);
-              setShowLanding(false); 
-              setShowWelcome(false);
+          // Validation: Check if game still exists
+          const gameExists = fetchedGames.some(g => g.id === storedGameId);
+          if (gameExists) {
+              setGameState(prev => ({ ...prev, activeGameId: storedGameId, teamName: storedTeamName || undefined, userName: storedUserName || undefined }));
+              if (storedTeamName && storedUserName) {
+                  teamSync.connect(storedGameId, storedTeamName, storedUserName);
+                  setShowLanding(false); 
+                  setShowWelcome(false);
+              }
+          } else {
+              // Game deleted or invalid, clear session
+              localStorage.removeItem(STORAGE_KEY_GAME_ID);
+              setShowLanding(true);
           }
+      } else {
+          setShowLanding(true);
       }
 
       // Check if we should prompt for game chooser
@@ -492,6 +537,12 @@ const App: React.FC = () => {
       setMode(nextMode);
       localStorage.setItem(STORAGE_KEY_MODE, nextMode);
 
+      if (nextMode === GameMode.INSTRUCTOR) {
+          setShowInstructorDashboard(true);
+      } else {
+          setShowInstructorDashboard(false);
+      }
+
       if ((nextMode === GameMode.EDIT || nextMode === GameMode.INSTRUCTOR) && !gameState.activeGameId) {
           setShowGameChooser(true);
       }
@@ -507,6 +558,14 @@ const App: React.FC = () => {
       localStorage.setItem('geohunt_show_scores', String(newVal));
   };
 
+  // Logic for Back/Home button
+  const handleBackToHub = () => {
+      // ALWAYS Go to Hub (InitialLanding) when home is clicked
+      setShowLanding(true);
+      // Ensure Welcome screen is closed if open
+      setShowWelcome(false);
+  };
+
   const handleCreateGame = async (gameData: Partial<Game>, fromListId?: string) => {
       const newGame: Game = {
           id: `game-${Date.now()}`,
@@ -516,7 +575,8 @@ const App: React.FC = () => {
           dangerZones: [],
           createdAt: Date.now(),
           client: gameData.client,
-          timerConfig: gameData.timerConfig
+          timerConfig: gameData.timerConfig,
+          defaultMapStyle: gameData.defaultMapStyle || 'osm' // Ensure map style is saved
       };
 
       if (fromListId) {
@@ -539,6 +599,9 @@ const App: React.FC = () => {
       setGameState(prev => ({ ...prev, games: [...prev.games, newGame], activeGameId: newGame.id }));
       localStorage.setItem(STORAGE_KEY_GAME_ID, newGame.id);
       
+      // Update app state map style immediately
+      setMapStyle(newGame.defaultMapStyle || 'osm');
+
       setShowGameCreator(false);
       setShowGameChooser(false);
       setMode(GameMode.EDIT);
@@ -710,7 +773,7 @@ const App: React.FC = () => {
       }
   };
 
-  const handleLandingAction = (action: 'USERS' | 'TEAMS' | 'GAMES' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DELETE_GAMES') => {
+  const handleLandingAction = (action: 'USERS' | 'TEAMS' | 'GAMES' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR') => {
       switch(action) {
           case 'PLAY':
               setShowLanding(false);
@@ -804,6 +867,23 @@ const App: React.FC = () => {
           case 'DELETE_GAMES':
               setShowDeleteGamesModal(true);
               break;
+          case 'PREVIEW_TEAM':
+              // Changed to Landscape for Team Preview
+              setSimulatedDeviceConfig({ type: 'mobile', orientation: 'landscape', active: true, label: 'TEAM PREVIEW' });
+              setMode(GameMode.PLAY);
+              setShowLanding(false);
+              setShowWelcome(true);
+              break;
+          case 'PREVIEW_INSTRUCTOR':
+              if (!activeGame) {
+                  alert("Please select a game first.");
+                  return;
+              }
+              setSimulatedDeviceConfig({ type: 'tablet', orientation: 'landscape', active: true, label: 'INSTRUCTOR PREVIEW' });
+              setMode(GameMode.INSTRUCTOR);
+              setShowLanding(false);
+              setShowInstructorDashboard(true);
+              break;
       }
   };
 
@@ -876,7 +956,8 @@ const App: React.FC = () => {
               id: newPgId,
               title: 'New Template',
               buttonVisible: true,
-              iconId: 'default'
+              iconId: 'default',
+              location: { lat: 0, lng: 0 }
           }],
           createdAt: Date.now(),
           dangerZones: []
@@ -914,15 +995,42 @@ const App: React.FC = () => {
       return <ClientSubmissionView token={clientSubmissionToken} />;
   }
 
+  // --- RENDERING SAFEGUARDS ---
+  
+  if (loading) {
+      return (
+          <div className="fixed inset-0 z-[9999] bg-slate-900 flex flex-col items-center justify-center text-white">
+              <div className="w-16 h-16 rounded-full border-4 border-orange-600 border-t-transparent animate-spin mb-4" />
+              <div className="text-xl font-black uppercase tracking-widest animate-pulse">Initializing System</div>
+              <div className="text-xs text-slate-500 font-bold uppercase tracking-wide mt-2">v.2.0.0</div>
+          </div>
+      );
+  }
+
   // Find the DangerZone being edited
   const editingDangerZone = activeGame?.dangerZones?.find(z => z.id === editingDangerZoneId);
 
-  return (
-    <div className="w-full h-screen overflow-hidden bg-slate-900 text-white font-sans">
+  const MainContent = (
+    <div className="w-full h-full relative overflow-hidden bg-slate-900 text-white font-sans">
+      
+      {/* LANDSCAPE ENFORCEMENT OVERLAY */}
+      {mode === GameMode.PLAY && isMobile && isPortrait && !simulatedDeviceConfig && (
+          <div className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
+              <div className="w-24 h-24 mb-8 bg-slate-900 rounded-full flex items-center justify-center border-4 border-orange-500 animate-spin-slow">
+                  <RotateCw className="w-12 h-12 text-white" />
+              </div>
+              <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-4">ROTATE DEVICE</h1>
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-wide max-w-xs">
+                  This mission requires landscape orientation for optimal performance. Please turn your device.
+              </p>
+          </div>
+      )}
+
       {/* MAP LAYER */}
       <div className="absolute inset-0 z-0">
           {activeGame && (
               <GameMap 
+                  key={activeGame.id} // FORCE REMOUNT ON GAME SWITCH TO FIX BLANK SCREEN
                   ref={mapRef}
                   userLocation={gameState.userLocation}
                   points={displayPoints}
@@ -967,13 +1075,14 @@ const App: React.FC = () => {
               onSetMode={setMode} // New prop
               onOpenGameManager={() => setShowGameManager(true)}
               onOpenTaskMaster={() => { setTaskMasterTab('LIBRARY'); setShowTaskMaster(true); }}
-              onOpenTeams={() => setShowTeamsHub(true)}
+              onOpenTeams={() => {
+                  setTeamsModalAdmin(true);
+                  setShowTeamsModal(true);
+              }}
               mapStyle={mapStyle}
               onSetMapStyle={setMapStyle}
               language={language}
-              onBackToHub={() => {
-                  setShowLanding(true);
-              }}
+              onBackToHub={handleBackToHub} // Updated Handler
               activeGameName={activeGame?.name}
               onOpenInstructorDashboard={() => setShowInstructorDashboard(true)}
               isMeasuring={isMeasuring}
@@ -1003,6 +1112,13 @@ const App: React.FC = () => {
               targetPlaygroundId={targetPlaygroundId}
               onAddDangerZone={handleAddDangerZone} 
               activeDangerZone={activeDangerZone} 
+              onEditGameSettings={() => {
+                  if (activeGame) {
+                      setGameToEdit(activeGame);
+                      setShowGameCreator(true);
+                  }
+              }}
+              onOpenGameChooser={() => setShowGameChooser(true)}
           />
       )}
 
@@ -1158,8 +1274,25 @@ const App: React.FC = () => {
               onClose={() => setEditingPoint(null)}
               onClone={(p) => {
                   if (activeGame) {
-                      const clone = { ...p, id: `p-${Date.now()}`, location: { lat: p.location.lat + 0.0001, lng: p.location.lng + 0.0001 }, title: `${p.title} (Copy)` };
+                      const newId = `p-${Date.now()}`;
+                      const clone = { ...p, id: newId, title: `${p.title} (Copy)` };
+                      
+                      // Handle playground positioning offset so clone isn't hidden
+                      if (clone.playgroundId && clone.playgroundPosition) {
+                          clone.playgroundPosition = {
+                              x: Math.min(clone.playgroundPosition.x + 5, 95),
+                              y: Math.min(clone.playgroundPosition.y + 5, 95)
+                          };
+                      } else {
+                          // Handle map positioning offset
+                          clone.location = { 
+                              lat: clone.location.lat + 0.0001, 
+                              lng: clone.location.lng + 0.0001 
+                          };
+                      }
+
                       updateActiveGame({ ...activeGame, points: [...activeGame.points, clone] });
+                      setEditingPoint(null); // Close editor to show the new clone
                   }
               }}
           />
@@ -1250,6 +1383,7 @@ const App: React.FC = () => {
               }}
               onSaveTemplate={editingTemplateId ? savePlaygroundTemplate : undefined} // Only pass if in template mode
               isTemplateMode={!!editingTemplateId}
+              onAddZoneFromLibrary={() => setShowPlaygroundLibrary(true)}
           />
       )}
 
@@ -1425,6 +1559,11 @@ const App: React.FC = () => {
       {showInstructorDashboard && activeGame && (
           <InstructorDashboard 
               game={activeGame}
+              mode={mode}
+              onSetMode={(m) => { 
+                  setMode(m); 
+                  if (m !== GameMode.INSTRUCTOR) setShowInstructorDashboard(false);
+              }}
               onClose={() => setShowInstructorDashboard(false)}
           />
       )}
@@ -1512,7 +1651,7 @@ const App: React.FC = () => {
           userName={gameState.userName || 'Anonymous'}
           teamId={gameState.teamId}
           teams={instructorTeams} // Pass fetched teams to Chat Drawer
-          selectedTeamId={chatTargetTeamId} // Pass the specific team target
+          selectedTeamIds={chatTargetTeamId ? [chatTargetTeamId] : null} // Correct prop name
           isInstructor={showLanding || mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT} // Editors are also Instructors
       />
 
@@ -1545,11 +1684,27 @@ const App: React.FC = () => {
               }}
               nearestPointDistance={0} 
               language={language}
+              className="top-4 left-1/2 -translate-x-1/2" // Centered for Team Mode
           />
       )}
 
     </div>
   );
+
+  if (simulatedDeviceConfig && simulatedDeviceConfig.active) {
+      return (
+          <DeviceSimulator 
+              initialType={simulatedDeviceConfig.type} 
+              label={simulatedDeviceConfig.label}
+              onClose={() => { setSimulatedDeviceConfig(null); setMode(GameMode.EDIT); setShowLanding(true); }}
+              onConfigChange={(cfg) => setSimulatedDeviceConfig(prev => prev ? ({ ...prev, type: cfg.device, orientation: cfg.orientation }) : null)}
+          >
+              {MainContent}
+          </DeviceSimulator>
+      );
+  }
+
+  return MainContent;
 };
 
 export default App;

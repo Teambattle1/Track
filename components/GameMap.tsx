@@ -23,7 +23,7 @@ const getTeamColor = (teamName: string) => {
 const createTeamIcon = (teamName: string, photoUrl?: string, status?: TeamStatus) => {
     const color = getTeamColor(teamName);
     
-    // Status Indicator
+    // Status Indicator logic
     let statusHtml = '';
     if (status) {
         let statusColor = '#ef4444'; // Red (Idle)
@@ -53,79 +53,25 @@ const createTeamIcon = (teamName: string, photoUrl?: string, status?: TeamStatus
         `;
     }
 
-    // Pin Design: Teardrop shape with image inside
     const pinHtml = `
       <div style="position: relative; width: 60px; height: 60px; display: flex; flex-col; align-items: center; justify-content: center;">
-        <!-- Label above pin -->
-        <div style="
-            position: absolute; 
-            top: -25px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background: rgba(0,0,0,0.8); 
-            color: white; 
-            padding: 2px 8px; 
-            border-radius: 12px; 
-            font-size: 10px; 
-            font-weight: 900; 
-            white-space: nowrap; 
-            text-transform: uppercase;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            z-index: 20;
-        ">${teamName}</div>
-
-        <!-- Shadow -->
+        <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 900; white-space: nowrap; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); z-index: 20;">${teamName}</div>
         <div style="position: absolute; bottom: 0; width: 30px; height: 10px; background: rgba(0,0,0,0.3); border-radius: 50%; filter: blur(4px); transform: translateY(5px);"></div>
-        
-        <!-- Pin Shape -->
-        <div style="
-          width: 50px; 
-          height: 50px; 
-          background: white; 
-          border-radius: 50% 50% 50% 0; 
-          transform: rotate(-45deg); 
-          box-shadow: 2px 2px 10px rgba(0,0,0,0.2); 
-          display: flex; 
-          align-items: center; 
-          justify-content: center;
-          border: 2px solid white;
-        ">
-          <!-- Image Container (Un-rotated) -->
-          <div style="
-            width: 44px; 
-            height: 44px; 
-            border-radius: 50%; 
-            overflow: hidden; 
-            transform: rotate(45deg); 
-            background-color: ${color};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-          ">
-            ${photoUrl 
-              ? `<img src="${photoUrl}" style="width: 100%; height: 100%; object-fit: cover;" />`
-              : `<div style="font-weight: 900; font-size: 16px; color: white; text-transform: uppercase;">${teamName.substring(0, 2)}</div>`
-            }
+        <div style="width: 50px; height: 50px; background: white; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 2px 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; border: 2px solid white;">
+          <div style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; transform: rotate(45deg); background-color: ${color}; display: flex; align-items: center; justify-content: center; position: relative;">
+            ${photoUrl ? `<img src="${photoUrl}" style="width: 100%; height: 100%; object-fit: cover;" />` : `<div style="font-weight: 900; font-size: 16px; color: white; text-transform: uppercase;">${teamName.substring(0, 2)}</div>`}
           </div>
         </div>
         ${statusHtml}
       </div>
-      <style>
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-        }
-      </style>
+      <style>@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }</style>
     `;
 
     return L.divIcon({
         className: 'custom-team-pin',
         html: pinHtml,
         iconSize: [60, 60],
-        iconAnchor: [30, 56], // Tip of the pin (bottom center approx)
+        iconAnchor: [30, 56],
         popupAnchor: [0, -60]
     });
 };
@@ -144,7 +90,6 @@ interface GameMapProps {
       team: Team, 
       location: Coordinate, 
       status?: TeamStatus,
-      // Extended stats for popup
       stats?: {
           rank: number;
           mapSolved: number;
@@ -188,11 +133,9 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (initializedRef.current) return;
-
-    if ((mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && points.length > 0) {
+    // If we have points and are in editing mode, try to fit bounds to them initially
+    if (!initializedRef.current && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && points.length > 0) {
         const validPoints = points.filter(p => p.location.lat !== 0 || p.location.lng !== 0);
-        
         if (validPoints.length > 0) {
             const latLngs = validPoints.map(p => [p.location.lat, p.location.lng] as [number, number]);
             const bounds = L.latLngBounds(latLngs);
@@ -204,7 +147,8 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
         }
     }
 
-    if (center) {
+    // If we have a user center, use it (especially for PLAY mode)
+    if (!initializedRef.current && center) {
       map.setView([center.lat, center.lng], 16);
       initializedRef.current = true;
     }
@@ -215,12 +159,16 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
 
 const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
     const map = useMap();
+    
+    // Resize map when it mounts or container changes size
+    useEffect(() => {
+        map.invalidateSize();
+    }, [map]);
+
     useImperativeHandle(handleRef, () => ({
         fitBounds: (pts: GamePoint[]) => {
             const validPts = pts.filter(p => p.location.lat !== 0 || p.location.lng !== 0);
-            
             if (validPts.length === 0) return;
-            
             const bounds = L.latLngBounds(validPts.map(p => [p.location.lat, p.location.lng]));
             if (bounds.isValid()) {
                 map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
@@ -244,7 +192,8 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
     return null;
 };
 
-// ... (MapTaskMarker and DangerZoneMarker components remain unchanged) ...
+// --- MAP MARKERS ---
+
 interface MapTaskMarkerProps {
   point: GamePoint;
   mode: GameMode;
@@ -272,12 +221,10 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
   onHover,
   showScore
 }) => {
-  // ... (Existing implementation of MapTaskMarker) ...
   const markerRef = useRef<L.Marker>(null);
   const circleRef = useRef<L.Circle>(null);
   const isDraggingRef = useRef(false);
   const hoverTimeoutRef = useRef<number | null>(null);
-  const map = useMap(); 
   
   const isDraggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !isRelocating;
   const showGeofence = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !isRelocating;
@@ -323,11 +270,6 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
       },
       dragstart: () => {
           isDraggingRef.current = true;
-          const trash = document.getElementById('map-trash-bin');
-          if (trash) {
-              trash.classList.add('bg-red-600', 'text-white', 'border-red-600', 'scale-110');
-              trash.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-400', 'dark:text-gray-200', 'border-gray-100', 'dark:border-gray-700');
-          }
       },
       drag: (e: L.LeafletEvent) => {
           const marker = e.target as L.Marker;
@@ -338,33 +280,28 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
       dragend(e: L.LeafletEvent) {
         isDraggingRef.current = false;
         const marker = e.target as L.Marker;
-        const trash = document.getElementById('map-trash-bin');
+        const evt = e as L.LeafletMouseEvent; // Cast to access original event
         
-        if (trash) {
-            trash.classList.remove('bg-red-600', 'text-white', 'border-red-600', 'scale-110');
-            trash.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-400', 'dark:text-gray-200', 'border-gray-100', 'dark:border-gray-700');
+        // CHECK IF DROPPED ON TRASH BIN
+        if (onDelete && evt.originalEvent) {
+            const trash = document.getElementById('game-trash-bin');
+            if (trash) {
+                const rect = trash.getBoundingClientRect();
+                const { clientX, clientY } = evt.originalEvent;
+                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                    onDelete(point.id);
+                    return;
+                }
+            }
         }
 
-        if (marker) {
-          if (mode === GameMode.EDIT && onDelete && trash) {
-              const markerPoint = map.latLngToContainerPoint(marker.getLatLng());
-              const trashRect = trash.getBoundingClientRect();
-              const mapRect = map.getContainer().getBoundingClientRect();
-              const hitX = mapRect.left + markerPoint.x;
-              const hitY = mapRect.top + markerPoint.y;
-              const hitMargin = 40;
-              if (hitX >= trashRect.left - hitMargin && hitX <= trashRect.right + hitMargin && hitY >= trashRect.top - hitMargin && hitY <= trashRect.bottom + hitMargin) {
-                  onDelete(point.id); return; 
-              }
-          }
-          if (onMove) {
-              const ll = marker.getLatLng();
-              onMove(point.id, { lat: ll.lat, lng: ll.lng });
-          }
+        if (marker && onMove) {
+            const ll = marker.getLatLng();
+            onMove(point.id, { lat: ll.lat, lng: ll.lng });
         }
       },
     }),
-    [point, onClick, onMove, onDelete, onHover, map, mode]
+    [point, onClick, onMove, onDelete, onHover, mode]
   );
 
   useEffect(() => {
@@ -394,10 +331,6 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
   const strokeColor = isSelected ? '#4f46e5' : (forcedColor || defaultStatusColor);
   const fillColor = point.areaColor || strokeColor;
 
-  const stripHtml = (html: any) => typeof html === 'string' ? html.replace(/<[^>]*>?/gm, '') : '';
-  const questionText = stripHtml(point.task.question);
-  const isOptionsType = ['multiple_choice', 'checkbox', 'dropdown', 'multi_select_dropdown'].includes(point.task.type);
-
   return (
     <>
       <Marker 
@@ -411,15 +344,13 @@ const MapTaskMarker: React.FC<MapTaskMarkerProps> = ({
             label, 
             (hasActions || point.isHiddenBeforeScan) && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR), 
             forcedColor, 
-            point.isHiddenBeforeScan,
+            point.isHiddenBeforeScan, 
             mode === GameMode.EDIT && showScore ? point.points : undefined, 
             point.iconUrl,
             isPlaygroundActivator
         )} 
         ref={markerRef} 
-      >
-        {/* Tooltip content... (Omitted for brevity, assumed unchanged) */}
-      </Marker>
+      />
       <Circle 
         ref={circleRef} 
         center={[point.location.lat, point.location.lng]} 
@@ -443,8 +374,6 @@ const DangerZoneMarker: React.FC<{
     onDelete?: (id: string) => void;
     onClick?: (zone: DangerZone) => void;
 }> = ({ zone, mode, onMove, onDelete, onClick }) => {
-    // ... (Existing DangerZoneMarker logic)
-    const map = useMap();
     const eventHandlers = React.useMemo(() => ({
         click: (e: L.LeafletMouseEvent) => {
             if (mode === GameMode.EDIT && onClick) {
@@ -454,31 +383,27 @@ const DangerZoneMarker: React.FC<{
         },
         dragend(e: L.LeafletEvent) {
             const marker = e.target as L.Marker;
-            if (marker) {
-                const ll = marker.getLatLng();
-                const trash = document.getElementById('map-trash-bin');
+            const evt = e as L.LeafletMouseEvent;
+            
+            // CHECK IF DROPPED ON TRASH BIN
+            if (onDelete && evt.originalEvent) {
+                const trash = document.getElementById('game-trash-bin');
                 if (trash) {
-                    const markerPoint = map.latLngToContainerPoint(ll);
-                    const trashRect = trash.getBoundingClientRect();
-                    const mapRect = map.getContainer().getBoundingClientRect();
-                    const hitX = mapRect.left + markerPoint.x;
-                    const hitY = mapRect.top + markerPoint.y;
-                    const hitMargin = 40;
-                    if (hitX >= trashRect.left - hitMargin && hitX <= trashRect.right + hitMargin && hitY >= trashRect.top - hitMargin && hitY <= trashRect.bottom + hitMargin) {
-                        if (onDelete) onDelete(zone.id);
+                    const rect = trash.getBoundingClientRect();
+                    const { clientX, clientY } = evt.originalEvent;
+                    if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                        onDelete(zone.id);
                         return;
                     }
                 }
-                if (onMove) onMove(zone.id, { lat: ll.lat, lng: ll.lng });
             }
-        },
-        dragstart: () => {
-            const trash = document.getElementById('map-trash-bin');
-            if (trash) {
-                trash.classList.add('bg-red-600', 'text-white', 'border-red-600', 'scale-110');
+
+            if (marker && onMove) {
+                const ll = marker.getLatLng();
+                onMove(zone.id, { lat: ll.lat, lng: ll.lng });
             }
         }
-    }), [zone, onMove, onDelete, onClick, map, mode]);
+    }), [zone, onMove, onDelete, onClick, mode]);
 
     const isDraggable = mode === GameMode.EDIT;
 
@@ -513,11 +438,41 @@ const MAP_LAYERS: Record<MapStyleId, { url: string; attribution: string }> = {
   osm: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap' },
   satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: 'Tiles &copy; Esri' },
   dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; OpenStreetMap' },
-  light: { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attribution: '&copy; OpenStreetMap' }
+  light: { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attribution: '&copy; OpenStreetMap' },
+  clean: { url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', attribution: '&copy; OpenStreetMap, &copy; CartoDB' },
+  voyager: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', attribution: '&copy; OpenStreetMap, &copy; CartoDB' },
+  winter: { url: 'https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', attribution: '&copy; Kartverket' },
+  // Keeping key for type safety if old games use it, but pointing to standard OSM fallback or just removing from UI
+  ancient: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap' }, 
 };
 
-const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points, teams, teamTrails, pointLabels, measurePath, logicLinks, playgroundMarkers = [], dangerZones = [], dependentPointIds, accuracy, mode, mapStyle, selectedPointId, isRelocating, onPointClick, onTeamClick, onMapClick, onPointMove, onDeletePoint, onPointHover, showScores, onZoneClick }, ref) => {
+const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ 
+    userLocation, 
+    points = [], 
+    teams = [], 
+    teamTrails = {}, 
+    pointLabels = {}, 
+    measurePath = [], 
+    logicLinks = [], 
+    playgroundMarkers = [], 
+    dangerZones = [], 
+    dependentPointIds = [], 
+    accuracy, 
+    mode, 
+    mapStyle, 
+    selectedPointId, 
+    isRelocating, 
+    onPointClick, 
+    onTeamClick, 
+    onMapClick, 
+    onPointMove, 
+    onDeletePoint, 
+    onPointHover, 
+    showScores, 
+    onZoneClick 
+}, ref) => {
   const center = userLocation || { lat: 55.6761, lng: 12.5683 };
+  // Default to OSM if style not found
   const currentLayer = MAP_LAYERS[mapStyle] || MAP_LAYERS.osm;
   
   const mapPoints = points.filter(p => {
@@ -534,10 +489,10 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
       return undefined;
   };
 
-  const measurePathKey = measurePath ? measurePath.map(p => `${p.lat},${p.lng}`).join('|') : 'empty';
+  const measurePathKey = measurePath && measurePath.length > 0 ? measurePath.map(p => `${p.lat},${p.lng}`).join('|') : 'empty';
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full z-0">
         {isRelocating && (
             <div className="absolute inset-0 pointer-events-none z-[5000] flex items-center justify-center">
                 <div className="relative">
@@ -547,7 +502,13 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
             </div>
         )}
 
-        <MapContainer center={[center.lat, center.lng]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+        <MapContainer 
+            key={`${mode}`} 
+            center={[center.lat, center.lng]} 
+            zoom={15} 
+            style={{ height: '100%', width: '100%' }} 
+            zoomControl={false}
+        >
             <MapController handleRef={ref as any} />
             <TileLayer attribution={currentLayer.attribution} url={currentLayer.url} />
             <RecenterMap center={userLocation} points={mapPoints} mode={mode} />
@@ -557,11 +518,22 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
             {userLocation && (
                 <>
                 <Marker position={[userLocation.lat, userLocation.lng]} icon={UserIcon} zIndexOffset={500} />
-                {accuracy && <Circle center={[userLocation.lat, userLocation.lng]} radius={accuracy} pathOptions={{ fillColor: '#3b82f6', fillOpacity: 0.1, color: '#3b82f6', weight: 1 }} />}
+                {accuracy !== null && (
+                    <Circle 
+                        center={[userLocation.lat, userLocation.lng]} 
+                        radius={accuracy} 
+                        pathOptions={{ 
+                            fillColor: '#3b82f6', 
+                            fillOpacity: 0.1, 
+                            color: '#3b82f6', 
+                            weight: 1,
+                            dashArray: '5, 5'
+                        }} 
+                    />
+                )}
                 </>
             )}
             
-            {/* Logic Links (Omitted for brevity, unchanged) */}
             {logicLinks && logicLinks.map((link, idx) => {
                 if (!link.from || !link.to || typeof link.from.lat !== 'number' || typeof link.to.lat !== 'number') return null;
                 if (link.type === 'open_playground') return null;
@@ -570,8 +542,7 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
                 return <Polyline key={key} positions={[[link.from.lat, link.from.lng], [link.to.lat, link.to.lng]]} pathOptions={{ color: color, weight: 3, dashArray: '10, 10', opacity: 0.8 }} />;
             })}
 
-            {/* DANGER ZONES */}
-            {dangerZones.map(zone => (
+            {dangerZones && dangerZones.map(zone => (
                 <DangerZoneMarker 
                     key={zone.id} 
                     zone={zone} 
@@ -582,15 +553,31 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
                 />
             ))}
 
-            {/* Playground Markers (Omitted for brevity, unchanged) */}
-            {playgroundMarkers.map((pg) => (
+            {playgroundMarkers && playgroundMarkers.map((pg) => (
                 <Marker 
                     key={`pg-marker-${pg.id}`}
                     position={[pg.location.lat, pg.location.lng]}
                     icon={getLeafletIcon(pg.iconId as any || 'default', true, false, undefined, false, '#3b82f6', false)}
                     zIndexOffset={800}
                     draggable={mode === GameMode.EDIT}
-                    eventHandlers={{ dragend: (e) => { if (onPointMove) onPointMove(pg.id, (e.target as L.Marker).getLatLng()) } }}
+                    eventHandlers={{ 
+                        dragend: (e) => { 
+                            // CHECK IF DROPPED ON TRASH BIN (For Playground Markers)
+                            const evt = e as L.LeafletMouseEvent;
+                            if (onDeletePoint && evt.originalEvent) {
+                                const trash = document.getElementById('game-trash-bin');
+                                if (trash) {
+                                    const rect = trash.getBoundingClientRect();
+                                    const { clientX, clientY } = evt.originalEvent;
+                                    if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                                        // Playground delete logic handled in editor
+                                    }
+                                }
+                            }
+
+                            if (onPointMove) onPointMove(pg.id, (e.target as L.Marker).getLatLng()); 
+                        } 
+                    }}
                 />
             ))}
 
@@ -601,71 +588,6 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
                     pathOptions={{ color: '#ec4899', weight: 4, dashArray: '10, 10', opacity: 0.8 }} 
                 />
             )}
-            
-            {teamTrails && teams && Object.entries(teamTrails).map(([teamId, path]) => {
-                const team = teams.find(t => t.team.id === teamId)?.team;
-                const pathCoords = path as Coordinate[];
-                if (!team || pathCoords.length < 2) return null;
-                return <Polyline key={`trail-${teamId}`} positions={pathCoords.map(c => [c.lat, c.lng])} pathOptions={{ color: getTeamColor(team.name), weight: 3, opacity: 0.6, dashArray: '5, 10' }} />;
-            })}
-            
-            {teams && teams.map((item, idx) => {
-                return (
-                    <Marker 
-                        key={`team-${item.team.id}-${idx}`} 
-                        position={[item.location.lat, item.location.lng]} 
-                        icon={createTeamIcon(item.team.name, item.team.photoUrl, item.status)} 
-                        zIndexOffset={1000} 
-                    >
-                        <Popup className="custom-team-popup" closeButton={false}>
-                            <div className="bg-slate-900 text-white rounded-xl overflow-hidden shadow-2xl border border-slate-700 w-64 p-0">
-                                <div className="p-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
-                                    <h3 className="font-black uppercase tracking-wider text-sm">{item.team.name}</h3>
-                                    {item.stats?.rank && (
-                                        <span className="bg-yellow-500 text-black px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide">
-                                            RANK #{item.stats.rank}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="p-3 space-y-3">
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="text-slate-400 font-bold uppercase flex items-center gap-1"><Users className="w-3 h-3"/> MEMBERS</span>
-                                        <span className="font-black text-white">{item.team.members.length}</span>
-                                    </div>
-                                    
-                                    {/* Stats Breakdown */}
-                                    <div className="space-y-1">
-                                        {item.stats && (
-                                            <>
-                                                <div className="flex justify-between items-center text-[10px] bg-slate-800 p-1.5 rounded">
-                                                    <span className="text-slate-400 font-bold uppercase flex items-center gap-1"><MapPin className="w-3 h-3 text-blue-500"/> ON MAP</span>
-                                                    <span className="font-bold text-white">{item.stats.mapSolved}/{item.stats.mapTotal}</span>
-                                                </div>
-                                                {item.stats.playgroundStats.map(pg => (
-                                                    <div key={pg.name} className="flex justify-between items-center text-[10px] bg-slate-800 p-1.5 rounded">
-                                                        <span className="text-slate-400 font-bold uppercase truncate max-w-[120px]">{pg.name}</span>
-                                                        <span className="font-bold text-white">{pg.solved}/{pg.total}</span>
-                                                    </div>
-                                                ))}
-                                            </>
-                                        )}
-                                    </div>
-
-                                    {/* Chat Action */}
-                                    <button 
-                                        onClick={(e) => {
-                                            if (onTeamClick) onTeamClick(item.team.id);
-                                        }}
-                                        className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-colors"
-                                    >
-                                        <MessageSquare className="w-3 h-3" /> SEND MESSAGE
-                                    </button>
-                                </div>
-                            </div>
-                        </Popup>
-                    </Marker>
-                );
-            })}
             
             {mapPoints.map(point => (
                 <MapTaskMarker 
@@ -683,10 +605,32 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ userLocation, points,
                     showScore={showScores}
                 />
             ))}
+            
+            {/* Render Teams if provided (e.g. Instructor Mode) */}
+            {teams && teams.map(t => (
+                <Marker
+                    key={t.team.id}
+                    position={[t.location.lat, t.location.lng]}
+                    icon={createTeamIcon(t.team.name, t.team.photoUrl, t.status)}
+                    zIndexOffset={600}
+                    eventHandlers={{
+                        click: () => onTeamClick && onTeamClick(t.team.id)
+                    }}
+                />
+            ))}
+            
+            {/* Render Team Trails if provided */}
+            {teamTrails && Object.entries(teamTrails).map(([teamId, trail]) => {
+                if (!Array.isArray(trail) || trail.length < 2) return null;
+                return (
+                    <Polyline 
+                        key={`trail-${teamId}`}
+                        positions={trail.map(c => [c.lat, c.lng])}
+                        pathOptions={{ color: getTeamColor(teamId), weight: 2, dashArray: '5, 5', opacity: 0.5 }}
+                    />
+                );
+            })}
         </MapContainer>
-        {mode === GameMode.EDIT && !isRelocating && (
-            <div id="map-trash-bin" className="absolute bottom-6 right-4 z-[2000] shadow-xl rounded-full p-3 transition-all border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-200 pointer-events-auto flex items-center justify-center w-14 h-14" title="Drag task here to delete"><Trash2 className="w-6 h-6 pointer-events-none" /></div>
-        )}
     </div>
   );
 });
