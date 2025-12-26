@@ -10,7 +10,7 @@ export type TaskType = 'text' | 'multiple_choice' | 'checkbox' | 'boolean' | 'sl
 
 export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'light' | 'ancient' | 'clean' | 'voyager' | 'winter';
 
-export type Language = 'English' | 'Danish' | 'German' | 'Spanish';
+export type Language = 'English' | 'Danish' | 'German' | 'Spanish' | 'French' | 'Swedish' | 'Norwegian' | 'Dutch' | 'Belgian' | 'Hebrew';
 
 // --- Auth Types ---
 export interface AuthUser {

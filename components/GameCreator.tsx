@@ -20,12 +20,23 @@ const MAP_STYLES: { id: MapStyleId; label: string }[] = [
     { id: 'voyager', label: 'Voyager' }
 ];
 
-const LANGUAGES: Language[] = ['English', 'Danish', 'German', 'Spanish'];
+const LANGUAGE_OPTIONS: { value: Language; label: string }[] = [
+    { value: 'Danish', label: '🇩🇰 Danish (Dansk)' },
+    { value: 'English', label: '🇬🇧 English' },
+    { value: 'German', label: '🇩🇪 German (Deutsch)' },
+    { value: 'Spanish', label: '🇪🇸 Spanish (Español)' },
+    { value: 'French', label: '🇫🇷 French (Français)' },
+    { value: 'Swedish', label: '🇸🇪 Swedish (Svenska)' },
+    { value: 'Norwegian', label: '🇳🇴 Norwegian (Norsk)' },
+    { value: 'Dutch', label: '🇳🇱 Dutch (Nederlands)' },
+    { value: 'Belgian', label: '🇧🇪 Belgian (Vlaams)' },
+    { value: 'Hebrew', label: '🇮🇱 Hebrew (Ivrit)' },
+];
 
 const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }) => {
   const [name, setName] = useState(baseGame?.name || '');
   const [description, setDescription] = useState(baseGame?.description || '');
-  const [language, setLanguage] = useState<Language>(baseGame?.language || 'English');
+  const [language, setLanguage] = useState<Language>(baseGame?.language || 'Danish');
   
   // Client Info
   const [clientName, setClientName] = useState(baseGame?.client?.name || '');
@@ -57,7 +68,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
       if (baseGame) {
           setName(baseGame.name);
           setDescription(baseGame.description);
-          setLanguage(baseGame.language || 'English');
+          setLanguage(baseGame.language || 'Danish');
           setClientName(baseGame.client?.name || '');
           setClientLogo(baseGame.client?.logoUrl || '');
           setPlayingDate(baseGame.client?.playingDate || new Date(baseGame.createdAt).toISOString().split('T')[0]);
@@ -172,12 +183,12 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame }
                                     onChange={(e) => setLanguage(e.target.value as Language)}
                                     className="w-full pl-10 p-3 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none transition-colors uppercase appearance-none"
                                 >
-                                    {LANGUAGES.map(lang => (
-                                        <option key={lang} value={lang}>{lang}</option>
+                                    {LANGUAGE_OPTIONS.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
                             </div>
-                            <p className="text-[10px] text-slate-500 mt-1 italic">This sets the language for all app menus and buttons for players.</p>
+                            <p className="text-[10px] text-slate-500 mt-1 italic">Sets the app interface language for all players.</p>
                         </div>
                     </div>
                 </section>

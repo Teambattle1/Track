@@ -187,12 +187,17 @@ const App: React.FC = () => {
     activeTemplateGame || (gameState.games.find(g => g.id === gameState.activeGameId) || null)
   , [gameState.games, gameState.activeGameId, activeTemplateGame]);
 
-  // Sync Map Style when Active Game Changes
+  // Sync Map Style and Language when Active Game Changes
   useEffect(() => {
-      if (activeGame && activeGame.defaultMapStyle) {
-          setMapStyle(activeGame.defaultMapStyle);
+      if (activeGame) {
+          if (activeGame.defaultMapStyle) {
+              setMapStyle(activeGame.defaultMapStyle);
+          }
+          if (activeGame.language) {
+              setLanguage(activeGame.language);
+          }
       }
-  }, [activeGame?.id]);
+  }, [activeGame?.id, activeGame?.language, activeGame?.defaultMapStyle]);
 
   const displayPoints = useMemo(() => {
       return activeGame ? activeGame.points : [];
@@ -576,7 +581,8 @@ const App: React.FC = () => {
           createdAt: Date.now(),
           client: gameData.client,
           timerConfig: gameData.timerConfig,
-          defaultMapStyle: gameData.defaultMapStyle || 'osm' // Ensure map style is saved
+          defaultMapStyle: gameData.defaultMapStyle || 'osm', // Ensure map style is saved
+          language: gameData.language || 'Danish' // Ensure language is saved
       };
 
       if (fromListId) {
@@ -599,8 +605,9 @@ const App: React.FC = () => {
       setGameState(prev => ({ ...prev, games: [...prev.games, newGame], activeGameId: newGame.id }));
       localStorage.setItem(STORAGE_KEY_GAME_ID, newGame.id);
       
-      // Update app state map style immediately
+      // Update app state map style and language immediately
       setMapStyle(newGame.defaultMapStyle || 'osm');
+      setLanguage(newGame.language || 'Danish');
 
       setShowGameCreator(false);
       setShowGameChooser(false);
@@ -1010,7 +1017,7 @@ const App: React.FC = () => {
   // Find the DangerZone being edited
   const editingDangerZone = activeGame?.dangerZones?.find(z => z.id === editingDangerZoneId);
 
-  const MainContent = (
+  return (
     <div className="w-full h-full relative overflow-hidden bg-slate-900 text-white font-sans">
       
       {/* LANDSCAPE ENFORCEMENT OVERLAY */}
@@ -1526,13 +1533,28 @@ const App: React.FC = () => {
                   const [g, l, t] = await Promise.all([db.fetchGames(), db.fetchTaskLists(), db.fetchLibrary()]);
                   setGameState(prev => ({ ...prev, games: g, taskLists: l, taskLibrary: t }));
               }}
+              onEditGame={(game) => {
+                  setGameToEdit(game);
+                  setShowGameCreator(true);
+              }}
           />
       )}
 
       {showGameCreator && (
           <GameCreator 
-              onClose={() => setShowGameCreator(false)}
-              onCreate={handleCreateGame}
+              onClose={() => { setShowGameCreator(false); setGameToEdit(null); }}
+              onCreate={(data) => {
+                  if (gameToEdit) {
+                      const updated = { ...gameToEdit, ...data, client: data.client || gameToEdit.client, timerConfig: data.timerConfig || gameToEdit.timerConfig };
+                      db.saveGame(updated);
+                      updateActiveGame(updated);
+                      setGameToEdit(null);
+                      setShowGameCreator(false);
+                  } else {
+                      handleCreateGame(data);
+                  }
+              }}
+              baseGame={gameToEdit || undefined}
           />
       )}
 
@@ -1690,21 +1712,6 @@ const App: React.FC = () => {
 
     </div>
   );
-
-  if (simulatedDeviceConfig && simulatedDeviceConfig.active) {
-      return (
-          <DeviceSimulator 
-              initialType={simulatedDeviceConfig.type} 
-              label={simulatedDeviceConfig.label}
-              onClose={() => { setSimulatedDeviceConfig(null); setMode(GameMode.EDIT); setShowLanding(true); }}
-              onConfigChange={(cfg) => setSimulatedDeviceConfig(prev => prev ? ({ ...prev, type: cfg.device, orientation: cfg.orientation }) : null)}
-          >
-              {MainContent}
-          </DeviceSimulator>
-      );
-  }
-
-  return MainContent;
 };
 
 export default App;

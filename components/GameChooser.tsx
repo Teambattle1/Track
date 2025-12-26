@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
-import { Game, TaskList } from '../types';
-import { X, Search, Gamepad2, Plus, Calendar, MapPin, RefreshCw, LayoutTemplate } from 'lucide-react';
+import { Game, TaskList, MapStyleId } from '../types';
+import { X, Search, Gamepad2, Plus, Calendar, MapPin, RefreshCw, Settings, Layers, Clock, Hourglass, StopCircle, LayoutGrid, Map as MapIcon } from 'lucide-react';
+import { getFlag } from '../utils/i18n';
 
 interface GameChooserProps {
   games: Game[];
@@ -11,7 +13,19 @@ interface GameChooserProps {
   onSaveAsTemplate?: (gameId: string, name: string) => void;
   onOpenGameCreator: () => void;
   onRefresh: () => void;
+  onEditGame: (game: Game) => void;
 }
+
+const MAP_LABELS: Record<MapStyleId, string> = {
+    osm: 'Standard',
+    satellite: 'Satellite',
+    dark: 'Dark Mode',
+    light: 'Light Mode',
+    ancient: 'Ancient',
+    clean: 'Clean',
+    voyager: 'Voyager',
+    winter: 'Winter'
+};
 
 const GameChooser: React.FC<GameChooserProps> = ({ 
     games, 
@@ -21,13 +35,21 @@ const GameChooser: React.FC<GameChooserProps> = ({
     onClose,
     onSaveAsTemplate,
     onOpenGameCreator,
-    onRefresh
+    onRefresh,
+    onEditGame
 }) => {
     const [search, setSearch] = useState('');
     const [view, setView] = useState<'GAMES' | 'TEMPLATES'>('GAMES');
 
     const filteredGames = games.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
     
+    const getTimerLabel = (game: Game) => {
+        if (!game.timerConfig || game.timerConfig.mode === 'none') return { label: 'No Timer', icon: Clock };
+        if (game.timerConfig.mode === 'countdown') return { label: `Countdown: ${game.timerConfig.durationMinutes}m`, icon: Hourglass };
+        if (game.timerConfig.mode === 'scheduled_end') return { label: `End: ${new Date(game.timerConfig.endTime || '').toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`, icon: StopCircle };
+        return { label: 'Run Time', icon: Clock };
+    };
+
     return (
         <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col font-sans overflow-hidden animate-in fade-in duration-300">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#1e293b,transparent)] opacity-40 pointer-events-none" />
@@ -97,40 +119,115 @@ const GameChooser: React.FC<GameChooserProps> = ({
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredGames.map(game => (
-                            <div 
-                                key={game.id} 
-                                onClick={() => onSelectGame(game.id)}
-                                className="group bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-indigo-500/50 hover:bg-slate-800 transition-all cursor-pointer shadow-xl relative overflow-hidden"
-                            >
-                                <div className="flex justify-between items-start mb-4 relative z-10">
-                                    <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 transition-colors">
-                                        <Gamepad2 className="w-5 h-5 text-slate-400 group-hover:text-indigo-400" />
-                                    </div>
-                                    <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-950 px-2 py-1 rounded border border-slate-800">
-                                        {game.points.length} TASKS
-                                    </span>
-                                </div>
-                                
-                                <div className="relative z-10">
-                                    <h3 className="text-lg font-black text-white uppercase tracking-wide truncate mb-1 group-hover:text-indigo-400 transition-colors">{game.name}</h3>
-                                    <p className="text-xs text-slate-500 line-clamp-2 min-h-[2.5em] mb-4">{game.description || "No description provided."}</p>
-                                    
-                                    <div className="flex items-center gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="w-3 h-3" /> {new Date(game.createdAt).toLocaleDateString()}
-                                        </div>
-                                        {game.client?.name && (
-                                            <div className="flex items-center gap-1 text-indigo-400">
-                                                <MapPin className="w-3 h-3" /> {game.client.name}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                        {filteredGames.map(game => {
+                            const timerInfo = getTimerLabel(game);
+                            const TimerIcon = timerInfo.icon;
+                            
+                            // Task counts
+                            const mapTaskCount = game.points.filter(p => !p.playgroundId && !p.isSectionHeader).length;
+                            const playgroundStats = (game.playgrounds || []).map(pg => ({
+                                title: pg.title,
+                                count: game.points.filter(p => p.playgroundId === pg.id).length
+                            }));
 
-                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                            </div>
-                        ))}
+                            return (
+                                <div 
+                                    key={game.id} 
+                                    onClick={() => onSelectGame(game.id)}
+                                    className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl relative flex flex-col min-h-[340px] hover:border-indigo-500/50 hover:bg-slate-800 transition-all cursor-pointer"
+                                >
+                                    {/* Background Image */}
+                                    {game.client?.logoUrl ? (
+                                        <>
+                                            <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity bg-center bg-cover bg-no-repeat" style={{ backgroundImage: `url(${game.client.logoUrl})` }} />
+                                            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-900/80 to-slate-900" />
+                                        </>
+                                    ) : (
+                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none" />
+                                    )}
+
+                                    <div className="relative z-10 flex flex-col h-full p-5">
+                                        
+                                        {/* Top Row: Icon + Flag */}
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className="w-10 h-10 bg-slate-800/80 backdrop-blur rounded-xl flex items-center justify-center border border-slate-700/50 group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 transition-colors">
+                                                <Gamepad2 className="w-5 h-5 text-slate-400 group-hover:text-indigo-400" />
+                                            </div>
+                                            {/* Large Flag */}
+                                            <div className="text-3xl filter drop-shadow-md" title={`Language: ${game.language}`}>
+                                                {getFlag(game.language)}
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Title & Desc */}
+                                        <div className="mb-4">
+                                            <h3 className="text-lg font-black text-white uppercase tracking-wide leading-tight mb-1 group-hover:text-indigo-400 transition-colors drop-shadow-sm">{game.name}</h3>
+                                            <p className="text-xs text-slate-400 line-clamp-2 h-8 leading-tight">{game.description || "No description provided."}</p>
+                                        </div>
+
+                                        {/* Metadata Rows */}
+                                        <div className="space-y-2 mb-4 bg-black/20 p-3 rounded-xl border border-white/5">
+                                            {/* Map Visual */}
+                                            <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                                                <Layers className="w-3 h-3 text-indigo-400" />
+                                                <span className="uppercase">{MAP_LABELS[game.defaultMapStyle || 'osm'] || 'Standard'} Map</span>
+                                            </div>
+                                            
+                                            {/* Timer Config */}
+                                            <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                                                <TimerIcon className="w-3 h-3 text-orange-400" />
+                                                <span className="uppercase">{timerInfo.label}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Task Breakdown */}
+                                        <div className="flex-1 space-y-1 mb-4">
+                                            {/* On Map Tasks */}
+                                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
+                                                <span className="flex items-center gap-1"><MapIcon className="w-3 h-3" /> ON MAP TASKS</span>
+                                                <span className="text-white">{mapTaskCount}</span>
+                                            </div>
+                                            {/* Playgrounds */}
+                                            {playgroundStats.map((pg, idx) => (
+                                                <div key={idx} className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
+                                                    <span className="flex items-center gap-1 truncate max-w-[140px]"><LayoutGrid className="w-3 h-3 text-blue-400" /> ZONE: {pg.title}</span>
+                                                    <span className="text-white">{pg.count}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Footer Info */}
+                                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-800/50">
+                                            <div className="flex flex-col gap-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Calendar className="w-3 h-3" /> <span className="text-slate-400">GAMEDATE:</span> {game.client?.playingDate ? new Date(game.client.playingDate).toLocaleDateString() : new Date(game.createdAt).toLocaleDateString()}
+                                                </div>
+                                                {game.client?.name && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <MapPin className="w-3 h-3" /> <span className="text-slate-400">CLIENT:</span> {game.client.name}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            {/* Edit Button */}
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEditGame(game);
+                                                }}
+                                                className="p-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-500 rounded-lg transition-all shadow-lg flex-shrink-0"
+                                                title="Edit Game Settings"
+                                            >
+                                                <Settings className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Hover Glow Effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>

@@ -1,11 +1,17 @@
 
-export type Language = 'English' | 'Danish' | 'German' | 'Spanish';
+export type Language = 'English' | 'Danish' | 'German' | 'Spanish' | 'French' | 'Swedish' | 'Norwegian' | 'Dutch' | 'Belgian' | 'Hebrew';
 
 export const getFlag = (lang?: string): string => {
     if (!lang) return "🇬🇧";
     if (lang === 'Danish') return "🇩🇰";
     if (lang === 'German') return "🇩🇪";
     if (lang === 'Spanish') return "🇪🇸";
+    if (lang === 'French') return "🇫🇷";
+    if (lang === 'Swedish') return "🇸🇪";
+    if (lang === 'Norwegian') return "🇳🇴";
+    if (lang === 'Dutch') return "🇳🇱";
+    if (lang === 'Belgian') return "🇧🇪";
+    if (lang === 'Hebrew') return "🇮🇱";
     return "🇬🇧";
 };
 
@@ -293,7 +299,13 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     permHelpDesc: "Para jugar TeamAction, necesitamos acceso a los sensores de tu dispositivo.",
     permHelpInstruction: "Toca el icono de candado 🔒 en la barra de direcciones de tu navegador y cambia los permisos a 'Permitir'.",
     permHelpButton: "Lo he activado",
-  }
+  },
+  French: {},
+  Swedish: {},
+  Norwegian: {},
+  Dutch: {},
+  Belgian: {},
+  Hebrew: {}
 };
 
 export const t = (key: string, lang: Language): string => {
