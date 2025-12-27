@@ -1,4 +1,3 @@
-
 import { supabase } from '../lib/supabase';
 import { TaskVote, TeamMember, ChatMessage, Coordinate } from '../types';
 
@@ -21,6 +20,9 @@ class TeamSyncService {
   private voteListeners: VoteCallback[] = [];
   private memberListeners: MemberCallback[] = [];
   private chatListeners: ChatCallback[] = [];
+
+  // Track latest vote timestamp PER DEVICE to safely ignore out-of-order packets without global clock sync issues
+  private deviceVoteTimestamps: Record<string, number> = {}; 
 
   constructor() {
     let storedId = localStorage.getItem('geohunt_device_id');
@@ -175,12 +177,29 @@ class TeamSyncService {
   }
 
   private handleIncomingVote(vote: TaskVote) {
+    // Unique key per device per task to track sequence
+    const trackingKey = `${vote.pointId}_${vote.deviceId}`;
+    const lastTimestamp = this.deviceVoteTimestamps[trackingKey] || 0;
+
+    // Check: Ignore votes that are older than the last processed vote FROM THIS DEVICE.
+    // This prevents network lag from overwriting a newer vote with an old one from the same user.
+    // We do NOT compare against other users to avoid clock skew issues.
+    if (vote.timestamp < lastTimestamp) {
+        console.warn("Ignoring outdated vote packet", vote);
+        return;
+    }
+    
+    this.deviceVoteTimestamps[trackingKey] = vote.timestamp;
+
     if (!this.votes[vote.pointId]) {
         this.votes[vote.pointId] = [];
     }
+    
+    // Replace previous vote from this specific device
     this.votes[vote.pointId] = this.votes[vote.pointId].filter(v => v.deviceId !== vote.deviceId);
     this.votes[vote.pointId].push(vote);
 
+    // Update member activity on vote
     this.members.set(vote.deviceId, { 
         deviceId: vote.deviceId, 
         userName: vote.userName, 
@@ -201,9 +220,19 @@ class TeamSyncService {
   private notifyMemberListeners() {
       const now = Date.now();
       const active: TeamMember[] = [];
-      this.members.forEach((m) => {
-          if (now - m.lastSeen < 60000) active.push(m); // Increased timeout to 60s for map stability
+      const deadKeys: string[] = [];
+
+      this.members.forEach((m, key) => {
+          // Strict Zombie Filtering: 60 seconds (1 minute)
+          if (now - m.lastSeen < 60000) {
+              active.push(m);
+          } else {
+              deadKeys.push(key);
+          }
       });
+      
+      // Cleanup dead members from map to keep memory clean
+      deadKeys.forEach(k => this.members.delete(k));
       
       this.memberListeners.forEach(cb => cb(active));
   }

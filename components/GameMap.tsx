@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap, useMapEvents, Polyline, Tooltip, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -14,7 +13,6 @@ const UserIcon = L.divIcon({
   iconAnchor: [8, 8]
 });
 
-// ... createTeamIcon, getTeamColor helpers (unchanged) ...
 const getTeamColor = (teamName: string) => {
     let hash = 0;
     for (let i = 0; i < teamName.length; i++) hash = teamName.charCodeAt(i) + ((hash << 5) - hash);
@@ -51,7 +49,6 @@ const createTeamIcon = (teamName: string, photoUrl?: string, status?: TeamStatus
     return L.divIcon({ className: 'custom-team-pin', html: pinHtml, iconSize: [60, 60], iconAnchor: [30, 56], popupAnchor: [0, -60] });
 };
 
-// ... Rest of imports and types ...
 export interface GameMapHandle {
   fitBounds: (points: GamePoint[] | Coordinate[]) => void;
   getBounds: () => { ne: Coordinate; sw: Coordinate } | null;
@@ -60,7 +57,7 @@ export interface GameMapHandle {
 }
 
 interface GameMapProps {
-  userLocation: Coordinate | null; // Passed from parent, but parent uses Context now
+  userLocation?: Coordinate | null; // Keep optional prop for manual overrides (Editor)
   points: GamePoint[];
   teams?: { team: Team, location: Coordinate, status?: TeamStatus, stats?: any }[];
   teamTrails?: Record<string, Coordinate[]>;
@@ -71,7 +68,7 @@ interface GameMapProps {
   dangerZones?: DangerZone[];
   routes?: GameRoute[];
   dependentPointIds?: string[];
-  accuracy: number | null;
+  accuracy?: number | null; // Keep optional prop
   mode: GameMode;
   mapStyle: MapStyleId;
   selectedPointId?: string | null;
@@ -86,7 +83,30 @@ interface GameMapProps {
   onZoneClick?: (zone: DangerZone) => void;
 }
 
-// ... MapClickParams, RecenterMap, MapController components (unchanged) ...
+// Internal component to handle user location updates without re-rendering the whole map
+const UserLocationMarker = ({ overrideLocation, overrideAccuracy }: { overrideLocation?: Coordinate | null, overrideAccuracy?: number | null }) => {
+    const { userLocation: ctxLocation, gpsAccuracy: ctxAccuracy } = useLocation();
+    
+    // Prefer props (for testing/instructor mode), fall back to context
+    const location = overrideLocation || ctxLocation;
+    const accuracy = overrideAccuracy || ctxAccuracy;
+
+    if (!location) return null;
+
+    return (
+        <>
+            <Marker position={[location.lat, location.lng]} icon={UserIcon} zIndexOffset={500} />
+            {accuracy !== null && (
+                <Circle 
+                    center={[location.lat, location.lng]} 
+                    radius={accuracy} 
+                    pathOptions={{ fillColor: '#3b82f6', fillOpacity: 0.1, color: '#3b82f6', weight: 1, dashArray: '5, 5', interactive: false }} 
+                />
+            )}
+        </>
+    );
+};
+
 const MapClickParams = ({ onClick }: { onClick?: (c: Coordinate) => void }) => {
   useMapEvents({ click(e) { if (onClick) onClick(e.latlng); } });
   return null;
@@ -158,17 +178,113 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string }> = {
   ski: { url: 'https://tiles.openskimap.org/map/{z}/{x}/{y}.png', attribution: '&copy; OpenSkiMap' }
 };
 
-const MapLayers: React.FC<{ mapStyle: string }> = ({ mapStyle }) => {
+const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
   const layer = MAP_LAYERS[mapStyle] || MAP_LAYERS.osm;
   return <TileLayer url={layer.url} attribution={layer.attribution} />;
-};
+});
 
-// ... MapTaskMarker, DangerZoneMarker, MAP_LAYERS, MapLayers (unchanged) ...
-// (Omitting full copy of marker components to save space, they don't need changes for this fix)
-// Assume they are here as in original file...
+// Task Marker Component
+const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMove, onDelete }: any) => {
+    const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
+    const isCompleted = point.isCompleted;
+    
+    // Draggable only in Edit Mode
+    const draggable = mode === GameMode.EDIT;
+    
+    const eventHandlers = React.useMemo(
+        () => ({
+            click: () => onClick(point),
+            dragend(e: any) {
+                if (onMove) onMove(point.id, e.target.getLatLng());
+            },
+        }),
+        [point, onClick, onMove]
+    );
 
-const GameMap = forwardRef<GameMapHandle, GameMapProps>(({ 
-    userLocation: propLocation, // Allow override, but usually null in new structure
+    const icon = getLeafletIcon(
+        point.iconId, 
+        isUnlocked, 
+        isCompleted, 
+        label, 
+        (point.logic?.onOpen?.length || point.logic?.onCorrect?.length || point.logic?.onIncorrect?.length) && mode === GameMode.EDIT,
+        point.areaColor, // New: Override color if zone color set
+        mode === GameMode.EDIT && point.isHiddenBeforeScan,
+        showScore ? point.points : undefined,
+        point.iconUrl
+    );
+
+    return (
+        <React.Fragment>
+            <Marker 
+                position={[point.location.lat, point.location.lng]} 
+                icon={icon} 
+                eventHandlers={eventHandlers}
+                draggable={draggable}
+                zIndexOffset={isCompleted ? 0 : 100}
+            >
+                {mode === GameMode.EDIT && (
+                    <Popup>
+                        <div className="flex flex-col gap-2">
+                            <span className="font-bold">{point.title}</span>
+                            <button onClick={() => onDelete(point.id)} className="text-red-500 text-xs font-bold uppercase flex items-center gap-1">
+                                <Trash2 className="w-3 h-3" /> Delete
+                            </button>
+                        </div>
+                    </Popup>
+                )}
+            </Marker>
+            
+            {/* Radius Circle */}
+            {(mode === GameMode.EDIT || isUnlocked) && (
+                <Circle 
+                    center={[point.location.lat, point.location.lng]} 
+                    radius={point.radiusMeters}
+                    pathOptions={{ 
+                        color: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')), 
+                        fillColor: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')), 
+                        fillOpacity: 0.1, 
+                        weight: 1,
+                        dashArray: isCompleted ? undefined : '5, 10'
+                    }} 
+                    interactive={false}
+                />
+            )}
+        </React.Fragment>
+    );
+}, (prev, next) => {
+    return prev.point.id === next.point.id && 
+           prev.point.location.lat === next.point.location.lat && 
+           prev.point.location.lng === next.point.location.lng &&
+           prev.point.isUnlocked === next.point.isUnlocked &&
+           prev.point.isCompleted === next.point.isCompleted &&
+           prev.mode === next.mode &&
+           prev.showScore === next.showScore &&
+           prev.point.isHiddenBeforeScan === next.point.isHiddenBeforeScan;
+});
+
+const DangerZoneMarker = React.memo(({ zone, onClick, mode }: any) => {
+    return (
+        <Circle
+            center={[zone.location.lat, zone.location.lng]}
+            radius={zone.radius}
+            pathOptions={{
+                color: '#ef4444',
+                fillColor: '#ef4444',
+                fillOpacity: 0.2,
+                weight: 2,
+                dashArray: '10, 10',
+                className: 'animate-pulse-slow' // Custom CSS animation class if needed
+            }}
+            eventHandlers={{ click: () => mode === GameMode.EDIT && onClick && onClick(zone) }}
+        >
+            {mode === GameMode.EDIT && <Tooltip permanent direction="center" className="custom-leaflet-tooltip font-bold text-red-500">{zone.title || 'DANGER'}</Tooltip>}
+        </Circle>
+    );
+});
+
+// WRAP GAME MAP IN MEMO TO PREVENT RE-RENDERS
+const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({ 
+    userLocation: propLocation, 
     points = [], 
     teams = [], 
     teamTrails = {}, 
@@ -193,14 +309,11 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({
     showScores, 
     onZoneClick 
 }, ref) => {
-  // Use Context hook here
-  const { userLocation: contextLocation, gpsAccuracy: contextAccuracy } = useLocation();
+  // NOTE: We do NOT consume useLocation() here directly to avoid re-rendering the entire MapContainer.
+  // Instead, we use the UserLocationMarker child component for the live dot.
+  // propLocation is used for "Center" logic only initially or if provided (instructor mode).
   
-  // Prefer prop if provided (e.g. simulation or instructor override), else context
-  const userLocation = propLocation || contextLocation;
-  const accuracy = propAccuracy || contextAccuracy;
-
-  const center = userLocation || { lat: 55.6761, lng: 12.5683 };
+  const center = propLocation || { lat: 55.6761, lng: 12.5683 };
   const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
 
   const mapPoints = points.filter(p => {
@@ -216,15 +329,6 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({
       if (mode === GameMode.EDIT) return (points.findIndex(p => p.id === point.id) + 1).toString().padStart(3, '0');
       return undefined;
   };
-
-  // ... (Markers and layers logic from original file) ...
-  // Reusing existing MapLayers and marker logic components
-  
-  // Minimal placeholder for MapTaskMarker and DangerZoneMarker for compilation if not fully copied
-  // In real output, I would include the full original marker code here.
-  // Since I cannot inject 300 lines of existing code just to wrap it, I will assume the existing marker components
-  // are defined above or imported. 
-  // *Critically*, the change here is using `useLocation()` at the top.
 
   return (
     <div className="relative w-full h-full z-0">
@@ -245,7 +349,7 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({
         >
             <MapController handleRef={ref as any} />
             <MapLayers key={mapStyle} mapStyle={mapStyle} />
-            <RecenterMap center={userLocation} points={mapPoints} mode={mode} />
+            <RecenterMap center={propLocation} points={mapPoints} mode={mode} />
             {(mode === GameMode.EDIT) && <MapClickParams onClick={onMapClick} />}
             
             {/* Routes */}
@@ -262,26 +366,74 @@ const GameMap = forwardRef<GameMapHandle, GameMapProps>(({
                 );
             })}
 
-            {userLocation && (
-                <>
-                <Marker position={[userLocation.lat, userLocation.lng]} icon={UserIcon} zIndexOffset={500} />
-                {accuracy !== null && (
-                    <Circle 
-                        center={[userLocation.lat, userLocation.lng]} 
-                        radius={accuracy} 
-                        pathOptions={{ fillColor: '#3b82f6', fillOpacity: 0.1, color: '#3b82f6', weight: 1, dashArray: '5, 5', interactive: false }} 
-                    />
-                )}
-                </>
-            )}
+            {/* LIVE USER MARKER (Internal Context Consumer) */}
+            <UserLocationMarker overrideLocation={propLocation} overrideAccuracy={propAccuracy} />
             
-            {/* ... Other layers (logicLinks, dangerZones, playgrounds, tasks) ... */}
-            {/* Rendering logic identical to original file, just using clean userLocation */}
-            {/* (Assuming Marker components are imported/defined) */}
+            {/* Logic Links (Instructor/Edit) */}
+            {logicLinks.map((link, i) => (
+                <Polyline 
+                    key={i} 
+                    positions={[link.from, link.to]} 
+                    pathOptions={{ color: link.color, weight: 2, dashArray: '5, 10', opacity: 0.6 }} 
+                />
+            ))}
+
+            {/* Measure Path */}
+            {measurePath.length > 1 && (
+                <Polyline positions={measurePath} pathOptions={{ color: '#f97316', dashArray: '10, 10', weight: 4 }} />
+            )}
+
+            {/* Danger Zones */}
+            {dangerZones.map(zone => (
+                <DangerZoneMarker key={zone.id} zone={zone} onClick={onZoneClick} mode={mode} />
+            ))}
+
+            {/* Tasks */}
+            {mapPoints.map(point => (
+                <MapTaskMarker 
+                    key={point.id} 
+                    point={point} 
+                    mode={mode} 
+                    label={getLabel(point)}
+                    showScore={showScores}
+                    onClick={onPointClick}
+                    onMove={onPointMove}
+                    onDelete={onDeletePoint}
+                />
+            ))}
+
+            {/* Teams (Instructor Mode) */}
+            {teams && teams.map((t) => (
+                <Marker 
+                    key={t.team.id} 
+                    position={[t.location.lat, t.location.lng]} 
+                    icon={createTeamIcon(t.team.name, t.team.photoUrl, t.status)} 
+                    zIndexOffset={1000}
+                    eventHandlers={{ click: () => onTeamClick && onTeamClick(t.team.id) }}
+                >
+                    {mode === GameMode.INSTRUCTOR && (
+                        <Tooltip direction="top" offset={[0, -40]} opacity={1} permanent>
+                            <div className="text-center">
+                                <div className="font-black uppercase text-xs">{t.team.name}</div>
+                                {t.stats && <div className="text-[9px] font-bold text-green-600">{t.stats.mapSolved}/{t.stats.mapTotal}</div>}
+                            </div>
+                        </Tooltip>
+                    )}
+                </Marker>
+            ))}
+
+            {/* Team Trails */}
+            {Object.keys(teamTrails).map(teamId => (
+                <Polyline 
+                    key={teamId} 
+                    positions={teamTrails[teamId]} 
+                    pathOptions={{ color: getTeamColor(teamId), weight: 3, opacity: 0.5, dashArray: '2, 8' }} 
+                />
+            ))}
+
         </MapContainer>
     </div>
   );
-});
+}));
 
 export default GameMap;
-    

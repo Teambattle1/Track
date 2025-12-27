@@ -81,7 +81,22 @@ const AccountUsers: React.FC = () => {
   const filteredUsers = users.filter(u => 
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).sort((a, b) => {
+    // Primary Sort: Role Hierarchy
+    const roleA = a.role.split(' - ')[0];
+    const roleB = b.role.split(' - ')[0];
+    const idxA = ROLES.indexOf(roleA);
+    const idxB = ROLES.indexOf(roleB);
+    
+    // Put unknown roles at the end
+    const valA = idxA === -1 ? 999 : idxA;
+    const valB = idxB === -1 ? 999 : idxB;
+    
+    if (valA !== valB) return valA - valB;
+    
+    // Secondary Sort: Alphabetical by Name
+    return a.name.localeCompare(b.name);
+  });
 
   const handleDeleteUser = async (id: string) => {
     await db.deleteAccountUsers([id]);

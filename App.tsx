@@ -1,10 +1,10 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage } from './types';
 import * as db from './services/db';
 import { authService } from './services/auth';
 import { teamSync } from './services/teamSync';
 import { LocationProvider, useLocation } from './contexts/LocationContext';
+import { haversineMeters, isWithinRadius } from './utils/geo';
 import GameMap, { GameMapHandle } from './components/GameMap';
 import GameHUD from './components/GameHUD';
 import GameManager from './components/GameManager';
@@ -72,7 +72,7 @@ const GameApp: React.FC = () => {
   
   // --- PLAY STATE (Location from Context) ---
   const { userLocation, gpsAccuracy } = useLocation();
-  const [activeTaskModal, setActiveTaskModal] = useState<GamePoint | null>(null);
+  const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(null); // Storing ID instead of Object to prevent stale state
   const [score, setScore] = useState(0);
   const [showScores, setShowScores] = useState(false);
   const [currentDangerZone, setCurrentDangerZone] = useState<DangerZone | null>(null);
@@ -94,9 +94,7 @@ const GameApp: React.FC = () => {
   // --- INITIALIZATION ---
   useEffect(() => {
     const init = async () => {
-      // Force reset login state on mount just in case
       setShowLogin(false);
-      
       const user = authService.getCurrentUser();
       if (user) {
         setAuthUser(user);
@@ -111,14 +109,13 @@ const GameApp: React.FC = () => {
     init();
   }, []);
 
-  // Measurement logic updates when userLocation changes
+  // Measurement logic updates
   useEffect(() => {
       if (isMeasuring && userLocation) {
           setMeasurePath(prev => {
               if (prev.length === 0) return [userLocation];
               return [...prev.slice(0, prev.length - 1), userLocation];
           });
-          // Note: Actual distance calculation logic would be here
       }
   }, [userLocation, isMeasuring]);
 
@@ -129,6 +126,71 @@ const GameApp: React.FC = () => {
           if (game?.defaultMapStyle) setLocalMapStyle(game.defaultMapStyle);
       }
   }, [activeGameId, games]);
+
+  // --- GEOFENCING ENGINE ---
+  useEffect(() => {
+      if (!activeGame || mode !== GameMode.PLAY || !userLocation) return;
+
+      const checkGeofences = async () => {
+          let hasUpdates = false;
+          const updatedPoints = activeGame.points.map(p => {
+              // Skip if already unlocked or completed, or if it's a zone/header
+              if (p.isUnlocked || p.isCompleted || p.isSectionHeader || p.playgroundId) return p;
+
+              // Check Radius
+              if (p.activationTypes.includes('radius') && isWithinRadius(userLocation, p.location, p.radiusMeters)) {
+                  hasUpdates = true;
+                  // Optional: Trigger sound or vibration here
+                  if (navigator.vibrate) navigator.vibrate(200);
+                  return { ...p, isUnlocked: true };
+              }
+              return p;
+          });
+
+          if (hasUpdates) {
+              const updatedGame = { ...activeGame, points: updatedPoints };
+              await db.saveGame(updatedGame); // Persist unlock state
+              setActiveGame(updatedGame);
+              setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g));
+          }
+      };
+
+      const interval = setInterval(checkGeofences, 2000); // Check every 2 seconds
+      return () => clearInterval(interval);
+  }, [userLocation, activeGame, mode]);
+
+  // --- MEMOIZED DATA ---
+  
+  // Calculate Logic Links for Map Visualization (Edit/Instructor Mode)
+  const logicLinks = useMemo(() => {
+      if (!activeGame || mode === GameMode.PLAY) return [];
+      const links: any[] = [];
+      activeGame.points.forEach(p => {
+          if (!p.location) return;
+          const addLinks = (trigger: 'onOpen' | 'onCorrect' | 'onIncorrect', color: string) => {
+              const actions = p.logic?.[trigger];
+              actions?.forEach(action => {
+                  if ((action.type === 'unlock' || action.type === 'reveal') && action.targetId) {
+                      const target = activeGame.points.find(tp => tp.id === action.targetId);
+                      if (target && target.location) {
+                          links.push({ from: p.location, to: target.location, color, type: trigger });
+                      }
+                  }
+              });
+          };
+          addLinks('onOpen', '#eab308');
+          addLinks('onCorrect', '#22c55e');
+          addLinks('onIncorrect', '#ef4444');
+      });
+      return links;
+  }, [activeGame, mode]);
+
+  // Derived Active Modal Point (Live Data)
+  const liveTaskModalPoint = useMemo(() => {
+      if (!activeTaskModalId || !activeGame) return null;
+      return activeGame.points.find(p => p.id === activeTaskModalId) || null;
+  }, [activeTaskModalId, activeGame]);
+
 
   const ensureSession = (callback: () => void) => {
       if (!authUser) {
@@ -167,7 +229,7 @@ const GameApp: React.FC = () => {
       if (mode === GameMode.EDIT) {
           setActiveTask(point);
       } else if (mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR) {
-          setActiveTaskModal(point);
+          setActiveTaskModalId(point.id);
       }
   };
 
@@ -222,6 +284,75 @@ const GameApp: React.FC = () => {
       updateActiveGame({ ...activeGame, routes: updatedRoutes });
   };
 
+  const handleManualUnlock = async (pointId: string) => {
+      if (!activeGame) return;
+      const updatedPoints = activeGame.points.map(p => p.id === pointId ? { ...p, isUnlocked: true } : p);
+      await updateActiveGame({ ...activeGame, points: updatedPoints });
+  };
+
+  // --- TAG MANAGEMENT ---
+  const handleRenameTagGlobally = async (oldTag: string, newTag: string) => {
+      const renameInTasks = (tasks: TaskTemplate[]) => {
+          return tasks.map(t => ({
+              ...t,
+              tags: t.tags?.map(tag => tag === oldTag ? newTag : tag) || []
+          }));
+      };
+
+      const updatedLib = renameInTasks(taskLibrary);
+      for (const t of updatedLib) {
+          if (t.tags?.includes(newTag)) await db.saveTemplate(t);
+      }
+      setTaskLibrary(updatedLib);
+
+      const updatedLists = taskLists.map(list => ({
+          ...list,
+          tasks: renameInTasks(list.tasks)
+      }));
+      for (const list of updatedLists) await db.saveTaskList(list);
+      setTaskLists(updatedLists);
+
+      const updatedGames = games.map(g => ({
+          ...g,
+          points: g.points.map(p => ({
+              ...p,
+              tags: p.tags?.map(tag => tag === oldTag ? newTag : tag) || []
+          }))
+      }));
+      for (const g of updatedGames) await db.saveGame(g);
+      setGames(updatedGames);
+  };
+
+  const handleDeleteTagGlobally = async (tagToDelete: string) => {
+      const removeInTasks = (tasks: TaskTemplate[]) => {
+          return tasks.map(t => ({
+              ...t,
+              tags: t.tags?.filter(tag => tag !== tagToDelete) || []
+          }));
+      };
+
+      const updatedLib = removeInTasks(taskLibrary);
+      for (const t of updatedLib) await db.saveTemplate(t);
+      setTaskLibrary(updatedLib);
+
+      const updatedLists = taskLists.map(list => ({
+          ...list,
+          tasks: removeInTasks(list.tasks)
+      }));
+      for (const list of updatedLists) await db.saveTaskList(list);
+      setTaskLists(updatedLists);
+
+      const updatedGames = games.map(g => ({
+          ...g,
+          points: g.points.map(p => ({
+              ...p,
+              tags: p.tags?.filter(tag => tag !== tagToDelete) || []
+          }))
+      }));
+      for (const g of updatedGames) await db.saveGame(g);
+      setGames(updatedGames);
+  };
+
   // Check for Client Submission URL
   const urlParams = new URLSearchParams(window.location.search);
   const submissionToken = urlParams.get('submitTo');
@@ -254,7 +385,6 @@ const GameApp: React.FC = () => {
                               setGameToEdit(null);
                               setShowGameCreator(true);
                           }
-                          // Add other actions as needed
                       }}
                       onSelectGame={(id) => {
                           setActiveGameId(id);
@@ -264,6 +394,8 @@ const GameApp: React.FC = () => {
                       }}
                       userName={authUser?.name || 'Admin'}
                       initialTab={dashboardTab}
+                      onDeleteTagGlobally={handleDeleteTagGlobally}
+                      onRenameTagGlobally={handleRenameTagGlobally}
                   />
               </div>
           )}
@@ -315,12 +447,18 @@ const GameApp: React.FC = () => {
                   onOpenActions={() => setActiveTaskActionPoint(activeTask)}
               />
           )}
-          {activeTaskModal && (
+          {liveTaskModalPoint && (
               <TaskModal
-                  point={activeTaskModal}
-                  distance={0}
-                  onClose={() => setActiveTaskModal(null)}
-                  onComplete={(id, pts) => { setScore(s => s + (pts || 0)); setActiveTaskModal(null); }}
+                  point={liveTaskModalPoint} // Pass Live Point here!
+                  distance={liveTaskModalPoint.playgroundId ? 0 : haversineMeters(userLocation, liveTaskModalPoint.location)}
+                  onClose={() => setActiveTaskModalId(null)}
+                  onComplete={(id, pts) => { 
+                      setScore(s => s + (pts || 0)); 
+                      const updatedPoints = activeGame?.points.map(p => p.id === id ? { ...p, isCompleted: true } : p) || [];
+                      if (activeGame) updateActiveGame({ ...activeGame, points: updatedPoints });
+                      setActiveTaskModalId(null); 
+                  }}
+                  onUnlock={handleManualUnlock} // Pass the unlock handler!
                   mode={mode}
                   isInstructorMode={mode === GameMode.INSTRUCTOR}
               />
@@ -348,8 +486,11 @@ const GameApp: React.FC = () => {
                   taskLists={taskLists}
                   onUpdateTaskLists={setTaskLists}
                   games={games}
+                  onDeleteTagGlobally={handleDeleteTagGlobally}
+                  onRenameTagGlobally={handleRenameTagGlobally}
               />
           )}
+          {/* ... Rest of modals ... */}
           {showGameCreator && (
               <GameCreator 
                   onClose={() => setShowGameCreator(false)}
@@ -516,7 +657,6 @@ const GameApp: React.FC = () => {
                                 setDashboardTab('client');
                                 setShowDashboard(true);
                                 break;
-                            // ... other actions
                         }
                     });
                 }}
@@ -540,10 +680,10 @@ const GameApp: React.FC = () => {
         <div className="absolute inset-0 z-0">
             <GameMap 
                 ref={mapRef}
-                userLocation={userLocation}
                 points={activeGame?.points || []}
                 routes={activeGame?.routes || []}
                 dangerZones={activeGame?.dangerZones || []}
+                logicLinks={logicLinks} // Pass Logic Links!
                 measurePath={measurePath}
                 mode={mode}
                 mapStyle={localMapStyle || 'osm'} 
@@ -588,7 +728,13 @@ const GameApp: React.FC = () => {
             onRelocateGame={handleRelocateGame}
             isRelocating={isRelocating}
             timerConfig={activeGame?.timerConfig}
-            onFitBounds={() => mapRef.current?.fitBounds(activeGame?.points || [])}
+            onFitBounds={(coords) => {
+                if (coords && coords.length > 0) {
+                    mapRef.current?.fitBounds(coords);
+                } else {
+                    mapRef.current?.fitBounds(activeGame?.points || []);
+                }
+            }}
             onLocateMe={handleLocateMe}
             onSearchLocation={(c) => mapRef.current?.jumpTo(c)}
             isDrawerExpanded={isEditorExpanded}
@@ -630,7 +776,10 @@ const GameApp: React.FC = () => {
                 onClearMap={() => { if (activeGame && confirm("Clear all points?")) updateActiveGame({ ...activeGame, points: [] }); }}
                 onSaveGame={() => updateActiveGame(activeGame!)}
                 onOpenTaskMaster={() => setShowTaskMaster(true)}
-                onFitBounds={() => mapRef.current?.fitBounds(activeGame?.points || [])}
+                onFitBounds={(coords) => {
+                    if (coords && coords.length > 0) mapRef.current?.fitBounds(coords);
+                    else mapRef.current?.fitBounds(activeGame?.points || []);
+                }}
                 onOpenPlaygroundEditor={() => setViewingPlaygroundId(activeGame?.playgrounds?.[0]?.id || null)}
                 initialExpanded={true}
                 onExpandChange={setIsEditorExpanded}

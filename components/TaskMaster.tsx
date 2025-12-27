@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { TaskList, TaskTemplate, Game } from '../types';
 import * as db from '../services/db';
@@ -20,9 +19,20 @@ interface TaskMasterProps {
     onUpdateTaskLists: (lists: TaskList[]) => void;
     games: Game[];
     initialTab?: 'LIBRARY' | 'LISTS' | 'TAGS' | 'CLIENT';
+    onDeleteTagGlobally?: (tagName: string) => Promise<void>;
+    onRenameTagGlobally?: (oldTag: string, newTag: string) => Promise<void>;
 }
 
-const TaskMaster: React.FC<TaskMasterProps> = ({ onClose, onImportTasks, taskLists, onUpdateTaskLists, games, initialTab = 'LIBRARY' }) => {
+const TaskMaster: React.FC<TaskMasterProps> = ({ 
+    onClose, 
+    onImportTasks, 
+    taskLists, 
+    onUpdateTaskLists, 
+    games, 
+    initialTab = 'LIBRARY',
+    onDeleteTagGlobally,
+    onRenameTagGlobally
+}) => {
     const [tab, setTab] = useState<'LIBRARY' | 'LISTS' | 'TAGS' | 'CLIENT'>(initialTab);
     const [library, setLibrary] = useState<TaskTemplate[]>([]);
     const [loading, setLoading] = useState(true);
@@ -98,7 +108,6 @@ const TaskMaster: React.FC<TaskMasterProps> = ({ onClose, onImportTasks, taskLis
         setSelectedTemplateIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
     };
 
-    // ... (renderLibraryGrid and other parts same as before) ...
     const renderLibraryGrid = (selectionMode = false) => {
         const filtered = library.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
         
@@ -152,10 +161,10 @@ const TaskMaster: React.FC<TaskMasterProps> = ({ onClose, onImportTasks, taskLis
     };
 
     if (editingList) {
+        // ... (Editing List View - same as previous) ...
         return (
             <div className="fixed inset-0 z-[6200] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
                 <div className="bg-white dark:bg-gray-900 w-full max-w-4xl h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800 relative">
-                    
                     {/* LIST EDITOR HEADER */}
                     <div className="p-6 bg-slate-900 flex justify-between items-center shrink-0">
                         <div className="flex items-center gap-4">
@@ -182,7 +191,6 @@ const TaskMaster: React.FC<TaskMasterProps> = ({ onClose, onImportTasks, taskLis
                     
                     {/* CONTENT */}
                     <div className="flex-1 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-950 custom-scrollbar">
-                        
                         {isSelectingForCurrentList ? (
                             <div className="space-y-4">
                                 <div className="flex gap-4 mb-4">
@@ -236,7 +244,6 @@ const TaskMaster: React.FC<TaskMasterProps> = ({ onClose, onImportTasks, taskLis
                                     </div>
                                 </div>
 
-                                {/* ... (Rest of component same as before) ... */}
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="font-bold text-gray-500 uppercase text-xs tracking-widest">Tasks ({editingList.tasks.length})</h3>
                                     <button 
@@ -407,7 +414,12 @@ const TaskMaster: React.FC<TaskMasterProps> = ({ onClose, onImportTasks, taskLis
                     )}
 
                     {tab === 'TAGS' && (
-                        <AccountTags games={games} library={library} />
+                        <AccountTags 
+                            games={games} 
+                            library={library} 
+                            onDeleteTagGlobally={onDeleteTagGlobally} 
+                            onRenameTagGlobally={onRenameTagGlobally} 
+                        />
                     )}
 
                     {tab === 'CLIENT' && (
@@ -427,9 +439,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({ onClose, onImportTasks, taskLis
             {showAiGen && (
                 <AiTaskGenerator 
                     onClose={() => setShowAiGen(false)}
-                    onAddTasks={(tasks) => {
-                        // Not used in this context directly, but we can add to library
-                    }}
+                    onAddTasks={(tasks) => {}}
                     onAddToLibrary={async (tasks) => {
                         for (const t of tasks) await db.saveTemplate(t);
                         loadLibrary();

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Game } from '../types';
-import { X, Database, AlertTriangle, Terminal, Copy, Check } from 'lucide-react';
+import { X, Database, AlertTriangle, Terminal, Copy, Check, ExternalLink, CheckCircle } from 'lucide-react';
 
 interface AdminModalProps {
   games: Game[]; 
@@ -13,6 +13,7 @@ interface AdminModalProps {
 const AdminModal: React.FC<AdminModalProps> = ({ onClose, initialShowSql = false }) => {
   const [showSql, setShowSql] = useState(initialShowSql);
   const [copied, setCopied] = useState(false);
+  const [setupComplete, setSetupComplete] = useState(false);
 
   const sqlCode = `-- SYSTEM UPDATE SCRIPT
 -- RUN THIS IN SUPABASE SQL EDITOR TO FIX STORAGE AND ATOMIC UPDATES
@@ -154,31 +155,61 @@ NOTIFY pgrst, 'reload config';`;
                   <span className="text-sm font-bold uppercase flex items-center gap-2"><Terminal className="w-4 h-4" /> Setup Database Tables</span>
                   <span className="text-[10px] text-indigo-400/60 font-bold mt-1">RUN THIS TO FIX STORAGE & SCORES</span>
               </div>
-              <span className="text-[10px] bg-indigo-500/20 px-2 py-1 rounded">CLICK TO VIEW SQL</span>
+              <span className="text-[10px] bg-indigo-500/20 px-2 py-1 rounded">{showSql ? 'HIDE SQL' : 'CLICK TO VIEW SQL'}</span>
           </button>
 
           {showSql && (
               <div className="bg-black rounded-xl p-4 border border-slate-700 mb-4 relative animate-in zoom-in-95">
-                  <div className="bg-amber-900/30 border border-amber-500/50 p-3 rounded-lg mb-3 flex gap-3 items-start">
-                      <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-                      <div>
-                          <p className="text-[10px] text-amber-200 font-bold uppercase mb-1">SUPABASE WARNING</p>
-                          <p className="text-[10px] text-amber-100/80">
-                              Go to Supabase Dashboard -&gt; SQL Editor -&gt; New Query.
-                              <br/><strong>Paste this code and run it to enable Image Storage and Atomic Score Counters.</strong>
-                          </p>
+                  {!setupComplete ? (
+                      <>
+                          <div className="flex flex-col gap-2 mb-4">
+                              <div className="flex gap-2">
+                                  <a 
+                                      href="https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/new?skip=true" 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="flex-1 py-3 bg-[#3ecf8e] hover:bg-[#34b27b] text-black font-black uppercase text-[10px] tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
+                                  >
+                                      <ExternalLink className="w-3 h-3" /> OPEN SUPABASE SQL
+                                  </a>
+                                  <button 
+                                      onClick={() => setSetupComplete(true)}
+                                      className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-black uppercase text-[10px] tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2 border border-slate-600"
+                                  >
+                                      <Check className="w-3 h-3" /> MARK AS DONE
+                                  </button>
+                              </div>
+                              <p className="text-[9px] text-slate-500 text-center">
+                                  Clicking "Mark as Done" will hide the code snippet.
+                              </p>
+                          </div>
+
+                          <div className="relative">
+                              <pre className="text-[10px] text-green-400 font-mono overflow-x-auto whitespace-pre-wrap max-h-60 custom-scrollbar p-2 bg-[#0d1117] rounded-lg border border-white/10">
+                                  {sqlCode}
+                              </pre>
+                              <button 
+                                onClick={copyToClipboard}
+                                className="absolute top-2 right-2 p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-600"
+                                title="Copy SQL"
+                              >
+                                  {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                              </button>
+                          </div>
+                      </>
+                  ) : (
+                      <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+                          <CheckCircle className="w-12 h-12 mb-3 text-green-500" />
+                          <p className="font-black uppercase tracking-widest text-xs text-white">SETUP SCRIPT COMPLETED</p>
+                          <p className="text-[10px] uppercase mt-1">Code snippet has been hidden.</p>
+                          <button 
+                              onClick={() => setSetupComplete(false)} 
+                              className="mt-4 text-[9px] font-bold underline text-slate-600 hover:text-slate-400 uppercase"
+                          >
+                              Show Code Again
+                          </button>
                       </div>
-                  </div>
-                  <pre className="text-[10px] text-green-400 font-mono overflow-x-auto whitespace-pre-wrap max-h-60 custom-scrollbar p-2 bg-[#0d1117] rounded-lg border border-white/10">
-                      {sqlCode}
-                  </pre>
-                  <button 
-                    onClick={copyToClipboard}
-                    className="absolute top-2 right-2 p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-600"
-                    title="Copy SQL"
-                  >
-                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                  </button>
+                  )}
               </div>
           )}
         </div>
