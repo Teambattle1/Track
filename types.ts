@@ -8,7 +8,7 @@ export type IconId = 'default' | 'star' | 'flag' | 'trophy' | 'camera' | 'questi
 
 export type TaskType = 'text' | 'multiple_choice' | 'checkbox' | 'boolean' | 'slider' | 'dropdown' | 'multi_select_dropdown';
 
-export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'light' | 'ancient' | 'clean' | 'voyager' | 'winter' | 'ski';
+export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'light' | 'ancient' | 'clean' | 'voyager' | 'winter' | 'ski' | 'historic' | 'google_custom' | 'none';
 
 export type Language = 'English' | 'Danish' | 'German' | 'Spanish' | 'French' | 'Swedish' | 'Norwegian' | 'Dutch' | 'Belgian' | 'Hebrew';
 
@@ -285,26 +285,90 @@ export interface TimerConfig {
   endTime?: string; 
   title?: string; 
 }
+
+export interface DesignConfig {
+  taskBackgroundImage?: string;
+  primaryColor?: string; // Hex, undefined if using default
+  secondaryColor?: string; // Hex, undefined if using default
+  enableCodeScanner?: boolean;
+  enableGameTime?: boolean;
+  hideScore?: boolean;
+  showScoreAfter?: string; // HH:mm:ss
+  hideScoreAfter?: string; // HH:mm:ss
+}
+
+export interface GameTaskConfiguration {
+  timeLimitMode: 'none' | 'global' | 'task_specific';
+  globalTimeLimit?: number; // seconds
+  penaltyMode: 'zero' | 'negative';
+  showCorrectAnswerMode: 'never' | 'always' | 'task_specific';
+  limitHints: boolean;
+  hintLimit?: number;
+  showAnswerCorrectnessMode: 'never' | 'always' | 'task_specific';
+  showAfterAnswerComment: boolean;
+}
+
+export interface MapConfiguration {
+  pinDisplayMode: 'order' | 'score' | 'none';
+  showShortIntroUnderPin: boolean;
+  mapInteraction: 'disable_click' | 'allow_all' | 'allow_specific';
+  hideMyLocation: boolean;
+  showMyTrack: boolean;
+  allowNavigation: boolean;
+  allowWeakGps: boolean;
+}
+
+export interface GameChangeLogEntry {
+    timestamp: number;
+    user: string;
+    action: string;
+}
 // ------------------------
 
 export interface Game {
   id: string;
   name: string;
-  description: string;
-  language?: Language; // New: Game specific language
+  description: string; // Used as Intro Message
+  finishMessage?: string; // New: Finish Message
+  tags?: string[]; // New: Game Tags
+  language?: Language;
   points: GamePoint[];
   playgrounds?: Playground[]; 
   dangerZones?: DangerZone[]; 
-  routes?: GameRoute[]; // New: GPX Routes
+  routes?: GameRoute[]; 
   createdAt: number;
   defaultMapStyle?: MapStyleId;
-  showOtherTeams?: boolean; // New: Toggle to show teams to other teams
-  showTaskDetailsToPlayers?: boolean; // New: Toggle detailed task list in lobby
-  showRankingToPlayers?: boolean; // New: Toggle Leaderboard visibility
+  googleMapStyleJson?: string; // New: Custom Google Maps Style
+  
+  // Team & Permission Settings
+  showOtherTeams?: boolean;
+  showTaskDetailsToPlayers?: boolean; 
+  showRankingToPlayers?: boolean; 
+  allowChatting?: boolean;
+  showPlayerLocations?: boolean;
   
   // New Metadata
   client?: ClientInfo;
   timerConfig?: TimerConfig;
+  designConfig?: DesignConfig;
+  taskConfig?: GameTaskConfiguration; // New Task Configuration
+  mapConfig?: MapConfiguration; // New Map Configuration
+  
+  // Game Lifecycle / End Game
+  state?: 'active' | 'ending' | 'ended';
+  endingAt?: number; // Timestamp when game will end (during countdown)
+  endLocation?: Coordinate; // Fixed end position
+  enableMeetingPoint?: boolean; // New Flag
+
+  // New Template Fields
+  aboutTemplate?: string;
+  instructorNotes?: string;
+  templateImageUrls?: string[];
+
+  // Audit Info
+  createdBy?: string;
+  lastModifiedBy?: string;
+  changeLog?: GameChangeLogEntry[];
 }
 
 export interface GameState {

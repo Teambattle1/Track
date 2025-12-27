@@ -253,6 +253,29 @@ export const submitClientTask = async (listId: string, task: TaskTemplate): Prom
     }
 };
 
+// --- TAGS ---
+export const fetchUniqueTags = async (): Promise<string[]> => {
+    try {
+        const { data: libraryData } = await supabase.from('library').select('data');
+        const { data: gamesData } = await supabase.from('games').select('data');
+        
+        const tags = new Set<string>();
+        
+        libraryData?.forEach((row: any) => {
+            row.data.tags?.forEach((tag: string) => tags.add(tag));
+        });
+        
+        gamesData?.forEach((row: any) => {
+            row.data.tags?.forEach((tag: string) => tags.add(tag));
+        });
+
+        return Array.from(tags).sort();
+    } catch (e) {
+        console.warn("Error fetching unique tags", e);
+        return [];
+    }
+};
+
 // --- PLAYGROUNDS ---
 export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> => {
     try {

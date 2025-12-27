@@ -10,7 +10,7 @@ import {
 import { Game } from '../types';
 
 interface InitialLandingProps {
-  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR') => void;
+  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS') => void;
   version: string;
   games: Game[];
   activeGameId: string | null;
@@ -211,7 +211,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="EDIT GAME" 
                   icon={Gamepad2} 
                   gradient="bg-gradient-to-br from-cyan-600 to-blue-600" 
-                  onClick={() => onAction('GAMES')} 
+                  onClick={() => onAction('EDIT_GAME')} 
                   delay={0}
                   scale={0.75}
               />
@@ -243,7 +243,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="EDIT TEAMS" 
                   icon={Users} 
                   gradient="bg-gradient-to-br from-orange-600 to-amber-600" 
-                  onClick={() => onAction('TEAM_LOBBY')} 
+                  onClick={() => onAction('MANAGE_TEAMS')} 
                   delay={400}
                   scale={0.75}
               />

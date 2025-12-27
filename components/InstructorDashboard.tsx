@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Game, Team, TeamMember, Coordinate, GameMode, TeamStatus } from '../types';
-import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User } from 'lucide-react';
+import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, AlertTriangle, Loader2 } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
@@ -47,6 +47,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
 
   // Playground state for Instructor
   const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
+  const [terminating, setTerminating] = useState(false);
 
   const mapRef = useRef<GameMapHandle>(null);
 
@@ -125,9 +126,21 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   }
 
   const handleModeCycle = () => {
-      // INSTRUCTOR -> PLAY (Since App.tsx handles PLAY -> EDIT -> INSTRUCTOR)
-      // This button specifically exits Instructor mode to Play mode
       onSetMode(GameMode.PLAY);
+  };
+
+  const handleTerminateGame = async () => {
+      if (confirm("Are you sure you want to END THE GAME? This will trigger a 60s countdown for all players and then hide all tasks.")) {
+          setTerminating(true);
+          // Set state to 'ending' and countdown target to now + 60s
+          await db.saveGame({ 
+              ...game, 
+              state: 'ending', 
+              endingAt: Date.now() + 60000 
+          });
+          setTerminating(false);
+          alert("Countdown started! Game will end in 60 seconds.");
+      }
   };
 
   // Calculate detailed stats per team
@@ -291,6 +304,17 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
             <div className="flex items-center gap-2">
                 {viewTab === 'MAP' && (
                     <div className="flex gap-2 mx-4 hidden xl:flex items-center">
+                        <button 
+                            onClick={handleTerminateGame}
+                            disabled={terminating || game.state === 'ending' || game.state === 'ended'}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-xs font-black uppercase transition-colors ${game.state === 'ended' ? 'bg-gray-800 border-gray-700 text-gray-500' : 'bg-red-600 border-red-500 text-white hover:bg-red-700'} shadow-lg`}
+                        >
+                            {terminating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Power className="w-4 h-4" />}
+                            {game.state === 'ending' ? 'ENDING...' : (game.state === 'ended' ? 'GAME ENDED' : 'TERMINATE GAME')}
+                        </button>
+
+                        <div className="h-6 w-px bg-slate-700 mx-2"></div>
+
                         <button 
                             onClick={() => setShowTeams(!showTeams)}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase transition-colors ${showTeams ? 'bg-blue-900/30 border-blue-500 text-blue-400' : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-white'}`}

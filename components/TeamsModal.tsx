@@ -472,6 +472,10 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
           return 0;
       });
 
+      const getCompletedCount = (pts: GamePoint[]) => {
+          return pts.filter(p => activeLobbyView.completedPointIds?.includes(p.id)).length;
+      };
+
       const renderTaskRow = (point: GamePoint) => {
           const isCompleted = activeLobbyView.completedPointIds?.includes(point.id);
           return (
@@ -769,7 +773,7 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                               {/* Map Tasks Collapsible */}
                                               {mapTasks.length > 0 && (
                                                   <CollapsibleSection 
-                                                    title="MAP TASKS" 
+                                                    title={`MAP TASKS (${getCompletedCount(mapTasks)}/${mapTasks.length})`} 
                                                     icon={MapPin} 
                                                     isOpen={!collapsedLogSections['map']} 
                                                     onToggle={() => setCollapsedLogSections(prev => ({...prev, 'map': !prev['map']}))}
@@ -784,7 +788,7 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                               {playgroundGroups.map(pg => (
                                                   <CollapsibleSection 
                                                     key={pg.id}
-                                                    title={`ZONE: ${pg.title}`} 
+                                                    title={`ZONE: ${pg.title} (${getCompletedCount(pg.points)}/${pg.points.length})`}
                                                     icon={LayoutGrid} 
                                                     isOpen={!collapsedLogSections[pg.id]} 
                                                     onToggle={() => setCollapsedLogSections(prev => ({...prev, [pg.id]: !prev[pg.id]}))}

@@ -30,6 +30,50 @@ function rotateSize(width: number, height: number, rotation: number) {
 }
 
 /**
+ * Resizes an image file to a maximum dimension, preserving aspect ratio.
+ * Returns a Data URL (base64).
+ */
+export const resizeImage = async (file: File, maxDimension: number = 1200): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxDimension) {
+                        height *= maxDimension / width;
+                        width = maxDimension;
+                    }
+                } else {
+                    if (height > maxDimension) {
+                        width *= maxDimension / height;
+                        height = maxDimension;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                } else {
+                    reject(new Error("Could not get canvas context"));
+                }
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+};
+
+/**
  * Crops an image based on the provided pixel coordinates.
  * Returns the cropped image as a Data URL (base64 string).
  */

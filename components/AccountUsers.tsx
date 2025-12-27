@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import * as db from '../services/db';
+import { authService } from '../services/auth'; // Import authService to check current user
 import AdminModal from './AdminModal';
 import { 
   X, Users, Mail, ChevronDown, UserPlus, Shield, Search, Check, Trash2, 
@@ -31,6 +32,7 @@ const AccountUsers: React.FC = () => {
 
   // Users State
   const [users, setUsers] = useState<AccountUser[]>([]);
+  const currentUser = authService.getCurrentUser(); // Get current session
 
   // Add/Edit Form State
   const [userForm, setUserForm] = useState({
@@ -53,11 +55,6 @@ const AccountUsers: React.FC = () => {
     setDbError(null);
     try {
         const fetchedUsers = await db.fetchAccountUsers();
-        // If empty, allow seeding or create first user if needed
-        if (fetchedUsers.length === 0) {
-             // For demo purposes, create default admin if none exist
-             // (In real app, this might be handled by signup or initial seed script)
-        } 
         setUsers(fetchedUsers);
     } catch (e: any) {
         const message = e.message || String(e);
@@ -79,12 +76,18 @@ const AccountUsers: React.FC = () => {
   }, []);
 
   const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (u.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (u.email || '').toLowerCase().includes(searchQuery.toLowerCase())
   ).sort((a, b) => {
+    // Defensive coding: Handle missing/null roles or names
+    const roleStrA = a.role || '';
+    const roleStrB = b.role || '';
+    const nameA = a.name || '';
+    const nameB = b.name || '';
+
     // Primary Sort: Role Hierarchy
-    const roleA = a.role.split(' - ')[0];
-    const roleB = b.role.split(' - ')[0];
+    const roleA = roleStrA.split(' - ')[0];
+    const roleB = roleStrB.split(' - ')[0];
     const idxA = ROLES.indexOf(roleA);
     const idxB = ROLES.indexOf(roleB);
     
@@ -95,10 +98,14 @@ const AccountUsers: React.FC = () => {
     if (valA !== valB) return valA - valB;
     
     // Secondary Sort: Alphabetical by Name
-    return a.name.localeCompare(b.name);
+    return nameA.localeCompare(nameB);
   });
 
   const handleDeleteUser = async (id: string) => {
+    if (id === currentUser?.id) {
+        alert("You cannot delete your own account.");
+        return;
+    }
     await db.deleteAccountUsers([id]);
     setUsers(users.filter(u => u.id !== id));
     setDeleteConfirmId(null);
@@ -143,7 +150,6 @@ const AccountUsers: React.FC = () => {
           ...editingUser,
           name: userForm.name,
           role: userForm.role,
-          // Only update password if changed (and non-empty in form, logic simplified for demo)
           password: userForm.password || editingUser.password, 
           updatedAt: new Date().toLocaleDateString()
       };
@@ -172,7 +178,7 @@ const AccountUsers: React.FC = () => {
           name: user.name,
           email: user.email,
           password: user.password || '',
-          role: user.role.split(' - ')[0] // Normalize old roles if any
+          role: (user.role || '').split(' - ')[0] // Normalize old roles if any
       });
       setMessageText('');
       setMessageSent(false);
@@ -290,6 +296,7 @@ const AccountUsers: React.FC = () => {
           {filteredUsers.map(user => {
               const online = isOnline(user.lastSeen);
               const lastActiveText = getLastActiveText(user.lastSeen);
+              const isCurrentUser = currentUser?.id === user.id;
               
               return (
                   <div 
@@ -297,15 +304,17 @@ const AccountUsers: React.FC = () => {
                     onClick={() => openEditModal(user)}
                     className={`bg-[#141414] border border-white/5 rounded-3xl p-6 shadow-xl hover:border-white/20 transition-all group relative overflow-hidden cursor-pointer ${online ? 'ring-1 ring-green-500/20' : ''}`}
                   >
-                      {/* Trash Button - Stops Propagation */}
-                      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(user.id); }}
-                            className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded-xl transition-all"
-                          >
-                              <Trash2 className="w-4 h-4" />
-                          </button>
-                      </div>
+                      {/* Trash Button - Stops Propagation - DISABLED FOR SELF */}
+                      {!isCurrentUser && (
+                          <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(user.id); }}
+                                className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded-xl transition-all"
+                              >
+                                  <Trash2 className="w-4 h-4" />
+                              </button>
+                          </div>
+                      )}
 
                       <div className="flex items-start gap-4 mb-6">
                           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border shadow-inner relative ${online ? 'bg-green-900/20 border-green-500/50' : 'bg-gradient-to-br from-slate-800 to-slate-900 border-white/5'}`}>
@@ -327,7 +336,7 @@ const AccountUsers: React.FC = () => {
                       <div className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-xl border border-white/5 mb-3 group-hover:border-white/10 transition-colors">
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">ROLE</span>
                           <span className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded ${user.role.includes('Owner') ? 'text-yellow-500 bg-yellow-500/10' : 'text-white bg-white/10'}`}>
-                              {user.role}
+                              {user.role} {isCurrentUser && "(YOU)"}
                           </span>
                       </div>
 
@@ -453,7 +462,7 @@ const AccountUsers: React.FC = () => {
           </div>
       )}
 
-      {/* ADD USER MODAL (Simplified) */}
+      {/* ADD USER MODAL */}
       {isAddUserModalOpen && (
           <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
               <div className="bg-[#141414] border border-white/10 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative">

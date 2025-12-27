@@ -125,7 +125,53 @@ export const generateAvatar = async (keywords: string): Promise<string | null> =
     return generateAiImage(`Avatar of ${keywords}`, 'vector art, colorful, circular crop style');
 };
 
+// Helper to verify if an image URL is valid and loadable
+const verifyImage = (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+    });
+};
+
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
-    // Simple Clearbit fallback, AI not strictly needed for basic logo lookup
-    return `https://logo.clearbit.com/${query.replace(/\s/g, '').toLowerCase()}.com`;
+    let domain = '';
+    const key = getApiKey(); // Don't throw yet, try graceful fallback first
+
+    // 1. Try AI-powered domain search if key exists
+    if (key) {
+        try {
+            const ai = new GoogleGenAI({ apiKey: key });
+            const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
+                model: 'gemini-3-flash-preview',
+                contents: `What is the official website domain for "${query}"? Return ONLY the domain (e.g. "example.com"). Do not include https:// or www.`,
+                config: {
+                    tools: [{ googleSearch: {} }],
+                }
+            }));
+            
+            const text = response.text || '';
+            const domainMatch = text.match(/([a-z0-9][a-z0-9-]{0,61}[a-z0-9]\.)+[a-z]{2,}/i);
+            if (domainMatch) {
+                domain = domainMatch[0];
+            }
+        } catch (e) {
+            console.warn("AI Domain search failed, falling back to naive guess", e);
+        }
+    }
+
+    // 2. Fallback to naive guess if AI failed or no key
+    if (!domain) {
+        domain = `${query.replace(/\s/g, '').toLowerCase()}.com`;
+    }
+
+    // 3. Try Clearbit
+    const clearbitUrl = `https://logo.clearbit.com/${domain}`;
+    if (await verifyImage(clearbitUrl)) {
+        return clearbitUrl;
+    }
+
+    // 4. Fallback to Google Favicon (Best effort)
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 };

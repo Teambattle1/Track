@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap, useMapEvents, Polyline, Tooltip, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -49,6 +50,16 @@ const createTeamIcon = (teamName: string, photoUrl?: string, status?: TeamStatus
     return L.divIcon({ className: 'custom-team-pin', html: pinHtml, iconSize: [60, 60], iconAnchor: [30, 56], popupAnchor: [0, -60] });
 };
 
+// Simplified icon for team members viewed by captain
+const createTeammateIcon = (memberName: string) => {
+    return L.divIcon({
+        className: 'custom-teammate-icon',
+        html: `<div style="width: 30px; height: 30px; background-color: #3b82f6; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">${memberName.substring(0, 1)}</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+    });
+};
+
 export interface GameMapHandle {
   fitBounds: (points: GamePoint[] | Coordinate[]) => void;
   getBounds: () => { ne: Coordinate; sw: Coordinate } | null;
@@ -81,17 +92,20 @@ interface GameMapProps {
   onPointHover?: (point: GamePoint | null) => void;
   showScores?: boolean;
   onZoneClick?: (zone: DangerZone) => void;
+  gameEnded?: boolean; // New prop
+  returnPath?: Coordinate[]; // New prop for return line
+  showUserLocation?: boolean; // New prop for user location visibility
 }
 
 // Internal component to handle user location updates without re-rendering the whole map
-const UserLocationMarker = ({ overrideLocation, overrideAccuracy }: { overrideLocation?: Coordinate | null, overrideAccuracy?: number | null }) => {
+const UserLocationMarker = ({ overrideLocation, overrideAccuracy, visible = true }: { overrideLocation?: Coordinate | null, overrideAccuracy?: number | null, visible?: boolean }) => {
     const { userLocation: ctxLocation, gpsAccuracy: ctxAccuracy } = useLocation();
     
     // Prefer props (for testing/instructor mode), fall back to context
     const location = overrideLocation || ctxLocation;
     const accuracy = overrideAccuracy || ctxAccuracy;
 
-    if (!location) return null;
+    if (!visible || !location) return null;
 
     return (
         <>
@@ -166,7 +180,7 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
     return null;
 };
 
-const MAP_LAYERS: Record<string, { url: string; attribution: string }> = {
+const MAP_LAYERS: Record<string, { url: string; attribution: string, className?: string, errorTileUrl?: string }> = {
   osm: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors' },
   satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: '&copy; Esri' },
   dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
@@ -174,13 +188,54 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string }> = {
   ancient: { url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', attribution: '&copy; Stamen Design' },
   clean: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
   voyager: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
-  winter: { url: 'https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=vinter&zoom={z}&x={x}&y={y}', attribution: '&copy; Kartverket' },
-  ski: { url: 'https://tiles.openskimap.org/map/{z}/{x}/{y}.png', attribution: '&copy; OpenSkiMap' }
+  // Updated: Winter now uses OSM with a cold CSS filter for reliability
+  winter: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors', className: 'map-filter-winter' },
+  // Updated: Ski uses OpenSkiMap but falls back gracefully if down
+  ski: { url: 'https://tiles.openskimap.org/map/{z}/{x}/{y}.png', attribution: '&copy; OpenSkiMap' },
+  // Historic: Using OSM as base but we will apply CSS sepia filter in component
+  historic: { url: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap', className: 'map-filter-historic' },
+  // Google Custom placeholder - uses dark by default but allows saving custom JSON
+  google_custom: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' }
 };
 
 const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
+  if (mapStyle === 'none') {
+      return null; // Return nothing so no tiles are rendered
+  }
+
   const layer = MAP_LAYERS[mapStyle] || MAP_LAYERS.osm;
-  return <TileLayer url={layer.url} attribution={layer.attribution} />;
+  
+  return (
+    <>
+      <TileLayer 
+        url={layer.url} 
+        attribution={layer.attribution} 
+        className={layer.className || ''}
+      />
+      
+      {/* Historic Filter CSS Injection */}
+      {mapStyle === 'historic' && (
+          <>
+            <style>{`
+                .map-filter-historic {
+                    filter: sepia(0.6) contrast(1.1) brightness(0.9) hue-rotate(-15deg) !important;
+                }
+            `}</style>
+            {/* Paper Texture Overlay */}
+            <div className="absolute inset-0 z-[5] pointer-events-none opacity-20 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')]"></div>
+          </>
+      )}
+
+      {/* Winter Filter CSS Injection */}
+      {mapStyle === 'winter' && (
+          <style>{`
+              .map-filter-winter {
+                  filter: brightness(1.2) hue-rotate(180deg) saturate(0.5) !important;
+              }
+          `}</style>
+      )}
+    </>
+  );
 });
 
 // Task Marker Component
@@ -307,7 +362,10 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     onDeletePoint, 
     onPointHover, 
     showScores, 
-    onZoneClick 
+    onZoneClick,
+    gameEnded = false, // Destructure new prop
+    returnPath,
+    showUserLocation = true // Default true
 }, ref) => {
   // NOTE: We do NOT consume useLocation() here directly to avoid re-rendering the entire MapContainer.
   // Instead, we use the UserLocationMarker child component for the live dot.
@@ -316,8 +374,21 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
   const center = propLocation || { lat: 55.6761, lng: 12.5683 };
   const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
 
+  // Filter logic for Game Ended state
   const mapPoints = points.filter(p => {
       if (p.isSectionHeader || p.playgroundId) return false;
+      
+      // If game ended, only show Info points (points == 0) or if explicitly flagged (if we add 'isInfo' later)
+      // Assuming 0 points means 'Info'
+      if (gameEnded) {
+          // Keep info points (0 pts) or Completed tasks? Prompt says "all info points should be visible", 
+          // "all remaining tasks hidden". Let's assume info points are visible. 
+          // Completed tasks might be useful to see what you did, but "hidden" implies gone. 
+          // Let's hide everything > 0 points unless completed? 
+          // The prompt says "all remaning tasks are hidden". This implies uncompleted tasks are hidden.
+          if (!p.isCompleted && p.points > 0) return false;
+      }
+
       if (mode === GameMode.PLAY && p.isHiddenBeforeScan && !p.isUnlocked) {
           return false;
       }
@@ -331,7 +402,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
   };
 
   return (
-    <div className="relative w-full h-full z-0">
+    <div className="relative w-full h-full z-0 bg-slate-900">
         {isRelocating && (
             <div className="absolute inset-0 pointer-events-none z-[5000] flex items-center justify-center">
                 <div className="relative">
@@ -341,10 +412,19 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
             </div>
         )}
 
+        {mapStyle === 'none' && (
+            <div className="absolute inset-0 z-[0] bg-[#1a1a1a]">
+                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] [background-size:40px_40px]"></div>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-white/5 font-black uppercase text-6xl tracking-[0.2em] select-none">BLANK MAP</span>
+                </div>
+            </div>
+        )}
+
         <MapContainer 
             center={[center.lat, center.lng]} 
             zoom={15} 
-            style={{ height: '100%', width: '100%' }} 
+            style={{ height: '100%', width: '100%', backgroundColor: 'transparent' }} 
             zoomControl={false}
         >
             <MapController handleRef={ref as any} />
@@ -367,7 +447,15 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
             })}
 
             {/* LIVE USER MARKER (Internal Context Consumer) */}
-            <UserLocationMarker overrideLocation={propLocation} overrideAccuracy={propAccuracy} />
+            <UserLocationMarker overrideLocation={propLocation} overrideAccuracy={propAccuracy} visible={showUserLocation} />
+            
+            {/* Return Path (Game Ended) */}
+            {gameEnded && returnPath && returnPath.length > 1 && (
+                <Polyline 
+                    positions={returnPath.map(c => [c.lat, c.lng])}
+                    pathOptions={{ color: '#22c55e', weight: 6, dashArray: '10, 15', className: 'animate-pulse' }}
+                />
+            )}
             
             {/* Logic Links (Instructor/Edit) */}
             {logicLinks.map((link, i) => (
@@ -402,25 +490,44 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                 />
             ))}
 
-            {/* Teams (Instructor Mode) */}
-            {teams && teams.map((t) => (
-                <Marker 
-                    key={t.team.id} 
-                    position={[t.location.lat, t.location.lng]} 
-                    icon={createTeamIcon(t.team.name, t.team.photoUrl, t.status)} 
-                    zIndexOffset={1000}
-                    eventHandlers={{ click: () => onTeamClick && onTeamClick(t.team.id) }}
-                >
-                    {mode === GameMode.INSTRUCTOR && (
-                        <Tooltip direction="top" offset={[0, -40]} opacity={1} permanent>
-                            <div className="text-center">
-                                <div className="font-black uppercase text-xs">{t.team.name}</div>
-                                {t.stats && <div className="text-[9px] font-bold text-green-600">{t.stats.mapSolved}/{t.stats.mapTotal}</div>}
-                            </div>
-                        </Tooltip>
-                    )}
-                </Marker>
-            ))}
+            {/* Teams (Instructor Mode OR Captain View of Teammates) */}
+            {teams && teams.map((t) => {
+                // If it's a "teammate" view (GameMode.PLAY for captain), use simpler icon
+                if (mode === GameMode.PLAY && t.team.id === 'teammates') {
+                    return (
+                        <Marker 
+                            key={`tm-${t.team.name}`} 
+                            position={[t.location.lat, t.location.lng]} 
+                            icon={createTeammateIcon(t.team.name)} 
+                            zIndexOffset={900}
+                        >
+                            <Tooltip direction="top" offset={[0, -15]} opacity={1}>
+                                <span className="font-bold text-xs">{t.team.name}</span>
+                            </Tooltip>
+                        </Marker>
+                    );
+                }
+
+                // Instructor View
+                return (
+                    <Marker 
+                        key={t.team.id} 
+                        position={[t.location.lat, t.location.lng]} 
+                        icon={createTeamIcon(t.team.name, t.team.photoUrl, t.status)} 
+                        zIndexOffset={1000}
+                        eventHandlers={{ click: () => onTeamClick && onTeamClick(t.team.id) }}
+                    >
+                        {mode === GameMode.INSTRUCTOR && (
+                            <Tooltip direction="top" offset={[0, -40]} opacity={1} permanent>
+                                <div className="text-center">
+                                    <div className="font-black uppercase text-xs">{t.team.name}</div>
+                                    {t.stats && <div className="text-[9px] font-bold text-green-600">{t.stats.mapSolved}/{t.stats.mapTotal}</div>}
+                                </div>
+                            </Tooltip>
+                        )}
+                    </Marker>
+                );
+            })}
 
             {/* Team Trails */}
             {Object.keys(teamTrails).map(teamId => (

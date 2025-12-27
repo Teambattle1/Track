@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Game, TaskList, TaskTemplate } from '../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Game, TaskList, TaskTemplate, Team } from '../types';
 import AccountUsers from './AccountUsers';
 import AccountTags from './AccountTags';
 import * as db from '../services/db';
@@ -8,7 +8,8 @@ import {
   LayoutDashboard, Gamepad2, LayoutTemplate, ListChecks, 
   ExternalLink, Plus, ChevronRight, Settings, Clock, Star,
   Search, Filter, ChevronDown, User, Lock, Eye, MoreHorizontal,
-  CheckCircle2, Globe, Tag, Info, UserCircle, X, Users, Link, Copy, ClipboardList, Send, ArrowLeft, Home
+  CheckCircle2, Globe, Tag, Info, UserCircle, X, Users, Link, Copy, ClipboardList, Send, ArrowLeft, Home,
+  BarChart2, Calendar
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -31,6 +32,12 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
   // Client List Creation State
   const [isCreatingClientList, setIsCreatingClientList] = useState(false);
   const [newClientListName, setNewClientListName] = useState('');
+
+  // Statistics Modal State
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [statsGameId, setStatsGameId] = useState<string | null>(null);
+  const [statsTeams, setStatsTeams] = useState<Team[]>([]);
+  const [isStatsLoading, setIsStatsLoading] = useState(false);
 
   // Update active tab if initialTab changes externally
   useEffect(() => {
@@ -93,6 +100,49 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
           onAction('EDIT_GAME'); // Fallback behavior
       }
   };
+
+  const handleShowStats = async (gameId: string) => {
+      setStatsGameId(gameId);
+      setShowStatsModal(true);
+      setIsStatsLoading(true);
+      try {
+          const teams = await db.fetchTeams(gameId);
+          setStatsTeams(teams);
+      } catch (e) {
+          console.error("Failed to fetch stats", e);
+      } finally {
+          setIsStatsLoading(false);
+      }
+  };
+
+  const getGameStatsData = useMemo(() => {
+      const groups: Record<string, { teams: number, players: number }> = {};
+      
+      statsTeams.forEach(t => {
+          const date = new Date(t.updatedAt || new Date());
+          // Create key "YYYY-MM"
+          const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          
+          if (!groups[key]) {
+              groups[key] = { teams: 0, players: 0 };
+          }
+          groups[key].teams++;
+          groups[key].players += (t.members?.length || 0);
+      });
+
+      // Convert to array and sort descending by date (newest first)
+      return Object.entries(groups)
+          .sort((a, b) => b[0].localeCompare(a[0]))
+          .map(([key, data]) => {
+              const [year, month] = key.split('-');
+              const dateObj = new Date(parseInt(year), parseInt(month) - 1, 1);
+              return {
+                  monthLabel: dateObj.toLocaleString('default', { month: 'long', year: 'numeric' }),
+                  teams: data.teams,
+                  players: data.players
+              };
+          });
+  }, [statsTeams]);
 
   // --- RENDERERS ---
 
@@ -363,6 +413,14 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
               <div className="text-xs font-bold text-gray-400 text-center">0</div>
 
               <div className="flex items-center justify-end gap-3">
+                {/* Stats Button */}
+                <button 
+                    className="p-1.5 text-gray-500 hover:text-orange-500 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleShowStats(game.id); }}
+                    title="View Statistics"
+                >
+                    <BarChart2 className="w-4 h-4" />
+                </button>
                 <button className="relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full bg-green-600/20 border border-green-500/30 transition-colors focus-visible:outline-none hover:scale-110 active:scale-95">
                   <span className="translate-x-5 inline-block h-3 w-3 transform rounded-full bg-green-500 transition-transform duration-200 ease-in-out" />
                 </button>
@@ -412,6 +470,82 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
            </div>
           }
       </div>
+
+      {/* STATISTICS MODAL */}
+      {showStatsModal && (
+          <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-[#141414] border border-white/10 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
+                  
+                  {/* Header */}
+                  <div className="p-6 border-b border-white/5 bg-[#0a0a0a] flex justify-between items-center shrink-0">
+                      <div>
+                          <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-3">
+                              <BarChart2 className="w-6 h-6 text-orange-500" /> GAME STATISTICS
+                          </h3>
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                              SESSION: {gamesArr.find(g => g.id === statsGameId)?.name || 'UNKNOWN'}
+                          </p>
+                      </div>
+                      <button onClick={() => setShowStatsModal(false)} className="p-2 hover:bg-white/10 rounded-full text-gray-500 hover:text-white">
+                          <X className="w-6 h-6" />
+                      </button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-6 bg-[#0f0f0f] custom-scrollbar">
+                      {isStatsLoading ? (
+                          <div className="flex flex-col items-center justify-center h-48 opacity-50">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-2"></div>
+                              <span className="text-xs font-bold uppercase">Loading Data...</span>
+                          </div>
+                      ) : getGameStatsData.length === 0 ? (
+                          <div className="text-center py-12 opacity-30">
+                              <BarChart2 className="w-16 h-16 mx-auto mb-4" />
+                              <p className="font-black uppercase tracking-widest text-sm">NO DATA AVAILABLE</p>
+                          </div>
+                      ) : (
+                          <div className="space-y-4">
+                              {/* Total Summary */}
+                              <div className="grid grid-cols-2 gap-4 mb-6">
+                                  <div className="bg-[#1a1a1a] p-4 rounded-xl border border-white/5 text-center">
+                                      <span className="block text-2xl font-black text-white">{statsTeams.length}</span>
+                                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">TOTAL TEAMS</span>
+                                  </div>
+                                  <div className="bg-[#1a1a1a] p-4 rounded-xl border border-white/5 text-center">
+                                      <span className="block text-2xl font-black text-white">{statsTeams.reduce((sum, t) => sum + (t.members?.length || 0), 0)}</span>
+                                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">TOTAL PLAYERS</span>
+                                  </div>
+                              </div>
+
+                              <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">MONTHLY BREAKDOWN</h4>
+                              <div className="border border-white/5 rounded-xl overflow-hidden">
+                                  <table className="w-full text-left border-collapse">
+                                      <thead>
+                                          <tr className="bg-[#1a1a1a] border-b border-white/5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                              <th className="p-4">Month</th>
+                                              <th className="p-4 text-center">Teams</th>
+                                              <th className="p-4 text-center">Players</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-white/5">
+                                          {getGameStatsData.map((stat, idx) => (
+                                              <tr key={idx} className="hover:bg-white/[0.02]">
+                                                  <td className="p-4 flex items-center gap-2 font-bold text-gray-300 text-xs uppercase">
+                                                      <Calendar className="w-3 h-3 text-orange-500" />
+                                                      {stat.monthLabel}
+                                                  </td>
+                                                  <td className="p-4 text-center font-mono font-bold text-white text-sm">{stat.teams}</td>
+                                                  <td className="p-4 text-center font-mono font-bold text-white text-sm">{stat.players}</td>
+                                              </tr>
+                                          ))}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </div>
+      )}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { Game, TaskList, MapStyleId } from '../types';
-import { X, Search, Gamepad2, Plus, Calendar, MapPin, RefreshCw, Settings, Layers, Clock, Hourglass, StopCircle, LayoutGrid, Map as MapIcon, List, LayoutList } from 'lucide-react';
+import { Game, TaskList, MapStyleId, GameChangeLogEntry } from '../types';
+import { X, Search, Gamepad2, Plus, Calendar, MapPin, RefreshCw, Settings, Layers, Clock, Hourglass, StopCircle, LayoutGrid, Map as MapIcon, List, LayoutList, History, User, FileClock, ChevronDown } from 'lucide-react';
 import { getFlag } from '../utils/i18n';
 
 interface GameChooserProps {
@@ -25,15 +25,62 @@ const MAP_LABELS: Record<MapStyleId, string> = {
     clean: 'Clean',
     voyager: 'Voyager',
     winter: 'Winter',
-    ski: 'Ski Map'
+    ski: 'Ski Map',
+    historic: 'Historic',
+    google_custom: 'Google Custom',
+    none: 'No Map'
 };
+
+const GameHistoryModal = ({ logs, gameName, onClose }: { logs: GameChangeLogEntry[], gameName: string, onClose: () => void }) => (
+    <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+        <div className="bg-[#141414] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="p-6 border-b border-white/5 bg-[#0a0a0a] flex justify-between items-center">
+                <div>
+                    <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
+                        <History className="w-5 h-5 text-blue-500" /> CHANGE LOG
+                    </h3>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase mt-1 tracking-wide">
+                        HISTORY FOR: {gameName}
+                    </p>
+                </div>
+                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-slate-500 hover:text-white">
+                    <X className="w-5 h-5" />
+                </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                {logs && logs.length > 0 ? (
+                    logs.slice().reverse().map((log, idx) => (
+                        <div key={idx} className="flex gap-4 p-4 bg-[#0a0a0a] border border-white/5 rounded-xl">
+                            <div className="flex flex-col items-center">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mb-1"></div>
+                                <div className="w-px h-full bg-blue-500/20"></div>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-black text-white uppercase tracking-wide">{log.action}</h4>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 flex items-center gap-2">
+                                    <User className="w-3 h-3 text-slate-600" /> {log.user || 'Unknown'}
+                                </p>
+                                <p className="text-[9px] text-slate-600 font-mono mt-1">{new Date(log.timestamp).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-center py-10 opacity-50">
+                        <History className="w-12 h-12 text-slate-600 mx-auto mb-2" />
+                        <p className="text-xs font-bold uppercase text-slate-500">No history recorded</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    </div>
+);
 
 const GameChooser: React.FC<GameChooserProps> = ({ 
     games, 
     taskLists, 
     onSelectGame, 
     onCreateGame, 
-    onClose,
+    onClose, 
     onSaveAsTemplate,
     onOpenGameCreator,
     onRefresh,
@@ -42,6 +89,7 @@ const GameChooser: React.FC<GameChooserProps> = ({
     const [search, setSearch] = useState('');
     const [view, setView] = useState<'GAMES' | 'TEMPLATES'>('GAMES');
     const [layout, setLayout] = useState<'GRID' | 'LIST'>('GRID');
+    const [historyGame, setHistoryGame] = useState<Game | null>(null);
 
     const filteredGames = games.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
     
@@ -184,9 +232,11 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                                     <span className="text-[9px] font-bold text-slate-400 uppercase">{timerInfo.label}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4 mt-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                                            <div className="flex flex-wrap items-center gap-4 mt-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
                                                 <span className="flex items-center gap-1.5 truncate"><MapPin className="w-3 h-3 text-indigo-500" /> CLIENT: {game.client?.name || 'N/A'}</span>
-                                                <span className="hidden sm:flex items-center gap-1.5 truncate"><Calendar className="w-3 h-3 text-slate-400" /> GAMEDATE: {game.client?.playingDate ? new Date(game.client.playingDate).toLocaleDateString() : new Date(game.createdAt).toLocaleDateString()}</span>
+                                                {game.lastModifiedBy && (
+                                                    <span className="flex items-center gap-1.5 truncate"><FileClock className="w-3 h-3 text-blue-500" /> MODIFIED BY: {game.lastModifiedBy}</span>
+                                                )}
                                             </div>
                                         </div>
 
@@ -208,6 +258,16 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
+                                                    setHistoryGame(game);
+                                                }}
+                                                className="p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                                title="View Log"
+                                            >
+                                                <History className="w-4 h-4" />
+                                            </button>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     onEditGame(game);
                                                 }}
                                                 className="p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
@@ -224,7 +284,7 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                 <div 
                                     key={game.id} 
                                     onClick={() => onSelectGame(game.id)}
-                                    className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl relative flex flex-col min-h-[340px] hover:border-indigo-500/50 hover:bg-slate-800 transition-all cursor-pointer"
+                                    className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl relative flex flex-col min-h-[380px] hover:border-indigo-500/50 hover:bg-slate-800 transition-all cursor-pointer"
                                 >
                                     {/* Background Image */}
                                     {game.client?.logoUrl ? (
@@ -251,33 +311,40 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                         
                                         {/* Title & Desc */}
                                         <div className="mb-4">
-                                            <h3 className="text-lg font-black text-white uppercase tracking-wide leading-tight mb-1 group-hover:text-indigo-400 transition-colors drop-shadow-sm">{game.name}</h3>
+                                            <h3 className="text-lg font-black text-white uppercase tracking-wide leading-tight mb-1 group-hover:text-indigo-400 transition-colors drop-shadow-sm truncate">{game.name}</h3>
                                             <p className="text-xs text-slate-400 line-clamp-2 h-8 leading-tight">{game.description || "No description provided."}</p>
                                         </div>
 
                                         {/* Metadata Rows */}
                                         <div className="space-y-2 mb-4 bg-black/20 p-3 rounded-xl border border-white/5">
-                                            {/* Map Visual */}
                                             <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
                                                 <Layers className="w-3 h-3 text-indigo-400" />
                                                 <span className="uppercase">{MAP_LABELS[game.defaultMapStyle || 'osm'] || 'Standard'} Map</span>
                                             </div>
-                                            
-                                            {/* Timer Config */}
                                             <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
                                                 <TimerIcon className="w-3 h-3 text-orange-400" />
                                                 <span className="uppercase">{timerInfo.label}</span>
                                             </div>
+                                            {game.createdBy && (
+                                                <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400 border-t border-white/5 pt-1 mt-1">
+                                                    <User className="w-3 h-3 text-green-500" />
+                                                    <span className="uppercase truncate">CREATOR: {game.createdBy}</span>
+                                                </div>
+                                            )}
+                                            {game.lastModifiedBy && (
+                                                <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400">
+                                                    <FileClock className="w-3 h-3 text-blue-500" />
+                                                    <span className="uppercase truncate">MOD: {game.lastModifiedBy}</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Task Breakdown */}
                                         <div className="flex-1 space-y-1 mb-4">
-                                            {/* On Map Tasks */}
                                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
                                                 <span className="flex items-center gap-1"><MapIcon className="w-3 h-3" /> ON MAP TASKS</span>
                                                 <span className="text-white">{mapTaskCount}</span>
                                             </div>
-                                            {/* Playgrounds */}
                                             {playgroundStats.map((pg, idx) => (
                                                 <div key={idx} className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
                                                     <span className="flex items-center gap-1 truncate max-w-[140px]"><LayoutGrid className="w-3 h-3 text-blue-400" /> ZONE: {pg.title}</span>
@@ -290,7 +357,7 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                         <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-800/50">
                                             <div className="flex flex-col gap-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
                                                 <div className="flex items-center gap-1.5">
-                                                    <Calendar className="w-3 h-3" /> <span className="text-slate-400">GAMEDATE:</span> {game.client?.playingDate ? new Date(game.client.playingDate).toLocaleDateString() : new Date(game.createdAt).toLocaleDateString()}
+                                                    <Calendar className="w-3 h-3" /> <span className="text-slate-400">DATE:</span> {game.client?.playingDate ? new Date(game.client.playingDate).toLocaleDateString() : new Date(game.createdAt).toLocaleDateString()}
                                                 </div>
                                                 {game.client?.name && (
                                                     <div className="flex items-center gap-1.5">
@@ -299,17 +366,29 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                                 )}
                                             </div>
                                             
-                                            {/* Edit Button */}
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onEditGame(game);
-                                                }}
-                                                className="p-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-500 rounded-lg transition-all shadow-lg flex-shrink-0"
-                                                title="Edit Game Settings"
-                                            >
-                                                <Settings className="w-4 h-4" />
-                                            </button>
+                                            {/* Action Buttons */}
+                                            <div className="flex gap-1">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setHistoryGame(game);
+                                                    }}
+                                                    className="p-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-blue-600 hover:border-blue-500 rounded-lg transition-all shadow-lg flex-shrink-0"
+                                                    title="View Change Log"
+                                                >
+                                                    <History className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onEditGame(game);
+                                                    }}
+                                                    className="p-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-500 rounded-lg transition-all shadow-lg flex-shrink-0"
+                                                    title="Edit Game Settings"
+                                                >
+                                                    <Settings className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -321,6 +400,15 @@ const GameChooser: React.FC<GameChooserProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* History Modal */}
+            {historyGame && (
+                <GameHistoryModal 
+                    logs={historyGame.changeLog || []} 
+                    gameName={historyGame.name} 
+                    onClose={() => setHistoryGame(null)} 
+                />
+            )}
         </div>
     );
 };

@@ -1,9 +1,11 @@
+
 import { supabase } from '../lib/supabase';
 import { TaskVote, TeamMember, ChatMessage, Coordinate } from '../types';
 
 type VoteCallback = (votes: TaskVote[]) => void;
 type MemberCallback = (members: TeamMember[]) => void;
 type ChatCallback = (message: ChatMessage) => void;
+type GlobalLocationCallback = (locations: { teamId: string, location: Coordinate, name: string, photoUrl?: string, timestamp: number }[]) => void;
 
 class TeamSyncService {
   private channel: any = null;
@@ -17,9 +19,13 @@ class TeamSyncService {
   private votes: Record<string, TaskVote[]> = {}; 
   private members: Map<string, TeamMember> = new Map();
   
+  // Track other team locations (Global view)
+  private otherTeams: Map<string, { location: Coordinate, name: string, photoUrl?: string, teamId: string, timestamp: number }> = new Map();
+
   private voteListeners: VoteCallback[] = [];
   private memberListeners: MemberCallback[] = [];
   private chatListeners: ChatCallback[] = [];
+  private globalLocationListeners: GlobalLocationCallback[] = [];
 
   // Track latest vote timestamp PER DEVICE to safely ignore out-of-order packets without global clock sync issues
   private deviceVoteTimestamps: Record<string, number> = {}; 
@@ -70,7 +76,7 @@ class TeamSyncService {
         }
       });
 
-    // 2. Global Game Channel (For Messages from Instructor)
+    // 2. Global Game Channel (For Messages from Instructor & Captain Locations)
     this.connectGlobal(gameId);
   }
 
@@ -86,6 +92,9 @@ class TeamSyncService {
         .on('broadcast', { event: 'chat' }, (payload: any) => {
             this.handleIncomingChat(payload.payload as ChatMessage);
         })
+        .on('broadcast', { event: 'global_location' }, (payload: any) => {
+            this.handleGlobalLocation(payload.payload);
+        })
         .subscribe();
   }
 
@@ -100,6 +109,7 @@ class TeamSyncService {
     }
     this.votes = {};
     this.members.clear();
+    this.otherTeams.clear();
   }
 
   public castVote(pointId: string, answer: any) {
@@ -145,6 +155,50 @@ class TeamSyncService {
           });
       }, 500);
   }
+
+  // --- GLOBAL LOCATION LOGIC (Captain Visibility) ---
+  public broadcastGlobalLocation(gameId: string, teamId: string, name: string, location: Coordinate, photoUrl?: string) {
+      if (!this.globalChannel) return;
+      
+      this.globalChannel.send({
+          type: 'broadcast',
+          event: 'global_location',
+          payload: { teamId, name, location, photoUrl }
+      });
+  }
+
+  private handleGlobalLocation(data: any) {
+      // Store or update other team location
+      this.otherTeams.set(data.teamId, { ...data, timestamp: Date.now() });
+      this.notifyGlobalLocationListeners();
+  }
+
+  private notifyGlobalLocationListeners() {
+      // Filter out stale locations > 2 mins
+      const now = Date.now();
+      const active: any[] = [];
+      const deadKeys: string[] = [];
+
+      this.otherTeams.forEach((t, key) => {
+          if (now - t.timestamp < 120000) {
+              active.push(t);
+          } else {
+              deadKeys.push(key);
+          }
+      });
+      
+      deadKeys.forEach(k => this.otherTeams.delete(k));
+      
+      this.globalLocationListeners.forEach(cb => cb(active));
+  }
+
+  public subscribeToGlobalLocations(callback: GlobalLocationCallback) {
+      this.globalLocationListeners.push(callback);
+      return () => {
+          this.globalLocationListeners = this.globalLocationListeners.filter(cb => cb !== callback);
+      };
+  }
+  // --------------------------------------------------
 
   // Called by App.tsx whenever location updates
   public updateLocation(location: Coordinate) {
