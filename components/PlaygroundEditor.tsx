@@ -574,20 +574,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </div>
                 </div>
 
-                {/* Right Side Tools (Vertical Pill) */}
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 z-20 pointer-events-auto">
-                    <div className="bg-[#0f172a] border border-slate-800 rounded-full p-2 shadow-2xl flex flex-col gap-2">
-                        <button onClick={() => onAddTask('MANUAL', activePlayground.id)} className="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg" title="Add Task">
-                            <Gamepad2 className="w-5 h-5" />
-                        </button>
-                        <button onClick={() => onOpenLibrary(activePlayground.id)} className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg" title="Library">
-                            <Library className="w-5 h-5" />
-                        </button>
-                        <button onClick={() => onAddZoneFromLibrary()} className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg" title="Import Zone">
-                            <Users className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
+                {/* Right Side Tools hidden - functionality moved to right tasks drawer */}
 
                 {/* Zoom Controls */}
                 <div className="absolute bottom-6 right-6 z-20 flex gap-2 pointer-events-auto">
