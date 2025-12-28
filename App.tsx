@@ -242,6 +242,73 @@ const GameApp: React.FC = () => {
       }
   };
 
+  const handleSaveGameTemplate = async () => {
+      if (!activeGame) return;
+
+      // If we're currently editing a template, "save" means update the template.
+      if (activeGame.isGameTemplate) {
+          await updateActiveGame(activeGame);
+          return;
+      }
+
+      const templateName = window.prompt('Template name', `${activeGame.name} TEMPLATE`);
+      if (!templateName) return;
+
+      const now = Date.now();
+      const templateId = `tmpl-${now}`;
+
+      const templateGame: Game = {
+          ...activeGame,
+          id: templateId,
+          name: templateName,
+          createdAt: now,
+          isGameTemplate: true,
+          state: undefined,
+          endingAt: undefined,
+          dbUpdatedAt: new Date().toISOString(),
+          points: (activeGame.points || []).map(p => ({
+              ...p,
+              isCompleted: false,
+              isUnlocked: true
+          }))
+      };
+
+      await db.saveGame(templateGame);
+      setGames(prev => [templateGame, ...prev]);
+      alert('Game Template saved!');
+  };
+
+  const handleCreateGameFromTemplate = async (templateId: string) => {
+      const template = games.find(g => g.id === templateId);
+      if (!template) return;
+
+      const now = Date.now();
+      const newGameId = `game-${now}`;
+
+      const baseName = template.name.replace(/\s*TEMPLATE\s*$/i, '').trim();
+
+      const newGame: Game = {
+          ...template,
+          id: newGameId,
+          createdAt: now,
+          isGameTemplate: false,
+          name: baseName || `${template.name} (Copy)`,
+          dbUpdatedAt: new Date().toISOString(),
+          points: (template.points || []).map(p => ({
+              ...p,
+              isCompleted: false,
+              isUnlocked: true
+          }))
+      };
+
+      await db.saveGame(newGame);
+      setGames(prev => [newGame, ...prev]);
+      setActiveGameId(newGame.id);
+      setMode(GameMode.EDIT);
+      setShowGameChooser(false);
+      setShowLanding(false);
+  };
+
   const handleDeleteGame = async (id: string) => {
       await db.deleteGame(id);
       setGames(prev => prev.filter(g => g.id !== id));
