@@ -19,6 +19,7 @@ const approxDistanceMeters = (a: Coordinate, b: Coordinate) => {
 };
 
 type VoteCallback = (votes: TaskVote[]) => void;
+type VoteListener = { pointId: string | null; callback: VoteCallback };
 type MemberCallback = (members: TeamMember[]) => void;
 type ChatCallback = (message: ChatMessage) => void;
 type GlobalLocationCallback = (locations: { teamId: string, location: Coordinate, name: string, photoUrl?: string, timestamp: number }[]) => void;
@@ -46,7 +47,7 @@ class TeamSyncService {
   // Track other team locations (Global view)
   private otherTeams: Map<string, { location: Coordinate, name: string, photoUrl?: string, teamId: string, timestamp: number }> = new Map();
 
-  private voteListeners: VoteCallback[] = [];
+  private voteListeners: VoteListener[] = [];
   private memberListeners: MemberCallback[] = [];
   private chatListeners: ChatCallback[] = [];
   private globalLocationListeners: GlobalLocationCallback[] = [];
@@ -446,7 +447,11 @@ class TeamSyncService {
     });
     this.notifyMemberListeners();
 
-    this.voteListeners.forEach(cb => cb(this.votes[vote.pointId]));
+    this.voteListeners.forEach(l => {
+        if (l.pointId === null || l.pointId === vote.pointId) {
+            l.callback(this.votes[vote.pointId]);
+        }
+    });
   }
 
   private handleIncomingChat(msg: ChatMessage) {
@@ -473,11 +478,20 @@ class TeamSyncService {
       this.memberListeners.forEach(cb => cb(active));
   }
 
+  public subscribeToVotesForTask(pointId: string, callback: VoteCallback) {
+      this.voteListeners.push({ pointId, callback });
+      callback(this.votes[pointId] || []);
+      return () => {
+          this.voteListeners = this.voteListeners.filter(l => l.callback !== callback);
+      };
+  }
+
+  // Backwards-compatible: subscribes to all vote events.
   public subscribeToVotes(callback: VoteCallback) {
-    this.voteListeners.push(callback);
-    return () => {
-      this.voteListeners = this.voteListeners.filter(cb => cb !== callback);
-    };
+      this.voteListeners.push({ pointId: null, callback });
+      return () => {
+          this.voteListeners = this.voteListeners.filter(l => l.callback !== callback);
+      };
   }
   
   public subscribeToMembers(callback: MemberCallback) {
