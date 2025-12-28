@@ -330,14 +330,27 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
         </React.Fragment>
     );
 }, (prev, next) => {
-    return prev.point.id === next.point.id && 
-           prev.point.location.lat === next.point.location.lat && 
+    // Both points have no location (playground-only)
+    if (!prev.point.location && !next.point.location) {
+        return true; // Considered "equal" for memo purposes
+    }
+    // One has location, other doesn't
+    if (!prev.point.location || !next.point.location) {
+        return false; // Need to re-render if location status changed
+    }
+    // Both have locations, compare them
+    return prev.point.id === next.point.id &&
+           prev.point.location.lat === next.point.location.lat &&
            prev.point.location.lng === next.point.location.lng &&
            prev.point.isUnlocked === next.point.isUnlocked &&
            prev.point.isCompleted === next.point.isCompleted &&
            prev.mode === next.mode &&
            prev.showScore === next.showScore &&
-           prev.point.isHiddenBeforeScan === next.point.isHiddenBeforeScan;
+           prev.point.isHiddenBeforeScan === next.point.isHiddenBeforeScan &&
+           prev.point.iconId === next.point.iconId &&
+           prev.point.iconUrl === next.point.iconUrl &&
+           prev.point.radiusMeters === next.point.radiusMeters &&
+           prev.point.areaColor === next.point.areaColor;
 });
 
 const DangerZoneMarker = React.memo(({ zone, onClick, mode }: any) => {
