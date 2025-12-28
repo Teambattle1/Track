@@ -245,23 +245,28 @@ const GameApp: React.FC = () => {
           if (geofenceCheckRunningRef.current) return;
           geofenceCheckRunningRef.current = true;
 
-          let hasUpdates = false;
-          const updatedPoints = activeGame.points.map(p => {
-              if (p.isUnlocked || p.isCompleted || p.isSectionHeader || p.playgroundId) return p;
+          const patches: { pointId: string; patch: any }[] = [];
+
+          activeGame.points.forEach(p => {
+              if (p.isUnlocked || p.isCompleted || p.isSectionHeader || p.playgroundId) return;
               if (p.activationTypes.includes('radius') && isWithinRadius(userLocation, p.location, p.radiusMeters)) {
-                  hasUpdates = true;
-                  if (navigator.vibrate) navigator.vibrate(200);
-                  return { ...p, isUnlocked: true };
+                  patches.push({ pointId: p.id, patch: { isUnlocked: true } });
               }
-              return p;
           });
 
           try {
-              if (hasUpdates) {
-                  const updatedGame = { ...activeGame, points: updatedPoints };
-                  await db.saveGame(updatedGame);
-                  setActiveGame(updatedGame);
-                  setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g));
+              if (patches.length > 0) {
+                  if (navigator.vibrate) navigator.vibrate(200);
+
+                  const remote = await db.patchGamePoints(activeGame.id, patches, {
+                      user: authUser?.name,
+                      action: 'Geofence Unlock'
+                  });
+
+                  if (remote) {
+                      setActiveGame(remote);
+                      setGames(prev => prev.map(g => (g.id === remote.id ? remote : g)));
+                  }
               }
           } finally {
               geofenceCheckRunningRef.current = false;
