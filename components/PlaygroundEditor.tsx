@@ -244,12 +244,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 })}
                             </div>
 
-                            <button 
-                                onClick={() => fileInputRef.current?.click()}
+                            <button
+                                onClick={() => iconInputRef.current?.click()}
                                 className="w-full py-2 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 uppercase hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-2"
                             >
                                 <Upload className="w-3 h-3" /> UPLOAD CUSTOM ICON
                             </button>
+                            <input ref={iconInputRef} type="file" className="hidden" accept="image/*" onChange={handleIconUpload} />
                             
                             <div className="mt-4">
                                 <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase mb-1">
