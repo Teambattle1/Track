@@ -83,7 +83,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
     onRelocateGame, isRelocating, timerConfig, onFitBounds, onLocateMe, onSearchLocation,
     isDrawerExpanded, showScores, onToggleScores, hiddenPlaygroundIds, onToggleChat, unreadMessagesCount,
     targetPlaygroundId, onAddDangerZone, activeDangerZone, onEditGameSettings, onOpenGameChooser,
-    routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true
+    routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true, locateFeedback
 }) => {
     const [timeLeft, setTimeLeft] = useState<string>('');
     const [timerAlert, setTimerAlert] = useState(false);
