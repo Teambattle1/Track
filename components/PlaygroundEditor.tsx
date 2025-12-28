@@ -1679,7 +1679,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                         )}
                                                         <div className="flex-1 min-w-0">
                                                             {showTaskOrder && (
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">TASK {String(index + 1).padStart(2, '0')}</p>
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">TASK {String(index + 1).padStart(2, '0')}</p>
+                                                                    {bulkIconMode && (
+                                                                        <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                                                            bulkIconSourceId === point.id
+                                                                                ? 'bg-blue-600 text-white'
+                                                                                : bulkIconSourceId && bulkIconTargets.has(point.id)
+                                                                                    ? 'bg-orange-600 text-white'
+                                                                                    : 'bg-slate-700 text-slate-400'
+                                                                        }`}>
+                                                                            {bulkIconSourceId === null ? 'SELECT SOURCE' : bulkIconSourceId === point.id ? 'SOURCE ✓' : 'TARGET'}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             )}
                                                             {editingTitleId === point.id ? (
                                                                 <input
