@@ -227,7 +227,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <MousePointerClick className="w-3 h-3" /> HUD BUTTON APPEARANCE
                                 </span>
                             </div>
-                            
+
+                            {/* Custom Icon Preview */}
+                            {activePlayground.iconUrl && (
+                                <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-700 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <img src={activePlayground.iconUrl} alt="Custom Icon" className="w-8 h-8 object-contain" />
+                                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">CUSTOM ICON</span>
+                                    </div>
+                                    <button
+                                        onClick={() => updatePlayground({ iconUrl: undefined, iconId: 'default' })}
+                                        className="p-1.5 text-slate-500 hover:text-red-500 transition-colors"
+                                        title="Remove Custom Icon"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-4 gap-2 mb-3">
                                 {['default', 'star', 'flag', 'trophy', 'camera', 'question', 'skull', 'treasure'].map((iconKey) => {
                                     const Icon = ICON_COMPONENTS[iconKey as IconId];
