@@ -62,6 +62,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showAiTaskModal, setShowAiTaskModal] = useState(false);
     const [showTaskScores, setShowTaskScores] = useState(true);
     const [showTaskOrder, setShowTaskOrder] = useState(true);
+    const [showTaskActions, setShowTaskActions] = useState(true);
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
