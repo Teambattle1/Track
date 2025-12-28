@@ -157,7 +157,7 @@ export const deleteGame = async (id: string) => {
 // --- TEAMS ---
 export const fetchTeams = async (gameId: string): Promise<Team[]> => {
     try {
-        const { data, error } = await supabase.from('teams').select('*').eq('game_id', gameId);
+        const { data, error } = await supabase.from('teams').select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids').eq('game_id', gameId);
         if (error) throw error;
         if (!data) return [];
         return data.map((row: any) => ({
@@ -181,7 +181,7 @@ export const fetchTeams = async (gameId: string): Promise<Team[]> => {
 
 export const fetchTeam = async (teamId: string): Promise<Team | null> => {
     try {
-        const { data, error } = await supabase.from('teams').select('*').eq('id', teamId).single();
+        const { data, error } = await supabase.from('teams').select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids').eq('id', teamId).single();
         if (error) throw error;
         if (!data) return null;
         return {
@@ -362,7 +362,7 @@ export const deleteTaskList = async (id: string) => {
 
 export const submitClientTask = async (listId: string, task: TaskTemplate): Promise<boolean> => {
     try {
-        const { data: current } = await supabase.from('task_lists').select('*').eq('id', listId).single();
+        const { data: current } = await supabase.from('task_lists').select('id, data').eq('id', listId).single();
         if (!current) return false;
         
         const listData = current.data as TaskList;
@@ -379,8 +379,16 @@ export const submitClientTask = async (listId: string, task: TaskTemplate): Prom
 // --- TAGS ---
 export const fetchUniqueTags = async (): Promise<string[]> => {
     try {
-        const { data: libraryData } = await supabase.from('library').select('data');
-        const { data: gamesData } = await supabase.from('games').select('data');
+        const libraryResult = await retryWithBackoff(
+            () => supabase.from('library').select('data'),
+            'fetchUniqueTags[library]'
+        );
+        const gamesResult = await retryWithBackoff(
+            () => supabase.from('games').select('data'),
+            'fetchUniqueTags[games]'
+        );
+        const { data: libraryData } = libraryResult;
+        const { data: gamesData } = gamesResult;
         
         const tags = new Set<string>();
         
@@ -402,7 +410,11 @@ export const fetchUniqueTags = async (): Promise<string[]> => {
 // --- PLAYGROUNDS ---
 export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> => {
     try {
-        const { data, error } = await supabase.from('playground_library').select('*');
+        const result = await retryWithBackoff(
+            () => supabase.from('playground_library').select('id, title, is_global, data'),
+            'fetchPlaygroundLibrary'
+        );
+        const { data, error } = result;
         if (error) throw error;
         return data ? data.map((row: any) => ({ ...row.data, id: row.id, title: row.title, isGlobal: row.is_global })) : [];
     } catch (e) { logError('fetchPlaygroundLibrary', e); return []; }
@@ -424,7 +436,11 @@ export const deletePlaygroundTemplate = async (id: string) => {
 // --- USERS ---
 export const fetchAccountUsers = async (): Promise<AccountUser[]> => {
     try {
-        const { data, error } = await supabase.from('account_users').select('*');
+        const result = await retryWithBackoff(
+            () => supabase.from('account_users').select('id, data'),
+            'fetchAccountUsers'
+        );
+        const { data, error } = result;
         if (error) throw error;
         return data ? data.map((row: any) => ({ ...row.data, id: row.id })) : [];
     } catch (e) { 
