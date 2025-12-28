@@ -120,6 +120,54 @@ const GameApp: React.FC = () => {
     init();
   }, []);
 
+  // --- REALTIME: Games/Templates list updates across editors ---
+  useEffect(() => {
+      const channel = supabase.channel('games_list_changes');
+
+      const rowToGame = (row: any): Game => ({
+          ...(row.data as Game),
+          id: row.id,
+          dbUpdatedAt: row.updated_at
+      });
+
+      const applyIncomingGame = (incoming: Game) => {
+          setGames(prev => {
+              const exists = prev.some(g => g.id === incoming.id);
+              const next = exists ? prev.map(g => (g.id === incoming.id ? incoming : g)) : [incoming, ...prev];
+              return next;
+          });
+
+          if (activeGameId === incoming.id) {
+              if ((mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && activeTask) return;
+              setActiveGame(incoming);
+          }
+      };
+
+      channel
+          .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: 'games' },
+              (payload: any) => {
+                  if (payload.eventType === 'DELETE') {
+                      const id = payload.old?.id;
+                      if (!id) return;
+                      setGames(prev => prev.filter(g => g.id !== id));
+                      if (activeGameId === id) setActiveGame(null);
+                      return;
+                  }
+
+                  const row = payload.new;
+                  if (!row) return;
+                  applyIncomingGame(rowToGame(row));
+              }
+          )
+          .subscribe();
+
+      return () => {
+          supabase.removeChannel(channel);
+      };
+  }, [activeGameId, mode, activeTask]);
+
   // Measurement logic updates
   useEffect(() => {
       if (isMeasuring && userLocation) {
