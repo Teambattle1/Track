@@ -61,6 +61,7 @@ interface GameHUDProps {
     onReturnToStart?: () => void;
     // Permission Props
     allowChatting?: boolean;
+    locateFeedback?: string | null;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any }[] = [
