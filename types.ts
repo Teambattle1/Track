@@ -7,7 +7,7 @@ export type IconId = 'default' | 'star' | 'flag' | 'trophy' | 'camera' | 'questi
 
 export type TaskType = 'text' | 'multiple_choice' | 'checkbox' | 'boolean' | 'slider' | 'dropdown' | 'multi_select_dropdown' | 'timeline';
 
-export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'light' | 'ancient' | 'clean' | 'voyager' | 'winter' | 'ski' | 'historic' | 'google_custom' | 'none';
+export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'light' | 'ancient' | 'clean' | 'voyager' | 'winter' | 'ski' | 'norwegian' | 'historic' | 'google_custom' | 'none';
 
 export type Language = 'English' | 'Danish' | 'German' | 'Spanish' | 'French' | 'Swedish' | 'Norwegian' | 'Dutch' | 'Belgian' | 'Hebrew';
 
