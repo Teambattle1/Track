@@ -856,6 +856,45 @@ const GameApp: React.FC = () => {
                   onAddZoneFromLibrary={() => {}}
               />
           )}
+          {viewingPlaygroundId && activeGame && (
+              <PlaygroundEditor
+                  game={activeGame}
+                  onUpdateGame={(updatedGame) => {
+                      updateActiveGame(updatedGame, "Updated Playground");
+                  }}
+                  onClose={() => {
+                      setViewingPlaygroundId(null);
+                  }}
+                  onEditPoint={(p) => setActiveTask(p)}
+                  onPointClick={(p) => {
+                      mapRef.current?.jumpTo(p.location);
+                  }}
+                  onAddTask={async (type, playgroundId) => {
+                      if (!activeGame) return;
+                      const center = mapRef.current?.getCenter() || { lat: 0, lng: 0 };
+                      const newPoint: GamePoint = {
+                          id: `p-${Date.now()}`,
+                          title: 'New Task',
+                          location: playgroundId ? { lat: 0, lng: 0 } : center,
+                          playgroundId: playgroundId,
+                          iconId: 'default',
+                          points: 100,
+                          radiusMeters: 30,
+                          activationTypes: ['radius'],
+                          isUnlocked: true,
+                          isCompleted: false,
+                          color: '#FF6B6B'
+                      };
+                      await updateActiveGame({ ...activeGame, points: [...activeGame.points, newPoint] });
+                  }}
+                  onOpenLibrary={() => setShowTaskMaster(true)}
+                  showScores={showScores}
+                  onToggleScores={() => setShowScores(!showScores)}
+                  onHome={() => setViewingPlaygroundId(null)}
+                  isTemplateMode={false}
+                  onAddZoneFromLibrary={() => setShowTaskMaster(true)}
+              />
+          )}
           {showChatDrawer && activeGameId && (
               <ChatDrawer 
                   isOpen={showChatDrawer}
