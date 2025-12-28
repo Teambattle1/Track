@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Game, TimerConfig, TimerMode, MapStyleId, Language, DesignConfig, GameTaskConfiguration, MapConfiguration } from '../types';
 import { 
@@ -143,8 +142,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [templateImages, setTemplateImages] = useState<string[]>(baseGame?.templateImageUrls || []);
 
   // End Location
-  const [endLat, setEndLat] = useState<string>(baseGame?.endLocation?.lat.toString() || '');
-  const [endLng, setEndLng] = useState<string>(baseGame?.endLocation?.lng.toString() || '');
+  const [endLat, setEndLat] = useState<string>(baseGame?.endLocation?.lat?.toString?.() ?? '');
+  const [endLng, setEndLng] = useState<string>(baseGame?.endLocation?.lng?.toString?.() ?? '');
   const [enableMeetingPoint, setEnableMeetingPoint] = useState<boolean>(baseGame?.enableMeetingPoint || false);
 
   // Design Config
@@ -353,11 +352,50 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           return;
       }
 
+      // --- VALIDATION ---
+      if (timerMode === 'countdown') {
+          if (!Number.isFinite(duration) || duration <= 0) {
+              alert('Please enter a valid countdown duration (minutes).');
+              return;
+          }
+      }
+
+      if (timeLimitMode === 'global') {
+          if (!Number.isFinite(globalTimeLimit) || globalTimeLimit <= 0) {
+              alert('Please enter a valid global time limit (seconds).');
+              return;
+          }
+      }
+
+      if (limitHints) {
+          if (!Number.isFinite(hintLimit) || hintLimit <= 0) {
+              alert('Please enter a valid hint limit.');
+              return;
+          }
+      }
+
+      if (selectedMapStyle === 'google_custom') {
+          try {
+              const parsed = JSON.parse(customMapJson);
+              if (!Array.isArray(parsed)) {
+                  alert('Custom Google Map Style JSON must be a JSON array.');
+                  return;
+              }
+          } catch {
+              alert('Invalid JSON for Custom Google Map Style.');
+              return;
+          }
+      }
+
       let endLocation = undefined;
       if (endLat && endLng) {
           const lat = parseFloat(endLat);
           const lng = parseFloat(endLng);
           if (!isNaN(lat) && !isNaN(lng)) {
+              if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                  alert('End location coordinates are out of range.');
+                  return;
+              }
               endLocation = { lat, lng };
           }
       }
@@ -674,7 +712,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               <div className="space-y-4 animate-in fade-in">
                                   <div>
                                       <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Duration (Minutes)</label>
-                                      <input type="number" value={duration} onChange={(e) => setDuration(parseInt(e.target.value))} className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none" />
+                                      <input type="number" value={duration} onChange={(e) => {
+                                          const v = parseInt(e.target.value, 10);
+                                          setDuration(Number.isFinite(v) ? v : 0);
+                                      }} className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none" />
                                   </div>
                                   <div>
                                       <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Timer Title</label>
@@ -1144,7 +1185,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       <input 
                                           type="number" 
                                           value={globalTimeLimit} 
-                                          onChange={(e) => setGlobalTimeLimit(parseInt(e.target.value))}
+                                          onChange={(e) => {
+                                              const v = parseInt(e.target.value, 10);
+                                              setGlobalTimeLimit(Number.isFinite(v) ? v : 0);
+                                          }}
                                           className="w-24 bg-slate-950 border border-slate-700 rounded-lg p-2 text-white text-sm font-bold outline-none focus:border-orange-500"
                                       />
                                       <span className="text-xs text-slate-400">seconds</span>
@@ -1173,7 +1217,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   <input 
                                       type="number" 
                                       value={hintLimit} 
-                                      onChange={(e) => setHintLimit(parseInt(e.target.value))}
+                                      onChange={(e) => {
+                                          const v = parseInt(e.target.value, 10);
+                                          setHintLimit(Number.isFinite(v) ? v : 0);
+                                      }}
                                       placeholder="Hint number limit..."
                                       className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm font-bold outline-none focus:border-orange-500 placeholder:text-slate-600"
                                   />
