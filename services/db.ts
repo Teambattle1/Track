@@ -71,7 +71,11 @@ const fetchInChunks = async <T>(
                 3 // Retry each chunk up to 3 times for better resilience
             );
 
-            if (error) throw error;
+            if (error) {
+                console.error(`[DB Service] Query error at offset ${offset}:`, error);
+                throw error;
+            }
+
             if (!data || data.length === 0) {
                 hasMore = false;
             } else {
@@ -84,6 +88,10 @@ const fetchInChunks = async <T>(
             }
         } catch (e) {
             logError(context, e);
+            // On first chunk failure, log additional context
+            if (offset === 0) {
+                console.error(`[DB Service] Initial fetch failed for ${context}. Check database connection and table permissions.`);
+            }
             hasMore = false; // Stop trying to fetch more chunks if we hit an error
         }
     }
