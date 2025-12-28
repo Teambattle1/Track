@@ -96,7 +96,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
       setIsGeneratingLogo(true);
       setLogoUrl(null);
       setError(null);
-      
+
       try {
           const url = await searchLogoUrl(topic);
           if (url) {
@@ -109,6 +109,37 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
           setError("Error searching for logo.");
       } finally {
           setIsGeneratingLogo(false);
+      }
+  };
+
+  const handleGenerateSound = async () => {
+      if (!topic.trim()) return;
+      setIsGeneratingSound(true);
+      setError(null);
+
+      try {
+          const url = await generateMoodAudio(topic);
+          if (url) {
+              setBatchAudioUrl(url);
+          } else {
+              setError("Could not generate audio for this topic. Try again.");
+          }
+      } catch (e) {
+          setError("Error generating audio. Check API key or try again.");
+      } finally {
+          setIsGeneratingSound(false);
+      }
+  };
+
+  const handlePlaySound = () => {
+      if (audioRef.current && batchAudioUrl) {
+          if (isPlayingSound) {
+              audioRef.current.pause();
+              setIsPlayingSound(false);
+          } else {
+              audioRef.current.play();
+              setIsPlayingSound(true);
+          }
       }
   };
 
