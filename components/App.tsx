@@ -295,7 +295,7 @@ const GameApp: React.FC = () => {
 
           const patches: { pointId: string; patch: any }[] = [];
 
-          activeGame.points.forEach(p => {
+          (activeGame?.points || []).forEach(p => {
               if (p.isUnlocked || p.isCompleted || p.isSectionHeader || p.playgroundId) return;
               if (p.activationTypes.includes('radius') && isWithinRadius(userLocation, p.location, p.radiusMeters)) {
                   patches.push({ pointId: p.id, patch: { isUnlocked: true } });
