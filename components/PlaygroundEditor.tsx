@@ -1410,7 +1410,44 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                             {showTaskOrder && (
                                                                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">TASK {String(index + 1).padStart(2, '0')}</p>
                                                             )}
-                                                            <p className="text-xs font-bold text-white truncate group-hover:text-orange-300 transition-colors">{point.title}</p>
+                                                            {editingTitleId === point.id ? (
+                                                                <input
+                                                                    type="text"
+                                                                    value={editingTitleValue}
+                                                                    onChange={(e) => setEditingTitleValue(e.target.value)}
+                                                                    onBlur={() => {
+                                                                        if (editingTitleValue.trim()) {
+                                                                            updateTask({ title: editingTitleValue });
+                                                                        }
+                                                                        setEditingTitleId(null);
+                                                                    }}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter') {
+                                                                            if (editingTitleValue.trim()) {
+                                                                                updateTask({ title: editingTitleValue });
+                                                                            }
+                                                                            setEditingTitleId(null);
+                                                                        } else if (e.key === 'Escape') {
+                                                                            setEditingTitleId(null);
+                                                                        }
+                                                                    }}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="w-full bg-slate-700 border border-orange-500 rounded px-2 py-1 text-xs font-bold text-white outline-none focus:border-orange-400"
+                                                                    autoFocus
+                                                                />
+                                                            ) : (
+                                                                <p
+                                                                    className="text-xs font-bold text-white truncate group-hover:text-orange-300 transition-colors cursor-text"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setEditingTitleId(point.id);
+                                                                        setEditingTitleValue(point.title);
+                                                                    }}
+                                                                    title="Double-click to edit"
+                                                                >
+                                                                    {point.title}
+                                                                </p>
+                                                            )}
                                                             {showTaskScores && (
                                                                 <p className="text-[9px] font-bold text-orange-400 uppercase mt-1 flex items-center gap-1">
                                                                     <span>$</span>
