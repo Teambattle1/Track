@@ -22,6 +22,12 @@ interface LocationHistoryItem extends Coordinate {
 }
 
 const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose, onSetMode, mode }) => {
+  const [liveGame, setLiveGame] = useState<Game>(game);
+
+  useEffect(() => {
+      setLiveGame(game);
+  }, [game.id, game.dbUpdatedAt]);
+
   const [teams, setTeams] = useState<Team[]>([]);
   const [onlineMembers, setOnlineMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(false);
@@ -116,13 +122,16 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       const newVal = !showOtherTeams;
       setShowOtherTeams(newVal);
       // Persist setting
-      await db.saveGame({ ...game, showOtherTeams: newVal });
+      await db.saveGame({ ...liveGame, showOtherTeams: newVal });
   };
 
   const toggleShowRanking = async () => {
       const newVal = !showRanking;
       setShowRanking(newVal);
-      await db.saveGame({ ...game, showRankingToPlayers: newVal });
+      const updatedAt = new Date().toISOString();
+      const updatedGame = { ...liveGame, showRankingToPlayers: newVal, dbUpdatedAt: updatedAt };
+      await db.saveGame(updatedGame);
+      setLiveGame(updatedGame);
   }
 
   const handleModeCycle = () => {
@@ -133,11 +142,15 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       if (confirm("Are you sure you want to END THE GAME? This will trigger a 60s countdown for all players and then hide all tasks.")) {
           setTerminating(true);
           // Set state to 'ending' and countdown target to now + 60s
-          await db.saveGame({ 
-              ...game, 
-              state: 'ending', 
-              endingAt: Date.now() + 60000 
-          });
+          const updatedAt = new Date().toISOString();
+          const updatedGame = {
+              ...liveGame,
+              state: 'ending' as const,
+              endingAt: Date.now() + 60000,
+              dbUpdatedAt: updatedAt
+          };
+          await db.saveGame(updatedGame);
+          setLiveGame(updatedGame);
           setTerminating(false);
           alert("Countdown started! Game will end in 60 seconds.");
       }
@@ -146,11 +159,11 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   // Calculate detailed stats per team
   const getTeamStats = (team: Team, index: number) => {
       const completedIds = team.completedPointIds || [];
-      const mapTasks = game.points.filter(p => !p.playgroundId && !p.isSectionHeader);
+      const mapTasks = liveGame.points.filter(p => !p.playgroundId && !p.isSectionHeader);
       const mapSolved = mapTasks.filter(p => completedIds.includes(p.id)).length;
 
-      const playgroundStats = (game.playgrounds || []).map(pg => {
-          const zoneTasks = game.points.filter(p => p.playgroundId === pg.id);
+      const playgroundStats = (liveGame.playgrounds || []).map(pg => {
+          const zoneTasks = liveGame.points.filter(p => p.playgroundId === pg.id);
           const solved = zoneTasks.filter(p => completedIds.includes(p.id)).length;
           return {
               name: pg.title,
@@ -213,7 +226,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
           }
       });
       return locs;
-  }, [teams, onlineMembers, showTeams, locationHistory, game.points, game.playgrounds]);
+  }, [teams, onlineMembers, showTeams, locationHistory, liveGame.points, liveGame.playgrounds]);
 
   // Trails only for Captains
   const teamTrails = useMemo(() => {
@@ -229,13 +242,13 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   const logicLinks = useMemo(() => {
       if (!showTasks) return [];
       const links: { from: Coordinate; to: Coordinate; color?: string; type?: 'onOpen' | 'onCorrect' | 'onIncorrect' }[] = [];
-      game.points.forEach(p => {
+      liveGame.points.forEach(p => {
           if (!p.location) return;
           const addLinks = (trigger: 'onOpen' | 'onCorrect' | 'onIncorrect', color: string) => {
               const actions = p.logic?.[trigger];
               actions?.forEach(action => {
                   if ((action.type === 'unlock' || action.type === 'reveal') && action.targetId) {
-                      const target = game.points.find(tp => tp.id === action.targetId);
+                      const target = liveGame.points.find(tp => tp.id === action.targetId);
                       if (target && target.location) {
                           links.push({ from: p.location, to: target.location, color, type: trigger });
                       }
@@ -247,11 +260,11 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
           addLinks('onIncorrect', '#ef4444');
       });
       return links;
-  }, [game.points, showTasks]);
+  }, [liveGame.points, showTasks]);
 
   const dependentPointIds = useMemo(() => {
       const targets = new Set<string>();
-      game.points.forEach(p => {
+      liveGame.points.forEach(p => {
           ['onOpen', 'onCorrect', 'onIncorrect'].forEach((trigger) => {
               const actions = p.logic?.[trigger as keyof typeof p.logic];
               actions?.forEach(action => {
@@ -262,17 +275,17 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
           });
       });
       return Array.from(targets);
-  }, [game.points]);
+  }, [liveGame.points]);
 
   const pointStats = useMemo(() => {
       const stats: Record<string, string> = {};
       const totalTeams = teams.length;
-      game.points.forEach(point => {
+      liveGame.points.forEach(point => {
           const visitedCount = teams.filter(t => t.completedPointIds?.includes(point.id)).length;
           stats[point.id] = `${visitedCount}/${totalTeams}`;
       });
       return stats;
-  }, [game.points, teams]);
+  }, [liveGame.points, teams]);
 
   const handleUpdateScore = async (delta: number) => {
       if (selectedTeamId) {
@@ -282,10 +295,10 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   };
 
   const selectedTeam = teams.find(t => t.id === selectedTeamId);
-  const selectedPoint = game.points.find(p => p.id === selectedPointId);
-  const visiblePoints = showTasks ? game.points : [];
-  const visiblePlaygrounds = game.playgrounds?.filter(p => p.buttonVisible) || [];
-  const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId);
+  const selectedPoint = liveGame.points.find(p => p.id === selectedPointId);
+  const visiblePoints = showTasks ? liveGame.points : [];
+  const visiblePlaygrounds = liveGame.playgrounds?.filter(p => p.buttonVisible) || [];
+  const activePlayground = liveGame.playgrounds?.find(p => p.id === activePlaygroundId);
 
   return (
     <div className="fixed inset-0 z-[2000] bg-slate-900 text-white flex flex-col animate-in fade-in duration-300">
@@ -297,7 +310,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                     INSTRUCTOR DASHBOARD
                 </h1>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mt-1">
-                    GAME: <span className="text-white">{game.name}</span>
+                    GAME: <span className="text-white">{liveGame.name}</span>
                 </p>
             </div>
             
@@ -306,11 +319,11 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                     <div className="flex gap-2 mx-4 hidden xl:flex items-center">
                         <button 
                             onClick={handleTerminateGame}
-                            disabled={terminating || game.state === 'ending' || game.state === 'ended'}
-                            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-xs font-black uppercase transition-colors ${game.state === 'ended' ? 'bg-gray-800 border-gray-700 text-gray-500' : 'bg-red-600 border-red-500 text-white hover:bg-red-700'} shadow-lg`}
+                            disabled={terminating || liveGame.state === 'ending' || liveGame.state === 'ended'}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-xs font-black uppercase transition-colors ${liveGame.state === 'ended' ? 'bg-gray-800 border-gray-700 text-gray-500' : 'bg-red-600 border-red-500 text-white hover:bg-red-700'} shadow-lg`}
                         >
                             {terminating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Power className="w-4 h-4" />}
-                            {game.state === 'ending' ? 'ENDING...' : (game.state === 'ended' ? 'GAME ENDED' : 'TERMINATE GAME')}
+                            {liveGame.state === 'ending' ? 'ENDING...' : (liveGame.state === 'ended' ? 'GAME ENDED' : 'TERMINATE GAME')}
                         </button>
 
                         <div className="h-6 w-px bg-slate-700 mx-2"></div>
@@ -405,6 +418,15 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                 setSelectedTeamId(teamId);
                             }}
                             selectedPointId={selectedPointId}
+                            onPointMove={async (id: string, loc: { lat: number; lng: number }) => {
+                                const plainLoc = { lat: loc.lat, lng: loc.lng };
+                                const updated = await db.updateGameItemLocation(liveGame.id, id, plainLoc, {
+                                    user: 'Instructor',
+                                    action: 'Moved Item'
+                                });
+                                if (!updated) return;
+                                setLiveGame(updated);
+                            }}
                         />
                         
                         {/* Instructor Map Tools - Zoom / Locate */}
@@ -412,7 +434,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                             <LocationSearch 
                                 onSelectLocation={(c) => mapRef.current?.jumpTo(c)} 
                                 onLocateMe={() => { /* Instructor usually doesn't need to locate self, but useful for testing */ }}
-                                onFitBounds={() => mapRef.current?.fitBounds(game.points)}
+                                onFitBounds={() => mapRef.current?.fitBounds(liveGame.points)}
                                 hideSearch={true}
                                 className="h-10"
                                 labelButtons={true}
@@ -479,7 +501,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
         {activePlaygroundId && activePlayground && (
             <PlaygroundModal 
                 playground={activePlayground}
-                points={game.points}
+                points={liveGame.points}
                 onClose={() => setActivePlaygroundId(null)}
                 onPointClick={() => {}} 
                 mode={GameMode.INSTRUCTOR}
