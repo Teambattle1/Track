@@ -708,59 +708,94 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
-                    {/* Add Task Button */}
-                    <button
-                        onClick={() => onAddTask('MANUAL', activePlayground.id)}
-                        className="w-full py-3 border-2 border-dashed border-orange-500 rounded-xl text-orange-400 hover:text-orange-300 hover:border-orange-400 hover:bg-orange-500/10 font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all group"
-                    >
-                        <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" /> ADD TASK
-                    </button>
+                {/* Content - Task Creation Buttons */}
+                <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
+                    {/* Four Task Creation Buttons */}
+                    <div className="grid grid-cols-2 gap-2">
+                        {/* Add from Library Button */}
+                        <button
+                            onClick={() => onOpenLibrary(activePlayground.id)}
+                            className="py-4 px-3 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 hover:text-blue-300 border border-blue-600/40 hover:border-blue-500 rounded-lg font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all group flex-col"
+                            title="Add tasks from your library"
+                        >
+                            <Library className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span>LIBRARY</span>
+                        </button>
+
+                        {/* Add AI Task Button */}
+                        <button
+                            onClick={() => onAddTask('AI', activePlayground.id)}
+                            className="py-4 px-3 bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 hover:text-purple-300 border border-purple-600/40 hover:border-purple-500 rounded-lg font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all group flex-col"
+                            title="Generate task using AI"
+                        >
+                            <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span>AI TASK</span>
+                        </button>
+
+                        {/* Add Tasklist Button */}
+                        <button
+                            onClick={() => onAddTask('MANUAL', activePlayground.id)}
+                            className="py-4 px-3 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 hover:text-indigo-300 border border-indigo-600/40 hover:border-indigo-500 rounded-lg font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all group flex-col"
+                            title="Add a tasklist with multiple items"
+                        >
+                            <LayoutGrid className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span>TASKLIST</span>
+                        </button>
+
+                        {/* Add New Task Button */}
+                        <button
+                            onClick={() => onAddTask('MANUAL', activePlayground.id)}
+                            className="py-4 px-3 bg-orange-600/20 hover:bg-orange-600/40 text-orange-400 hover:text-orange-300 border border-orange-600/40 hover:border-orange-500 rounded-lg font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all group flex-col"
+                            title="Create a new task"
+                        >
+                            <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span>NEW TASK</span>
+                        </button>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
 
                     {/* Tasks List */}
-                    {playgroundPoints.length === 0 ? (
-                        <div className="text-center py-8">
-                            <p className="text-[10px] text-slate-500 uppercase tracking-wide">No tasks in zone yet</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {playgroundPoints.map((point, index) => (
-                                <div
-                                    key={point.id}
-                                    className="p-3 bg-slate-800 border border-slate-700 rounded-lg hover:border-orange-500 transition-colors cursor-pointer group"
-                                    onClick={() => onEditPoint(point)}
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">TASK {String(index + 1).padStart(2, '0')}</p>
-                                            <p className="text-xs font-bold text-white truncate">{point.title}</p>
+                    <div className="space-y-3">
+                        {playgroundPoints.length === 0 ? (
+                            <div className="text-center py-8">
+                                <p className="text-[10px] text-slate-500 uppercase tracking-wide">No tasks in zone yet</p>
+                                <p className="text-[9px] text-slate-600 mt-2">Use the buttons above to add your first task</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {playgroundPoints.map((point, index) => (
+                                    <div
+                                        key={point.id}
+                                        className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-orange-500 hover:bg-slate-800 transition-colors cursor-pointer group"
+                                        onClick={() => onEditPoint(point)}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">TASK {String(index + 1).padStart(2, '0')}</p>
+                                                <p className="text-xs font-bold text-white truncate group-hover:text-orange-300 transition-colors">{point.title}</p>
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEditPoint(point);
+                                                }}
+                                                className="p-1.5 text-slate-500 hover:text-orange-500 transition-colors flex-shrink-0"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                // Edit point logic
-                                                onEditPoint(point);
-                                            }}
-                                            className="p-1.5 text-slate-500 hover:text-orange-500 transition-colors flex-shrink-0"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Footer */}
-                <div className="p-5 border-t border-slate-800">
-                    <button
-                        onClick={() => onOpenLibrary(activePlayground.id)}
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
-                    >
-                        <Library className="w-4 h-4" /> FROM LIBRARY
-                    </button>
+                {/* Footer - Empty as all actions are in content */}
+                <div className="p-5 border-t border-slate-800 flex-shrink-0">
+                    <p className="text-[9px] text-slate-500 uppercase tracking-widest text-center">Tasks added to: <span className="text-orange-400 font-bold">{activePlayground.title}</span></p>
                 </div>
             </div>
         </div>
