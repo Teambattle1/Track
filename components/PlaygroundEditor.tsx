@@ -791,7 +791,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
                                 <div className="flex justify-between items-center">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                        <Slider className="w-3 h-3" /> ICON SIZE
+                                        <Maximize2 className="w-3 h-3" /> ICON SIZE
                                     </label>
                                     <span className="text-[10px] font-bold text-orange-400">{Math.round((selectedTask.playgroundScale || 1) * 100)}%</span>
                                 </div>
