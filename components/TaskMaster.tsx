@@ -34,6 +34,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     taskLists,
     onUpdateTaskLists,
     games,
+    activeGame,
     initialTab = 'LIBRARY',
     onDeleteTagGlobally,
     onRenameTagGlobally
