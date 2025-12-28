@@ -860,7 +860,7 @@ const GameApp: React.FC = () => {
               <PlaygroundEditor
                   game={activeGame}
                   onUpdateGame={(updatedGame) => {
-                      updateActiveGame(updatedGame, "Updated Playground");
+                      updateActiveGame(updatedGame);
                   }}
                   onClose={() => {
                       setViewingPlaygroundId(null);
