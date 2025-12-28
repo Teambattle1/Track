@@ -1048,24 +1048,35 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         {uniquePlaygroundPoints.map((point, index) => {
                             const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
                             const isSelected = selectedTaskId === point.id;
+                            const isMarked = markedTaskIds.has(point.id);
                             const displaySize = (point.playgroundScale || 1) * 48;
                             const isDraggingThis = draggingTaskId === point.id;
                             return (
                                 <div
                                     key={point.id}
-                                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 group ${isDraggingThis ? 'cursor-grabbing' : 'cursor-grab'}`}
+                                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 group ${isDraggingThis ? 'cursor-grabbing' : isMarkMode ? 'cursor-pointer' : 'cursor-grab'}`}
                                     style={{ left: `${point.playgroundPosition?.x || 50}%`, top: `${point.playgroundPosition?.y || 50}%` }}
                                     onMouseDown={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
                                     }}
-                                    onPointerDown={(e) => handleTaskPointerDown(e, point)}
+                                    onPointerDown={(e) => {
+                                        if (isMarkMode && !isDraggingThis) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            toggleMarkTask(point.id);
+                                        } else {
+                                            handleTaskPointerDown(e, point);
+                                        }
+                                    }}
                                     onPointerMove={handleTaskPointerMove}
                                     onPointerUp={handleTaskPointerUp}
                                     onPointerCancel={handleTaskPointerUp}
                                 >
                                     <div className={`rounded-full flex items-center justify-center border-4 shadow-xl transition-all relative ${
-                                        isSelected
+                                        isMarked
+                                            ? 'border-orange-400 shadow-orange-400/70 scale-120 animate-pulse'
+                                            : isSelected
                                             ? 'border-orange-500 shadow-orange-500/50 scale-125'
                                             : 'border-slate-900 group-hover:scale-110'
                                     } ${point.isCompleted ? 'bg-green-500' : 'bg-white'}`}
@@ -1074,6 +1085,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <img src={point.iconUrl} alt={point.title} className="w-2/3 h-2/3 object-contain" />
                                         ) : (
                                             <Icon className={`w-6 h-6 ${point.isCompleted ? 'text-white' : 'text-slate-900'}`} />
+                                        )}
+
+                                        {/* Mark Indicator Badge */}
+                                        {isMarked && (
+                                            <div className="absolute -top-2 -right-2 bg-orange-400 text-white text-[10px] font-black rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow-lg">
+                                                ✓
+                                            </div>
                                         )}
 
                                         {/* Task Order Badge */}
@@ -1098,7 +1116,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         )}
                                     </div>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        {point.title}
+                                        {isMarkMode ? (isMarked ? '✓ MARKED' : 'CLICK TO MARK') : point.title}
                                     </div>
                                 </div>
                             );
