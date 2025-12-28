@@ -439,8 +439,27 @@ export const fetchTaskLists = async (): Promise<TaskList[]> => {
             'fetchTaskLists',
             CHUNK_SIZE
         );
-        return rows.map((row: any) => ({ ...row.data, id: row.id }));
-    } catch (e) { logError('fetchTaskLists', e); return []; }
+        return rows.map((row: any) => {
+            const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+            return { ...rowData, id: row.id };
+        });
+    } catch (e) {
+        logError('fetchTaskLists', e);
+        // Try fallback: fetch without chunking as last resort
+        try {
+            console.warn('[DB Service] Attempting fetchTaskLists fallback (no chunking)...');
+            const { data, error } = await supabase.from('task_lists').select('id, data').limit(10000);
+            if (error) throw error;
+            if (!data) return [];
+            return data.map((row: any) => {
+                const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+                return { ...rowData, id: row.id };
+            });
+        } catch (fallbackError) {
+            logError('fetchTaskLists[fallback]', fallbackError);
+            return [];
+        }
+    }
 };
 
 export const fetchTaskListByToken = async (token: string): Promise<TaskList | null> => {
