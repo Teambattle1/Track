@@ -230,89 +230,94 @@ const GameManager: React.FC<GameManagerProps> = ({
           </button>
         </div>
 
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex flex-col gap-2">
-          <div className="flex gap-2">
+        <div className="p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+          {/* Primary Tabs: GAMES vs TEMPLATES */}
+          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-3">
             <button
-              onClick={() => setSection('GAMES')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors ${
+              onClick={() => {
+                setSection('GAMES');
+                setView('LIST');
+                setStatusTab('TODAY');
+              }}
+              className={`px-3 py-2 rounded-t-lg text-xs font-bold uppercase tracking-wide transition-all border-b-2 ${
                 section === 'GAMES'
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                  ? 'text-orange-600 border-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400'
+                  : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-gray-800 dark:hover:text-gray-300'
               }`}
             >
-              Games
+              📋 Games
             </button>
             <button
               onClick={() => setSection('TEMPLATES')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors ${
+              className={`px-3 py-2 rounded-t-lg text-xs font-bold uppercase tracking-wide transition-all border-b-2 ${
                 section === 'TEMPLATES'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                  ? 'text-purple-600 border-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400'
+                  : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-gray-800 dark:hover:text-gray-300'
               }`}
             >
-              Game Templates
+              ⭐ Templates
             </button>
           </div>
 
+          {/* Secondary Options: MY GAMES vs CREATE NEW (only for GAMES section) */}
           {section === 'GAMES' && (
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setView('LIST')}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors ${
-                    view === 'LIST'
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  My Games
-                </button>
-                <button
-                  onClick={() => setView('CREATE')}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors ${
-                    view === 'CREATE'
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  Create New
-                </button>
-              </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setView('LIST')}
+                className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                  view === 'LIST'
+                    ? 'bg-orange-600 text-white shadow-lg'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                My Games
+              </button>
+              <button
+                onClick={() => setView('CREATE')}
+                className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                  view === 'CREATE'
+                    ? 'bg-orange-600 text-white shadow-lg'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Create New
+              </button>
+            </div>
+          )}
 
-              {view === 'LIST' && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setStatusTab('TODAY')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors ${
-                      statusTab === 'TODAY'
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={() => setStatusTab('PLANNED')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors ${
-                      statusTab === 'PLANNED'
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    Planned
-                  </button>
-                  <button
-                    onClick={() => setStatusTab('COMPLETED')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors ${
-                      statusTab === 'COMPLETED'
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    Completed
-                  </button>
-                </div>
-              )}
+          {/* Status Filters: TODAY, PLANNED, COMPLETED (only for MY GAMES view) */}
+          {section === 'GAMES' && view === 'LIST' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStatusTab('TODAY')}
+                className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                  statusTab === 'TODAY'
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setStatusTab('PLANNED')}
+                className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                  statusTab === 'PLANNED'
+                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Planned
+              </button>
+              <button
+                onClick={() => setStatusTab('COMPLETED')}
+                className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                  statusTab === 'COMPLETED'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                Completed
+              </button>
             </div>
           )}
         </div>
