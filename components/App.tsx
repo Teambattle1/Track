@@ -1063,12 +1063,19 @@ const GameApp: React.FC = () => {
                 onPointMove={async (id, loc) => {
                     if (!currentGameObj) return;
 
+                    if (mode === GameMode.SIMULATION) {
+                        const updatedPoints = currentGameObj.points.map(p => p.id === id ? { ...p, location: loc } : p);
+                        const updatedPlaygrounds = (currentGameObj.playgrounds || []).map(pg => pg.id === id ? { ...pg, location: loc } : pg);
+                        const updatedZones = (currentGameObj.dangerZones || []).map(z => z.id === id ? { ...z, location: loc } : z);
+                        setSimulatedGame({ ...currentGameObj, points: updatedPoints, playgrounds: updatedPlaygrounds, dangerZones: updatedZones });
+                        return;
+                    }
+
                     const updated = await db.updateGameItemLocation(currentGameObj.id, id, loc);
                     if (!updated) return;
 
                     setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
                     setActiveGame(updated);
-                    setSimulatedGame(mode === GameMode.SIMULATION ? updated : simulatedGame);
                 }}
                 accuracy={gpsAccuracy}
                 isRelocating={isRelocating}
