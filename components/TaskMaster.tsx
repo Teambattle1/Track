@@ -56,6 +56,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     // Template Editing
     const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | null>(null);
 
+    // Task editing within a list
+    const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null);
+
     // Refs
     const listImageInputRef = useRef<HTMLInputElement>(null);
 
