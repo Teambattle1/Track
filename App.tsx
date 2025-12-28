@@ -128,6 +128,26 @@ const GameApp: React.FC = () => {
       }
   }, [activeGameId, games]);
 
+  // --- MULTI-USER EDIT SYNC (lightweight polling) ---
+  useEffect(() => {
+      if (!activeGameId) return;
+      if (mode !== GameMode.EDIT && mode !== GameMode.INSTRUCTOR) return;
+      // Avoid overwriting local, unsaved edits while a point is open in the editor.
+      if (activeTask) return;
+
+      const interval = window.setInterval(async () => {
+          const remote = await db.fetchGame(activeGameId);
+          if (!remote) return;
+
+          if (remote.dbUpdatedAt && remote.dbUpdatedAt === activeGame?.dbUpdatedAt) return;
+
+          setGames(prev => prev.map(g => g.id === remote.id ? remote : g));
+          setActiveGame(remote);
+      }, 5000);
+
+      return () => window.clearInterval(interval);
+  }, [activeGameId, mode, activeTask, activeGame?.dbUpdatedAt]);
+
   // --- GEOFENCING ENGINE ---
   useEffect(() => {
       if (!activeGame || mode !== GameMode.PLAY || !userLocation) return;
@@ -209,10 +229,13 @@ const GameApp: React.FC = () => {
   };
 
   const updateActiveGame = async (updatedGame: Game) => {
-      await db.saveGame(updatedGame);
-      setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g));
-      if (activeGameId === updatedGame.id) {
-          setActiveGame(updatedGame);
+      const updatedAt = new Date().toISOString();
+      const gameToSave = { ...updatedGame, dbUpdatedAt: updatedAt };
+
+      await db.saveGame(gameToSave);
+      setGames(prev => prev.map(g => g.id === gameToSave.id ? gameToSave : g));
+      if (activeGameId === gameToSave.id) {
+          setActiveGame(gameToSave);
       }
   };
 
@@ -701,10 +724,14 @@ const GameApp: React.FC = () => {
                 onDeletePoint={handleDeleteItem}
                 onPointMove={async (id, loc) => {
                     if (!activeGame) return;
-                    const updatedPoints = activeGame.points.map(p => p.id === id ? { ...p, location: loc } : p);
-                    const updatedPlaygrounds = (activeGame.playgrounds || []).map(pg => pg.id === id ? { ...pg, location: loc } : pg);
-                    const updatedZones = (activeGame.dangerZones || []).map(z => z.id === id ? { ...z, location: loc } : z);
-                    await updateActiveGame({ ...activeGame, points: updatedPoints, playgrounds: updatedPlaygrounds, dangerZones: updatedZones });
+
+                    // Location updates are the most common multi-user edit. We re-fetch latest game
+                    // before saving to reduce the chance of overwriting another editor's recent change.
+                    const updated = await db.updateGameItemLocation(activeGame.id, id, loc);
+                    if (!updated) return;
+
+                    setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
+                    setActiveGame(updated);
                 }}
                 accuracy={gpsAccuracy}
                 isRelocating={isRelocating}
