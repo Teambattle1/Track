@@ -408,8 +408,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                 </div>
 
-                {/* Footer Buttons */}
-                <div className="p-5 border-t border-slate-800 space-y-3">
+                {/* Footer Buttons - Fixed at bottom */}
+                <div className="p-5 border-t border-slate-800 space-y-3 flex-shrink-0">
                     <button
                         onClick={async () => {
                             setIsSaving(true);
