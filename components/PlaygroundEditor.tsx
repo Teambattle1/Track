@@ -795,7 +795,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         )}
 
                         {/* Tasks on Canvas */}
-                        {uniquePlaygroundPoints.map(point => {
+                        {uniquePlaygroundPoints.map((point, index) => {
                             const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
                             const isSelected = selectedTaskId === point.id;
                             const displaySize = (point.playgroundScale || 1) * 48;
@@ -809,7 +809,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         setSelectedTaskId(point.id);
                                     }}
                                 >
-                                    <div className={`rounded-full flex items-center justify-center border-4 shadow-xl transition-all ${
+                                    <div className={`rounded-full flex items-center justify-center border-4 shadow-xl transition-all relative ${
                                         isSelected
                                             ? 'border-orange-500 shadow-orange-500/50 scale-125'
                                             : 'border-slate-900 group-hover:scale-110'
@@ -819,6 +819,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <img src={point.iconUrl} alt={point.title} className="w-2/3 h-2/3 object-contain" />
                                         ) : (
                                             <Icon className={`w-6 h-6 ${point.isCompleted ? 'text-white' : 'text-slate-900'}`} />
+                                        )}
+
+                                        {/* Task Order Badge */}
+                                        {showTaskOrder && (
+                                            <div className="absolute -top-1 -right-1 bg-orange-600 text-white text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg">
+                                                {String(index + 1).padStart(2, '0')}
+                                            </div>
+                                        )}
+
+                                        {/* Task Score Badge */}
+                                        {showTaskScores && (
+                                            <div className="absolute -bottom-1 -right-1 bg-yellow-500 text-slate-900 text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg">
+                                                {point.points}
+                                            </div>
                                         )}
                                     </div>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
