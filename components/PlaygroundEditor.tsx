@@ -1009,19 +1009,40 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 </div>
 
                 {/* Canvas Area */}
-                <div 
+                <div
                     ref={canvasRef}
-                    className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:40px_40px] [background-position:center]"
+                    className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:40px_40px] [background-position:center] flex items-center justify-center p-8"
                     onWheel={handleWheel}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
                 >
+                    {/* Tablet Frame Container */}
+                    <div className={`relative border-8 border-slate-950 rounded-3xl overflow-hidden flex-shrink-0 ${
+                        editorOrientation === 'landscape'
+                            ? 'w-[1024px] h-[768px]'
+                            : 'w-[768px] h-[1024px]'
+                    }`}
+                    style={{
+                        boxShadow: '0 0 0 12px #1f2937, 0 0 0 16px #000000, inset 0 0 0 1px #444'
+                    }}>
+                        {/* Device Notch/Speaker */}
+                        {editorOrientation === 'landscape' && (
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-black rounded-b-xl z-10"></div>
+                        )}
+                        {editorOrientation === 'portrait' && (
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-black rounded-t-xl z-10"></div>
+                        )}
+
                     <div
                         ref={backgroundRef}
-                        style={bgStyle}
-                        className="relative shadow-2xl"
+                        style={{
+                            ...bgStyle,
+                            width: '100%',
+                            height: '100%'
+                        }}
+                        className="relative"
                     >
                         {!activePlayground.imageUrl && (
                             <div className="absolute inset-0 flex items-center justify-center border-4 border-dashed border-slate-700/50 m-20 rounded-3xl">
@@ -1124,6 +1145,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 </div>
                             );
                         })}
+                    </div>
                     </div>
                 </div>
 
