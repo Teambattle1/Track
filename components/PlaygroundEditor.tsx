@@ -767,7 +767,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </button>
                     <div className="flex flex-col items-center gap-1">
                         <h2 className="text-sm font-black uppercase tracking-widest text-white">TASKS</h2>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{playgroundPoints.length} in zone</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{uniquePlaygroundPoints.length} in zone</p>
                     </div>
                 </div>
 
