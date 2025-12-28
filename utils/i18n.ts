@@ -1,6 +1,27 @@
 export type Language = 'English' | 'Danish' | 'German' | 'Spanish' | 'French' | 'Swedish' | 'Norwegian' | 'Dutch' | 'Belgian' | 'Hebrew';
 
 /**
+ * Normalize language setting - remove "global" or invalid values
+ */
+export const normalizeLanguage = (lang: any): Language => {
+    if (!lang || lang === 'global' || lang === 'GLOBAL') return 'English';
+
+    const validLanguages: Language[] = ['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew'];
+    if (validLanguages.includes(lang as Language)) return lang as Language;
+
+    // Extract language name from flag+name format (e.g., "🇩🇰 Danish (Dansk)" -> "Danish")
+    if (typeof lang === 'string') {
+        const match = lang.match(/([A-Z][a-z]+)/);
+        if (match) {
+            const extracted = match[1];
+            if (validLanguages.includes(extracted as Language)) return extracted as Language;
+        }
+    }
+
+    return 'English';
+};
+
+/**
  * Detect language from text content using keyword analysis
  * Returns the detected language or 'English' as default
  */
