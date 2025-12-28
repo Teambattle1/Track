@@ -792,7 +792,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 />
             )}
 
-            {/* Task Editor Modal */}
+            {/* Task Editor Modal - for Library Templates */}
             {editingTemplate && (
                 <TaskEditor
                     point={templateToGamePoint(editingTemplate)}
@@ -804,6 +804,23 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                         setEditingTemplate(null);
                     }}
                     onClose={() => setEditingTemplate(null)}
+                    isTemplateMode={true}
+                />
+            )}
+
+            {/* Task Editor Modal - for Tasks in List */}
+            {editingTaskIndex !== null && editingList && editingList.tasks[editingTaskIndex] && (
+                <TaskEditor
+                    point={templateToGamePoint(editingList.tasks[editingTaskIndex])}
+                    onSave={handleSaveTaskInList}
+                    onDelete={async (pointId) => {
+                        if (editingTaskIndex !== null && editingList) {
+                            const updatedTasks = editingList.tasks.filter(t => t.id !== pointId);
+                            setEditingList({ ...editingList, tasks: updatedTasks });
+                            setEditingTaskIndex(null);
+                        }
+                    }}
+                    onClose={() => setEditingTaskIndex(null)}
                     isTemplateMode={true}
                 />
             )}
