@@ -515,7 +515,8 @@ const GameApp: React.FC = () => {
                           createdAt: Date.now(),
                           points: [],
                           defaultMapStyle: style,
-                          dbUpdatedAt: new Date().toISOString()
+                          dbUpdatedAt: new Date().toISOString(),
+                          isGameTemplate: false
                       };
                       await db.saveGame(newGame);
                       setGames([...games, newGame]);
@@ -713,11 +714,13 @@ const GameApp: React.FC = () => {
   if (showLanding) {
       return (
           <>
-            <InitialLanding 
+            <InitialLanding
                 version="3.1.0"
-                games={games}
+                games={playableGames}
                 activeGameId={activeGameId}
                 onSelectGame={setActiveGameId}
+                authUser={authUser}
+                onLogout={() => { authService.logout(); setAuthUser(null); }}
                 onAction={(action) => {
                     if (action === 'PLAY') {
                         if (activeGameId) {
