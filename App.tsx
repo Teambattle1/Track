@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage } from './types';
 import * as db from './services/db';
+import { supabase } from './lib/supabase';
 import { authService } from './services/auth';
 import { teamSync } from './services/teamSync';
 import { LocationProvider, useLocation } from './contexts/LocationContext';
@@ -131,24 +132,55 @@ const GameApp: React.FC = () => {
       }
   }, [activeGameId, games]);
 
-  // --- MULTI-USER EDIT SYNC (lightweight polling) ---
+  // --- MULTI-USER EDIT SYNC (realtime with safe fallback) ---
   useEffect(() => {
       if (!activeGameId) return;
       if (mode !== GameMode.EDIT && mode !== GameMode.INSTRUCTOR) return;
       // Avoid overwriting local, unsaved edits while a point is open in the editor.
       if (activeTask) return;
 
-      const interval = window.setInterval(async () => {
-          const remote = await db.fetchGame(activeGameId);
-          if (!remote) return;
+      let isSubscribed = false;
+      let pollingId: number | null = null;
+      const channel = supabase.channel(`game_changes_${activeGameId}`);
 
+      const applyRemoteGame = (remote: Game) => {
           if (remote.dbUpdatedAt && remote.dbUpdatedAt === activeGame?.dbUpdatedAt) return;
-
-          setGames(prev => prev.map(g => g.id === remote.id ? remote : g));
+          setGames(prev => prev.map(g => (g.id === remote.id ? remote : g)));
           setActiveGame(remote);
-      }, 5000);
+      };
 
-      return () => window.clearInterval(interval);
+      channel
+          .on(
+              'postgres_changes',
+              { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${activeGameId}` },
+              (payload: any) => {
+                  const row = payload?.new;
+                  if (!row) return;
+                  const remote: Game = { ...(row.data as Game), id: row.id, dbUpdatedAt: row.updated_at };
+                  applyRemoteGame(remote);
+              }
+          )
+          .subscribe((status: string) => {
+              if (status === 'SUBSCRIBED') {
+                  isSubscribed = true;
+              }
+          });
+
+      // Fallback polling: only if realtime doesn't subscribe within 7s.
+      const fallbackTimer = window.setTimeout(() => {
+          if (isSubscribed) return;
+          pollingId = window.setInterval(async () => {
+              const remote = await db.fetchGame(activeGameId);
+              if (!remote) return;
+              applyRemoteGame(remote);
+          }, 20000);
+      }, 7000);
+
+      return () => {
+          window.clearTimeout(fallbackTimer);
+          if (pollingId) window.clearInterval(pollingId);
+          supabase.removeChannel(channel);
+      };
   }, [activeGameId, mode, activeTask, activeGame?.dbUpdatedAt]);
 
   // --- GEOFENCING ENGINE ---
