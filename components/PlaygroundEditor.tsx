@@ -280,11 +280,36 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     };
 
+    // Throttle playground position updates to prevent excessive re-renders and DB writes
+    const pendingUpdatesRef = useRef<Record<string, { x: number; y: number }>>({});
+    const updateTimeoutRef = useRef<number | null>(null);
+
+    const flushPendingUpdates = () => {
+        if (Object.keys(pendingUpdatesRef.current).length > 0) {
+            const updates = { ...pendingUpdatesRef.current };
+            pendingUpdatesRef.current = {};
+
+            onUpdateGame({
+                ...game,
+                points: game.points.map(p => {
+                    if (updates[p.id]) {
+                        return { ...p, playgroundPosition: updates[p.id] };
+                    }
+                    return p;
+                })
+            });
+        }
+        updateTimeoutRef.current = null;
+    };
+
     const updatePointPlaygroundPosition = (pointId: string, playgroundPosition: { x: number; y: number }) => {
-        onUpdateGame({
-            ...game,
-            points: game.points.map(p => (p.id === pointId ? { ...p, playgroundPosition } : p))
-        });
+        // Store update locally
+        pendingUpdatesRef.current[pointId] = playgroundPosition;
+
+        // Throttle: Only update DB at most once per 150ms while dragging
+        if (updateTimeoutRef.current === null) {
+            updateTimeoutRef.current = window.setTimeout(flushPendingUpdates, 150);
+        }
     };
 
     const toggleMarkTask = (taskId: string) => {
