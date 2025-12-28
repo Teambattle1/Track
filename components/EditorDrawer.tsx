@@ -702,9 +702,10 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     >
                         <Wand2 className="w-4 h-4" /> AI GENERATE
                     </button>
-                    <button 
+                    <button
                         onClick={() => onAddTask && onAddTask('LIBRARY')}
                         className="py-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[10px] uppercase tracking-wide border border-indigo-200 dark:border-indigo-800"
+                        title="Add tasks from a saved tasklist to your game"
                     >
                         <Library className="w-4 h-4" /> FROM LIB
                     </button>
