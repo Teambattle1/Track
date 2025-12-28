@@ -79,7 +79,10 @@ const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onCha
 };
 
 const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClose, onClone, isTemplateMode = false }) => {
-  const [editedPoint, setEditedPoint] = useState<GamePoint>({ 
+  // Normalize the incoming language first (remove "global")
+  const normalizedIncomingLanguage = normalizeLanguage(point.settings?.language);
+
+  const [editedPoint, setEditedPoint] = useState<GamePoint>({
     ...point,
     points: point.points || 100,
     shortIntro: point.shortIntro || '',
@@ -111,10 +114,11 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     settings: {
         timeLimitSeconds: undefined,
         scoreDependsOnSpeed: false,
-        language: 'English',
+        language: normalizedIncomingLanguage,
         showAnswerStatus: true,
         showCorrectAnswerOnMiss: false,
-        ...point.settings
+        ...point.settings,
+        language: normalizedIncomingLanguage // Ensure normalized
     },
     tags: point.tags || []
   });
