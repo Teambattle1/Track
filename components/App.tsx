@@ -1373,8 +1373,17 @@ const GameApp: React.FC = () => {
                 onSaveGame={() => updateActiveGame(activeGame!, "Saved via Editor")}
                 onOpenTaskMaster={() => setShowTaskMaster(true)}
                 onFitBounds={(coords) => {
-                    if (coords && coords.length > 0) mapRef.current?.fitBounds(coords);
-                    else mapRef.current?.fitBounds(activeGame?.points || []);
+                    try {
+                        const pointsToFit = coords && coords.length > 0 ? coords : (activeGame?.points || []);
+                        if (!pointsToFit || pointsToFit.length === 0) {
+                            console.warn('[FitBounds] No points available to fit');
+                            return;
+                        }
+                        console.log('[FitBounds] Fitting to', pointsToFit.length, 'points');
+                        mapRef.current?.fitBounds(pointsToFit);
+                    } catch (error) {
+                        console.error('[FitBounds] Error fitting bounds:', error);
+                    }
                 }}
                 onOpenPlaygroundEditor={() => setViewingPlaygroundId(activeGame?.playgrounds?.[0]?.id || null)}
                 initialExpanded={true}
