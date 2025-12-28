@@ -122,17 +122,12 @@ const GameApp: React.FC = () => {
     init();
   }, []);
 
-  // --- AUTO-OPEN GAME CHOOSER FOR EDIT/PLAY WITHOUT ACTIVE GAME ---
-  useEffect(() => {
-    if ((mode === GameMode.EDIT || mode === GameMode.PLAY) && !activeGameId && showLanding) {
-      setShowGameChooser(true);
-    }
-  }, [mode, activeGameId, showLanding]);
-
   // --- PERSIST ACTIVE GAME TO LOCALSTORAGE ---
   useEffect(() => {
     if (activeGameId) {
       localStorage.setItem('activeGameId', activeGameId);
+    } else {
+      localStorage.removeItem('activeGameId');
     }
   }, [activeGameId]);
 
