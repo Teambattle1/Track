@@ -843,6 +843,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 {point.points}
                                             </div>
                                         )}
+
+                                        {/* Task Actions Badge */}
+                                        {showTaskActions && point.logic && (point.logic.onOpen?.length || point.logic.onCorrect?.length || point.logic.onIncorrect?.length) && (
+                                            <div className="absolute -bottom-1 -left-1 bg-purple-600 text-white text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg">
+                                                ⚡
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                         {point.title}
