@@ -16,11 +16,12 @@ import TaskEditor from './TaskEditor';
 
 interface TaskMasterProps {
     onClose: () => void;
-    onImportTasks: (tasks: TaskTemplate[]) => void;
-    onImportTaskList?: (list: TaskList) => void;
+    onImportTasks: (tasks: TaskTemplate[], gameId?: string) => void;
+    onImportTaskList?: (list: TaskList, gameId?: string) => void;
     taskLists: TaskList[];
     onUpdateTaskLists: (lists: TaskList[]) => void;
     games: Game[];
+    activeGame?: Game | null;  // Active game to add tasks to
     initialTab?: 'LIBRARY' | 'LISTS' | 'TAGS' | 'CLIENT';
     onDeleteTagGlobally?: (tagName: string) => Promise<void>;
     onRenameTagGlobally?: (oldTag: string, newTag: string) => Promise<void>;
