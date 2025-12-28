@@ -129,7 +129,7 @@ class TeamSyncService {
       console.log(`[TeamSync] Connecting to Global: ${globalId}`);
 
       this.globalChannel = supabase.channel(globalId);
-      
+
       this.globalChannel
         .on('broadcast', { event: 'chat' }, (payload: any) => {
             this.handleIncomingChat(payload.payload as ChatMessage);
@@ -138,6 +138,96 @@ class TeamSyncService {
             this.handleGlobalLocation(payload.payload);
         })
         .subscribe();
+  }
+
+  private connectVotesDb() {
+      if (!this.gameId || !this.teamKey) return;
+
+      if (this.votesDbChannel) {
+          supabase.removeChannel(this.votesDbChannel);
+          this.votesDbChannel = null;
+      }
+
+      const channelId = `game_${this.gameId}_team_${this.teamKey}_votes_db`;
+      this.votesDbChannel = supabase.channel(channelId);
+
+      this.votesDbChannel
+          .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: 'task_votes', filter: `game_id=eq.${this.gameId}` },
+              (payload: any) => {
+                  const row = payload?.new;
+                  if (!row) return;
+                  if (row.team_key !== this.teamKey) return;
+
+                  const vote: TaskVote = {
+                      deviceId: row.device_id,
+                      userName: row.user_name,
+                      pointId: row.point_id,
+                      answer: row.answer,
+                      timestamp: row.client_timestamp
+                  };
+
+                  this.handleIncomingVote(vote);
+              }
+          )
+          .subscribe((status: string) => {
+              if (status === 'SUBSCRIBED') {
+                  void this.loadVotesFromDb();
+              }
+          });
+  }
+
+  private async loadVotesFromDb() {
+      if (!this.gameId || !this.teamKey) return;
+
+      const { data, error } = await supabase
+          .from('task_votes')
+          .select('point_id, device_id, user_name, answer, client_timestamp')
+          .eq('game_id', this.gameId)
+          .eq('team_key', this.teamKey);
+
+      if (error) {
+          if (error?.code === '42P01') {
+              console.warn('[TeamSync] task_votes table missing. Run Database Setup.');
+          } else {
+              console.warn('[TeamSync] loadVotesFromDb failed', error?.message || error);
+          }
+          return;
+      }
+
+      (data || []).forEach((row: any) => {
+          const vote: TaskVote = {
+              deviceId: row.device_id,
+              userName: row.user_name,
+              pointId: row.point_id,
+              answer: row.answer,
+              timestamp: row.client_timestamp
+          };
+          this.handleIncomingVote(vote);
+      });
+  }
+
+  private async persistVoteToDb(vote: TaskVote) {
+      if (!this.gameId || !this.teamKey) return;
+
+      const { error } = await supabase.rpc('upsert_task_vote', {
+          p_game_id: this.gameId,
+          p_team_key: this.teamKey,
+          p_point_id: vote.pointId,
+          p_device_id: vote.deviceId,
+          p_user_name: vote.userName,
+          p_answer: vote.answer,
+          p_client_timestamp: vote.timestamp
+      });
+
+      if (error) {
+          if (error?.code === '42P01') {
+              console.warn('[TeamSync] upsert_task_vote missing. Run Database Setup.');
+          } else {
+              console.warn('[TeamSync] persistVoteToDb failed', error?.message || error);
+          }
+      }
   }
 
   public disconnect() {
