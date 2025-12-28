@@ -20,11 +20,6 @@ interface AccountTagsProps {
     onRenameTagGlobally?: (oldTag: string, newTag: string) => Promise<void>;
 }
 
-// Global helper to get color (can be exported if needed elsewhere, currently internal logic copied)
-export const getTagColor = (tagName: string, colors: Record<string, string>) => {
-    return colors[tagName.toLowerCase()] || '#64748b'; // Default to Slate if not found
-};
-
 const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onDeleteTagGlobally, onRenameTagGlobally }) => {
     const [tagColors, setTagColors] = useState<Record<string, string>>({});
     const [newTagName, setNewTagName] = useState('');
@@ -70,34 +65,30 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
     const inUseTags = Object.keys(inUseTagsCountMap);
 
     const handleSaveTag = async () => {
-        const name = newTagName.trim();
-        const key = name.toLowerCase(); // Use lowercase for storage key
+        const name = newTagName.trim().toLowerCase();
         if (!name) return;
         setIsSaving(true);
 
         try {
             if (editingOldName) {
                 // UPDATE / RENAME
-                const oldKey = editingOldName.toLowerCase();
-                
-                if (oldKey !== key) {
+                if (editingOldName !== name) {
                     // Rename logic
                     if (onRenameTagGlobally) {
-                        // Pass original casing for display update if needed, logic inside handles DB
                         await onRenameTagGlobally(editingOldName, name);
                     }
                     const next = { ...tagColors };
-                    delete next[oldKey];
-                    next[key] = selectedColor;
+                    delete next[editingOldName];
+                    next[name] = selectedColor;
                     saveTags(next);
                 } else {
                     // Just color update
-                    saveTags({ ...tagColors, [key]: selectedColor });
+                    saveTags({ ...tagColors, [name]: selectedColor });
                 }
                 setEditingOldName(null);
             } else {
                 // CREATE NEW
-                saveTags({ ...tagColors, [key]: selectedColor });
+                saveTags({ ...tagColors, [name]: selectedColor });
             }
             setNewTagName('');
         } catch (error) {
@@ -108,9 +99,9 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
     };
 
     const handleEditTagClick = (name: string, color: string) => {
-        setNewTagName(name); // Keep original casing for edit input if available (inUseTags usually lowercased in map keys, so display might be lower)
+        setNewTagName(name.toUpperCase());
         setSelectedColor(color || TAG_COLORS[0]);
-        setEditingOldName(name); 
+        setEditingOldName(name); // Enter edit mode
     };
 
     const handleCancelEdit = () => {
@@ -119,13 +110,12 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
     };
 
     const handleRemoveTagClick = (name: string) => {
-        const key = name.toLowerCase();
-        const count = inUseTagsCountMap[key] || 0;
+        const count = inUseTagsCountMap[name] || 0;
         if (count > 0) {
             setPurgeTarget(name);
         } else {
             const next = { ...tagColors };
-            delete next[key];
+            delete next[name];
             saveTags(next);
             if (editingOldName === name) handleCancelEdit();
         }
@@ -137,7 +127,7 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
         const tagToPurge = purgeTarget; 
         try {
             const next = { ...tagColors };
-            delete next[tagToPurge.toLowerCase()];
+            delete next[tagToPurge];
             saveTags(next);
             
             await onDeleteTagGlobally(tagToPurge);
@@ -153,10 +143,9 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
 
     // Combined list of registered and discovered tags
     const displayTags = useMemo(() => {
-        // Collect all keys (lowercase)
         const combined = new Set([...Object.keys(tagColors), ...inUseTags]);
         return Array.from(combined)
-            .filter(name => name.includes(searchQuery.toLowerCase()))
+            .filter(name => name.toLowerCase().includes(searchQuery.toLowerCase()))
             .sort((a, b) => a.localeCompare(b));
     }, [tagColors, inUseTags, searchQuery]);
 
@@ -268,12 +257,10 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                                 </div>
                             ) : (
                                 displayTags.map(name => {
-                                    // Case insensitive lookup
-                                    const key = name.toLowerCase();
-                                    const color = tagColors[key];
+                                    const color = tagColors[name];
                                     const isRegistered = !!color;
-                                    const isInUse = inUseTags.includes(key);
-                                    const useCount = inUseTagsCountMap[key] || 0;
+                                    const isInUse = inUseTags.includes(name);
+                                    const useCount = inUseTagsCountMap[name] || 0;
                                     const isEditing = editingOldName === name;
 
                                     return (
@@ -328,7 +315,7 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                         </div>
                         <h3 className="text-2xl font-black text-white uppercase tracking-widest mb-3 leading-tight">GLOBAL PURGE?</h3>
                         <p className="text-xs text-gray-500 uppercase tracking-widest leading-relaxed mb-10">
-                            THE TAG <span className="text-white font-black">"{purgeTarget.toUpperCase()}"</span> IS CURRENTLY USED IN <span className="text-orange-500 font-black">{inUseTagsCountMap[purgeTarget.toLowerCase()]} TASKS</span>. 
+                            THE TAG <span className="text-white font-black">"{purgeTarget.toUpperCase()}"</span> IS CURRENTLY USED IN <span className="text-orange-500 font-black">{inUseTagsCountMap[purgeTarget]} TASKS</span>. 
                             <br/><br/>
                             THIS WILL STRIP THE TAG FROM EVERY ITEM IN THE DATABASE. THIS CANNOT BE UNDONE.
                         </p>

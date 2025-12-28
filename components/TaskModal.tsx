@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { GamePoint, TaskVote, GameMode } from '../types';
-import { X, CheckCircle, Lock, MapPin, Glasses, AlertCircle, ChevronDown, ChevronsUpDown, Users, AlertTriangle, Loader2, ThumbsUp, Zap, Edit2, Skull, Navigation } from 'lucide-react';
+import { X, CheckCircle, Lock, MapPin, Glasses, AlertCircle, ChevronDown, ChevronsUpDown, Users, AlertTriangle, Loader2, ThumbsUp, Zap, Edit2, Skull } from 'lucide-react';
 import { teamSync } from '../services/teamSync';
 import DOMPurify from 'dompurify';
 
@@ -17,7 +17,6 @@ interface TaskModalProps {
   onOpenActions?: () => void;
   onTaskOpen?: () => void;
   onTaskIncorrect?: () => void;
-  allowNavigation?: boolean; // New Prop
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({ 
@@ -31,8 +30,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
     mode, 
     onOpenActions,
     onTaskOpen,
-    onTaskIncorrect,
-    allowNavigation
+    onTaskIncorrect
 }) => {
   const [answer, setAnswer] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -176,12 +174,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
       }
   };
 
-  const openNavigation = () => {
-      if (!point.location) return;
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${point.location.lat},${point.location.lng}`;
-      window.open(url, '_blank');
-  };
-
   const renderInput = () => {
       const { type, options, range } = point.task;
       const isDisabled = isInstructor;
@@ -317,16 +309,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 <br />
                 <strong>{Math.max(0, Math.round(distance - point.radiusMeters))} meters</strong> to go.
               </p>
-
-              {/* Navigation Button (if enabled) */}
-              {allowNavigation && (
-                  <button 
-                      onClick={openNavigation}
-                      className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
-                  >
-                      <Navigation className="w-4 h-4" /> NAVIGATE TO LOCATION
-                  </button>
-              )}
 
               {point.manualUnlockCode && (
                   <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-4">

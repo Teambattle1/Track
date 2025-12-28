@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap, useMapEvents, Polyline, Tooltip, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { GamePoint, Coordinate, GameMode, MapStyleId, Team, DangerZone, TeamStatus, GameRoute, MapConfiguration } from '../types';
+import { GamePoint, Coordinate, GameMode, MapStyleId, Team, DangerZone, TeamStatus, GameRoute } from '../types';
 import { getLeafletIcon } from '../utils/icons';
 import { Trash2, Crosshair, EyeOff, Image as ImageIcon, CheckCircle, HelpCircle, Zap, AlertTriangle, Lock, Users, Trophy, MessageSquare, MapPin } from 'lucide-react';
 import { useLocation } from '../contexts/LocationContext';
@@ -14,7 +14,6 @@ const UserIcon = L.divIcon({
   iconAnchor: [8, 8]
 });
 
-// ... (Team Icon helpers remain unchanged) ...
 const getTeamColor = (teamName: string) => {
     let hash = 0;
     for (let i = 0; i < teamName.length; i++) hash = teamName.charCodeAt(i) + ((hash << 5) - hash);
@@ -51,6 +50,7 @@ const createTeamIcon = (teamName: string, photoUrl?: string, status?: TeamStatus
     return L.divIcon({ className: 'custom-team-pin', html: pinHtml, iconSize: [60, 60], iconAnchor: [30, 56], popupAnchor: [0, -60] });
 };
 
+// Simplified icon for team members viewed by captain
 const createTeammateIcon = (memberName: string) => {
     return L.divIcon({
         className: 'custom-teammate-icon',
@@ -68,7 +68,7 @@ export interface GameMapHandle {
 }
 
 interface GameMapProps {
-  userLocation?: Coordinate | null;
+  userLocation?: Coordinate | null; // Keep optional prop for manual overrides (Editor)
   points: GamePoint[];
   teams?: { team: Team, location: Coordinate, status?: TeamStatus, stats?: any }[];
   teamTrails?: Record<string, Coordinate[]>;
@@ -79,7 +79,7 @@ interface GameMapProps {
   dangerZones?: DangerZone[];
   routes?: GameRoute[];
   dependentPointIds?: string[];
-  accuracy?: number | null; 
+  accuracy?: number | null; // Keep optional prop
   mode: GameMode;
   mapStyle: MapStyleId;
   selectedPointId?: string | null;
@@ -92,14 +92,12 @@ interface GameMapProps {
   onPointHover?: (point: GamePoint | null) => void;
   showScores?: boolean;
   onZoneClick?: (zone: DangerZone) => void;
-  gameEnded?: boolean; 
-  returnPath?: Coordinate[]; 
-  showUserLocation?: boolean; 
-  mapConfig?: MapConfiguration; // New Config Prop
-  showTrack?: boolean; // New Config Prop
+  gameEnded?: boolean; // New prop
+  returnPath?: Coordinate[]; // New prop for return line
+  showUserLocation?: boolean; // New prop for user location visibility
 }
 
-// Internal component to handle user location updates
+// Internal component to handle user location updates without re-rendering the whole map
 const UserLocationMarker = ({ overrideLocation, overrideAccuracy, visible = true }: { overrideLocation?: Coordinate | null, overrideAccuracy?: number | null, visible?: boolean }) => {
     const { userLocation: ctxLocation, gpsAccuracy: ctxAccuracy } = useLocation();
     
@@ -123,7 +121,6 @@ const UserLocationMarker = ({ overrideLocation, overrideAccuracy, visible = true
     );
 };
 
-// ... (Rest of components: MapClickParams, RecenterMap, MapController, MapLayers same as before) ...
 const MapClickParams = ({ onClick }: { onClick?: (c: Coordinate) => void }) => {
   useMapEvents({ click(e) { if (onClick) onClick(e.latlng); } });
   return null;
@@ -183,7 +180,7 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
     return null;
 };
 
-const MAP_LAYERS: Record<string, { url: string; attribution: string, className?: string }> = {
+const MAP_LAYERS: Record<string, { url: string; attribution: string, className?: string, errorTileUrl?: string }> = {
   osm: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors' },
   satellite: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attribution: '&copy; Esri' },
   dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
@@ -191,55 +188,64 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string, className?:
   ancient: { url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', attribution: '&copy; Stamen Design' },
   clean: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
   voyager: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
+  // Updated: Winter now uses OSM with a cold CSS filter for reliability
   winter: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors', className: 'map-filter-winter' },
+  // Updated: Ski uses OpenSkiMap but falls back gracefully if down
   ski: { url: 'https://tiles.openskimap.org/map/{z}/{x}/{y}.png', attribution: '&copy; OpenSkiMap' },
+  // Historic: Using OSM as base but we will apply CSS sepia filter in component
   historic: { url: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap', className: 'map-filter-historic' },
+  // Google Custom placeholder - uses dark by default but allows saving custom JSON
   google_custom: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' }
 };
 
 const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
   if (mapStyle === 'none') {
-      return null; 
+      return null; // Return nothing so no tiles are rendered
   }
+
   const layer = MAP_LAYERS[mapStyle] || MAP_LAYERS.osm;
+  
   return (
     <>
-      <TileLayer url={layer.url} attribution={layer.attribution} className={layer.className || ''} />
+      <TileLayer 
+        url={layer.url} 
+        attribution={layer.attribution} 
+        className={layer.className || ''}
+      />
+      
+      {/* Historic Filter CSS Injection */}
       {mapStyle === 'historic' && (
           <>
-            <style>{`.map-filter-historic { filter: sepia(0.6) contrast(1.1) brightness(0.9) hue-rotate(-15deg) !important; }`}</style>
+            <style>{`
+                .map-filter-historic {
+                    filter: sepia(0.6) contrast(1.1) brightness(0.9) hue-rotate(-15deg) !important;
+                }
+            `}</style>
+            {/* Paper Texture Overlay */}
             <div className="absolute inset-0 z-[5] pointer-events-none opacity-20 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')]"></div>
           </>
       )}
-      {mapStyle === 'winter' && <style>{`.map-filter-winter { filter: brightness(1.2) hue-rotate(180deg) saturate(0.5) !important; }`}</style>}
+
+      {/* Winter Filter CSS Injection */}
+      {mapStyle === 'winter' && (
+          <style>{`
+              .map-filter-winter {
+                  filter: brightness(1.2) hue-rotate(180deg) saturate(0.5) !important;
+              }
+          `}</style>
+      )}
     </>
   );
 });
 
 // Task Marker Component
-const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMove, onDelete, mapConfig }: any) => {
+const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMove, onDelete }: any) => {
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
+    
+    // Draggable only in Edit Mode
     const draggable = mode === GameMode.EDIT;
     
-    // Config Logic for Pin Labels
-    let displayLabel = label;
-    let displayScore = showScore;
-
-    if (mode === GameMode.PLAY) {
-        const displayMode = mapConfig?.pinDisplayMode || 'order'; // Default to order if not set
-        if (displayMode === 'score') {
-            displayScore = true;
-            displayLabel = undefined; // Don't show order if score selected
-        } else if (displayMode === 'none') {
-            displayLabel = undefined;
-            displayScore = false;
-        } else {
-            // 'order' or default
-            // Label is already passed as index+1 from parent for PLAY mode logic below
-        }
-    }
-
     const eventHandlers = React.useMemo(
         () => ({
             click: () => onClick(point),
@@ -254,15 +260,13 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
         point.iconId, 
         isUnlocked, 
         isCompleted, 
-        displayLabel, 
+        label, 
         (point.logic?.onOpen?.length || point.logic?.onCorrect?.length || point.logic?.onIncorrect?.length) && mode === GameMode.EDIT,
-        point.areaColor, 
+        point.areaColor, // New: Override color if zone color set
         mode === GameMode.EDIT && point.isHiddenBeforeScan,
-        displayScore ? point.points : undefined,
+        showScore ? point.points : undefined,
         point.iconUrl
     );
-
-    const showIntro = mapConfig?.showShortIntroUnderPin && point.shortIntro && (isUnlocked || mode === GameMode.EDIT);
 
     return (
         <React.Fragment>
@@ -273,13 +277,6 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
                 draggable={draggable}
                 zIndexOffset={isCompleted ? 0 : 100}
             >
-                {/* Short Intro Tooltip */}
-                {showIntro && (
-                    <Tooltip direction="bottom" offset={[0, 20]} opacity={0.9} permanent className="custom-leaflet-tooltip font-bold text-xs uppercase bg-black text-white px-2 py-1 rounded shadow-lg border border-white/20">
-                        {point.shortIntro}
-                    </Tooltip>
-                )}
-
                 {mode === GameMode.EDIT && (
                     <Popup>
                         <div className="flex flex-col gap-2">
@@ -292,6 +289,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
                 )}
             </Marker>
             
+            {/* Radius Circle */}
             {(mode === GameMode.EDIT || isUnlocked) && (
                 <Circle 
                     center={[point.location.lat, point.location.lng]} 
@@ -316,9 +314,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
            prev.point.isCompleted === next.point.isCompleted &&
            prev.mode === next.mode &&
            prev.showScore === next.showScore &&
-           prev.point.isHiddenBeforeScan === next.point.isHiddenBeforeScan &&
-           prev.mapConfig?.showShortIntroUnderPin === next.mapConfig?.showShortIntroUnderPin && // Check config change
-           prev.mapConfig?.pinDisplayMode === next.mapConfig?.pinDisplayMode;
+           prev.point.isHiddenBeforeScan === next.point.isHiddenBeforeScan;
 });
 
 const DangerZoneMarker = React.memo(({ zone, onClick, mode }: any) => {
@@ -332,7 +328,7 @@ const DangerZoneMarker = React.memo(({ zone, onClick, mode }: any) => {
                 fillOpacity: 0.2,
                 weight: 2,
                 dashArray: '10, 10',
-                className: 'animate-pulse-slow' 
+                className: 'animate-pulse-slow' // Custom CSS animation class if needed
             }}
             eventHandlers={{ click: () => mode === GameMode.EDIT && onClick && onClick(zone) }}
         >
@@ -367,37 +363,32 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     onPointHover, 
     showScores, 
     onZoneClick,
-    gameEnded = false, 
+    gameEnded = false, // Destructure new prop
     returnPath,
-    showUserLocation = true,
-    mapConfig, // New Prop
-    showTrack
+    showUserLocation = true // Default true
 }, ref) => {
+  // NOTE: We do NOT consume useLocation() here directly to avoid re-rendering the entire MapContainer.
+  // Instead, we use the UserLocationMarker child component for the live dot.
+  // propLocation is used for "Center" logic only initially or if provided (instructor mode).
+  
   const center = propLocation || { lat: 55.6761, lng: 12.5683 };
   const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
-  
-  // Track User Path if "Show My Track" enabled
-  const { userLocation } = useLocation();
-  const [userPath, setUserPath] = useState<Coordinate[]>([]);
 
-  useEffect(() => {
-      if (showTrack && userLocation) {
-          setUserPath(prev => {
-              const last = prev[prev.length - 1];
-              // Add point if moved > 5 meters
-              if (!last || (Math.abs(last.lat - userLocation.lat) > 0.00005 || Math.abs(last.lng - userLocation.lng) > 0.00005)) {
-                  return [...prev, userLocation];
-              }
-              return prev;
-          });
-      }
-  }, [userLocation, showTrack]);
-
+  // Filter logic for Game Ended state
   const mapPoints = points.filter(p => {
       if (p.isSectionHeader || p.playgroundId) return false;
+      
+      // If game ended, only show Info points (points == 0) or if explicitly flagged (if we add 'isInfo' later)
+      // Assuming 0 points means 'Info'
       if (gameEnded) {
+          // Keep info points (0 pts) or Completed tasks? Prompt says "all info points should be visible", 
+          // "all remaining tasks hidden". Let's assume info points are visible. 
+          // Completed tasks might be useful to see what you did, but "hidden" implies gone. 
+          // Let's hide everything > 0 points unless completed? 
+          // The prompt says "all remaning tasks are hidden". This implies uncompleted tasks are hidden.
           if (!p.isCompleted && p.points > 0) return false;
       }
+
       if (mode === GameMode.PLAY && p.isHiddenBeforeScan && !p.isUnlocked) {
           return false;
       }
@@ -406,12 +397,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
   
   const getLabel = (point: GamePoint) => {
       if (pointLabels && pointLabels[point.id]) return pointLabels[point.id];
-      // Generate standard index label for Play Mode if not overridden by stats
-      if (mode === GameMode.EDIT || mode === GameMode.PLAY) {
-          // Find index in original points array to keep numbering consistent even if filtered? 
-          // Better to use mapPoints index for visibility consistency.
-          return (mapPoints.findIndex(p => p.id === point.id) + 1).toString();
-      }
+      if (mode === GameMode.EDIT) return (points.findIndex(p => p.id === point.id) + 1).toString().padStart(3, '0');
       return undefined;
   };
 
@@ -463,11 +449,6 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
             {/* LIVE USER MARKER (Internal Context Consumer) */}
             <UserLocationMarker overrideLocation={propLocation} overrideAccuracy={propAccuracy} visible={showUserLocation} />
             
-            {/* User Track (If enabled) */}
-            {showTrack && userPath.length > 1 && (
-                <Polyline positions={userPath.map(c => [c.lat, c.lng])} pathOptions={{ color: '#3b82f6', weight: 4, opacity: 0.6, dashArray: '5, 10' }} />
-            )}
-
             {/* Return Path (Game Ended) */}
             {gameEnded && returnPath && returnPath.length > 1 && (
                 <Polyline 
@@ -506,12 +487,12 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                     onClick={onPointClick}
                     onMove={onPointMove}
                     onDelete={onDeletePoint}
-                    mapConfig={mapConfig} // Pass Config
                 />
             ))}
 
             {/* Teams (Instructor Mode OR Captain View of Teammates) */}
             {teams && teams.map((t) => {
+                // If it's a "teammate" view (GameMode.PLAY for captain), use simpler icon
                 if (mode === GameMode.PLAY && t.team.id === 'teammates') {
                     return (
                         <Marker 
@@ -526,6 +507,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                         </Marker>
                     );
                 }
+
+                // Instructor View
                 return (
                     <Marker 
                         key={t.team.id} 

@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GamePoint, TaskList, Coordinate, Game, GameMode, GameRoute } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw, Users, Shield, Route, Upload, EyeOff, Hash, MapPin, QrCode, AlignLeft, CheckSquare } from 'lucide-react';
+import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw, Users, Shield, Route, Upload, EyeOff, Hash } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -78,28 +79,9 @@ const SortablePointItem: React.FC<{
   };
   
   const Icon = ICON_COMPONENTS[point.iconId];
-  const displayId = (index + 1).toString();
-
-  // Helper to determine badges - Compact Versions
-  const getUnlockBadge = () => {
-      if (point.activationTypes.includes('radius')) return <span className="shrink-0 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase border border-blue-200 dark:border-blue-800 flex items-center gap-1"><MapPin className="w-2 h-2" /> GPS</span>;
-      if (point.activationTypes.includes('qr')) return <span className="shrink-0 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-[9px] font-black text-purple-600 dark:text-purple-400 uppercase border border-purple-200 dark:border-purple-800 flex items-center gap-1"><QrCode className="w-2 h-2" /> QR</span>;
-      return <span className="shrink-0 px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[9px] font-black text-gray-500 uppercase border border-gray-200 dark:border-gray-700 flex items-center gap-1"><MousePointerClick className="w-2 h-2" /> TAP</span>;
-  };
-
-  const getTypeBadge = () => {
-      const type = point.task.type;
-      let label = 'TASK';
-      let IconType = AlignLeft;
-      if (type === 'multiple_choice' || type === 'dropdown') { label = 'QUIZ'; IconType = CheckSquare; }
-      else if (type === 'text') { label = 'TXT'; IconType = AlignLeft; }
-      
-      return (
-          <span className="shrink-0 flex px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-500 uppercase border border-slate-200 dark:border-slate-700 items-center gap-1">
-              <IconType className="w-2 h-2" /> {label}
-          </span>
-      );
-  };
+  const sourceList = taskLists.find(list => list.tasks.some(t => t.title === point.title));
+  const listColor = sourceList?.color || 'transparent';
+  const displayId = (index + 1).toString().padStart(3, '0');
 
   useEffect(() => {
       if (isSelected && itemRef.current) {
@@ -147,9 +129,9 @@ const SortablePointItem: React.FC<{
   };
 
   return (
-    <div className="relative overflow-hidden my-1 rounded-lg touch-pan-y group">
+    <div className="relative overflow-hidden my-1 rounded-r-xl touch-pan-y group">
         <div 
-            className="absolute inset-y-0 left-0 bg-red-500 flex items-center justify-start pl-4 text-white rounded-l-lg transition-all"
+            className="absolute inset-y-0 left-0 bg-red-500 flex items-center justify-start pl-4 text-white rounded-r-xl transition-all"
             style={{ 
                 width: `${Math.max(0, dragOffset)}px`, 
                 opacity: dragOffset > 0 ? 1 : 0,
@@ -165,57 +147,46 @@ const SortablePointItem: React.FC<{
             onMouseLeave={handleMouseLeave}
             style={{ 
                 ...style, 
+                borderLeft: `4px solid ${listColor}`,
                 transform: transform ? CSS.Transform.toString(transform) : `translateX(${dragOffset}px)`
             }} 
-            className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 flex items-center gap-2 transition-all cursor-pointer relative z-10 h-12
-                ${isSelected ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900' : 'hover:border-gray-300 dark:hover:border-gray-600'}
+            className={`bg-white dark:bg-gray-800 border-y border-r border-gray-100 dark:border-gray-700 rounded-r-xl p-2 flex items-center gap-2 transition-colors cursor-pointer relative z-10
+                ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-750'}
             `}
             onClick={() => onSelect(point)}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
-            {/* 1. Drag Handle */}
             <div 
                 {...(!isDragDisabled ? {...attributes, ...listeners} : {})} 
-                className={`text-gray-300 dark:text-gray-600 px-1 py-2 touch-none flex items-center justify-center ${isDragDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing hover:text-gray-500 dark:hover:text-gray-400'}`}
+                className={`text-gray-300 dark:text-gray-600 p-1 touch-none ${isDragDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'}`}
             >
                 <GripVertical className="w-4 h-4" />
             </div>
             
-            {/* 2. Index + Icon */}
-            <div className="relative shrink-0 flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-300 font-bold text-xs">
-                {point.iconUrl ? (
-                    <img src={point.iconUrl} className="w-full h-full object-cover rounded-lg" alt="" />
-                ) : (
+            <div className="relative">
+                <div className={`p-1.5 rounded-lg flex-shrink-0 transition-colors ${isSelected ? 'bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
                     <Icon className="w-4 h-4" />
-                )}
-                <div className="absolute -top-1.5 -left-1.5 bg-black text-white text-[8px] font-mono px-1 rounded shadow-sm">
-                    {displayId}
                 </div>
             </div>
 
-            {/* 3. Main Info (One Line) */}
             <div className="flex-1 min-w-0 flex items-center gap-2">
-                <p className={`font-bold text-xs truncate ${isSelected ? 'text-orange-900 dark:text-orange-100' : 'text-gray-800 dark:text-gray-200'}`}>
-                    {point.title}
-                </p>
-                
-                {/* Badges Container - Pushed to right of title but before actions */}
-                <div className="flex items-center gap-1.5 ml-auto">
-                    {getUnlockBadge()}
-                    {getTypeBadge()}
-                    <span className="shrink-0 text-[9px] font-black text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded border border-green-100 dark:border-green-900/30">
-                        {point.points}
-                    </span>
+                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'}`}>{displayId}</span>
+                <div className="min-w-0">
+                    <p className={`font-bold text-xs truncate ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-gray-800 dark:text-gray-200'}`}>{point.title}</p>
+                    {sourceList && (
+                        <p className="text-[8px] text-gray-400 uppercase tracking-wide truncate" style={{ color: sourceList.color }}>
+                            {sourceList.name}
+                        </p>
+                    )}
                 </div>
             </div>
             
-            {/* 4. Actions */}
-            <div className={`flex items-center pl-2 border-l border-gray-100 dark:border-gray-700 h-full transition-opacity ${dragOffset > 0 ? 'opacity-0' : 'opacity-100'}`}>
+            <div className={`flex gap-1 pl-2 border-l border-gray-100 dark:border-gray-700 transition-opacity ${dragOffset > 0 ? 'opacity-0' : 'opacity-100'}`}>
                 <button 
                     onClick={(e) => { e.stopPropagation(); onEdit(point); }} 
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                     title="Edit Task"
                 >
                     <Edit2 className="w-4 h-4" />
@@ -252,23 +223,21 @@ const ZoneSection = ({
     const { setNodeRef, isOver } = useDroppable({ id });
 
     return (
-        <div ref={setNodeRef} className={`mb-3 transition-colors ${isOver ? 'bg-orange-50 dark:bg-orange-900/20 ring-2 ring-orange-500 rounded-xl' : ''}`}>
+        <div ref={setNodeRef} className={`mb-2 rounded-xl transition-colors ${isOver ? 'bg-orange-50 dark:bg-orange-900/20 ring-2 ring-orange-500' : ''}`}>
             <div 
                 onClick={onToggle}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 select-none"
+                className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
             >
                 <div className="flex items-center gap-2">
-                    <div className="p-1 bg-white dark:bg-gray-800 rounded shadow-sm">
-                        <Icon className="w-4 h-4 text-orange-500" />
-                    </div>
-                    <span className="text-xs font-black uppercase text-gray-600 dark:text-gray-300 tracking-wide">{title}</span>
-                    <span className="text-[9px] font-bold bg-gray-200 dark:bg-gray-900 px-2 py-0.5 rounded-full text-gray-500">{count}</span>
+                    <Icon className="w-4 h-4 text-orange-500" />
+                    <span className="text-xs font-black uppercase text-gray-700 dark:text-gray-200 tracking-wide">{title}</span>
+                    <span className="text-[10px] font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded text-gray-500">{count}</span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
             </div>
             
             {!isCollapsed && (
-                <div className="mt-2 pl-1 space-y-1">
+                <div className="mt-2 pl-2 border-l-2 border-gray-200 dark:border-gray-800 ml-3">
                     {children}
                 </div>
             )}
@@ -557,7 +526,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 bg-white dark:bg-gray-900 z-0 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900/50 z-0">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     {/* --- MAP TASKS --- */}
                     <SortableContext items={mapPoints.map(p => p.id)} strategy={verticalListSortingStrategy}>
@@ -573,7 +542,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                             onAdd={(type) => onAddTask && onAddTask(type)}
                         >
                             <div className="space-y-1">
-                                {mapPoints.length === 0 && <div className="text-[10px] text-gray-400 italic p-2 text-center">No tasks on map yet.</div>}
+                                {mapPoints.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks on map yet. Drop items here or Add New.</div>}
                                 {mapPoints.map((point, index) => (
                                     <SortablePointItem 
                                         key={point.id} 
@@ -596,7 +565,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     <div className="mb-2 rounded-xl">
                         <div 
                             onClick={() => setIsRoutesCollapsed(!isRoutesCollapsed)}
-                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+                            className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
                         >
                             <div className="flex items-center gap-2">
                                 <Route className="w-4 h-4 text-orange-500" />
@@ -663,7 +632,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                 onAdd={(type) => onAddTask && onAddTask(type, pg.id)}
                             >
                                 <div className="space-y-1">
-                                    {pg.points.length === 0 && <div className="text-[10px] text-gray-400 italic p-2 text-center">No tasks in this zone.</div>}
+                                    {pg.points.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks in this playground. Add items here.</div>}
                                     {pg.points.map((point, index) => (
                                         <SortablePointItem 
                                             key={point.id} 

@@ -69,8 +69,7 @@ const GameManager: React.FC<GameManagerProps> = ({
     onSelectGame, 
     onDeleteGame, 
     onClose,
-    onCreateGame,
-    onEditGame
+    onCreateGame
 }) => {
     const [view, setView] = useState<'LIST' | 'CREATE'>('LIST');
     const [newName, setNewName] = useState('');
@@ -127,13 +126,6 @@ const GameManager: React.FC<GameManagerProps> = ({
                                             title="Load Game"
                                         >
                                             <Play className="w-4 h-4" />
-                                        </button>
-                                        <button 
-                                            onClick={() => onEditGame && onEditGame(game.id)} 
-                                            className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                                            title="Edit Game Settings"
-                                        >
-                                            <Settings className="w-4 h-4" />
                                         </button>
                                         <button 
                                             onClick={() => { if(confirm('Delete game?')) onDeleteGame(game.id); }} 

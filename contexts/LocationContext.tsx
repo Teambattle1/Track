@@ -45,7 +45,9 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       }
     } catch (err: any) {
-      // Quiet fail if not allowed/supported
+      // Quiet fail if not allowed/supported or policy restricted
+      // We log only as debug info to keep console clean for users
+      console.debug('[Location] Wake Lock failed (likely due to permissions policy):', err);
     }
   };
 
