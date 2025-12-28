@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GameMode, MapStyleId, Language, Coordinate, TimerConfig, Playground, GameRoute } from '../types';
 import { 
@@ -67,6 +66,7 @@ interface GameHUDProps {
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any }[] = [
     { id: 'osm', label: 'Standard', icon: Globe },
     { id: 'ski', label: 'Ski Map', icon: Snowflake },
+    { id: 'norwegian', label: 'Norwegian', icon: Snowflake },
     { id: 'winter', label: 'Winter', icon: Mountain },
     { id: 'satellite', label: 'Satellite', icon: Layers },
     { id: 'dark', label: 'Dark Mode', icon: MapIcon },
