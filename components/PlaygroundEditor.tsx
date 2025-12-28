@@ -576,18 +576,28 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
         const wasClick = !dragTaskRef.current.moved;
 
+        // Check if dropped on delete zone
+        if (isOverDeleteZone) {
+            onUpdateGame({
+                ...game,
+                points: game.points.filter(p => p.id !== id)
+            });
+            setIsOverDeleteZone(false);
+            setSelectedTaskId(null);
+        } else {
+            // Flush any pending updates immediately on pointer up
+            if (updateTimeoutRef.current !== null) {
+                clearTimeout(updateTimeoutRef.current);
+                flushPendingUpdates();
+            }
+
+            if (wasClick) {
+                setSelectedTaskId(id);
+            }
+        }
+
         dragTaskRef.current = { id: null, offsetX: 0, offsetY: 0, startClientX: 0, startClientY: 0, moved: false };
         setDraggingTaskId(null);
-
-        // Flush any pending updates immediately on pointer up
-        if (updateTimeoutRef.current !== null) {
-            clearTimeout(updateTimeoutRef.current);
-            flushPendingUpdates();
-        }
-
-        if (wasClick) {
-            setSelectedTaskId(id);
-        }
     };
 
     return (
