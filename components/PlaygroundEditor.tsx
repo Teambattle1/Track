@@ -168,18 +168,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{game.playgrounds?.length || 0} ZONES ACTIVE</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setIsDrawerOpen(false)}
-                            className="text-slate-500 hover:text-white transition-colors p-1.5"
-                            title="Close Settings"
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors p-1.5">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => setIsDrawerOpen(false)}
+                        className="text-orange-500 hover:text-orange-400 transition-colors p-2 -mr-2"
+                        title="Close Settings"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
                 </div>
 
                 {/* PLAYZONE TABS */}
