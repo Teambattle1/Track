@@ -1404,13 +1404,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 {/* Delete Zone - Bottom Right */}
                 <button
                     id="delete-zone-btn"
-                    className={`absolute bottom-6 right-24 z-20 p-4 rounded-full shadow-xl border-2 transition-all ${
+                    className={`absolute bottom-6 right-24 z-20 p-4 rounded-full shadow-xl border-2 transition-all pointer-events-auto ${
                         isOverDeleteZone
                             ? 'bg-red-600 border-red-500 text-white scale-110 animate-pulse shadow-red-500/50'
                             : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-red-500 hover:border-red-600 hover:bg-slate-800'
                     }`}
                     title={isOverDeleteZone ? 'Drop to delete task' : 'Drag task here to delete from map'}
-                    onDragOver={(e) => e.preventDefault()}
                 >
                     <Trash2 className="w-5 h-5" />
                 </button>
