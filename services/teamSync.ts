@@ -1,4 +1,3 @@
-
 import { supabase } from '../lib/supabase';
 import { TaskVote, TeamMember, ChatMessage, Coordinate } from '../types';
 
@@ -26,6 +25,8 @@ class TeamSyncService {
   private memberListeners: MemberCallback[] = [];
   private chatListeners: ChatCallback[] = [];
   private globalLocationListeners: GlobalLocationCallback[] = [];
+
+  private presenceIntervalId: number | null = null;
 
   // Track latest vote timestamp PER DEVICE to safely ignore out-of-order packets without global clock sync issues
   private deviceVoteTimestamps: Record<string, number> = {}; 
@@ -72,7 +73,8 @@ class TeamSyncService {
         if (status === 'SUBSCRIBED') {
            this.sendPresence();
            // Send presence periodically
-           setInterval(() => this.sendPresence(), 5000); 
+           if (this.presenceIntervalId) window.clearInterval(this.presenceIntervalId);
+           this.presenceIntervalId = window.setInterval(() => this.sendPresence(), 5000); 
         }
       });
 
@@ -99,6 +101,11 @@ class TeamSyncService {
   }
 
   public disconnect() {
+    if (this.presenceIntervalId) {
+        window.clearInterval(this.presenceIntervalId);
+        this.presenceIntervalId = null;
+    }
+
     if (this.channel) {
       supabase.removeChannel(this.channel);
       this.channel = null;

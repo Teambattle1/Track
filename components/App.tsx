@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, GameChangeLogEntry, TeamMember, PlaygroundTemplate, ActionType } from '../types';
 import * as db from '../services/db';
@@ -93,6 +92,7 @@ const GameApp: React.FC = () => {
   // --- MAP STATE ---
   const [localMapStyle, setLocalMapStyle] = useState<MapStyleId>('osm');
   const mapRef = useRef<GameMapHandle>(null);
+  const geofenceCheckRunningRef = useRef(false);
   const [isRelocating, setIsRelocating] = useState(false);
   
   // --- MEASUREMENT ---
@@ -190,6 +190,9 @@ const GameApp: React.FC = () => {
       if (!activeGame || mode !== GameMode.PLAY || !userLocation) return;
 
       const checkGeofences = async () => {
+          if (geofenceCheckRunningRef.current) return;
+          geofenceCheckRunningRef.current = true;
+
           let hasUpdates = false;
           const updatedPoints = activeGame.points.map(p => {
               if (p.isUnlocked || p.isCompleted || p.isSectionHeader || p.playgroundId) return p;
@@ -201,11 +204,15 @@ const GameApp: React.FC = () => {
               return p;
           });
 
-          if (hasUpdates) {
-              const updatedGame = { ...activeGame, points: updatedPoints };
-              await db.saveGame(updatedGame);
-              setActiveGame(updatedGame);
-              setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g));
+          try {
+              if (hasUpdates) {
+                  const updatedGame = { ...activeGame, points: updatedPoints };
+                  await db.saveGame(updatedGame);
+                  setActiveGame(updatedGame);
+                  setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g));
+              }
+          } finally {
+              geofenceCheckRunningRef.current = false;
           }
       };
 

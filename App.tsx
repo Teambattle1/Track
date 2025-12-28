@@ -83,6 +83,7 @@ const GameApp: React.FC = () => {
   // --- MAP STATE ---
   const [localMapStyle, setLocalMapStyle] = useState<MapStyleId>('osm');
   const mapRef = useRef<GameMapHandle>(null);
+  const geofenceCheckRunningRef = useRef(false);
   const [isRelocating, setIsRelocating] = useState(false);
   
   // --- MEASUREMENT ---
@@ -132,6 +133,9 @@ const GameApp: React.FC = () => {
       if (!activeGame || mode !== GameMode.PLAY || !userLocation) return;
 
       const checkGeofences = async () => {
+          if (geofenceCheckRunningRef.current) return;
+          geofenceCheckRunningRef.current = true;
+
           let hasUpdates = false;
           const updatedPoints = activeGame.points.map(p => {
               // Skip if already unlocked or completed, or if it's a zone/header
@@ -147,11 +151,15 @@ const GameApp: React.FC = () => {
               return p;
           });
 
-          if (hasUpdates) {
-              const updatedGame = { ...activeGame, points: updatedPoints };
-              await db.saveGame(updatedGame); // Persist unlock state
-              setActiveGame(updatedGame);
-              setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g));
+          try {
+              if (hasUpdates) {
+                  const updatedGame = { ...activeGame, points: updatedPoints };
+                  await db.saveGame(updatedGame); // Persist unlock state
+                  setActiveGame(updatedGame);
+                  setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g));
+              }
+          } finally {
+              geofenceCheckRunningRef.current = false;
           }
       };
 
