@@ -223,7 +223,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 </div>
 
                 <div className={`flex flex-col items-center gap-2 pointer-events-auto transition-transform duration-300 ease-in-out ${sidebarOffset}`}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         {/* View Switcher Toolbox (All operational modes) */}
                         {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
                             <div className="flex gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-xl p-2">
@@ -264,6 +264,40 @@ const GameHUD: React.FC<GameHUDProps> = ({
                             className="shadow-xl"
                             locateFeedback={locateFeedback}
                         />
+
+                        {/* Tools Toolbar - Horizontal Layout */}
+                        {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
+                            <div className="flex gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-xl p-2 flex-shrink-0">
+                                <button
+                                    onClick={() => { onToggleMeasure(); }}
+                                    title="Toggle Measure Mode"
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center border hover:scale-105 transition-transform ${isMeasuring ? 'bg-orange-500 border-orange-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
+                                >
+                                    <Ruler className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => { onAddDangerZone(); }}
+                                    title="Add Danger Zone"
+                                    className="w-10 h-10 rounded-lg flex items-center justify-center border border-red-900/50 bg-slate-800 text-red-500 hover:bg-red-900/20 hover:text-red-400 hover:scale-105 transition-all"
+                                >
+                                    <Skull className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => { setShowLayerMenu(!showLayerMenu); }}
+                                    title="Toggle Layers"
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center border hover:scale-105 transition-transform ${showLayerMenu ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
+                                >
+                                    <Layers className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => { onRelocateGame(); }}
+                                    title="Relocate Game"
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center border hover:scale-105 transition-transform ${isRelocating ? 'bg-green-600 border-green-400 text-white animate-pulse' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
+                                >
+                                    <Crosshair className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {mode !== GameMode.EDIT && renderGameNameButton()}
