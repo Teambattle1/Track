@@ -161,10 +161,11 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
         fitBounds: (pts: GamePoint[] | Coordinate[]) => {
             let latLngs: L.LatLngExpression[] = [];
             if (pts.length > 0 && 'location' in pts[0]) {
-                 const validPts = (pts as GamePoint[]).filter(p => p.location.lat !== 0 || p.location.lng !== 0);
+                 const validPts = (pts as GamePoint[]).filter(p => isValidCoordinate(p.location));
                  latLngs = validPts.map(p => [p.location.lat, p.location.lng]);
             } else {
-                 latLngs = (pts as Coordinate[]).map(c => [c.lat, c.lng]);
+                 const validCoords = (pts as Coordinate[]).filter(c => isValidCoordinate(c));
+                 latLngs = validCoords.map(c => [c.lat, c.lng]);
             }
             if (latLngs.length === 0) return;
             const bounds = L.latLngBounds(latLngs);
@@ -175,7 +176,13 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
             return { ne: { lat: b.getNorthEast().lat, lng: b.getNorthEast().lng }, sw: { lat: b.getSouthWest().lat, lng: b.getSouthWest().lng } };
         },
         getCenter: () => { const c = map.getCenter(); return { lat: c.lat, lng: c.lng }; },
-        jumpTo: (coord: Coordinate, zoom: number = 17) => { map.flyTo([coord.lat, coord.lng], zoom, { duration: 1.5 }); }
+        jumpTo: (coord: Coordinate, zoom: number = 17) => {
+            if (!isValidCoordinate(coord)) {
+                console.warn('[GameMap] Invalid coordinate for jumpTo:', coord);
+                return;
+            }
+            map.flyTo([coord.lat, coord.lng], zoom, { duration: 1.5 });
+        }
     }));
     return null;
 };
