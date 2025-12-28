@@ -64,6 +64,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showTaskScores, setShowTaskScores] = useState(true);
     const [showTaskOrder, setShowTaskOrder] = useState(true);
     const [showTaskActions, setShowTaskActions] = useState(true);
+
+    const [editorOrientation, setEditorOrientation] = useState<'portrait' | 'landscape'>('landscape');
+    const [showAiIconPrompt, setShowAiIconPrompt] = useState(false);
+    const [aiIconPromptValue, setAiIconPromptValue] = useState('');
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,7 +96,18 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     }, [game.playgrounds]);
 
     const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId) || game.playgrounds?.[0];
+    const isOrientationLocked = !!activePlayground?.orientationLock && activePlayground.orientationLock !== 'none';
+
     const playgroundPoints = game.points.filter(p => p.playgroundId === activePlayground?.id);
+
+    useEffect(() => {
+        if (!activePlayground) return;
+        if (activePlayground.orientationLock && activePlayground.orientationLock !== 'none') {
+            setEditorOrientation(activePlayground.orientationLock);
+        } else {
+            setEditorOrientation('landscape');
+        }
+    }, [activePlayground?.id, activePlayground?.orientationLock]);
 
     // Deduplicate to prevent "same key" errors
     const uniquePlaygroundPoints = Array.from(new Map(playgroundPoints.map(p => [p.id, p])).values());
@@ -648,112 +663,136 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                     <div className="flex items-center gap-3 pointer-events-auto">
                         {/* Orientation Selector */}
-                        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-orange-500/30 shadow-lg pointer-events-auto">
+                        <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-orange-500/30 shadow-lg pointer-events-auto">
                             <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-1">ORIENTATION</span>
-                            <div className="flex gap-1 pointer-events-auto">
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        updatePlayground({ orientationLock: 'portrait' });
-                                    }}
-                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
-                                        activePlayground.orientationLock === 'portrait'
-                                            ? 'bg-orange-600 text-white shadow-lg'
-                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                    }`}
-                                    title="Lock to Portrait (Vertical)"
-                                    type="button"
-                                >
-                                    <Smartphone className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        updatePlayground({ orientationLock: 'landscape' });
-                                    }}
-                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
-                                        activePlayground.orientationLock === 'landscape'
-                                            ? 'bg-orange-600 text-white shadow-lg'
-                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                    }`}
-                                    title="Lock to Landscape (Horizontal) - Default for Tablets"
-                                    type="button"
-                                >
-                                    <Monitor className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        updatePlayground({ orientationLock: 'none' });
-                                    }}
-                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
-                                        activePlayground.orientationLock === 'none' || !activePlayground.orientationLock
-                                            ? 'bg-orange-600 text-white shadow-lg'
-                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                    }`}
-                                    title="Allow Any Orientation"
-                                    type="button"
-                                >
-                                    <Lock className="w-4 h-4" />
-                                </button>
+                            <div className="flex gap-3 pointer-events-auto">
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setEditorOrientation('portrait');
+                                            if (isOrientationLocked) updatePlayground({ orientationLock: 'portrait' });
+                                        }}
+                                        className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
+                                            editorOrientation === 'portrait'
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title="Preview portrait"
+                                        type="button"
+                                    >
+                                        <Smartphone className="w-4 h-4" />
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${editorOrientation === 'portrait' ? 'text-orange-300' : 'text-slate-500'}`}>PORTRAIT</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setEditorOrientation('landscape');
+                                            if (isOrientationLocked) updatePlayground({ orientationLock: 'landscape' });
+                                        }}
+                                        className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
+                                            editorOrientation === 'landscape'
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title="Preview landscape (tablet default)"
+                                        type="button"
+                                    >
+                                        <Monitor className="w-4 h-4" />
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${editorOrientation === 'landscape' ? 'text-orange-300' : 'text-slate-500'}`}>LAND</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (isOrientationLocked) {
+                                                updatePlayground({ orientationLock: 'none' });
+                                            } else {
+                                                updatePlayground({ orientationLock: editorOrientation });
+                                            }
+                                        }}
+                                        className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
+                                            isOrientationLocked
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title={isOrientationLocked ? 'Unlock orientation' : 'Lock to selected orientation'}
+                                        type="button"
+                                    >
+                                        <Lock className="w-4 h-4" />
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${isOrientationLocked ? 'text-orange-300' : 'text-slate-500'}`}>LOCK</span>
+                                </div>
                             </div>
                         </div>
 
                         {/* Show Box */}
-                        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-orange-500/30 shadow-lg pointer-events-auto">
+                        <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-orange-500/30 shadow-lg pointer-events-auto">
                             <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-1">SHOW</span>
-                            <div className="flex gap-1 pointer-events-auto">
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setShowTaskScores(!showTaskScores);
-                                    }}
-                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
-                                        showTaskScores
-                                            ? 'bg-orange-600 text-white shadow-lg'
-                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                    }`}
-                                    title="Show/Hide Task Scores"
-                                    type="button"
-                                >
-                                    <span className="text-xs font-bold">$</span>
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setShowTaskOrder(!showTaskOrder);
-                                    }}
-                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
-                                        showTaskOrder
-                                            ? 'bg-orange-600 text-white shadow-lg'
-                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                    }`}
-                                    title="Show/Hide Task Order Numbers"
-                                    type="button"
-                                >
-                                    <span className="text-xs font-bold">#</span>
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setShowTaskActions(!showTaskActions);
-                                    }}
-                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
-                                        showTaskActions
-                                            ? 'bg-orange-600 text-white shadow-lg'
-                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                    }`}
-                                    title="Show/Hide Task Actions"
-                                    type="button"
-                                >
-                                    <Zap className="w-3 h-3" />
-                                </button>
+                            <div className="flex gap-3 pointer-events-auto">
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setShowTaskScores(!showTaskScores);
+                                        }}
+                                        className={`p-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
+                                            showTaskScores
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title="Show/Hide Task Scores"
+                                        type="button"
+                                    >
+                                        <span className="text-xs font-bold">$</span>
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${showTaskScores ? 'text-orange-300' : 'text-slate-500'}`}>SCORE</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setShowTaskOrder(!showTaskOrder);
+                                        }}
+                                        className={`p-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
+                                            showTaskOrder
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title="Show/Hide Task Order Numbers"
+                                        type="button"
+                                    >
+                                        <span className="text-xs font-bold">#</span>
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${showTaskOrder ? 'text-orange-300' : 'text-slate-500'}`}>ORDER</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setShowTaskActions(!showTaskActions);
+                                        }}
+                                        className={`p-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
+                                            showTaskActions
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title="Show/Hide Task Actions"
+                                        type="button"
+                                    >
+                                        <Zap className="w-3 h-3" />
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${showTaskActions ? 'text-orange-300' : 'text-slate-500'}`}>ACTIONS</span>
+                                </div>
                             </div>
                         </div>
                         <button
@@ -917,7 +956,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             {/* Task Title */}
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TASK TITLE</label>
-                                <p className="text-sm font-bold text-white">{selectedTask.title}</p>
+                                <input
+                                    value={selectedTask.title}
+                                    onChange={(e) => updateTask({ title: e.target.value })}
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-500"
+                                />
                             </div>
 
                             {/* Icon Size Slider */}
@@ -972,8 +1015,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                                     <button
                                         onClick={() => {
-                                            const prompt = prompt('Describe the icon you want to generate:\n(e.g., "red flag", "gold star", "camera icon")');
-                                            if (prompt) handleGenerateTaskIcon(prompt);
+                                            setAiIconPromptValue('');
+                                            setShowAiIconPrompt(true);
                                         }}
                                         disabled={isGeneratingIcon}
                                         className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
@@ -982,6 +1025,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
                                         }`}
                                         title="Generate icon with AI"
+                                        type="button"
                                     >
                                         {isGeneratingIcon ? (
                                             <>
