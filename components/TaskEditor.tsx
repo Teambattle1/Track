@@ -557,8 +557,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    {tagError && <AlertCircle className="w-3 h-3 text-red-500" />}
                                </label>
                                <div className="flex flex-wrap gap-2 mb-2">
-                                   {editedPoint.tags?.map(tag => (
-                                       <span key={tag} className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                                   {editedPoint.tags?.map((tag, index) => (
+                                       <span key={`${tag}-${index}`} className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
                                            {tag}
                                            <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:text-blue-900 dark:hover:text-white"><X className="w-3 h-3" /></button>
                                        </span>
