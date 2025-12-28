@@ -131,7 +131,7 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
   const initializedRef = useRef(false);
   useEffect(() => {
     if (!initializedRef.current && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && points.length > 0) {
-        const validPoints = points.filter(p => p.location.lat !== 0 || p.location.lng !== 0);
+        const validPoints = points.filter(p => isValidCoordinate(p.location));
         if (validPoints.length > 0) {
             const latLngs = validPoints.map(p => [p.location.lat, p.location.lng] as [number, number]);
             const bounds = L.latLngBounds(latLngs);
@@ -142,7 +142,7 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
             }
         }
     }
-    if (!initializedRef.current && center) {
+    if (!initializedRef.current && center && isValidCoordinate(center)) {
       map.setView([center.lat, center.lng], 16);
       initializedRef.current = true;
     }
