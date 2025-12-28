@@ -191,6 +191,8 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string, className?:
   winter: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors', className: 'map-filter-winter' },
   // Updated: Ski uses OpenSkiMap but falls back gracefully if down
   ski: { url: 'https://tiles.openskimap.org/map/{z}/{x}/{y}.png', attribution: '&copy; OpenSkiMap' },
+  // Norwegian: Nordic cross-country ski trails from OpenSkiMap with enhanced saturation
+  norwegian: { url: 'https://tiles.openskimap.org/map/{z}/{x}/{y}.png', attribution: '&copy; OpenSkiMap, OpenStreetMap contributors, Norwegian Mapping Authority', className: 'map-filter-nordic' },
   // Historic: Using OSM as base but we will apply CSS sepia filter in component
   historic: { url: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap', className: 'map-filter-historic' },
   // Google Custom placeholder - uses dark by default but allows saving custom JSON
