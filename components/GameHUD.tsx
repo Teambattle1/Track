@@ -223,46 +223,48 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 </div>
 
                 <div className={`flex flex-col items-center gap-2 pointer-events-auto transition-transform duration-300 ease-in-out ${sidebarOffset}`}>
-                    <LocationSearch
-                        onSelectLocation={onSearchLocation}
-                        onLocateMe={onLocateMe}
-                        onFitBounds={onFitBounds}
-                        hideSearch={window.innerWidth < 640 && mode !== GameMode.EDIT}
-                        onToggleScores={onToggleScores}
-                        showScores={showScores}
-                        className="shadow-xl"
-                        locateFeedback={locateFeedback}
-                    />
+                    <div className="flex items-center gap-2">
+                        {/* View Switcher Toolbox (All operational modes) */}
+                        {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
+                            <div className="flex gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-xl p-2">
+                                <button
+                                    onClick={() => onSetMode(GameMode.EDIT)}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2 whitespace-nowrap ${mode === GameMode.EDIT ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'}`}
+                                    title="Editor View"
+                                >
+                                    <MapIcon className="w-4 h-4" />
+                                    EDITOR
+                                </button>
+                                <button
+                                    onClick={() => onSetMode(GameMode.INSTRUCTOR)}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2 whitespace-nowrap ${mode === GameMode.INSTRUCTOR ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'}`}
+                                    title="Instructor View"
+                                >
+                                    <Shield className="w-4 h-4" />
+                                    INSTRUCTOR
+                                </button>
+                                <button
+                                    onClick={() => onSetMode(GameMode.PLAY)}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2 whitespace-nowrap ${mode === GameMode.PLAY ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'}`}
+                                    title="Team View"
+                                >
+                                    <Users className="w-4 h-4" />
+                                    TEAM
+                                </button>
+                            </div>
+                        )}
 
-                    {/* View Switcher Toolbox (All operational modes) */}
-                    {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
-                        <div className="flex gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-xl p-2">
-                            <button
-                                onClick={() => onSetMode(GameMode.EDIT)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2 whitespace-nowrap ${mode === GameMode.EDIT ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'}`}
-                                title="Editor View"
-                            >
-                                <MapIcon className="w-4 h-4" />
-                                EDITOR
-                            </button>
-                            <button
-                                onClick={() => onSetMode(GameMode.INSTRUCTOR)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2 whitespace-nowrap ${mode === GameMode.INSTRUCTOR ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'}`}
-                                title="Instructor View"
-                            >
-                                <Shield className="w-4 h-4" />
-                                INSTRUCTOR
-                            </button>
-                            <button
-                                onClick={() => onSetMode(GameMode.PLAY)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2 whitespace-nowrap ${mode === GameMode.PLAY ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'}`}
-                                title="Team View"
-                            >
-                                <Users className="w-4 h-4" />
-                                TEAM
-                            </button>
-                        </div>
-                    )}
+                        <LocationSearch
+                            onSelectLocation={onSearchLocation}
+                            onLocateMe={onLocateMe}
+                            onFitBounds={onFitBounds}
+                            hideSearch={window.innerWidth < 640 && mode !== GameMode.EDIT}
+                            onToggleScores={onToggleScores}
+                            showScores={showScores}
+                            className="shadow-xl"
+                            locateFeedback={locateFeedback}
+                        />
+                    </div>
 
                     {mode !== GameMode.EDIT && renderGameNameButton()}
                     {timeLeft && (
@@ -271,10 +273,10 @@ const GameHUD: React.FC<GameHUDProps> = ({
                             {timeLeft}
                         </div>
                     )}
-                    
+
                     {/* RETURN TO START BUTTON (GAME ENDED) */}
                     {gameEnded && onReturnToStart && (
-                        <button 
+                        <button
                             onClick={onReturnToStart}
                             className="bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)] animate-bounce font-black uppercase tracking-widest text-lg flex items-center gap-3 border-4 border-white pointer-events-auto"
                         >
