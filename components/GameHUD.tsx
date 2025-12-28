@@ -221,14 +221,15 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 </div>
 
                 <div className={`flex flex-col items-center gap-2 pointer-events-auto transition-transform duration-300 ease-in-out ${sidebarOffset}`}>
-                    <LocationSearch 
-                        onSelectLocation={onSearchLocation} 
+                    <LocationSearch
+                        onSelectLocation={onSearchLocation}
                         onLocateMe={onLocateMe}
                         onFitBounds={onFitBounds}
-                        hideSearch={window.innerWidth < 640 && mode !== GameMode.EDIT} 
+                        hideSearch={window.innerWidth < 640 && mode !== GameMode.EDIT}
                         onToggleScores={onToggleScores}
                         showScores={showScores}
                         className="shadow-xl"
+                        locateFeedback={locateFeedback}
                     />
                     {mode !== GameMode.EDIT && renderGameNameButton()}
                     {timeLeft && (
