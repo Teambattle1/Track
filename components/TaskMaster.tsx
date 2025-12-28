@@ -668,6 +668,28 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                 </button>
                                                 <button
                                                     onClick={() => {
+                                                        const copiedList: TaskList = {
+                                                            id: `list-${Date.now()}`,
+                                                            name: `${list.name} (Copy)`,
+                                                            description: list.description,
+                                                            tasks: [...list.tasks],
+                                                            color: list.color,
+                                                            iconId: list.iconId,
+                                                            imageUrl: list.imageUrl,
+                                                            usageCount: 0,
+                                                            createdAt: Date.now()
+                                                        };
+                                                        const updated = [...taskLists, copiedList];
+                                                        onUpdateTaskLists(updated);
+                                                        db.saveTaskList(copiedList);
+                                                    }}
+                                                    className="p-2 bg-slate-800 hover:bg-purple-600 text-slate-400 hover:text-white rounded-lg transition-colors"
+                                                    title="Duplicate this tasklist"
+                                                >
+                                                    <Copy className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
                                                         if (confirm('Delete this list?')) {
                                                             const updated = taskLists.filter(l => l.id !== list.id);
                                                             onUpdateTaskLists(updated);
