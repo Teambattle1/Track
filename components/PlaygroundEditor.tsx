@@ -454,9 +454,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             <Grid className="w-4 h-4" />
                             <span className="text-[10px] font-black uppercase tracking-widest">GRID</span>
                         </button>
-                        <button className="py-3 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center gap-2 text-white hover:bg-slate-700 transition-colors">
+                        <button
+                            onClick={handleSnapAllToGrid}
+                            className="py-3 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center gap-2 text-white hover:bg-slate-700 active:bg-green-600 transition-colors"
+                            title="Snap all icons to grid and align in rows"
+                        >
                             <Check className="w-4 h-4 text-green-500" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">SNAP</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest">SNAP ALL</span>
                         </button>
                     </div>
 
