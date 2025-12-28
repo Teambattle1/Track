@@ -499,16 +499,20 @@ const GameApp: React.FC = () => {
       };
 
       const updatedLib = renameInTasks(taskLibrary);
-      for (const t of updatedLib) {
-          if (t.tags?.includes(newTag)) await db.saveTemplate(t);
-      }
+      // Save all templates that were updated in parallel
+      await Promise.all(updatedLib.filter(t => t.tags?.includes(newTag)).map(t => db.saveTemplate(t))).catch(err => {
+          console.error('Error saving templates:', err);
+      });
       setTaskLibrary(updatedLib);
 
       const updatedLists = taskLists.map(list => ({
           ...list,
           tasks: renameInTasks(list.tasks)
       }));
-      for (const list of updatedLists) await db.saveTaskList(list);
+      // Save all lists in parallel
+      await Promise.all(updatedLists.map(list => db.saveTaskList(list))).catch(err => {
+          console.error('Error saving lists:', err);
+      });
       setTaskLists(updatedLists);
 
       const updatedGames = games.map(g => ({
@@ -518,7 +522,10 @@ const GameApp: React.FC = () => {
               tags: p.tags?.map(tag => tag === oldTag ? newTag : tag) || []
           }))
       }));
-      for (const g of updatedGames) await db.saveGame(g);
+      // Save all games in parallel
+      await Promise.all(updatedGames.map(g => db.saveGame(g))).catch(err => {
+          console.error('Error saving games:', err);
+      });
       setGames(updatedGames);
   };
 
