@@ -148,12 +148,15 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
   // Auto-detect language from task question on component mount
   useEffect(() => {
-      const hasDefaultLanguage = editedPoint.settings?.language === 'English' && point.settings?.language === 'English';
       const hasQuestion = editedPoint.task.question && editedPoint.task.question.trim().length > 0;
+      const currentLanguage = normalizeLanguage(editedPoint.settings?.language);
 
-      if (hasDefaultLanguage && hasQuestion) {
+      // Auto-detect if: no valid language yet (default English) OR question contains special chars suggesting different language
+      if (hasQuestion) {
           const detectedLanguage = detectLanguageFromText(editedPoint.task.question);
-          if (detectedLanguage !== 'English') {
+
+          // Update if we detected a different language than current
+          if (detectedLanguage !== currentLanguage && detectedLanguage !== 'English') {
               setEditedPoint(prev => ({
                   ...prev,
                   settings: { ...prev.settings, language: detectedLanguage }
