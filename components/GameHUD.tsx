@@ -93,7 +93,8 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
 
     // ... Toolbox state ...
-    const [toolboxPos, setToolboxPos] = useState({ x: window.innerWidth - 140, y: 100 });
+    // Position toolbox below the settings button (circular buttons are ~104px total height + gap)
+    const [toolboxPos, setToolboxPos] = useState({ x: window.innerWidth - 140, y: 180 });
     const [isDraggingBox, setIsDraggingBox] = useState(false);
     const dragOffset = useRef({ x: 0, y: 0 });
     const [measureBoxPos, setMeasureBoxPos] = useState({ x: window.innerWidth / 2 - 80, y: 120 });
