@@ -1477,15 +1477,62 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             return (
                                                 <div
                                                     key={point.id}
-                                                    className={`p-3 border rounded-lg transition-colors cursor-pointer group ${
-                                                        isMarked
-                                                            ? 'bg-orange-500/20 border-orange-500'
-                                                            : 'bg-slate-800/50 border-slate-700 hover:border-orange-500 hover:bg-slate-800'
+                                                    className={`p-3 border rounded-lg transition-colors group ${
+                                                        bulkIconMode
+                                                            ? bulkIconSourceId === point.id
+                                                                ? 'bg-blue-500/20 border-blue-500 cursor-pointer'
+                                                                : 'bg-slate-800/50 border-slate-700 cursor-pointer'
+                                                            : (isMarked
+                                                                ? 'bg-orange-500/20 border-orange-500'
+                                                                : 'bg-slate-800/50 border-slate-700 hover:border-orange-500 hover:bg-slate-800')
                                                     }`}
-                                                    onClick={() => setSelectedTaskId(point.id)}
+                                                    onClick={() => {
+                                                        if (bulkIconMode) {
+                                                            if (bulkIconSourceId === null) {
+                                                                setBulkIconSourceId(point.id);
+                                                            } else if (bulkIconSourceId === point.id) {
+                                                                setBulkIconSourceId(null);
+                                                            } else {
+                                                                toggleBulkIconTarget(point.id);
+                                                            }
+                                                        } else {
+                                                            setSelectedTaskId(point.id);
+                                                        }
+                                                    }}
                                                 >
                                                     <div className="flex items-start justify-between gap-3">
-                                                        {isMarkMode && (
+                                                        {bulkIconMode ? (
+                                                            <>
+                                                                {bulkIconSourceId === null ? (
+                                                                    <div className="w-8 h-8 bg-slate-700 rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-slate-400">
+                                                                        SRC
+                                                                    </div>
+                                                                ) : bulkIconSourceId === point.id ? (
+                                                                    <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                                                                        {point.iconUrl ? (
+                                                                            <img src={point.iconUrl} alt="" className="w-5 h-5 object-contain" />
+                                                                        ) : (
+                                                                            (() => {
+                                                                                const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
+                                                                                return <Icon className="w-5 h-5 text-white" />;
+                                                                            })()
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={bulkIconTargets.has(point.id)}
+                                                                        onChange={(e) => {
+                                                                            e.stopPropagation();
+                                                                            toggleBulkIconTarget(point.id);
+                                                                        }}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="mt-1 w-4 h-4 rounded border-2 border-slate-500 bg-slate-900 cursor-pointer accent-orange-500 flex-shrink-0"
+                                                                        title="Select target"
+                                                                    />
+                                                                )}
+                                                            </>
+                                                        ) : isMarkMode && (
                                                             <input
                                                                 type="checkbox"
                                                                 checked={isMarked}
