@@ -1071,29 +1071,38 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        {uniquePlaygroundPoints.map((point, index) => (
-                                            <div
-                                                key={point.id}
-                                                className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-orange-500 hover:bg-slate-800 transition-colors cursor-pointer group"
-                                                onClick={() => setSelectedTaskId(point.id)}
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1 min-w-0">
-                                                        {showTaskOrder && (
-                                                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">TASK {String(index + 1).padStart(2, '0')}</p>
-                                                        )}
-                                                        <p className="text-xs font-bold text-white truncate group-hover:text-orange-300 transition-colors">{point.title}</p>
-                                                        {showTaskScores && (
-                                                            <p className="text-[9px] font-bold text-orange-400 uppercase mt-1 flex items-center gap-1">
-                                                                <span>$</span>
-                                                                <span>{point.points}</span>
-                                                            </p>
-                                                        )}
+                                        {uniquePlaygroundPoints.map((point, index) => {
+                                            const hasActions = point.logic && (point.logic.onOpen?.length || point.logic.onCorrect?.length || point.logic.onIncorrect?.length);
+                                            return (
+                                                <div
+                                                    key={point.id}
+                                                    className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-orange-500 hover:bg-slate-800 transition-colors cursor-pointer group"
+                                                    onClick={() => setSelectedTaskId(point.id)}
+                                                >
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1 min-w-0">
+                                                            {showTaskOrder && (
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">TASK {String(index + 1).padStart(2, '0')}</p>
+                                                            )}
+                                                            <p className="text-xs font-bold text-white truncate group-hover:text-orange-300 transition-colors">{point.title}</p>
+                                                            {showTaskScores && (
+                                                                <p className="text-[9px] font-bold text-orange-400 uppercase mt-1 flex items-center gap-1">
+                                                                    <span>$</span>
+                                                                    <span>{point.points}</span>
+                                                                </p>
+                                                            )}
+                                                            {showTaskActions && hasActions && (
+                                                                <p className="text-[9px] font-bold text-purple-400 uppercase mt-1 flex items-center gap-1">
+                                                                    <Zap className="w-2.5 h-2.5" />
+                                                                    <span>HAS ACTIONS</span>
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <Edit2 className="w-4 h-4 text-slate-500 group-hover:text-orange-500 transition-colors flex-shrink-0" />
                                                     </div>
-                                                    <Edit2 className="w-4 h-4 text-slate-500 group-hover:text-orange-500 transition-colors flex-shrink-0" />
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
