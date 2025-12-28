@@ -1,4 +1,3 @@
-
 import { supabase } from '../lib/supabase';
 
 // Helper to convert base64 to Blob
@@ -14,6 +13,15 @@ const base64ToBlob = (base64: string): Blob => {
   }
 
   return new Blob([uInt8Array], { type: contentType });
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.readAsDataURL(file);
+  });
 };
 
 export const uploadImage = async (fileOrBase64: File | string, bucket: string = 'game-assets'): Promise<string | null> => {
@@ -40,10 +48,10 @@ export const uploadImage = async (fileOrBase64: File | string, bucket: string = 
 
     if (error) {
       console.warn("Storage upload failed (bucket might not exist), falling back to Base64 logic", error);
-      // Fallback: Return the Base64 string if upload fails (so app still works without bucket setup)
-      // Ideally, we compress it here if possible, but for now we just return null to signal "use default" or return the string
+
+      // Fallback: keep the app functional even without bucket setup.
       if (typeof fileOrBase64 === 'string') return fileOrBase64;
-      return null; 
+      return await readFileAsDataUrl(fileOrBase64);
     }
 
     // 2. Get Public URL
@@ -55,6 +63,11 @@ export const uploadImage = async (fileOrBase64: File | string, bucket: string = 
 
   } catch (e) {
     console.error("Upload exception", e);
-    return typeof fileOrBase64 === 'string' ? fileOrBase64 : null;
+    if (typeof fileOrBase64 === 'string') return fileOrBase64;
+    try {
+      return await readFileAsDataUrl(fileOrBase64);
+    } catch {
+      return null;
+    }
   }
 };
