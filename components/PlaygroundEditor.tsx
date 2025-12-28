@@ -1116,6 +1116,97 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             </svg>
                         )}
 
+                        {/* Action Links Visualization */}
+                        {showTaskActions && (
+                            <svg
+                                className="absolute inset-0 w-full h-full pointer-events-none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <defs>
+                                    <pattern id="correct-dots" width="8" height="2" patternUnits="userSpaceOnUse">
+                                        <circle cx="1" cy="1" r="0.5" fill="#10b981" opacity="0.8"/>
+                                    </pattern>
+                                    <pattern id="incorrect-dots" width="8" height="2" patternUnits="userSpaceOnUse">
+                                        <circle cx="1" cy="1" r="0.5" fill="#ef4444" opacity="0.8"/>
+                                    </pattern>
+                                    <pattern id="action-dots" width="8" height="2" patternUnits="userSpaceOnUse">
+                                        <circle cx="1" cy="1" r="0.5" fill="#f59e0b" opacity="0.8"/>
+                                    </pattern>
+                                </defs>
+                                {uniquePlaygroundPoints.flatMap((source) => {
+                                    const rect = backgroundRef.current?.getBoundingClientRect();
+                                    if (!rect) return [];
+
+                                    const sourceX = (source.playgroundPosition?.x || 50);
+                                    const sourceY = (source.playgroundPosition?.y || 50);
+                                    const sourcePx = { x: (sourceX / 100) * rect.width, y: (sourceY / 100) * rect.height };
+
+                                    return [
+                                        ...(source.logic?.onCorrect || []).map((targetId) => {
+                                            const target = game.points.find(p => p.id === targetId);
+                                            if (!target) return null;
+                                            const targetX = (target.playgroundPosition?.x || 50);
+                                            const targetY = (target.playgroundPosition?.y || 50);
+                                            const targetPx = { x: (targetX / 100) * rect.width, y: (targetY / 100) * rect.height };
+                                            return (
+                                                <line
+                                                    key={`correct-${source.id}-${targetId}`}
+                                                    x1={sourcePx.x}
+                                                    y1={sourcePx.y}
+                                                    x2={targetPx.x}
+                                                    y2={targetPx.y}
+                                                    stroke="url(#correct-dots)"
+                                                    strokeWidth="2"
+                                                    strokeDasharray="4,4"
+                                                    opacity="0.6"
+                                                />
+                                            );
+                                        }),
+                                        ...(source.logic?.onIncorrect || []).map((targetId) => {
+                                            const target = game.points.find(p => p.id === targetId);
+                                            if (!target) return null;
+                                            const targetX = (target.playgroundPosition?.x || 50);
+                                            const targetY = (target.playgroundPosition?.y || 50);
+                                            const targetPx = { x: (targetX / 100) * rect.width, y: (targetY / 100) * rect.height };
+                                            return (
+                                                <line
+                                                    key={`incorrect-${source.id}-${targetId}`}
+                                                    x1={sourcePx.x}
+                                                    y1={sourcePx.y}
+                                                    x2={targetPx.x}
+                                                    y2={targetPx.y}
+                                                    stroke="url(#incorrect-dots)"
+                                                    strokeWidth="2"
+                                                    strokeDasharray="4,4"
+                                                    opacity="0.6"
+                                                />
+                                            );
+                                        }),
+                                        ...(source.logic?.onOpen || []).map((targetId) => {
+                                            const target = game.points.find(p => p.id === targetId);
+                                            if (!target) return null;
+                                            const targetX = (target.playgroundPosition?.x || 50);
+                                            const targetY = (target.playgroundPosition?.y || 50);
+                                            const targetPx = { x: (targetX / 100) * rect.width, y: (targetY / 100) * rect.height };
+                                            return (
+                                                <line
+                                                    key={`open-${source.id}-${targetId}`}
+                                                    x1={sourcePx.x}
+                                                    y1={sourcePx.y}
+                                                    x2={targetPx.x}
+                                                    y2={targetPx.y}
+                                                    stroke="url(#action-dots)"
+                                                    strokeWidth="2"
+                                                    strokeDasharray="4,4"
+                                                    opacity="0.6"
+                                                />
+                                            );
+                                        })
+                                    ].filter(Boolean);
+                                })}
+                            </svg>
+                        )}
+
                         {/* Tasks on Canvas */}
                         {uniquePlaygroundPoints.map((point, index) => {
                             const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
