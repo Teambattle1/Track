@@ -240,7 +240,8 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
           // We attach these as custom properties that onAddTasks in App.tsx will look for
           // Using casting to bypass strict TaskTemplate check for these transient props
           radiusMeters: batchRadius,
-          areaColor: batchColor
+          areaColor: batchColor,
+          openingAudioUrl: batchAudioUrl || undefined
       })) as TaskTemplate[];
 
       // 1. Add to Game (Map or Playground)
