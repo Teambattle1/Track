@@ -508,7 +508,11 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
 
                                 <div className="space-y-3">
                                     {editingList.tasks.map((task, i) => (
-                                        <div key={i} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                                        <div
+                                            key={i}
+                                            onClick={() => setEditingTaskIndex(i)}
+                                            className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all"
+                                        >
                                             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                                                 {React.createElement(ICON_COMPONENTS[task.iconId] || ICON_COMPONENTS.default, { className: "w-5 h-5 text-gray-500 dark:text-gray-300" })}
                                             </div>
@@ -524,7 +528,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{task.task.question}</p>
                                             </div>
                                             <button
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     const newTasks = [...editingList.tasks];
                                                     newTasks.splice(i, 1);
                                                     setEditingList({...editingList, tasks: newTasks});
