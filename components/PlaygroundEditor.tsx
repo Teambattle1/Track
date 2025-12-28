@@ -932,7 +932,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         className="absolute left-5 text-orange-500 hover:text-orange-400 transition-colors p-2"
                         title="Close Tasks"
                     >
-                        <ChevronLeft className="w-6 h-6" />
+                        <ChevronRight className="w-6 h-6" />
                     </button>
                     <div className="flex flex-col items-center gap-1">
                         <h2 className="text-sm font-black uppercase tracking-widest text-white">TASKS</h2>
