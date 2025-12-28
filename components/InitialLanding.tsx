@@ -285,7 +285,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
   const renderPlayTeamsMenu = () => (
       <div className="flex flex-col items-center w-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full justify-items-center pb-10 max-w-[1200px] mx-auto">
+          <div className="flex flex-col md:flex-row gap-12 md:gap-16 lg:gap-20 items-center justify-center w-full px-4 pb-10">
               <MapPinButton 
                   title="TEAMLOBBY" 
                   icon={Users} 
