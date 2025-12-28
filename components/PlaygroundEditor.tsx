@@ -116,9 +116,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     };
 
     const handleSnapAllToGrid = () => {
-        const GRID_SIZE = 40;
-        const COLS = 3;
+        // Dynamically calculate columns based on number of icons
+        const totalIcons = playgroundPoints.length;
+        let COLS = 3;
+
+        if (totalIcons > 12) COLS = 4;
+        if (totalIcons > 20) COLS = 5;
+
         const PADDING = 5;
+        const ROW_HEIGHT = 20; // Space between rows
 
         // Sort points by current Y position (top to bottom), then X (left to right)
         const sortedPoints = [...playgroundPoints].sort((a, b) => {
@@ -138,14 +144,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             const row = Math.floor(index / COLS);
             const col = index % COLS;
 
-            // Calculate grid-aligned position
-            const x = PADDING + (col * (100 / COLS)) + (100 / COLS / 2);
-            const y = PADDING + (row * 25) + 12.5;
+            // Calculate grid-aligned position with dynamic column spacing
+            const colWidth = (100 - (PADDING * 2)) / COLS;
+            const x = PADDING + (col * colWidth) + (colWidth / 2);
+            const y = PADDING + (row * ROW_HEIGHT) + (ROW_HEIGHT / 2);
 
             return {
                 ...point,
                 playgroundPosition: {
-                    x: Math.round(x * 10) / 10, // Round to 1 decimal
+                    x: Math.round(x * 10) / 10,
                     y: Math.round(y * 10) / 10
                 }
             };
