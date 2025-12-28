@@ -138,6 +138,38 @@ export const generateAvatar = async (keywords: string): Promise<string | null> =
     return generateAiImage(`Avatar of ${keywords}`, 'vector art, colorful, circular crop style');
 };
 
+export const generateAiBackground = async (keywords: string, zoneName?: string): Promise<string | null> => {
+    const key = ensureApiKey();
+    const ai = new GoogleGenAI({ apiKey: key });
+
+    const prompt = `Create a stunning, professional, high-quality game background image.
+${zoneName ? `Zone/Theme: ${zoneName}\n` : ''}Keywords: ${keywords}
+
+Requirements:
+- Aspect Ratio: 16:9 widescreen format
+- Visual Style: Vibrant, immersive, game-ready
+- Resolution: High quality, suitable for game environments
+- Composition: Engaging background that doesn't overpower UI elements
+- Colors: Rich, saturated, professional game aesthetic
+
+Make it a stunning background perfect for a game zone.`;
+
+    try {
+        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: prompt,
+        }));
+
+        if (response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+            return `data:${response.candidates[0].content.parts[0].inlineData.mimeType};base64,${response.candidates[0].content.parts[0].inlineData.data}`;
+        }
+        return null;
+    } catch (e) {
+        console.error('Error generating AI background:', e);
+        return null;
+    }
+};
+
 // Helper to verify if an image URL is valid and loadable
 const verifyImage = (url: string): Promise<boolean> => {
     return new Promise((resolve) => {
