@@ -178,14 +178,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
         setIsGeneratingBackground(true);
         try {
-            // Create a detailed prompt for background generation
-            const detailedPrompt = `Create a stunning, high-quality background image for a game zone titled "${activePlayground.title}".
-Theme/Keywords: ${keywords}
-Style: Professional, immersive, vibrant, and engaging game background.
-Aspect Ratio: 16:9 widescreen
-Make it suitable as a game environment background.`;
-
-            const imageUrl = await generateAiImage(detailedPrompt, 'photorealistic, game background, stunning');
+            const imageUrl = await generateAiBackground(keywords, activePlayground.title);
 
             if (imageUrl) {
                 updatePlayground({ imageUrl });
