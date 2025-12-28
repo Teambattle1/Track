@@ -527,7 +527,7 @@ const GameApp: React.FC = () => {
       }
   };
 
-  const handleTaskComplete = (id: string, pts?: number) => {
+  const handleTaskComplete = async (id: string, pts?: number) => {
       const pointsToAdd = pts || 0;
       setScore(s => s + pointsToAdd);
       
