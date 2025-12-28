@@ -466,17 +466,18 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         <ArrowLeft className="w-4 h-4" /> RETURN TO HOME
                     </button>
 
-                    {game.playgrounds && game.playgrounds.length > 0 && (
+                    {activePlayground && (
                         <button
                             onClick={() => {
-                                if(window.confirm(`Delete zone "${activePlayground?.title}"? This cannot be undone.`)) {
-                                    const remaining = game.playgrounds?.filter(p => p.id !== activePlayground?.id) || [];
+                                if(window.confirm(`Delete zone "${activePlayground.title}"? This cannot be undone.`)) {
+                                    const remaining = game.playgrounds?.filter(p => p.id !== activePlayground.id) || [];
                                     onUpdateGame({ ...game, playgrounds: remaining });
                                     if (remaining.length > 0) setActivePlaygroundId(remaining[0].id);
                                     else setActivePlaygroundId(null);
                                 }
                             }}
                             className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 border border-red-500"
+                            title="Delete this zone permanently"
                         >
                             <Trash2 className="w-4 h-4" /> DELETE ZONE
                         </button>
