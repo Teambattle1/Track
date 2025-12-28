@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, Tag, Plus, Trash2, Palette, Search, Hash, 
@@ -55,10 +54,14 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
             const low = tag.toLowerCase();
             map[low] = (map[low] || 0) + 1;
         }));
-        games.forEach(g => g.points.forEach(p => p.tags?.forEach(tag => {
-            const low = tag.toLowerCase();
-            map[low] = (map[low] || 0) + 1;
-        })));
+        games.forEach(g => {
+            if (g.points && Array.isArray(g.points)) {
+                g.points.forEach(p => p.tags?.forEach(tag => {
+                    const low = tag.toLowerCase();
+                    map[low] = (map[low] || 0) + 1;
+                }));
+            }
+        });
         return map;
     }, [library, games]);
 
@@ -142,8 +145,15 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
     };
 
     // Combined list of registered and discovered tags
+    // Only show tags that are configured (in tagColors) OR currently in use (in inUseTags)
+    // Deleted tags will not reappear since they're removed from tagColors
     const displayTags = useMemo(() => {
-        const combined = new Set([...Object.keys(tagColors), ...inUseTags]);
+        const combined = new Set<string>();
+        // Add all configured tags
+        Object.keys(tagColors).forEach(tag => combined.add(tag));
+        // Add all in-use tags (so users see tags they're using even if not configured)
+        inUseTags.forEach(tag => combined.add(tag));
+
         return Array.from(combined)
             .filter(name => name.toLowerCase().includes(searchQuery.toLowerCase()))
             .sort((a, b) => a.localeCompare(b));
