@@ -30,7 +30,31 @@ export const detectLanguageFromText = (text: string): Language => {
 
     const lowerText = text.toLowerCase();
 
-    // Language-specific keyword patterns
+    // Check for special characters FIRST (most reliable)
+    const hasHebrewChars = /[\u0590-\u05FF]/.test(text);
+    if (hasHebrewChars) return 'Hebrew';
+
+    const hasDanishChars = /[øåæ]/i.test(text);
+    if (hasDanishChars) return 'Danish';
+
+    const hasGermanChars = /[üöäß]/i.test(text);
+    if (hasGermanChars) return 'German';
+
+    const hasSpanishChars = /[áéíóúñ¿¡]/i.test(text);
+    if (hasSpanishChars) return 'Spanish';
+
+    const hasFrenchChars = /[éèêëàâôùûüçœæ]/i.test(text);
+    if (hasFrenchChars) return 'French';
+
+    const hasSwedishChars = /[åäö]/i.test(text);
+    if (hasSwedishChars) return 'Swedish';
+
+    const hasNorwegianChars = /[åæø]/i.test(text);
+    if (hasNorwegianChars) return 'Norwegian';
+
+    // Dutch check (mostly overlaps with special chars, but keyword based)
+
+    // Language-specific keyword patterns for fallback
     const languagePatterns: Record<Language, RegExp[]> = {
         Danish: [
             /\b(og|der|det|en|til|i|fra|du|hvad|hvor|hvordan|hvornår|når|jeg|dig|han|hun|vi|i|mig|ham|hende|os|jer|dem|hvis|mens|fordi|så|også|dog|eller|men)\b/g,
