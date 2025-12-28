@@ -61,7 +61,7 @@ const isGameCompleted = (game: Game) => {
   if (game.state === 'ended') return true;
 
   const points = game.points || [];
-  const playablePoints = points.filter(p => !(p as any).isSectionHeader);
+  const playablePoints = points.filter(p => !p.isSectionHeader);
   if (playablePoints.length === 0) return false;
 
   return playablePoints.every(p => !!p.isCompleted);
@@ -71,11 +71,16 @@ const getGameStatusTab = (game: Game, now: Date): GameStatusTab => {
   if (isGameCompleted(game)) return 'COMPLETED';
 
   const date = getGameSessionDate(game);
-  if (isSameLocalDay(date, now)) return 'TODAY';
 
-  if (date.getTime() > now.getTime()) return 'PLANNED';
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
 
-  return 'COMPLETED';
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+  if (date.getTime() < startOfToday.getTime()) return 'COMPLETED';
+  if (date.getTime() >= startOfTomorrow.getTime()) return 'PLANNED';
+  return 'TODAY';
 };
 
 const GameSummaryCard: React.FC<{
@@ -86,7 +91,7 @@ const GameSummaryCard: React.FC<{
 }> = ({ game, isActive, onPrimaryAction, onDelete }) => {
   const sessionDate = getGameSessionDate(game);
 
-  const mapTaskCount = (game.points || []).filter(p => !p.playgroundId && !(p as any).isSectionHeader).length;
+  const mapTaskCount = (game.points || []).filter(p => !p.playgroundId && !p.isSectionHeader).length;
   const zoneCount = (game.playgrounds || []).length;
 
   return (
