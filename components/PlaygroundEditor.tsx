@@ -204,28 +204,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     {/* Active Zone Card */}
                     <div className="bg-[#1e293b]/50 border border-slate-700 rounded-xl p-4 space-y-4">
                         <div className="flex justify-between items-start">
-                            <div className="flex flex-col">
+                            <div className="flex flex-col flex-1">
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ZONE TITLE</span>
-                                <input 
-                                    type="text" 
-                                    value={activePlayground.title} 
+                                <input
+                                    type="text"
+                                    value={activePlayground.title}
                                     onChange={(e) => updatePlayground({ title: e.target.value })}
                                     className="bg-transparent border-b border-slate-600 text-sm font-bold text-white uppercase focus:border-orange-500 outline-none pb-1 w-full"
                                 />
                             </div>
-                            <button 
-                                onClick={() => {
-                                    if(confirm('Delete this zone?')) {
-                                        const remaining = game.playgrounds?.filter(p => p.id !== activePlayground.id) || [];
-                                        onUpdateGame({ ...game, playgrounds: remaining });
-                                        if (remaining.length > 0) setActivePlaygroundId(remaining[0].id);
-                                        else setActivePlaygroundId(null);
-                                    }
-                                }}
-                                className="text-slate-600 hover:text-red-500 transition-colors"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
                         </div>
 
                         {/* HUD Appearance */}
