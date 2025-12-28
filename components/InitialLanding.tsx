@@ -129,13 +129,21 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   // Dynamic Header Content
   const getHeaderContent = () => {
       switch (view) {
-          case 'CREATE': return { title: 'CREATE CENTER', subtitle: 'NEW RESOURCE SETUP' };
-          case 'EDIT_MENU': return { title: 'EDIT CENTER', subtitle: 'MODIFY RESOURCES' };
-          case 'PLAY_MENU': return { title: 'PLAY CENTER', subtitle: 'GAME OPERATIONS' };
-          case 'PLAY_TEAMS_MENU': return { title: 'TEAM OPERATIONS', subtitle: 'SQUAD MANAGEMENT' };
-          case 'SETTINGS': return { title: 'SYSTEM TOOLS', subtitle: 'GLOBAL CONFIGURATION' };
-          case 'PREVIEW_SELECT': return { title: 'SIMULATION', subtitle: 'DEVICE PREVIEW MODE' };
-          default: return { title: 'COMMAND CENTER', subtitle: 'TEAMACTION MANAGEMENT' };
+          case 'CREATE': return { title: 'CREATE CENTER', subtitle: 'NEW RESOURCE SETUP', showBranding: false };
+          case 'EDIT_MENU': return { title: 'EDIT CENTER', subtitle: 'MODIFY RESOURCES', showBranding: false };
+          case 'PLAY_MENU': return { title: 'PLAY CENTER', subtitle: 'GAME OPERATIONS', showBranding: false };
+          case 'PLAY_TEAMS_MENU': return { title: 'TEAM OPERATIONS', subtitle: 'SQUAD MANAGEMENT', showBranding: false };
+          case 'SETTINGS': return { title: 'SYSTEM TOOLS', subtitle: 'GLOBAL CONFIGURATION', showBranding: false };
+          case 'PREVIEW_SELECT': return { title: 'SIMULATION', subtitle: 'DEVICE PREVIEW MODE', showBranding: false };
+          default: return {
+              title: 'HOME',
+              subtitle: 'OPERATION CENTER',
+              showBranding: true,
+              brandingParts: [
+                  { text: 'TEAM', color: 'text-white' },
+                  { text: 'Challange', color: 'text-orange-500' }
+              ]
+          };
       }
   };
 
