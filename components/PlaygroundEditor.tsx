@@ -10,8 +10,9 @@ import {
 import { ICON_COMPONENTS } from '../utils/icons';
 import { uploadImage } from '../services/storage'; // IMPORTED
 import { generateAiImage } from '../services/ai';
+import * as db from '../services/db';
 import TaskActionModal from './TaskActionModal';
-import AiTaskGeneratorModal from './AiTaskGeneratorModal';
+import AiTaskGenerator from './AiTaskGenerator';
 
 interface PlaygroundEditorProps {
   game: Game;
@@ -59,7 +60,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
     const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
     const [showActionModal, setShowActionModal] = useState(false);
-    const [showAiTaskModal, setShowAiTaskModal] = useState(false);
+    const [showAiTaskGenerator, setShowAiTaskGenerator] = useState(false);
     const [showTaskScores, setShowTaskScores] = useState(true);
     const [showTaskOrder, setShowTaskOrder] = useState(true);
     const [showTaskActions, setShowTaskActions] = useState(true);
@@ -1037,9 +1038,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                                 {/* Add AI Task Button */}
                                 <button
-                                    onClick={() => setShowAiTaskModal(true)}
+                                    onClick={() => setShowAiTaskGenerator(true)}
                                     className="py-4 px-3 bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 hover:text-purple-300 border border-purple-600/40 hover:border-purple-500 rounded-lg font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all group flex-col"
-                                    title="Generate task using AI"
+                                    title="Generate tasks using the advanced AI generator"
                                 >
                                     <Wand2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     <span>AI TASK</span>
@@ -1141,38 +1142,68 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 />
             )}
 
-            {/* AI Task Generator Modal */}
-            {showAiTaskModal && (
-                <AiTaskGeneratorModal
-                    onClose={() => setShowAiTaskModal(false)}
-                    playgroundId={activePlayground?.id}
-                    onAddTask={(taskTemplate: TaskTemplate) => {
-                        // Convert TaskTemplate to GamePoint
-                        const newPoint: GamePoint = {
-                            id: `p-${Date.now()}`,
-                            title: taskTemplate.title,
-                            location: { lat: 0, lng: 0 },
-                            playgroundId: activePlayground?.id,
-                            iconId: taskTemplate.iconId || 'default',
-                            points: taskTemplate.points || 100,
-                            radiusMeters: 30,
-                            activationTypes: ['radius'],
-                            isUnlocked: true,
-                            isCompleted: false,
-                            order: uniquePlaygroundPoints.length,
-                            task: taskTemplate.task,
-                            feedback: taskTemplate.feedback,
-                            settings: taskTemplate.settings,
-                            logic: taskTemplate.logic,
-                            playgroundPosition: { x: 50, y: 50 },
-                            playgroundScale: 1
-                        };
+            {/* Advanced AI Task Generator (TaskMaster version) */}
+            {showAiTaskGenerator && (
+                <AiTaskGenerator
+                    onClose={() => setShowAiTaskGenerator(false)}
+                    playgrounds={game.playgrounds || []}
+                    initialPlaygroundId={activePlayground?.id || null}
+                    targetMode="GAME"
+                    onAddTasks={(tasks, targetPlaygroundId) => {
+                        const baseOrder = uniquePlaygroundPoints.length;
+                        const COLS = 3;
+                        const PADDING = 10;
+                        const ROW_HEIGHT = 18;
 
-                        // Add to game
+                        const newPoints: GamePoint[] = tasks.map((t, i) => {
+                            const row = Math.floor((baseOrder + i) / COLS);
+                            const col = (baseOrder + i) % COLS;
+                            const colWidth = (100 - PADDING * 2) / COLS;
+
+                            const x = PADDING + col * colWidth + colWidth / 2;
+                            const y = PADDING + row * ROW_HEIGHT + ROW_HEIGHT / 2;
+
+                            const templateAny = t as any;
+                            const radiusMeters = typeof templateAny.radiusMeters === 'number' ? templateAny.radiusMeters : 30;
+                            const areaColor = typeof templateAny.areaColor === 'string' ? templateAny.areaColor : undefined;
+
+                            return {
+                                id: `p-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+                                title: t.title,
+                                shortIntro: (t as any).intro,
+                                task: t.task,
+                                location: { lat: 0, lng: 0 },
+                                radiusMeters,
+                                activationTypes: ['radius'],
+                                manualUnlockCode: undefined,
+                                playgroundId: targetPlaygroundId || activePlayground?.id,
+                                playgroundPosition: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 },
+                                playgroundScale: 1,
+                                isHiddenBeforeScan: false,
+                                iconId: t.iconId || 'default',
+                                iconUrl: (t as any).iconUrl,
+                                areaColor,
+                                points: t.points || 100,
+                                isUnlocked: true,
+                                isCompleted: false,
+                                order: baseOrder + i,
+                                tags: t.tags,
+                                feedback: t.feedback,
+                                settings: t.settings,
+                                logic: t.logic,
+                                completionLogic: (t as any).completionLogic
+                            } as GamePoint;
+                        });
+
                         onUpdateGame({
                             ...game,
-                            points: [...game.points, newPoint]
+                            points: [...game.points, ...newPoints]
                         });
+                    }}
+                    onAddToLibrary={async (tasks) => {
+                        for (const t of tasks) {
+                            await db.saveTemplate(t);
+                        }
                     }}
                 />
             )}
