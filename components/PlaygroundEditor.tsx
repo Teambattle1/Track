@@ -92,6 +92,16 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     };
 
+    const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = await uploadImage(file);
+            if (url) updatePlayground({ iconUrl: url });
+        }
+        // Reset to allow re-uploading same file
+        if (iconInputRef.current) iconInputRef.current.value = '';
+    };
+
     const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
