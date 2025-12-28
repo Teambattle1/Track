@@ -75,7 +75,9 @@ const GameApp: React.FC = () => {
   const [activeTaskActionPoint, setActiveTaskActionPoint] = useState<GamePoint | null>(null);
   
   // --- PLAY STATE (Location from Context) ---
-  const { userLocation, gpsAccuracy } = useLocation();
+  const { userLocation, gpsAccuracy, error: locationError } = useLocation();
+  const [locateAttempt, setLocateAttempt] = useState(false);
+  const [locateFeedback, setLocateFeedback] = useState<string | null>(null);
   const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(null); // Storing ID instead of Object to prevent stale state
   const [score, setScore] = useState(0);
   const [showScores, setShowScores] = useState(false);
