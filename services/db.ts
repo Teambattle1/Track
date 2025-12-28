@@ -12,7 +12,7 @@ const logError = (context: string, error: any) => {
 };
 
 // Configuration for large table fetches
-const CHUNK_SIZE = 100; // Fetch 100 rows at a time
+const CHUNK_SIZE = 50; // Fetch 50 rows at a time (reduced from 100 for better timeout handling)
 const FETCH_TIMEOUT_MS = 15000; // 15 second timeout per chunk
 
 // Retry helper for timeout errors with exponential backoff
