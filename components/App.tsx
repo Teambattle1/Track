@@ -113,11 +113,23 @@ const GameApp: React.FC = () => {
         setAuthUser(user);
       }
       const loadedGames = await db.fetchGames();
-      setGames(loadedGames);
       const loadedLists = await db.fetchTaskLists();
-      setTaskLists(loadedLists);
       const loadedLib = await db.fetchLibrary();
-      setTaskLibrary(loadedLib);
+
+      // Migrate all tasks to have proper language detection
+      const { games: migratedGames, library: migratedLibrary } = await migrateAllTasksInSystem(loadedGames, loadedLib);
+
+      setGames(migratedGames);
+      setTaskLists(loadedLists);
+      setTaskLibrary(migratedLibrary);
+
+      // Save migrated data back to database
+      for (const game of migratedGames) {
+        await db.saveGame(game);
+      }
+      for (const template of migratedLibrary) {
+        await db.saveTemplate(template);
+      }
     };
     init();
   }, []);
