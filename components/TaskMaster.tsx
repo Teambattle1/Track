@@ -300,17 +300,24 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                                                 {React.createElement(ICON_COMPONENTS[task.iconId] || ICON_COMPONENTS.default, { className: "w-5 h-5 text-gray-500 dark:text-gray-300" })}
                                             </div>
-                                            <div className="flex-1">
-                                                <h4 className="font-bold text-sm text-gray-800 dark:text-white">{task.title}</h4>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h4 className="font-bold text-sm text-gray-800 dark:text-white truncate">{task.title}</h4>
+                                                    {task.settings?.language && (
+                                                        <span title={task.settings.language} className="text-lg flex-shrink-0">
+                                                            {getLanguageFlag(task.settings.language)}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{task.task.question}</p>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => {
                                                     const newTasks = [...editingList.tasks];
                                                     newTasks.splice(i, 1);
                                                     setEditingList({...editingList, tasks: newTasks});
                                                 }}
-                                                className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
+                                                className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg flex-shrink-0"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
