@@ -1703,8 +1703,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                                     <span>{point.points}</span>
                                                                 </p>
                                                             )}
+
+                                                            {/* Icon Thumbnail */}
+                                                            <div className="mt-2 flex items-center gap-2">
+                                                                <div className="w-6 h-6 bg-slate-700 rounded flex items-center justify-center flex-shrink-0 border border-slate-600">
+                                                                    {point.iconUrl ? (
+                                                                        <img src={point.iconUrl} alt="" className="w-4 h-4 object-contain" />
+                                                                    ) : (
+                                                                        (() => {
+                                                                            const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
+                                                                            return <Icon className="w-4 h-4 text-slate-400" />;
+                                                                        })()
+                                                                    )}
+                                                                </div>
+                                                                <span className="text-[8px] text-slate-500 uppercase font-bold">Icon</span>
+                                                            </div>
+
                                                             {showTaskActions && hasActions && (
-                                                                <p className="text-[9px] font-bold text-purple-400 uppercase mt-1 flex items-center gap-1">
+                                                                <p className="text-[9px] font-bold text-purple-400 uppercase mt-2 flex items-center gap-1">
                                                                     <Zap className="w-2.5 h-2.5" />
                                                                     <span>HAS ACTIONS</span>
                                                                 </p>
