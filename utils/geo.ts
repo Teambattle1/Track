@@ -1,4 +1,3 @@
-
 import { Coordinate } from '../types';
 
 /**
@@ -41,4 +40,31 @@ export const formatDistance = (meters: number): string => {
     return `${(meters / 1000).toFixed(1)} km`;
   }
   return `${Math.round(meters)} m`;
+};
+
+/**
+ * Validates if a coordinate is valid (has both lat/lng as finite numbers).
+ * Replaces the problematic {lat: 0, lng: 0} sentinel pattern.
+ */
+export const isValidCoordinate = (coord: any): coord is Coordinate => {
+  return (
+    coord &&
+    typeof coord === 'object' &&
+    Number.isFinite(coord.lat) &&
+    Number.isFinite(coord.lng)
+  );
+};
+
+/**
+ * Normalizes a coordinate to ensure it has finite lat/lng values.
+ * Returns null if coordinate is invalid.
+ */
+export const normalizeCoordinate = (coord: any): Coordinate | null => {
+  if (!isValidCoordinate(coord)) {
+    return null;
+  }
+  return {
+    lat: Number(coord.lat),
+    lng: Number(coord.lng)
+  };
 };
