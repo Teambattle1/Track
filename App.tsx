@@ -805,14 +805,17 @@ const GameApp: React.FC = () => {
           )}
           {playgroundTemplateToEdit && (
               <PlaygroundEditor
-                  game={playgroundTemplateToEdit ? {
+                  game={{
                       id: 'template-edit',
                       name: playgroundTemplateToEdit.title,
                       description: '',
                       createdAt: Date.now(),
                       points: playgroundTemplateToEdit.tasks,
-                      playgrounds: [playgroundTemplateToEdit.playgroundData]
-                  } as Game : (activeGame || { id: 'temp', name: 'Temp', points: [], createdAt: 0 } as any)}
+                      playgrounds: [playgroundTemplateToEdit.playgroundData],
+                      isGameTemplate: false,
+                      teams: [],
+                      state: 'draft'
+                  } as Game}
 
                   onUpdateGame={(updatedGame) => {
                       if (playgroundTemplateToEdit) {
@@ -836,28 +839,21 @@ const GameApp: React.FC = () => {
                       }
                   }}
                   onEditPoint={(p) => setActiveTask(p)}
-                  onPointClick={() => {}}
+                  onPointClick={(p) => {}}
                   onAddTask={async (type, playgroundId) => {
                       if (playgroundTemplateToEdit) {
                           // Template logic handled by editor
                       }
                   }}
-                  onSavePoint={async (point) => {
-                      if (playgroundTemplateToEdit) {
-                          setPlaygroundTemplateToEdit({
-                              ...playgroundTemplateToEdit,
-                              tasks: playgroundTemplateToEdit.tasks.map(t => t.id === point.id ? point : t)
-                          });
-                      }
+                  onOpenLibrary={() => {}}
+                  showScores={showScores}
+                  onToggleScores={() => setShowScores(!showScores)}
+                  onHome={() => {
+                      setPlaygroundTemplateToEdit(null);
+                      setShowPlaygroundManager(true);
                   }}
-                  onDeletePoint={async (pointId) => {
-                      if (playgroundTemplateToEdit) {
-                          setPlaygroundTemplateToEdit({
-                              ...playgroundTemplateToEdit,
-                              tasks: playgroundTemplateToEdit.tasks.filter(t => t.id !== pointId)
-                          });
-                      }
-                  }}
+                  isTemplateMode={true}
+                  onAddZoneFromLibrary={() => {}}
               />
           )}
           {showChatDrawer && activeGameId && (
