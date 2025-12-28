@@ -827,6 +827,16 @@ const GameApp: React.FC = () => {
                           });
                       }
                   }}
+                  onSaveTemplate={async (name) => {
+                      if (playgroundTemplateToEdit) {
+                          const updated = {
+                              ...playgroundTemplateToEdit,
+                              title: name
+                          };
+                          await db.savePlaygroundTemplate(updated);
+                          setPlaygroundTemplateToEdit(updated);
+                      }
+                  }}
                   onClose={() => {
                       const wasEditingTemplate = !!playgroundTemplateToEdit;
                       if (wasEditingTemplate && playgroundTemplateToEdit) {
