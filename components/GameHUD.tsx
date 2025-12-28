@@ -234,8 +234,8 @@ const GameHUD: React.FC<GameHUDProps> = ({
                         locateFeedback={locateFeedback}
                     />
 
-                    {/* View Switcher Toolbox (Editor Mode Only) */}
-                    {mode === GameMode.EDIT && (
+                    {/* View Switcher Toolbox (All operational modes) */}
+                    {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
                         <div className="flex gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-xl p-2">
                             <button
                                 onClick={() => onSetMode(GameMode.EDIT)}
