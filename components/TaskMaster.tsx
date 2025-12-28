@@ -360,9 +360,47 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         if (!singleTaskGameSelector) return;
         const task = library.find(t => t.id === singleTaskGameSelector.taskId);
         if (task) {
-            onImportTasks([task]);
+            onImportTasks([task], game.id);
         }
         setSingleTaskGameSelector(null);
+    };
+
+    // Handle import with game selection if needed
+    const handleImportTasksWithGameSelect = (tasks: TaskTemplate[]) => {
+        if (activeGame) {
+            // Have active game, import directly
+            onImportTasks(tasks, activeGame.id);
+        } else if (games.length > 0) {
+            // No active game, show selector
+            setPendingImportTasks(tasks);
+            setShowGameSelectorForImport(true);
+        } else {
+            alert('No games available. Please create a game first.');
+        }
+    };
+
+    const handleImportListWithGameSelect = (list: TaskList) => {
+        if (activeGame) {
+            // Have active game, import directly
+            onImportTaskList?.(list, activeGame.id);
+        } else if (games.length > 0) {
+            // No active game, show selector
+            setPendingImportList(list);
+            setShowGameSelectorForImport(true);
+        } else {
+            alert('No games available. Please create a game first.');
+        }
+    };
+
+    const handleConfirmGameImport = (game: Game) => {
+        if (pendingImportTasks) {
+            onImportTasks(pendingImportTasks, game.id);
+            setPendingImportTasks(null);
+        } else if (pendingImportList) {
+            onImportTaskList?.(pendingImportList, game.id);
+            setPendingImportList(null);
+        }
+        setShowGameSelectorForImport(false);
     };
 
     const renderLibraryGrid = (selectionMode = false) => {
