@@ -851,8 +851,29 @@ const GameApp: React.FC = () => {
                   onEditPoint={(p) => setActiveTask(p)}
                   onPointClick={(p) => {}}
                   onAddTask={async (type, playgroundId) => {
-                      if (playgroundTemplateToEdit) {
-                          // Template logic handled by editor
+                      if (!playgroundTemplateToEdit) return;
+
+                      if (type === 'MANUAL') {
+                          const newPoint: GamePoint = {
+                              id: `p-${Date.now()}`,
+                              title: 'New Task',
+                              location: { lat: 0, lng: 0 },
+                              playgroundId: playgroundId,
+                              iconId: 'default',
+                              points: 100,
+                              radiusMeters: 30,
+                              activationTypes: ['radius'],
+                              isUnlocked: true,
+                              isCompleted: false,
+                              order: (playgroundTemplateToEdit.tasks?.length || 0),
+                              task: { type: 'text', question: 'New Task Question' }
+                          };
+                          setPlaygroundTemplateToEdit({
+                              ...playgroundTemplateToEdit,
+                              tasks: [...(playgroundTemplateToEdit.tasks || []), newPoint]
+                          });
+                      } else if (type === 'LIBRARY' || type === 'AI') {
+                          setShowTaskMaster(true);
                       }
                   }}
                   onOpenLibrary={() => {}}
