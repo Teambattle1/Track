@@ -890,13 +890,13 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                 {onImportTaskList && (
                                                     <button
                                                         onClick={() => {
-                                                            onImportTaskList(list);
-                                                            onClose();
+                                                            handleImportListWithGameSelect(list);
+                                                            if (activeGame) onClose();
                                                         }}
                                                         className="flex-1 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-bold uppercase text-[10px] tracking-wide transition-all shadow-lg hover:shadow-green-600/30"
-                                                        title="Add this entire tasklist to your game"
+                                                        title={activeGame ? `Add this entire tasklist to ${activeGame.name}` : 'Add this entire tasklist to your game'}
                                                     >
-                                                        ✓ ADD TO GAME
+                                                        ✓ {activeGame ? 'ADD' : 'ADD TO GAME'}
                                                     </button>
                                                 )}
                                                 <button
