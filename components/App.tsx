@@ -1377,7 +1377,11 @@ const GameApp: React.FC = () => {
                         };
                         await updateActiveGame({ ...activeGame, points: [...activeGame.points, newPoint] }, "Added Manual Task");
                         setActiveTask(newPoint);
-                    } else if (type === 'LIBRARY' || type === 'AI') {
+                    } else if (type === 'LIBRARY') {
+                        setTaskMasterInitialTab('LISTS');
+                        setShowTaskMaster(true);
+                    } else if (type === 'AI') {
+                        setTaskMasterInitialTab('LIBRARY');
                         setShowTaskMaster(true);
                     }
                 }}
