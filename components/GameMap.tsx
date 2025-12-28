@@ -286,11 +286,16 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
         point.iconUrl
     );
 
+    // Only render markers for points with valid map locations (not playground-only points)
+    if (!point.location || !Number.isFinite(point.location.lat) || !Number.isFinite(point.location.lng)) {
+        return null;
+    }
+
     return (
         <React.Fragment>
-            <Marker 
-                position={[point.location.lat, point.location.lng]} 
-                icon={icon} 
+            <Marker
+                position={[point.location.lat, point.location.lng]}
+                icon={icon}
                 eventHandlers={eventHandlers}
                 draggable={draggable}
                 zIndexOffset={isCompleted ? 0 : 100}
@@ -306,19 +311,19 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
                     </Popup>
                 )}
             </Marker>
-            
+
             {/* Radius Circle */}
             {(mode === GameMode.EDIT || isUnlocked) && (
-                <Circle 
-                    center={[point.location.lat, point.location.lng]} 
+                <Circle
+                    center={[point.location.lat, point.location.lng]}
                     radius={point.radiusMeters}
-                    pathOptions={{ 
-                        color: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')), 
-                        fillColor: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')), 
-                        fillOpacity: 0.1, 
+                    pathOptions={{
+                        color: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')),
+                        fillColor: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')),
+                        fillOpacity: 0.1,
                         weight: 1,
                         dashArray: isCompleted ? undefined : '5, 10'
-                    }} 
+                    }}
                     interactive={false}
                 />
             )}
