@@ -359,58 +359,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         </div>
                     </div>
 
-                    {/* Background Audio Section */}
-                    <div>
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                <Music className="w-3 h-3" /> BACKGROUND MUSIC
-                            </span>
-                        </div>
-                        
-                        <div className="bg-slate-900 border border-slate-700 rounded-xl p-3">
-                            {!activePlayground.audioUrl ? (
-                                <button 
-                                    onClick={() => audioInputRef.current?.click()}
-                                    className="w-full py-3 border border-dashed border-slate-600 rounded-lg text-slate-500 hover:text-white hover:border-indigo-500 hover:bg-indigo-500/10 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <Upload className="w-4 h-4" /> 
-                                    <span className="text-[10px] font-bold uppercase">UPLOAD MP3</span>
-                                </button>
-                            ) : (
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between bg-slate-800 p-2 rounded-lg">
-                                        <div className="flex items-center gap-2 text-indigo-400">
-                                            <Music className="w-4 h-4" />
-                                            <span className="text-[10px] font-bold uppercase">AUDIO TRACK ACTIVE</span>
-                                        </div>
-                                        <button 
-                                            onClick={() => updatePlayground({ audioUrl: undefined })}
-                                            className="p-1.5 hover:bg-red-500/20 text-slate-500 hover:text-red-500 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                    
-                                    <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
-                                        <button
-                                            onClick={() => updatePlayground({ audioLoop: true })}
-                                            className={`flex-1 py-1.5 text-[9px] font-bold uppercase rounded flex items-center justify-center gap-1 transition-colors ${activePlayground.audioLoop !== false ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                                        >
-                                            <Repeat className="w-3 h-3" /> LOOP
-                                        </button>
-                                        <button
-                                            onClick={() => updatePlayground({ audioLoop: false })}
-                                            className={`flex-1 py-1.5 text-[9px] font-bold uppercase rounded flex items-center justify-center gap-1 transition-colors ${activePlayground.audioLoop === false ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                                        >
-                                            <PlayCircle className="w-3 h-3" /> ONCE
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                            <input ref={audioInputRef} type="file" className="hidden" accept="audio/mp3,audio/mpeg,audio/wav" onChange={handleAudioUpload} />
-                        </div>
-                    </div>
-
                     {/* Background Image */}
                     <div>
                         <div className="flex justify-between items-center mb-2">
