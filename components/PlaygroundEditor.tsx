@@ -1401,6 +1401,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                 {/* Right Side Tools hidden - functionality moved to right tasks drawer */}
 
+                {/* Delete Zone - Bottom Right */}
+                <button
+                    id="delete-zone-btn"
+                    className={`absolute bottom-6 right-24 z-20 p-4 rounded-full shadow-xl border-2 transition-all ${
+                        isOverDeleteZone
+                            ? 'bg-red-600 border-red-500 text-white scale-110 animate-pulse shadow-red-500/50'
+                            : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-red-500 hover:border-red-600 hover:bg-slate-800'
+                    }`}
+                    title={isOverDeleteZone ? 'Drop to delete task' : 'Drag task here to delete from map'}
+                    onDragOver={(e) => e.preventDefault()}
+                >
+                    <Trash2 className="w-5 h-5" />
+                </button>
+
                 {/* Zoom Controls */}
                 <div className="absolute bottom-6 right-6 z-20 flex gap-2 pointer-events-auto">
                     <button onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl border border-slate-700 transition-colors"><ZoomOut className="w-5 h-5" /></button>
