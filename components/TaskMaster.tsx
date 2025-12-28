@@ -167,6 +167,21 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         setEditingTemplate(null);
     };
 
+    // Handle saving a task being edited within a list
+    const handleSaveTaskInList = async (editedPoint: GamePoint) => {
+        if (editingTaskIndex === null || !editingList) return;
+
+        const updatedTemplate = gamePointToTemplate(editedPoint);
+        const updatedTasks = [...editingList.tasks];
+        updatedTasks[editingTaskIndex] = updatedTemplate;
+
+        setEditingList({
+            ...editingList,
+            tasks: updatedTasks
+        });
+        setEditingTaskIndex(null);
+    };
+
     const getLanguagesFromTasks = (tasks: TaskTemplate[]) => {
         const languages = new Set<string>();
         tasks.forEach(task => {
