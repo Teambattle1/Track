@@ -185,6 +185,42 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         });
     };
 
+    const toggleBulkIconTarget = (pointId: string) => {
+        setBulkIconTargets(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(pointId)) {
+                newSet.delete(pointId);
+            } else {
+                newSet.add(pointId);
+            }
+            return newSet;
+        });
+    };
+
+    const applyBulkIcon = () => {
+        if (!bulkIconSourceId || bulkIconTargets.size === 0) return;
+
+        const sourceTask = game.points.find(p => p.id === bulkIconSourceId);
+        if (!sourceTask) return;
+
+        const iconPayload = {
+            iconId: sourceTask.iconId,
+            iconUrl: sourceTask.iconUrl
+        };
+
+        onUpdateGame({
+            ...game,
+            points: game.points.map(p =>
+                bulkIconTargets.has(p.id) ? { ...p, ...iconPayload } : p
+            )
+        });
+
+        // Reset bulk icon mode
+        setBulkIconMode(false);
+        setBulkIconSourceId(null);
+        setBulkIconTargets(new Set());
+    };
+
     const handleTaskIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && selectedTask) {
