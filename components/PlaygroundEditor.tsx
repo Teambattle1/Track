@@ -397,8 +397,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                     {/* Grid Controls */}
                     <div className="grid grid-cols-2 gap-3">
-                        <button className="py-3 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center gap-2 text-white hover:bg-slate-700 transition-colors">
-                            <Grid className="w-4 h-4 text-blue-500" />
+                        <button
+                            onClick={() => setShowGrid(!showGrid)}
+                            className={`py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors ${
+                                showGrid
+                                    ? 'bg-blue-600 border-blue-500 text-white'
+                                    : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
+                            }`}
+                        >
+                            <Grid className="w-4 h-4" />
                             <span className="text-[10px] font-black uppercase tracking-widest">GRID</span>
                         </button>
                         <button className="py-3 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center gap-2 text-white hover:bg-slate-700 transition-colors">
