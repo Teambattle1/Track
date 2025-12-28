@@ -590,6 +590,95 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     <button onClick={() => setZoom(1)} className="p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl border border-slate-700 transition-colors"><Maximize className="w-5 h-5" /></button>
                     <button onClick={() => setZoom(z => Math.min(5, z + 0.1))} className="p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl border border-slate-700 transition-colors"><ZoomIn className="w-5 h-5" /></button>
                 </div>
+
+                {/* Right Tasks Drawer Toggle Button */}
+                {!isTasksDrawerOpen && (
+                    <button
+                        onClick={() => setIsTasksDrawerOpen(true)}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-l-2xl shadow-2xl transition-all active:scale-95"
+                        title="Open Tasks"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
+                )}
+            </div>
+
+            {/* RIGHT SIDE TASKS DRAWER - COLLAPSIBLE */}
+            <div className={`flex flex-col border-l border-slate-800 bg-[#0f172a] shadow-2xl z-20 transition-all duration-300 ease-in-out ${
+                isTasksDrawerOpen ? 'w-[360px]' : 'w-0'
+            } overflow-hidden`}>
+                {/* Header */}
+                <div className="p-5 border-b border-slate-800 flex justify-between items-center bg-[#0f172a]">
+                    <div className="flex items-center gap-3">
+                        <Plus className="w-5 h-5 text-orange-500" />
+                        <div>
+                            <h2 className="text-sm font-black uppercase tracking-widest text-white">TASKS</h2>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{playgroundPoints.length} in zone</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setIsTasksDrawerOpen(false)}
+                        className="text-slate-500 hover:text-white transition-colors p-1.5"
+                        title="Close Tasks"
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+                    {/* Add Task Button */}
+                    <button
+                        onClick={() => onAddTask('MANUAL', activePlayground.id)}
+                        className="w-full py-3 border-2 border-dashed border-orange-500 rounded-xl text-orange-400 hover:text-orange-300 hover:border-orange-400 hover:bg-orange-500/10 font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all group"
+                    >
+                        <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" /> ADD TASK
+                    </button>
+
+                    {/* Tasks List */}
+                    {playgroundPoints.length === 0 ? (
+                        <div className="text-center py-8">
+                            <p className="text-[10px] text-slate-500 uppercase tracking-wide">No tasks in zone yet</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {playgroundPoints.map((point, index) => (
+                                <div
+                                    key={point.id}
+                                    className="p-3 bg-slate-800 border border-slate-700 rounded-lg hover:border-orange-500 transition-colors cursor-pointer group"
+                                    onClick={() => onEditPoint(point)}
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">TASK {String(index + 1).padStart(2, '0')}</p>
+                                            <p className="text-xs font-bold text-white truncate">{point.title}</p>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Edit point logic
+                                                onEditPoint(point);
+                                            }}
+                                            className="p-1.5 text-slate-500 hover:text-orange-500 transition-colors flex-shrink-0"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="p-5 border-t border-slate-800">
+                    <button
+                        onClick={() => onOpenLibrary(activePlayground.id)}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
+                    >
+                        <Library className="w-4 h-4" /> FROM LIBRARY
+                    </button>
+                </div>
             </div>
         </div>
     );
