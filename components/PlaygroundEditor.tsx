@@ -261,14 +261,30 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 })}
                             </div>
 
-                            <button
-                                onClick={() => iconInputRef.current?.click()}
-                                className="w-full py-2 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 uppercase hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Upload className="w-3 h-3" /> UPLOAD CUSTOM ICON
-                            </button>
-                            <input ref={iconInputRef} type="file" className="hidden" accept="image/*" onChange={handleIconUpload} />
-                            
+                            <div className="space-y-2 mb-4">
+                                <button
+                                    onClick={() => iconInputRef.current?.click()}
+                                    className="w-full py-2 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 uppercase hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Upload className="w-3 h-3" /> UPLOAD CUSTOM ICON
+                                </button>
+                                <input ref={iconInputRef} type="file" className="hidden" accept="image/*" onChange={handleIconUpload} />
+
+                                {activePlayground.imageUrl && (
+                                    <button
+                                        onClick={() => updatePlayground({ iconUrl: activePlayground.imageUrl })}
+                                        className={`w-full py-2 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-2 transition-colors ${
+                                            activePlayground.iconUrl === activePlayground.imageUrl
+                                                ? 'bg-purple-600 text-white border border-purple-500'
+                                                : 'bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        title="Use Background Image as Icon"
+                                    >
+                                        <ImageIcon className="w-3 h-3" /> USE BACKGROUND AS ICON
+                                    </button>
+                                )}
+                            </div>
+
                             <div className="mt-4">
                                 <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase mb-1">
                                     <span>SIZE</span>
