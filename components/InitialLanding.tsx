@@ -141,7 +141,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               showBranding: true,
               brandingParts: [
                   { text: 'TEAM', color: 'text-white' },
-                  { text: 'Challange', color: 'text-orange-500' }
+                  { text: 'CHALLENGE', color: 'text-orange-500' }
               ]
           };
       }
