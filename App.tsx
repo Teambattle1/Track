@@ -58,6 +58,9 @@ const GameApp: React.FC = () => {
   const [showTeamsHub, setShowTeamsHub] = useState(false);
   const [showGameCreator, setShowGameCreator] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
+
+  const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
+  const gameTemplates = useMemo(() => games.filter(g => g.isGameTemplate), [games]);
   
   // --- DASHBOARD STATE ---
   const [showDashboard, setShowDashboard] = useState(false);
