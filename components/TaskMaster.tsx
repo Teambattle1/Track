@@ -459,9 +459,20 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                             return (
                                 <tr
                                     key={task.id}
-                                    onClick={() => selectionMode ? toggleSelection(task.id) : null}
+                                    onClick={() => (selectionMode || bulkSelectionMode) ? toggleSelection(task.id) : null}
                                     className={`hover:bg-slate-800/50 transition-colors cursor-pointer ${isSelected ? 'bg-indigo-900/30 border-l-4 border-indigo-600' : ''}`}
                                 >
+                                    {bulkSelectionMode && (
+                                        <td className="px-4 py-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                onChange={() => toggleSelection(task.id)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="w-4 h-4 rounded border-indigo-400 accent-indigo-600"
+                                            />
+                                        </td>
+                                    )}
                                     {selectionMode && (
                                         <td className="px-4 py-3">
                                             <input
