@@ -75,6 +75,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [taskMasterTab, setTaskMasterTab] = useState<'LIBRARY' | 'LISTS'>('LIBRARY');
     const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
     const [editingTitleValue, setEditingTitleValue] = useState('');
+    const [bulkIconSourceId, setBulkIconSourceId] = useState<string | null>(null);
+    const [bulkIconMode, setBulkIconMode] = useState(false);
+    const [bulkIconTargets, setBulkIconTargets] = useState<Set<string>>(new Set());
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
