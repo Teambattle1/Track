@@ -644,39 +644,54 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                     <div className="flex items-center gap-2 pointer-events-auto">
                         {/* Orientation Selector */}
-                        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-orange-500/30 shadow-lg">
+                        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-orange-500/30 shadow-lg pointer-events-auto">
                             <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-1">ORIENTATION</span>
-                            <div className="flex gap-1">
+                            <div className="flex gap-1 pointer-events-auto">
                                 <button
-                                    onClick={() => updatePlayground({ orientationLock: 'portrait' })}
-                                    className={`p-2 rounded transition-all ${
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        updatePlayground({ orientationLock: 'portrait' });
+                                    }}
+                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
                                         activePlayground.orientationLock === 'portrait'
                                             ? 'bg-orange-600 text-white shadow-lg'
                                             : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
                                     }`}
                                     title="Lock to Portrait (Vertical)"
+                                    type="button"
                                 >
                                     <Smartphone className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={() => updatePlayground({ orientationLock: 'landscape' })}
-                                    className={`p-2 rounded transition-all ${
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        updatePlayground({ orientationLock: 'landscape' });
+                                    }}
+                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
                                         activePlayground.orientationLock === 'landscape'
                                             ? 'bg-orange-600 text-white shadow-lg'
                                             : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
                                     }`}
                                     title="Lock to Landscape (Horizontal) - Default for Tablets"
+                                    type="button"
                                 >
                                     <Monitor className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={() => updatePlayground({ orientationLock: 'none' })}
-                                    className={`p-2 rounded transition-all ${
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        updatePlayground({ orientationLock: 'none' });
+                                    }}
+                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
                                         activePlayground.orientationLock === 'none' || !activePlayground.orientationLock
                                             ? 'bg-orange-600 text-white shadow-lg'
                                             : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
                                     }`}
                                     title="Allow Any Orientation"
+                                    type="button"
                                 >
                                     <Lock className="w-4 h-4" />
                                 </button>
