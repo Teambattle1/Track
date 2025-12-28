@@ -1,5 +1,5 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { GamePoint, IconId, TaskType, PointActivationType, PointCompletionLogic, TimelineItem } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { getCroppedImg } from '../utils/image';
@@ -70,7 +70,7 @@ const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onCha
         className="p-3 min-h-[100px] outline-none text-sm text-gray-900 dark:text-white prose dark:prose-invert max-w-none"
         contentEditable
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
-        dangerouslySetInnerHTML={{ __html: value }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
         style={{ whiteSpace: 'pre-wrap' }}
       />
     </div>

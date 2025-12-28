@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { Game, Team, TeamMember, Coordinate, GameMode, TeamStatus } from '../types';
 import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, AlertTriangle, Loader2 } from 'lucide-react';
 import * as db from '../services/db';
@@ -454,7 +454,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                 <div className="space-y-3">
                                     <div className="bg-slate-800 p-3 rounded-xl">
                                         <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">QUESTION / TASK</p>
-                                        <p className="text-sm text-slate-200" dangerouslySetInnerHTML={{ __html: selectedPoint.task.question }} />
+                                        <p className="text-sm text-slate-200" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPoint.task.question) }} />
                                     </div>
                                     <div className="bg-green-900/20 border border-green-800 p-3 rounded-xl">
                                         <p className="text-[10px] font-bold text-green-500 uppercase mb-1">SOLUTION</p>
