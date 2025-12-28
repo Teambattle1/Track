@@ -803,6 +803,59 @@ const GameApp: React.FC = () => {
                   }}
               />
           )}
+          {playgroundTemplateToEdit && (
+              <PlaygroundEditor
+                  game={playgroundTemplateToEdit ? {
+                      id: 'template-edit',
+                      name: playgroundTemplateToEdit.title,
+                      description: '',
+                      createdAt: Date.now(),
+                      points: playgroundTemplateToEdit.tasks,
+                      playgrounds: [playgroundTemplateToEdit.playgroundData]
+                  } as Game : (activeGame || { id: 'temp', name: 'Temp', points: [], createdAt: 0 } as any)}
+
+                  onUpdateGame={(updatedGame) => {
+                      if (playgroundTemplateToEdit) {
+                          setPlaygroundTemplateToEdit({
+                              ...playgroundTemplateToEdit,
+                              title: updatedGame.name,
+                              playgroundData: updatedGame.playgrounds?.[0]!,
+                              tasks: updatedGame.points
+                          });
+                      }
+                  }}
+                  onClose={() => {
+                      const wasEditingTemplate = !!playgroundTemplateToEdit;
+                      setPlaygroundTemplateToEdit(null);
+                      if (wasEditingTemplate) {
+                          setShowPlaygroundManager(true);
+                      }
+                  }}
+                  onEditPoint={(p) => setActiveTask(p)}
+                  onPointClick={() => {}}
+                  onAddTask={async (type, playgroundId) => {
+                      if (playgroundTemplateToEdit) {
+                          // Template logic handled by editor
+                      }
+                  }}
+                  onSavePoint={async (point) => {
+                      if (playgroundTemplateToEdit) {
+                          setPlaygroundTemplateToEdit({
+                              ...playgroundTemplateToEdit,
+                              tasks: playgroundTemplateToEdit.tasks.map(t => t.id === point.id ? point : t)
+                          });
+                      }
+                  }}
+                  onDeletePoint={async (pointId) => {
+                      if (playgroundTemplateToEdit) {
+                          setPlaygroundTemplateToEdit({
+                              ...playgroundTemplateToEdit,
+                              tasks: playgroundTemplateToEdit.tasks.filter(t => t.id !== pointId)
+                          });
+                      }
+                  }}
+              />
+          )}
           {showChatDrawer && activeGameId && (
               <ChatDrawer 
                   isOpen={showChatDrawer}
