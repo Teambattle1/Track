@@ -224,6 +224,45 @@ const GameHUD: React.FC<GameHUDProps> = ({
 
                 <div className={`flex flex-col items-center gap-2 pointer-events-auto transition-transform duration-300 ease-in-out ${sidebarOffset}`}>
                     <div className="flex items-center gap-2 flex-wrap">
+                        {/* Top Toolbar Buttons */}
+                        <div className="flex gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-xl p-2">
+                            {/* Chat Button */}
+                            <button
+                                onClick={onToggleChat}
+                                className="w-10 h-10 rounded-xl transition-all border flex items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                title="Chat"
+                            >
+                                <MessageSquare className="w-5 h-5" />
+                                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/toolbar:opacity-100 transition-opacity pointer-events-none">
+                                    CHAT
+                                </div>
+                            </button>
+
+                            {/* Playgrounds/Editor Button */}
+                            <button
+                                onClick={onOpenGameManager}
+                                className="w-10 h-10 rounded-xl transition-all border flex items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                title="Game Manager"
+                            >
+                                <Layers className="w-5 h-5" />
+                                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/toolbar:opacity-100 transition-opacity pointer-events-none">
+                                    GAMES
+                                </div>
+                            </button>
+
+                            {/* Settings Button */}
+                            <button
+                                onClick={onEditGameSettings}
+                                className="w-10 h-10 rounded-xl transition-all border flex items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                title="Settings"
+                            >
+                                <Settings className="w-5 h-5" />
+                                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/toolbar:opacity-100 transition-opacity pointer-events-none">
+                                    SETTINGS
+                                </div>
+                            </button>
+                        </div>
+
                         <LocationSearch
                             onSelectLocation={onSearchLocation}
                             onLocateMe={onLocateMe}
