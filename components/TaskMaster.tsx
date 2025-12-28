@@ -110,6 +110,44 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         setSelectedTemplateIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
     };
 
+    const getLanguagesFromTasks = (tasks: TaskTemplate[]) => {
+        const languages = new Set<string>();
+        tasks.forEach(task => {
+            if (task.settings?.language) {
+                languages.add(task.settings.language);
+            }
+        });
+        return Array.from(languages);
+    };
+
+    const getLanguageFlag = (language: string): string => {
+        const flagMap: Record<string, string> = {
+            'English': '🇬🇧',
+            'Danish': '🇩🇰',
+            'German': '🇩🇪',
+            'Spanish': '🇪🇸',
+            'French': '🇫🇷',
+            'Swedish': '🇸🇪',
+            'Norwegian': '🇳🇴',
+            'Dutch': '🇳🇱',
+            'Belgian': '🇧🇪',
+            'Hebrew': '🇮🇱'
+        };
+        return flagMap[language] || '🌐';
+    };
+
+    const countGameUsage = (listId: string): number => {
+        let count = 0;
+        games.forEach(game => {
+            // Check if any task in the game is from this tasklist
+            // This is a simple check - you may want to track this more explicitly
+            if (game.taskListIds && game.taskListIds.includes(listId)) {
+                count++;
+            }
+        });
+        return count;
+    };
+
     const renderLibraryGrid = (selectionMode = false) => {
         const filtered = library.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
         
