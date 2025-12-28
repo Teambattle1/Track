@@ -244,9 +244,15 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 )}
                             </div>
                             
-                            <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1 line-clamp-2">{task.title}</h4>
+                            <h4
+                                onClick={(e) => { e.stopPropagation(); setEditingTemplate(task); }}
+                                className="font-bold text-gray-900 dark:text-white text-sm mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                title="Click to edit"
+                            >
+                                {task.title}
+                            </h4>
                             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-1">{task.task.question}</p>
-                            
+
                             <div className="flex flex-wrap gap-1 mt-auto">
                                 {task.tags.slice(0, 3).map(tag => (
                                     <span key={tag} className="text-[9px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded uppercase font-bold tracking-wider">
@@ -256,7 +262,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                             </div>
 
                             {!selectionMode && (
-                                <button 
+                                <button
                                     onClick={(e) => { e.stopPropagation(); onImportTasks([task]); }}
                                     className="mt-3 w-full py-2 bg-gray-100 dark:bg-gray-700 hover:bg-orange-600 hover:text-white dark:hover:bg-orange-600 text-gray-600 dark:text-gray-300 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors opacity-0 group-hover:opacity-100"
                                 >
