@@ -1184,16 +1184,16 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               <div className="mt-4 animate-in fade-in">
                                   <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Time limit</label>
                                   <div className="flex items-center gap-2">
-                                      <input 
-                                          type="number" 
-                                          value={globalTimeLimit} 
+                                      <input
+                                          type="number"
+                                          value={globalTimeLimit}
                                           onChange={(e) => {
                                               const v = parseInt(e.target.value, 10);
                                               setGlobalTimeLimit(Number.isFinite(v) ? v : 0);
                                           }}
-                                          className="w-24 bg-slate-950 border border-slate-700 rounded-lg p-2 text-white text-sm font-bold outline-none focus:border-orange-500"
+                                          className="w-24 bg-slate-950 border border-slate-700 rounded-lg p-2 text-white text-sm font-bold outline-none focus:border-orange-500 uppercase"
                                       />
-                                      <span className="text-xs text-slate-400">seconds</span>
+                                      <span className="text-xs text-slate-400">SECONDS</span>
                                   </div>
                               </div>
                           )}
