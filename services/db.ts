@@ -25,11 +25,11 @@ const logError = (context: string, error: any) => {
 };
 
 // Configuration for large table fetches
-const CHUNK_SIZE = 50; // Fetch 50 rows at a time (reduced from 100 for better timeout handling)
-const FETCH_TIMEOUT_MS = 15000; // 15 second timeout per chunk
+const CHUNK_SIZE = 100; // Fetch 100 rows at a time
+const FETCH_TIMEOUT_MS = 30000; // 30 second timeout per chunk
 
 // Retry helper for timeout errors with exponential backoff
-const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 3): Promise<T> => {
+const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 2): Promise<T> => {
     let lastError: any;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -45,7 +45,7 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRet
 
             if (!isTimeout || attempt === maxRetries - 1) throw e;
 
-            const delay = Math.min(1000 * Math.pow(2, attempt), 8000); // Max 8 second wait (increased from 5s)
+            const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5 second wait
             console.warn(`[DB Service] Timeout in ${context}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
