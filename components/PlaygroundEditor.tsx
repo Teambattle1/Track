@@ -115,6 +115,52 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         if (audioInputRef.current) audioInputRef.current.value = '';
     };
 
+    const handleSnapAllToGrid = () => {
+        const GRID_SIZE = 40;
+        const COLS = 3;
+        const PADDING = 5;
+
+        // Sort points by current Y position (top to bottom), then X (left to right)
+        const sortedPoints = [...playgroundPoints].sort((a, b) => {
+            const aY = a.playgroundPosition?.y || 50;
+            const bY = b.playgroundPosition?.y || 50;
+            const aX = a.playgroundPosition?.x || 50;
+            const bX = b.playgroundPosition?.x || 50;
+
+            // Group into rows (every 15% difference = new row)
+            const rowDiff = Math.abs(aY - bY);
+            if (rowDiff > 15) return aY - bY;
+            return aX - bX;
+        });
+
+        // Snap all points to grid and arrange in rows
+        const snappedPoints = sortedPoints.map((point, index) => {
+            const row = Math.floor(index / COLS);
+            const col = index % COLS;
+
+            // Calculate grid-aligned position
+            const x = PADDING + (col * (100 / COLS)) + (100 / COLS / 2);
+            const y = PADDING + (row * 25) + 12.5;
+
+            return {
+                ...point,
+                playgroundPosition: {
+                    x: Math.round(x * 10) / 10, // Round to 1 decimal
+                    y: Math.round(y * 10) / 10
+                }
+            };
+        });
+
+        // Update game with snapped points
+        onUpdateGame({
+            ...game,
+            points: game.points.map(p => {
+                const snapped = snappedPoints.find(sp => sp.id === p.id);
+                return snapped ? { ...p, playgroundPosition: snapped.playgroundPosition } : p;
+            })
+        });
+    };
+
     // Pan/Zoom, etc.
     const handleWheel = (e: React.WheelEvent) => {
         if (e.ctrlKey || e.metaKey) {
