@@ -56,6 +56,7 @@ const GameApp: React.FC = () => {
   const [showGameChooser, setShowGameChooser] = useState(false);
   const [showTaskMaster, setShowTaskMaster] = useState(false);
   const [taskMasterInitialTab, setTaskMasterInitialTab] = useState<'LIBRARY' | 'LISTS' | 'TAGS' | 'CLIENT'>('LIBRARY');
+  const [pendingImport, setPendingImport] = useState<{ type: 'tasks' | 'list'; data: any } | null>(null);
   const [showTeamsModal, setShowTeamsModal] = useState(false);
   const [showInstructorDashboard, setShowInstructorDashboard] = useState(false);
   const [showTeamDashboard, setShowTeamDashboard] = useState(false);
