@@ -734,7 +734,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   </div>
                                   <div>
                                       <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Timer Title</label>
-                                      <input type="text" value={timerTitle} onChange={(e) => setTimerTitle(e.target.value)} className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-red-500 outline-none" />
+                                      <input type="text" value={timerTitle} onChange={(e) => setTimerTitle(e.target.value.toUpperCase())} className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-red-500 outline-none uppercase" />
                                   </div>
                               </div>
                           )}
