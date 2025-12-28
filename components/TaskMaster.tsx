@@ -4,7 +4,8 @@ import * as db from '../services/db';
 import { uploadImage } from '../services/storage'; // IMPORTED
 import {
     X, Plus, Search, Layers, Library, Edit2, Trash2, ArrowLeft, Save,
-    ImageIcon, Upload, Filter, Tag, LayoutList, RefreshCw, Check, Copy
+    ImageIcon, Upload, Filter, Tag, LayoutList, RefreshCw, Check, Copy,
+    ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, Gamepad2
 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import AiTaskGenerator from './AiTaskGenerator';
