@@ -55,6 +55,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isTasksDrawerOpen, setIsTasksDrawerOpen] = useState(false);
     const [showGrid, setShowGrid] = useState(false);
+    const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+    const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
+    const [showActionModal, setShowActionModal] = useState(false);
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
