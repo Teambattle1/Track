@@ -490,12 +490,26 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 {/* Title */}
                 <div className="flex flex-col items-center gap-4 animate-in slide-in-from-top-4 duration-500">
                     <div className="text-center">
-                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-2 text-white drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)]">
-                            {pageTitle}
-                        </h1>
-                        <p className="text-xs font-black text-slate-500 tracking-[0.8em] uppercase ml-2">
-                            {pageSubtitle}
-                        </p>
+                        {headerContent.showBranding ? (
+                            <>
+                                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-2 drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)]">
+                                    <span className="text-white">{headerContent.brandingParts?.[0]?.text}</span>
+                                    <span className="text-orange-500">{headerContent.brandingParts?.[1]?.text}</span>
+                                </h1>
+                                <p className="text-xs font-black text-slate-500 tracking-[0.8em] uppercase ml-2">
+                                    {headerContent.subtitle}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-2 text-white drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)]">
+                                    {headerContent.title}
+                                </h1>
+                                <p className="text-xs font-black text-slate-500 tracking-[0.8em] uppercase ml-2">
+                                    {headerContent.subtitle}
+                                </p>
+                            </>
+                        )}
                     </div>
                 </div>
                 
