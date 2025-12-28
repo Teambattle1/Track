@@ -553,12 +553,12 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               <div className="flex-1 space-y-4">
                                   <div className="relative">
                                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                      <input 
-                                          type="text" 
+                                      <input
+                                          type="text"
                                           value={clientName}
-                                          onChange={(e) => setClientName(e.target.value)}
-                                          placeholder="Client Name (e.g. Acme Corp)"
-                                          className="w-full pl-10 p-4 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none"
+                                          onChange={(e) => setClientName(e.target.value.toUpperCase())}
+                                          placeholder="CLIENT NAME (E.G. ACME CORP)"
+                                          className="w-full pl-10 p-4 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none uppercase"
                                       />
                                   </div>
                                   <div className="flex gap-2">
