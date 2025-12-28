@@ -23,9 +23,16 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRet
             return await fn();
         } catch (e: any) {
             lastError = e;
-            const isTimeout = e?.message?.includes('timeout') || e?.code === 'QUERY_TIMEOUT';
+            // Detect timeout errors more robustly
+            const isTimeout =
+                e?.message?.includes('timeout') ||
+                e?.message?.includes('canceling statement') ||
+                e?.code === 'QUERY_TIMEOUT' ||
+                e?.code === '57014'; // Postgres timeout error code
+
             if (!isTimeout || attempt === maxRetries - 1) throw e;
-            const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5 second wait
+
+            const delay = Math.min(1000 * Math.pow(2, attempt), 8000); // Max 8 second wait (increased from 5s)
             console.warn(`[DB Service] Timeout in ${context}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
