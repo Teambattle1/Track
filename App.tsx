@@ -700,8 +700,11 @@ const GameApp: React.FC = () => {
               <TaskMaster 
                   initialTab={taskMasterInitialTab}
                   onClose={() => setShowTaskMaster(false)}
-                  onImportTasks={async (tasks) => {
-                      if (activeGame) {
+                  onImportTasks={async (tasks, gameId) => {
+                      // Find the target game by ID or use activeGame
+                      const targetGame = gameId ? games.find(g => g.id === gameId) : activeGame;
+
+                      if (targetGame) {
                           const newPoints = tasks.map(t => ({
                               ...t,
                               id: `p-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
@@ -710,9 +713,21 @@ const GameApp: React.FC = () => {
                               activationTypes: ['radius'],
                               isUnlocked: true,
                               isCompleted: false,
-                              order: activeGame.points.length
+                              order: targetGame.points.length
                           } as GamePoint));
-                          await updateActiveGame({ ...activeGame, points: [...activeGame.points, ...newPoints] });
+
+                          // Update the target game
+                          const updatedGame = { ...targetGame, points: [...targetGame.points, ...newPoints] };
+
+                          // If it's not the active game, update games list only
+                          // If it's the active game, update both
+                          if (targetGame.id === activeGame?.id) {
+                              await updateActiveGame(updatedGame);
+                          } else {
+                              await db.saveGame(updatedGame);
+                              setGames(games.map(g => g.id === updatedGame.id ? updatedGame : g));
+                          }
+
                           setShowTaskMaster(false);
                       }
                   }}
