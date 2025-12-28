@@ -15,6 +15,7 @@ import Dashboard from './Dashboard';
 interface TaskMasterProps {
     onClose: () => void;
     onImportTasks: (tasks: TaskTemplate[]) => void;
+    onImportTaskList?: (list: TaskList) => void;
     taskLists: TaskList[];
     onUpdateTaskLists: (lists: TaskList[]) => void;
     games: Game[];
