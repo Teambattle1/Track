@@ -1319,12 +1319,24 @@ const GameApp: React.FC = () => {
             timerConfig={currentGameObj?.timerConfig}
             onFitBounds={(coords) => {
                 try {
-                    const pointsToFit = coords && coords.length > 0 ? coords : (currentGameObj?.points || []);
+                    const pointsToFit = (coords && Array.isArray(coords) && coords.length > 0) ? coords : (currentGameObj?.points || []);
+
                     if (!pointsToFit || pointsToFit.length === 0) {
-                        console.warn('[FitBounds] No points available to fit');
+                        console.warn('[FitBounds] No points available to fit', { currentGameObj, coords });
                         return;
                     }
-                    console.log('[FitBounds] Fitting to', pointsToFit.length, 'points');
+
+                    // Log detailed info about points
+                    console.log('[FitBounds] Fitting bounds:', {
+                        pointCount: pointsToFit.length,
+                        points: pointsToFit.slice(0, 3).map((p: any) => ({
+                            id: p.id,
+                            location: p.location,
+                            lat: p.location?.lat,
+                            lng: p.location?.lng
+                        }))
+                    });
+
                     mapRef.current?.fitBounds(pointsToFit);
                 } catch (error) {
                     console.error('[FitBounds] Error fitting bounds:', error);
