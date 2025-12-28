@@ -147,7 +147,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     <div className="flex items-center gap-3">
                         <LayoutGrid className="w-5 h-5 text-orange-500" />
                         <div>
-                            <h2 className="text-sm font-black uppercase tracking-widest text-white">ZONE EDITOR</h2>
+                            <h2 className="text-sm font-black uppercase tracking-widest text-white">PLAYZONE EDITOR</h2>
                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{game.playgrounds?.length || 0} ZONES ACTIVE</p>
                         </div>
                     </div>
