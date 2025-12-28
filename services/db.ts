@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Game, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage } from '../types';
+import { Game, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage, Coordinate } from '../types';
 import { DEMO_TASKS, DEMO_LISTS, getDemoGames } from '../utils/demoContent';
 
 const logError = (context: string, error: any) => {
@@ -47,7 +47,7 @@ export const fetchGame = async (id: string): Promise<Game | null> => {
     }
 };
 
-export const updateGameItemLocation = async (gameId: string, itemId: string, location: any): Promise<Game | null> => {
+export const updateGameItemLocation = async (gameId: string, itemId: string, location: Coordinate): Promise<Game | null> => {
     try {
         const game = await fetchGame(gameId);
         if (!game) return null;
