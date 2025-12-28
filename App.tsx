@@ -1264,12 +1264,14 @@ const GameApp: React.FC = () => {
                 onSaveGameTemplate={handleSaveGameTemplate}
                 onAddTask={async (type, playgroundId) => {
                     if (!activeGame) return;
-                    const center = mapRef.current?.getCenter() || { lat: 0, lng: 0 };
+                    const center = mapRef.current?.getCenter();
                     if (type === 'MANUAL') {
+                        // For playground points, don't set a map location
+                        const pointLocation = playgroundId ? null : (center || { lat: 55.676111, lng: 12.568333 }); // Default to Copenhagen if no center
                         const newPoint: GamePoint = {
                             id: `p-${Date.now()}`,
                             title: 'New Task',
-                            location: playgroundId ? { lat: 0, lng: 0 } : center,
+                            location: pointLocation,
                             playgroundId: playgroundId,
                             iconId: 'default',
                             points: 100,
