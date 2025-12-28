@@ -216,6 +216,105 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         );
     };
 
+    const renderLibraryList = (selectionMode = false) => {
+        const filtered = library.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+
+        return (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-slate-800 border-b border-slate-700">
+                        <tr>
+                            {selectionMode && <th className="px-4 py-3 text-left w-10"></th>}
+                            <th className="px-4 py-3 text-left w-10">Icon</th>
+                            <th className="px-4 py-3 text-left flex-1">Task Title</th>
+                            <th className="px-4 py-3 text-left flex-1">Question</th>
+                            <th className="px-4 py-3 text-left">Language</th>
+                            <th className="px-4 py-3 text-center w-16">Used</th>
+                            <th className="px-4 py-3 text-left">Tags</th>
+                            <th className="px-4 py-3 text-center w-24">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700">
+                        {filtered.map(task => {
+                            const Icon = ICON_COMPONENTS[task.iconId] || ICON_COMPONENTS.default;
+                            const isSelected = selectedTemplateIds.includes(task.id);
+                            const usageCount = countTaskUsage(task.id);
+
+                            return (
+                                <tr
+                                    key={task.id}
+                                    onClick={() => selectionMode ? toggleSelection(task.id) : null}
+                                    className={`hover:bg-slate-800/50 transition-colors cursor-pointer ${isSelected ? 'bg-indigo-900/30 border-l-4 border-indigo-600' : ''}`}
+                                >
+                                    {selectionMode && (
+                                        <td className="px-4 py-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                onChange={() => toggleSelection(task.id)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="w-4 h-4 rounded border-slate-600 accent-indigo-600"
+                                            />
+                                        </td>
+                                    )}
+                                    <td className="px-4 py-3">
+                                        <div className="p-2 bg-slate-700 rounded inline-flex text-slate-300">
+                                            <Icon className="w-4 h-4" />
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 font-bold text-white truncate max-w-xs">{task.title}</td>
+                                    <td className="px-4 py-3 text-slate-400 truncate max-w-sm">{task.task.question}</td>
+                                    <td className="px-4 py-3">
+                                        {task.settings?.language ? (
+                                            <span title={task.settings.language} className="text-lg">
+                                                {getLanguageFlag(task.settings.language)}
+                                            </span>
+                                        ) : (
+                                            <span className="text-slate-500">-</span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        {usageCount > 0 ? (
+                                            <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded">
+                                                {usageCount}
+                                            </span>
+                                        ) : (
+                                            <span className="text-slate-500">0</span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex flex-wrap gap-1">
+                                            {task.tags.slice(0, 2).map(tag => (
+                                                <span key={tag} className="text-[9px] px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded uppercase font-bold">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                            {task.tags.length > 2 && (
+                                                <span className="text-[9px] px-1.5 py-0.5 bg-slate-700 text-slate-400">
+                                                    +{task.tags.length - 2}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        {!selectionMode && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onImportTasks([task]); }}
+                                                className="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-bold uppercase rounded transition-colors"
+                                            >
+                                                USE
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
     if (editingList) {
         // ... (Editing List View - same as previous) ...
         return (
