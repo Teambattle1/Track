@@ -763,14 +763,13 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">LANGUAGE</label>
                                   <div className="flex gap-2">
                                       <select
-                                           value={editedPoint.settings?.language || 'English'}
-                                           onChange={(e) => setEditedPoint({...editedPoint, settings: {...editedPoint.settings, language: e.target.value }})}
-                                           className="flex-1 px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-orange-500 uppercase text-xs"
-                                      >
-                                          {LANGUAGES.map(l => {
-                                              const langName = l.split(' ').slice(1).join(' ');
-                                              return <option key={l} value={l}>{langName}</option>;
-                                          })}
+                                       value={normalizeLanguage(editedPoint.settings?.language)}
+                                       onChange={(e) => setEditedPoint({...editedPoint, settings: {...editedPoint.settings, language: e.target.value }})}
+                                       className="flex-1 px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-orange-500 uppercase text-xs"
+                                  >
+                                      {['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew'].map(lang => (
+                                          <option key={lang} value={lang}>{lang}</option>
+                                      ))}
                                       </select>
                                       <button
                                           type="button"
