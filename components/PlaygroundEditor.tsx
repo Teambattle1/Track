@@ -75,6 +75,17 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const audioInputRef = useRef<HTMLInputElement>(null);
     const taskIconInputRef = useRef<HTMLInputElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
+    const backgroundRef = useRef<HTMLDivElement>(null);
+
+    const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
+    const dragTaskRef = useRef<{
+        id: string | null;
+        offsetX: number;
+        offsetY: number;
+        startClientX: number;
+        startClientY: number;
+        moved: boolean;
+    }>({ id: null, offsetX: 0, offsetY: 0, startClientX: 0, startClientY: 0, moved: false });
 
     // Initialize active playground
     useEffect(() => {
@@ -189,6 +200,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     };
 
+    const updatePointPlaygroundPosition = (pointId: string, playgroundPosition: { x: number; y: number }) => {
+        onUpdateGame({
+            ...game,
+            points: game.points.map(p => (p.id === pointId ? { ...p, playgroundPosition } : p))
+        });
+    };
+
     const handleSnapAllToGrid = () => {
         // Dynamically calculate columns based on number of icons
         const totalIcons = uniquePlaygroundPoints.length;
@@ -255,17 +273,21 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
+        if (dragTaskRef.current.id) return;
         setIsDragging(true);
         setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
+        if (dragTaskRef.current.id) return;
         if (isDragging) {
             setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
         }
     };
 
-    const handleMouseUp = () => setIsDragging(false);
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
 
     if (!activePlayground) return null;
 
@@ -278,6 +300,73 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         height: '100%',
         transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
         transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+    };
+
+    const handleTaskPointerDown = (e: React.PointerEvent, point: GamePoint) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const rect = backgroundRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const currentX = point.playgroundPosition?.x ?? 50;
+        const currentY = point.playgroundPosition?.y ?? 50;
+
+        const centerX = rect.left + (currentX / 100) * rect.width;
+        const centerY = rect.top + (currentY / 100) * rect.height;
+
+        dragTaskRef.current = {
+            id: point.id,
+            offsetX: e.clientX - centerX,
+            offsetY: e.clientY - centerY,
+            startClientX: e.clientX,
+            startClientY: e.clientY,
+            moved: false
+        };
+
+        setDraggingTaskId(point.id);
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    };
+
+    const handleTaskPointerMove = (e: React.PointerEvent) => {
+        const id = dragTaskRef.current.id;
+        if (!id) return;
+
+        const rect = backgroundRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const dx = e.clientX - dragTaskRef.current.startClientX;
+        const dy = e.clientY - dragTaskRef.current.startClientY;
+        if (!dragTaskRef.current.moved && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
+            dragTaskRef.current.moved = true;
+        }
+
+        const x = ((e.clientX - rect.left - dragTaskRef.current.offsetX) / rect.width) * 100;
+        const y = ((e.clientY - rect.top - dragTaskRef.current.offsetY) / rect.height) * 100;
+
+        const clamped = {
+            x: Math.max(0, Math.min(100, Math.round(x * 10) / 10)),
+            y: Math.max(0, Math.min(100, Math.round(y * 10) / 10))
+        };
+
+        updatePointPlaygroundPosition(id, clamped);
+    };
+
+    const handleTaskPointerUp = (e: React.PointerEvent) => {
+        const id = dragTaskRef.current.id;
+        if (!id) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const wasClick = !dragTaskRef.current.moved;
+
+        dragTaskRef.current = { id: null, offsetX: 0, offsetY: 0, startClientX: 0, startClientY: 0, moved: false };
+        setDraggingTaskId(null);
+
+        if (wasClick) {
+            setSelectedTaskId(id);
+        }
     };
 
     return (
@@ -815,7 +904,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
                 >
-                    <div 
+                    <div
+                        ref={backgroundRef}
                         style={bgStyle}
                         className="relative shadow-2xl"
                     >
@@ -848,15 +938,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
                             const isSelected = selectedTaskId === point.id;
                             const displaySize = (point.playgroundScale || 1) * 48;
+                            const isDraggingThis = draggingTaskId === point.id;
                             return (
                                 <div
                                     key={point.id}
-                                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
+                                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 group ${isDraggingThis ? 'cursor-grabbing' : 'cursor-grab'}`}
                                     style={{ left: `${point.playgroundPosition?.x || 50}%`, top: `${point.playgroundPosition?.y || 50}%` }}
-                                    onClick={(e) => {
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
                                         e.stopPropagation();
-                                        setSelectedTaskId(point.id);
                                     }}
+                                    onPointerDown={(e) => handleTaskPointerDown(e, point)}
+                                    onPointerMove={handleTaskPointerMove}
+                                    onPointerUp={handleTaskPointerUp}
+                                    onPointerCancel={handleTaskPointerUp}
                                 >
                                     <div className={`rounded-full flex items-center justify-center border-4 shadow-xl transition-all relative ${
                                         isSelected
