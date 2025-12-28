@@ -83,6 +83,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showAiBackgroundPrompt, setShowAiBackgroundPrompt] = useState(false);
     const [aiBackgroundPromptValue, setAiBackgroundPromptValue] = useState('');
     const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
+
+    // Delete Zone State
+    const [isOverDeleteZone, setIsOverDeleteZone] = useState(false);
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
