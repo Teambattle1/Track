@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { TaskTemplate, IconId, TaskType } from "../types";
+import { normalizeLanguage } from "../utils/i18n";
 
 // Security Fix: Do not rely solely on process.env in built client code.
 // Allow override via LocalStorage for instructor/admin usage.
