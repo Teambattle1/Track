@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Game, TaskList, MapStyleId, GameChangeLogEntry } from '../types';
 import { X, Search, Gamepad2, Plus, Calendar, MapPin, RefreshCw, Settings, Layers, Clock, Hourglass, StopCircle, LayoutGrid, Map as MapIcon, List, LayoutList, History, User, FileClock, ChevronDown, PlayCircle } from 'lucide-react';
@@ -27,6 +26,7 @@ const MAP_LABELS: Record<MapStyleId, string> = {
     voyager: 'Voyager',
     winter: 'Winter',
     ski: 'Ski Map',
+    norwegian: 'Norwegian',
     historic: 'Historic',
     google_custom: 'Google Custom',
     none: 'No Map'
