@@ -34,7 +34,7 @@ interface EditorDrawerProps {
   userLocation?: Coordinate | null;
   onFitBounds: (coords?: Coordinate[]) => void; // Updated signature
   onHoverPoint?: (point: GamePoint | null) => void;
-  onOpenPlaygroundEditor?: () => void;
+  onOpenPlaygroundEditor?: (playgroundId?: string) => void;
   initialExpanded?: boolean;
   onAddTask?: (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId?: string) => void;
   onExpandChange?: (expanded: boolean) => void; 
