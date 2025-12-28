@@ -71,6 +71,12 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [batchRadius, setBatchRadius] = useState<number>(30);
   const [batchPoints, setBatchPoints] = useState<number>(100);
 
+  // Sound Settings
+  const [batchAudioUrl, setBatchAudioUrl] = useState<string | null>(null);
+  const [isGeneratingSound, setIsGeneratingSound] = useState(false);
+  const [isPlayingSound, setIsPlayingSound] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   // If mode is LIST or LIBRARY, default behavior adjustments
   useEffect(() => {
       if (targetMode === 'LIST' || targetMode === 'LIBRARY') {
