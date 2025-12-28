@@ -550,18 +550,26 @@ const GameApp: React.FC = () => {
   };
 
   const handleAddDangerZone = () => {
-      if (!currentGameObj || !mapRef.current) return;
-      const center = mapRef.current.getCenter();
-      const newZone: DangerZone = {
-          id: `dz-${Date.now()}`,
-          location: center,
-          radius: 50,
-          penalty: 50,
-          duration: 10,
-          title: 'NEW ZONE',
-          penaltyType: 'fixed'
-      };
-      updateActiveGame({ ...currentGameObj, dangerZones: [...(currentGameObj.dangerZones || []), newZone] }, "Added Danger Zone");
+      try {
+          if (!currentGameObj || !mapRef.current) {
+              console.warn('[Danger Zone] Missing game object or map ref');
+              return;
+          }
+          const center = mapRef.current.getCenter();
+          const newZone: DangerZone = {
+              id: `dz-${Date.now()}`,
+              location: center,
+              radius: 50,
+              penalty: 50,
+              duration: 10,
+              title: 'NEW ZONE',
+              penaltyType: 'fixed'
+          };
+          updateActiveGame({ ...currentGameObj, dangerZones: [...(currentGameObj.dangerZones || []), newZone] }, "Added Danger Zone");
+          console.log('[Danger Zone] Zone added at:', center);
+      } catch (error) {
+          console.error('[Danger Zone] Error adding danger zone:', error);
+      }
   };
 
   const handleUpdateRoute = (id: string, updates: Partial<GameRoute>) => {
