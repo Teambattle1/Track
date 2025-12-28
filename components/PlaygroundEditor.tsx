@@ -1637,11 +1637,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                         {bulkIconMode ? (
                                                             <>
                                                                 {bulkIconSourceId === null ? (
-                                                                    <div className="w-8 h-8 bg-slate-700 rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-slate-400">
-                                                                        SRC
+                                                                    <div className="w-8 h-8 bg-blue-900/50 border-2 border-blue-400 rounded flex items-center justify-center flex-shrink-0 text-[9px] font-bold text-blue-300 cursor-pointer hover:bg-blue-800/50">
+                                                                        📌
                                                                     </div>
                                                                 ) : bulkIconSourceId === point.id ? (
-                                                                    <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                                                                    <div className="w-8 h-8 bg-blue-600 border-2 border-blue-400 rounded flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/50">
                                                                         {point.iconUrl ? (
                                                                             <img src={point.iconUrl} alt="" className="w-5 h-5 object-contain" />
                                                                         ) : (
@@ -1660,8 +1660,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                                             toggleBulkIconTarget(point.id);
                                                                         }}
                                                                         onClick={(e) => e.stopPropagation()}
-                                                                        className="mt-1 w-4 h-4 rounded border-2 border-slate-500 bg-slate-900 cursor-pointer accent-orange-500 flex-shrink-0"
-                                                                        title="Select target"
+                                                                        className="mt-1 w-4 h-4 rounded border-2 border-orange-500 bg-slate-900 cursor-pointer accent-orange-500 flex-shrink-0"
+                                                                        title="Click checkbox or task to select target"
                                                                     />
                                                                 )}
                                                             </>
