@@ -424,19 +424,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         </button>
                     </div>
 
-                    {/* Tasks List */}
-                    <div>
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TASKS IN ZONE ({playgroundPoints.length})</span>
-                        </div>
-                        <button 
-                            onClick={() => onAddTask('MANUAL', activePlayground.id)}
-                            className="w-full py-3 border-2 border-dashed border-slate-700 rounded-xl text-slate-500 hover:text-white hover:border-slate-500 font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all group"
-                        >
-                            <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" /> ADD TASK
-                        </button>
-                    </div>
-
                 </div>
 
                 {/* Footer Buttons */}
