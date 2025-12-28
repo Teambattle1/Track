@@ -512,14 +512,19 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 pointer-events-auto">
-                        <button onClick={onToggleScores} className={`p-3 rounded-full shadow-lg transition-all ${showScores ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+                        <button
+                            onClick={onToggleScores}
+                            className={`p-3 rounded-full shadow-lg transition-all ${showScores ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                            title="Toggle Scores Display"
+                        >
                             <Type className="w-5 h-5" />
                         </button>
-                        <button onClick={onHome} className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg transition-all">
+                        <button
+                            onClick={onHome}
+                            className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg transition-all"
+                            title="Return Home"
+                        >
                             <Home className="w-5 h-5" />
-                        </button>
-                        <button onClick={onClose} className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg transition-all">
-                            <X className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
