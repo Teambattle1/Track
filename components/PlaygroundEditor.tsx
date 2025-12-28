@@ -175,6 +175,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         });
     };
 
+    const updatePointDirectly = (pointId: string, updates: Partial<GamePoint>) => {
+        onUpdateGame({
+            ...game,
+            points: game.points.map(p => p.id === pointId ? { ...p, ...updates } : p)
+        });
+    };
+
     const handleTaskIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && selectedTask) {
