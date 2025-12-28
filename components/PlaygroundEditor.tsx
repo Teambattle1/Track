@@ -1417,6 +1417,51 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             {/* Divider */}
                             <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
 
+                            {/* Bulk Icon Mode Controls */}
+                            {!selectedTask && (
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
+                                    {bulkIconMode ? (
+                                        <>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest flex items-center gap-1">
+                                                    <ImageIcon className="w-3 h-3" /> BULK ICON
+                                                </span>
+                                                <button
+                                                    onClick={() => {
+                                                        setBulkIconMode(false);
+                                                        setBulkIconSourceId(null);
+                                                        setBulkIconTargets(new Set());
+                                                    }}
+                                                    className="text-slate-500 hover:text-white text-[9px] font-bold uppercase"
+                                                >
+                                                    CANCEL
+                                                </button>
+                                            </div>
+                                            {bulkIconSourceId && (
+                                                <div className="p-2 bg-slate-900 rounded border border-orange-500/30 text-[9px] text-orange-300 font-bold uppercase">
+                                                    {bulkIconTargets.size} target(s) selected
+                                                </div>
+                                            )}
+                                            {bulkIconTargets.size > 0 && (
+                                                <button
+                                                    onClick={applyBulkIcon}
+                                                    className="w-full py-2 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-bold uppercase rounded transition-colors"
+                                                >
+                                                    APPLY ICON TO {bulkIconTargets.size}
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <button
+                                            onClick={() => setBulkIconMode(true)}
+                                            className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white text-[10px] font-bold uppercase rounded transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <ImageIcon className="w-3 h-3" /> COPY ICON TO MULTIPLE
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Tasks List */}
                             <div className="space-y-3">
                                 {uniquePlaygroundPoints.length === 0 ? (
