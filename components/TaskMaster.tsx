@@ -40,12 +40,12 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [library, setLibrary] = useState<TaskTemplate[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    
+
     // Editor State
     const [editingList, setEditingList] = useState<TaskList | null>(null);
     const [isSelectingForCurrentList, setIsSelectingForCurrentList] = useState(false);
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
-    
+
     // Modals
     const [showAiGen, setShowAiGen] = useState(false);
     const [showLoquiz, setShowLoquiz] = useState(false);
@@ -58,6 +58,16 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
 
     // Task editing within a list
     const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null);
+
+    // Sorting and Filtering
+    const [sortColumn, setSortColumn] = useState<'title' | 'question' | 'language' | 'used' | 'tags'>('title');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+    const [bulkSelectionMode, setBulkSelectionMode] = useState(false);
+    const [showGameSelector, setShowGameSelector] = useState(false);
+    const [gameForBulkAdd, setGameForBulkAdd] = useState<Game | null>(null);
+    const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+    const [singleTaskGameSelector, setSingleTaskGameSelector] = useState<{taskId: string} | null>(null);
 
     // Refs
     const listImageInputRef = useRef<HTMLInputElement>(null);
