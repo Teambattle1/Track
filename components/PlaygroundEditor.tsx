@@ -737,16 +737,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 >
                                     <span className="text-xs font-bold">#</span>
                                 </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setShowTaskActions(!showTaskActions);
+                                    }}
+                                    className={`p-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
+                                        showTaskActions
+                                            ? 'bg-orange-600 text-white shadow-lg'
+                                            : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                    }`}
+                                    title="Show/Hide Task Actions"
+                                    type="button"
+                                >
+                                    <Zap className="w-3 h-3" />
+                                </button>
                             </div>
                         </div>
-
-                        <button
-                            onClick={onToggleScores}
-                            className={`p-3 rounded-full shadow-lg transition-all ${showScores ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
-                            title="Toggle Scores Display"
-                        >
-                            <Type className="w-5 h-5" />
-                        </button>
                         <button
                             onClick={onHome}
                             className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg transition-all"
