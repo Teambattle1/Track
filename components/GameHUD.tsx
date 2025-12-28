@@ -387,6 +387,61 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 </div>
             </div>
 
+            {/* Floating Toolbox & Measure */}
+            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
+                <div
+                    className="absolute z-[1100] pointer-events-auto touch-none"
+                    style={{ left: toolboxPos.x, top: toolboxPos.y }}
+                    onPointerDown={handleBoxPointerDown}
+                    onPointerMove={handleBoxPointerMove}
+                    onPointerUp={handleBoxPointerUp}
+                >
+                    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-2xl shadow-2xl p-2 cursor-move group relative w-[120px]">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 rounded-full px-2 border border-slate-700 pointer-events-none">
+                            <GripHorizontal className="w-4 h-4" />
+                        </div>
+                        {showLayerMenu && renderLayerMenu()}
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onToggleMeasure(); }}
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center border hover:scale-105 transition-transform group/btn relative ${isMeasuring ? 'bg-orange-500 border-orange-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
+                            >
+                                <Ruler className="w-6 h-6" />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
+                                    MEASURE
+                                </div>
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onAddDangerZone(); }}
+                                className="w-12 h-12 rounded-xl flex items-center justify-center border border-red-900/50 bg-slate-800 text-red-500 hover:bg-red-900/20 hover:text-red-400 hover:scale-105 transition-all group/btn relative"
+                            >
+                                <Skull className="w-6 h-6" />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
+                                    DANGER ZONE
+                                </div>
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setShowLayerMenu(!showLayerMenu); }}
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center border hover:scale-105 transition-transform group/btn relative ${showLayerMenu ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
+                            >
+                                <Layers className="w-6 h-6" />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
+                                    LAYERS
+                                </div>
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onRelocateGame(); }}
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center border hover:scale-105 transition-transform group/btn relative ${isRelocating ? 'bg-green-600 border-green-400 text-white animate-pulse' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
+                            >
+                                <Crosshair className="w-6 h-6" />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
+                                    RELOCATE
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Bottom Bar Logic ... */}
             {!isSkiMode && (
