@@ -10,6 +10,7 @@ import {
 import { ICON_COMPONENTS } from '../utils/icons';
 import { uploadImage } from '../services/storage'; // IMPORTED
 import { generateAiImage } from '../services/ai';
+import { uploadImage } from '../services/storage';
 import * as db from '../services/db';
 import TaskActionModal from './TaskActionModal';
 import AiTaskGenerator from './AiTaskGenerator';
