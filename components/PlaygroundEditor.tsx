@@ -713,8 +713,8 @@ Make it suitable as a game environment background.`;
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">BACKGROUND IMAGE</span>
                         </div>
-                        
-                        <div 
+
+                        <div
                             className="aspect-video bg-slate-900 border border-slate-700 rounded-xl overflow-hidden relative group cursor-pointer hover:border-slate-500 transition-colors"
                             onClick={() => fileInputRef.current?.click()}
                         >
@@ -726,10 +726,22 @@ Make it suitable as a game environment background.`;
                                 </div>
                             )}
                             <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[9px] font-bold text-white uppercase tracking-widest">CHANGE IMAGE</span>
+                                <span className="text-[9px] font-bold text-white uppercase tracking-widest">UPLOAD IMAGE</span>
                             </div>
                         </div>
                         <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+
+                        {/* AI Background & Upload Buttons */}
+                        <div className="flex gap-2 mt-3">
+                            <button
+                                onClick={() => setShowAiBackgroundPrompt(true)}
+                                disabled={isGeneratingBackground}
+                                className="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 text-white rounded-lg font-bold uppercase text-[10px] tracking-wide flex items-center justify-center gap-2 transition-colors shadow-lg"
+                            >
+                                <Wand2 className="w-4 h-4" />
+                                {isGeneratingBackground ? 'GENERATING...' : 'AI BACKGROUND'}
+                            </button>
+                        </div>
 
                         {/* Scaling Options */}
                         <div className="flex bg-slate-800 rounded-lg p-1 mt-3 border border-slate-700">
