@@ -777,14 +777,29 @@ const GameApp: React.FC = () => {
               />
           )}
           {showPlaygroundManager && (
-              <PlaygroundManager 
+              <PlaygroundManager
                   onClose={() => setShowPlaygroundManager(false)}
                   onEdit={(template) => {
                       setPlaygroundTemplateToEdit(template);
                       setShowPlaygroundManager(false);
                   }}
                   onCreate={() => {
-                      // Logic to create new template
+                      const newTemplate: PlaygroundTemplate = {
+                          id: `tpl-${Date.now()}`,
+                          title: 'New Playground Template',
+                          isGlobal: true,
+                          createdAt: Date.now(),
+                          playgroundData: {
+                              id: `pg-tpl-${Date.now()}`,
+                              title: 'New Zone',
+                              buttonVisible: true,
+                              iconId: 'default',
+                              location: { lat: 0, lng: 0 }
+                          },
+                          tasks: []
+                      };
+                      setPlaygroundTemplateToEdit(newTemplate);
+                      setShowPlaygroundManager(false);
                   }}
               />
           )}
