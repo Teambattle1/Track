@@ -268,7 +268,11 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
         () => ({
             click: () => onClick(point),
             dragend(e: any) {
-                if (onMove) onMove(point.id, e.target.getLatLng());
+                if (onMove) {
+                    const latlng = e.target.getLatLng();
+                    // Convert Leaflet LatLng to plain Coordinate object
+                    onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
+                }
             },
         }),
         [point, onClick, onMove]
