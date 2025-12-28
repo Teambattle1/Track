@@ -62,11 +62,14 @@ async function makeRequestWithRetry<T>(requestFn: () => Promise<T>, maxRetries =
 export const generateAiTasks = async (topic: string, count: number = 5, language: string = 'English', additionalTag?: string): Promise<TaskTemplate[]> => {
   const key = ensureApiKey();
   const ai = new GoogleGenAI({ apiKey: key });
-  
+
+  // Normalize the language parameter (it may come with emoji+name format)
+  const normalizedLanguage = normalizeLanguage(language);
+
   try {
     const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Create exactly ${count} diverse scavenger hunt tasks. Topic: "${topic}". Language: ${language}. Return JSON array.`,
+      contents: `Create exactly ${count} diverse scavenger hunt tasks. Topic: "${topic}". Language: ${normalizedLanguage}. Return JSON array.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
@@ -87,7 +90,7 @@ export const generateAiTasks = async (topic: string, count: number = 5, language
         id: `ai-${Date.now()}-${index}`,
         title: item.title,
         iconId: (item.iconId as IconId) || 'default',
-        tags: ['AI', language.split(' ')[0], ...(additionalTag ? [additionalTag] : [])],
+        tags: ['AI', normalizedLanguage, ...(additionalTag ? [additionalTag] : [])],
         createdAt: Date.now(),
         points: 100,
         task: {
@@ -104,7 +107,7 @@ export const generateAiTasks = async (topic: string, count: number = 5, language
           hint: item.hint || '', hintCost: 10
         },
         settings: {
-          scoreDependsOnSpeed: false, language: language, showAnswerStatus: true, showCorrectAnswerOnMiss: false
+          scoreDependsOnSpeed: false, language: normalizedLanguage, showAnswerStatus: true, showCorrectAnswerOnMiss: false
         }
     }));
   } catch (error) {
