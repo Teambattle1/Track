@@ -79,7 +79,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 title: 'Global 1',
                 buttonVisible: true,
                 iconId: 'default',
-                location: { lat: 0, lng: 0 }
+                location: { lat: 0, lng: 0 },
+                orientationLock: 'landscape'
             };
             onUpdateGame({ ...game, playgrounds: [newPg] });
             setActivePlaygroundId(newPg.id);
