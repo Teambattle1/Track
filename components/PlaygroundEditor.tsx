@@ -1877,6 +1877,74 @@ Make it suitable as a game environment background.`;
                 </div>
             )}
 
+            {/* AI Background Prompt Modal */}
+            {showAiBackgroundPrompt && (
+                <div className="fixed inset-0 z-[6500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Wand2 className="w-4 h-4 text-purple-400" />
+                                <h3 className="text-xs font-black uppercase tracking-widest text-white">AI BACKGROUND GENERATOR</h3>
+                            </div>
+                            <button
+                                onClick={() => setShowAiBackgroundPrompt(false)}
+                                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                type="button"
+                                title="Close"
+                                disabled={isGeneratingBackground}
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <div className="p-4 space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                Describe the background you want. Examples: "forest at sunset", "futuristic city", "underwater temple", "medieval castle"
+                            </p>
+                            <div>
+                                <label className="text-[9px] font-bold uppercase text-slate-500 mb-1 block">Zone: <span className="text-orange-400">{activePlayground?.title || 'Unknown'}</span></label>
+                                <input
+                                    value={aiBackgroundPromptValue}
+                                    onChange={(e) => setAiBackgroundPromptValue(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !isGeneratingBackground) {
+                                            handleGenerateAiBackground(aiBackgroundPromptValue);
+                                        }
+                                    }}
+                                    disabled={isGeneratingBackground}
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-sm font-bold text-white outline-none focus:border-purple-500 disabled:opacity-50"
+                                    placeholder="ENTER KEYWORDS..."
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowAiBackgroundPrompt(false)}
+                                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors"
+                                    type="button"
+                                    disabled={isGeneratingBackground}
+                                >
+                                    CANCEL
+                                </button>
+                                <button
+                                    onClick={() => handleGenerateAiBackground(aiBackgroundPromptValue)}
+                                    disabled={!aiBackgroundPromptValue.trim() || isGeneratingBackground}
+                                    className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors"
+                                    type="button"
+                                >
+                                    {isGeneratingBackground ? 'GENERATING...' : 'GENERATE'}
+                                </button>
+                            </div>
+                            {activePlayground?.imageUrl && (
+                                <div className="pt-3 border-t border-slate-700 text-[9px] text-slate-400">
+                                    <p className="font-bold mb-1">Current Background:</p>
+                                    <img src={activePlayground.imageUrl} alt="Current background" className="w-full h-auto rounded-lg max-h-24 object-cover" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Task Action Modal */}
             {showActionModal && selectedTask && (
                 <TaskActionModal
