@@ -11,10 +11,32 @@ const logError = (context: string, error: any) => {
     console.error(`[DB Service] Error in ${context}:`, errorMsg);
 };
 
+// Retry helper for timeout errors with exponential backoff
+const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 3): Promise<T> => {
+    let lastError: any;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (e: any) {
+            lastError = e;
+            const isTimeout = e?.message?.includes('timeout') || e?.code === 'QUERY_TIMEOUT';
+            if (!isTimeout || attempt === maxRetries - 1) throw e;
+            const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5 second wait
+            console.warn(`[DB Service] Timeout in ${context}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    throw lastError;
+};
+
 // --- GAMES ---
 export const fetchGames = async (): Promise<Game[]> => {
     try {
-        const { data, error } = await supabase.from('games').select('*');
+        const result = await retryWithBackoff(
+            () => supabase.from('games').select('id, data, updated_at'),
+            'fetchGames'
+        );
+        const { data, error } = result;
         if (error) throw error;
         if (!data) return [];
         return data.map((row: any) => ({ ...row.data, id: row.id, dbUpdatedAt: row.updated_at }));
@@ -37,7 +59,11 @@ export const saveGame = async (game: Game) => {
 
 export const fetchGame = async (id: string): Promise<Game | null> => {
     try {
-        const { data, error } = await supabase.from('games').select('*').eq('id', id).single();
+        const result = await retryWithBackoff(
+            () => supabase.from('games').select('id, data, updated_at').eq('id', id).single(),
+            `fetchGame(${id})`
+        );
+        const { data, error } = result;
         if (error) throw error;
         if (!data) return null;
         return { ...data.data, id: data.id, dbUpdatedAt: data.updated_at };
@@ -278,7 +304,11 @@ export const updateMemberPhoto = async (teamId: string, memberDeviceId: string, 
 // --- LIBRARY & LISTS ---
 export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
     try {
-        const { data, error } = await supabase.from('library').select('*');
+        const result = await retryWithBackoff(
+            () => supabase.from('library').select('id, data'),
+            'fetchLibrary'
+        );
+        const { data, error } = result;
         if (error) throw error;
         return data ? data.map((row: any) => ({ ...row.data, id: row.id })) : [];
     } catch (e) { logError('fetchLibrary', e); return []; }
@@ -297,7 +327,11 @@ export const deleteTemplate = async (id: string) => {
 
 export const fetchTaskLists = async (): Promise<TaskList[]> => {
     try {
-        const { data, error } = await supabase.from('task_lists').select('*');
+        const result = await retryWithBackoff(
+            () => supabase.from('task_lists').select('id, data'),
+            'fetchTaskLists'
+        );
+        const { data, error } = result;
         if (error) throw error;
         return data ? data.map((row: any) => ({ ...row.data, id: row.id })) : [];
     } catch (e) { logError('fetchTaskLists', e); return []; }
@@ -305,7 +339,11 @@ export const fetchTaskLists = async (): Promise<TaskList[]> => {
 
 export const fetchTaskListByToken = async (token: string): Promise<TaskList | null> => {
     try {
-        const { data, error } = await supabase.from('task_lists').select('*').eq('data->>shareToken', token).single();
+        const result = await retryWithBackoff(
+            () => supabase.from('task_lists').select('id, data').eq('data->>shareToken', token).single(),
+            `fetchTaskListByToken(${token})`
+        );
+        const { data, error } = result;
         if (error) throw error;
         return data ? { ...data.data, id: data.id } : null;
     } catch (e) { logError('fetchTaskListByToken', e); return null; }
