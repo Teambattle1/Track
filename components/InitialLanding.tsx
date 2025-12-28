@@ -513,8 +513,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                     </div>
                 </div>
                 
-                {/* Session Selector (Hidden in Create Mode) */}
-                {view !== 'CREATE' && (
+                {/* Session Selector (Only shown in Edit and Play Menus) */}
+                {(view === 'EDIT_MENU' || view === 'PLAY_MENU') && (
                     <div className="relative z-20 animate-in slide-in-from-bottom-2 duration-500 delay-100">
                         <button 
                             onClick={() => setShowGameMenu(!showGameMenu)}
