@@ -71,6 +71,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [aiIconPromptValue, setAiIconPromptValue] = useState('');
     const [isMarkMode, setIsMarkMode] = useState(false);
     const [markedTaskIds, setMarkedTaskIds] = useState<Set<string>>(new Set());
+    const [showTaskMaster, setShowTaskMaster] = useState(false);
+    const [taskMasterTab, setTaskMasterTab] = useState<'LIBRARY' | 'LISTS'>('LIBRARY');
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
