@@ -982,7 +982,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     playgrounds={game.playgrounds}
                     onClose={() => setShowActionModal(false)}
                     onSave={(updatedPoint) => {
-                        updateTask(updatedPoint);
+                        onUpdateGame({
+                            ...game,
+                            points: game.points.map(p => p.id === updatedPoint.id ? updatedPoint : p)
+                        });
                         setShowActionModal(false);
                     }}
                     onStartDrawMode={() => {}}
