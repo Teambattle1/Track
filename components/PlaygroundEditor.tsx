@@ -949,7 +949,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        {playgroundPoints.map((point, index) => (
+                                        {uniquePlaygroundPoints.map((point, index) => (
                                             <div
                                                 key={point.id}
                                                 className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-orange-500 hover:bg-slate-800 transition-colors cursor-pointer group"
