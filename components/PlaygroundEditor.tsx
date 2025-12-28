@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Game, Playground, GamePoint, IconId } from '../types';
-import { 
-    X, Plus, LayoutGrid, Globe, Map as MapIcon, ArrowLeft, Trash2, Edit2, 
-    Image as ImageIcon, Upload, Grid, MousePointer2, Move, ZoomIn, ZoomOut, 
+import {
+    X, Plus, LayoutGrid, Globe, Map as MapIcon, ArrowLeft, Trash2, Edit2,
+    Image as ImageIcon, Upload, Grid, MousePointer2, Move, ZoomIn, ZoomOut,
     Maximize, Lock, Settings, Home, Save, Check, Type, Gamepad2, Library, Users, Shield,
-    Smartphone, Tablet, Monitor, MousePointerClick, Music, Repeat, PlayCircle
+    Smartphone, Tablet, Monitor, MousePointerClick, Music, Repeat, PlayCircle, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { uploadImage } from '../services/storage'; // IMPORTED
