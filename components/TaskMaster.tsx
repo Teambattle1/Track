@@ -24,12 +24,13 @@ interface TaskMasterProps {
     onRenameTagGlobally?: (oldTag: string, newTag: string) => Promise<void>;
 }
 
-const TaskMaster: React.FC<TaskMasterProps> = ({ 
-    onClose, 
-    onImportTasks, 
-    taskLists, 
-    onUpdateTaskLists, 
-    games, 
+const TaskMaster: React.FC<TaskMasterProps> = ({
+    onClose,
+    onImportTasks,
+    onImportTaskList,
+    taskLists,
+    onUpdateTaskLists,
+    games,
     initialTab = 'LIBRARY',
     onDeleteTagGlobally,
     onRenameTagGlobally
