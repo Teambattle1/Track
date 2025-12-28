@@ -52,6 +52,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const iconInputRef = useRef<HTMLInputElement>(null);
     const audioInputRef = useRef<HTMLInputElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
 
