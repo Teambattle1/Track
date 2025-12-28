@@ -1424,14 +1424,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                                     onChange={(e) => setEditingTitleValue(e.target.value)}
                                                                     onBlur={() => {
                                                                         if (editingTitleValue.trim()) {
-                                                                            updateTask({ title: editingTitleValue });
+                                                                            updatePointDirectly(point.id, { title: editingTitleValue });
                                                                         }
                                                                         setEditingTitleId(null);
                                                                     }}
                                                                     onKeyDown={(e) => {
                                                                         if (e.key === 'Enter') {
                                                                             if (editingTitleValue.trim()) {
-                                                                                updateTask({ title: editingTitleValue });
+                                                                                updatePointDirectly(point.id, { title: editingTitleValue });
                                                                             }
                                                                             setEditingTitleId(null);
                                                                         } else if (e.key === 'Escape') {
@@ -1450,7 +1450,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                                         setEditingTitleId(point.id);
                                                                         setEditingTitleValue(point.title);
                                                                     }}
-                                                                    title="Double-click to edit"
+                                                                    title="Click to edit task title"
                                                                 >
                                                                     {point.title}
                                                                 </p>
