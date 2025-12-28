@@ -137,6 +137,26 @@ const GameApp: React.FC = () => {
       }
   }, [activeGameId, games]);
 
+  // --- MULTI-USER EDIT SYNC (lightweight polling) ---
+  useEffect(() => {
+      if (!activeGameId) return;
+      if (mode !== GameMode.EDIT && mode !== GameMode.INSTRUCTOR) return;
+      // Avoid overwriting local, unsaved edits while a point is open in the editor.
+      if (activeTask) return;
+
+      const interval = window.setInterval(async () => {
+          const remote = await db.fetchGame(activeGameId);
+          if (!remote) return;
+
+          if (remote.dbUpdatedAt && remote.dbUpdatedAt === activeGame?.dbUpdatedAt) return;
+
+          setGames(prev => prev.map(g => g.id === remote.id ? remote : g));
+          setActiveGame(remote);
+      }, 5000);
+
+      return () => window.clearInterval(interval);
+  }, [activeGameId, mode, activeTask, activeGame?.dbUpdatedAt]);
+
   // Subscribe to Team Members if Playing
   useEffect(() => {
       if (mode === GameMode.PLAY && currentTeam) {
@@ -266,14 +286,17 @@ const GameApp: React.FC = () => {
           return;
       }
 
+      const updatedAt = new Date().toISOString();
+
       const changeEntry: GameChangeLogEntry = {
           timestamp: Date.now(),
           user: authUser?.name || 'Unknown',
           action: changeDescription
       };
-      
+
       const gameToSave = {
           ...updatedGame,
+          dbUpdatedAt: updatedAt,
           lastModifiedBy: authUser?.name || 'Unknown',
           changeLog: [...(updatedGame.changeLog || []), changeEntry]
       };
@@ -1039,10 +1062,13 @@ const GameApp: React.FC = () => {
                 onDeletePoint={handleDeleteItem}
                 onPointMove={async (id, loc) => {
                     if (!currentGameObj) return;
-                    const updatedPoints = currentGameObj.points.map(p => p.id === id ? { ...p, location: loc } : p);
-                    const updatedPlaygrounds = (currentGameObj.playgrounds || []).map(pg => pg.id === id ? { ...pg, location: loc } : pg);
-                    const updatedZones = (currentGameObj.dangerZones || []).map(z => z.id === id ? { ...z, location: loc } : z);
-                    await updateActiveGame({ ...currentGameObj, points: updatedPoints, playgrounds: updatedPlaygrounds, dangerZones: updatedZones }, "Moved Item");
+
+                    const updated = await db.updateGameItemLocation(currentGameObj.id, id, loc);
+                    if (!updated) return;
+
+                    setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
+                    setActiveGame(updated);
+                    setSimulatedGame(mode === GameMode.SIMULATION ? updated : simulatedGame);
                 }}
                 accuracy={gpsAccuracy}
                 isRelocating={isRelocating}
