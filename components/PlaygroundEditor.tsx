@@ -49,6 +49,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success'>('idle');
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
