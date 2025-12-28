@@ -53,6 +53,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     // View State
     const [libraryViewMode, setLibraryViewMode] = useState<'grid' | 'list'>('grid');
 
+    // Template Editing
+    const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | null>(null);
+
     // Refs
     const listImageInputRef = useRef<HTMLInputElement>(null);
 
