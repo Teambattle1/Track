@@ -717,7 +717,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       <input type="number" value={duration} onChange={(e) => {
                                           const v = parseInt(e.target.value, 10);
                                           setDuration(Number.isFinite(v) ? v : 0);
-                                      }} className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none" />
+                                      }} className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none uppercase" />
                                   </div>
                                   <div>
                                       <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Timer Title</label>
