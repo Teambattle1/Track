@@ -1318,8 +1318,17 @@ const GameApp: React.FC = () => {
             isRelocating={isRelocating}
             timerConfig={currentGameObj?.timerConfig}
             onFitBounds={(coords) => {
-                if (coords && coords.length > 0) mapRef.current?.fitBounds(coords);
-                else mapRef.current?.fitBounds(currentGameObj?.points || []);
+                try {
+                    const pointsToFit = coords && coords.length > 0 ? coords : (currentGameObj?.points || []);
+                    if (!pointsToFit || pointsToFit.length === 0) {
+                        console.warn('[FitBounds] No points available to fit');
+                        return;
+                    }
+                    console.log('[FitBounds] Fitting to', pointsToFit.length, 'points');
+                    mapRef.current?.fitBounds(pointsToFit);
+                } catch (error) {
+                    console.error('[FitBounds] Error fitting bounds:', error);
+                }
             }}
             onLocateMe={handleLocateMe}
             onSearchLocation={(c) => mapRef.current?.jumpTo(c)}
