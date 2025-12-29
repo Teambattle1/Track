@@ -235,7 +235,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 setAiBackgroundPromptValue('');
             } else {
                 console.warn('[PlaygroundEditor] AI returned null - check console for details');
-                alert('⚠️ Image generation failed\n\nThe Gemini API completed but did not return image data. This could mean:\n\n1. The "gemini-2.5-flash-image" model may not be available for your API key\n2. Image generation might not be enabled on your account\n3. The prompt was interpreted as text instead of image\n\nCheck the browser console (F12) for detailed error logs.\n\nTry:\n• Verifying your Gemini API key has image generation enabled\n• Using simpler keywords (e.g., "forest", "castle", "ocean")\n• Uploading an image instead');
+                alert('⚠️ Image generation failed\n\nImagen 3 did not return image data. This could mean:\n\n1. Your Gemini API key may not have Imagen 3 access enabled\n2. The prompt might have been filtered by safety settings\n3. There may be a temporary API issue\n\nCheck the browser console (F12) for detailed error logs.\n\nTry:\n• Verifying your Gemini API key has Imagen access enabled\n• Using simpler keywords (e.g., "forest", "castle", "ocean")\n• Avoiding complex or sensitive content\n• Uploading an image instead');
             }
         } catch (error) {
             console.error('[PlaygroundEditor] Error generating background:', error);
