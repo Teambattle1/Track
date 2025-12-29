@@ -1377,6 +1377,13 @@ const GameApp: React.FC = () => {
                 mapStyle={localMapStyle || 'osm'}
                 onPointClick={handlePointClick}
                 onZoneClick={(z) => setActiveDangerZone(z)}
+                onZoneMove={async (zoneId, newLoc) => {
+                    if (!activeGame) return;
+                    const updatedZones = (activeGame.dangerZones || []).map(z =>
+                        z.id === zoneId ? { ...z, location: newLoc } : z
+                    );
+                    await updateActiveGame({ ...activeGame, dangerZones: updatedZones });
+                }}
                 onMapClick={handleMapClick}
                 onDeletePoint={handleDeleteItem}
                 onPointMove={isMeasuring || isRelocating ? undefined : async (id, loc) => {
