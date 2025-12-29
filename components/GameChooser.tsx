@@ -23,7 +23,6 @@ const MAP_LABELS: Record<MapStyleId, string> = {
     light: 'Light Mode',
     ancient: 'Ancient',
     clean: 'Clean',
-    voyager: 'Voyager',
     winter: 'Winter',
     ski: 'Ski Map',
     norwegian: 'Norwegian',
