@@ -434,6 +434,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
   
   const center = propLocation || { lat: 55.6761, lng: 12.5683 };
   const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
+  const [draggingPointId, setDraggingPointId] = useState<string | null>(null);
+  const [isOverTrash, setIsOverTrash] = useState(false);
 
   // Filter logic for Game Ended state
   const mapPoints = points.filter(p => {
