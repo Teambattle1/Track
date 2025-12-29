@@ -86,6 +86,7 @@ interface GameMapProps {
   selectedPointId?: string | null;
   isRelocating?: boolean;
   relocateScopeCenter?: Coordinate | null; // Center point when relocating all tasks
+  relocateAllTaskIds?: string[]; // Task IDs selected for relocation
   onPointClick: (point: GamePoint) => void;
   onTeamClick?: (teamId: string) => void;
   onMapClick?: (coord: Coordinate) => void;
