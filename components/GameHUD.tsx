@@ -116,6 +116,9 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const [pinsToolboxPos, setPinsToolboxPos] = useState({ x: window.innerWidth - 300, y: 120 });
     const [isDraggingPinsBox, setIsDraggingPinsBox] = useState(false);
     const pinsDragOffset = useRef({ x: 0, y: 0 });
+    const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 300, y: 240 });
+    const [isDraggingShowBox, setIsDraggingShowBox] = useState(false);
+    const showDragOffset = useRef({ x: 0, y: 0 });
 
     // ... Drag handlers (omitted for brevity, assume unchanged) ...
     const handleBoxPointerDown = (e: React.PointerEvent) => {
