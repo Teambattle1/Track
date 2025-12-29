@@ -653,6 +653,54 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                         )}
                     </div>
 
+                    {/* --- DANGER ZONES --- */}
+                    <div className="mb-2 rounded-xl">
+                        <div
+                            onClick={() => setIsDangerZonesCollapsed(!isDangerZonesCollapsed)}
+                            className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+                        >
+                            <div className="flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-red-500" />
+                                <span className="text-xs font-black uppercase text-gray-700 dark:text-gray-200 tracking-wide">DANGER ZONES</span>
+                                <span className="text-[10px] font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded text-gray-500">{activeGame?.dangerZones?.length || 0}</span>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDangerZonesCollapsed ? '-rotate-90' : ''}`} />
+                        </div>
+
+                        {!isDangerZonesCollapsed && (
+                            <div className="mt-2 pl-2 border-l-2 border-gray-200 dark:border-gray-800 ml-3 space-y-2">
+                                {(activeGame?.dangerZones || []).length === 0 && (
+                                    <div className="text-[10px] text-gray-400 italic p-2">
+                                        No danger zones. Click a zone on the map to edit it.
+                                    </div>
+                                )}
+
+                                {(activeGame?.dangerZones || []).map(zone => (
+                                    <div key={zone.id} className="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center justify-between group hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors cursor-pointer">
+                                        <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                            <div className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-black flex-shrink-0">⚠</div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">{zone.title || 'Danger Zone'}</div>
+                                                <div className="text-[10px] text-gray-500">
+                                                    Radius: {zone.radius}m • Penalty: {zone.penalty}pts
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => onDeletePoint && onDeletePoint(zone.id)}
+                                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                title="Delete danger zone"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {/* --- PLAYGROUNDS --- */}
                     {playgroundGroups.map(pg => (
                         <SortableContext key={pg.id} items={pg.points.map(p => p.id)} strategy={verticalListSortingStrategy}>
