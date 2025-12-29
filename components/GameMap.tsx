@@ -589,7 +589,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                                     <div className="w-px h-10 bg-orange-400"></div>
                                     <div>
                                         <p className="text-[10px] text-orange-100 font-bold uppercase">Distance</p>
-                                        <p className="text-lg font-black">{Math.round(showScores)}m</p>
+                                        <p className="text-lg font-black">{Math.round(measuredDistance)}m</p>
                                     </div>
                                 </div>
                             </div>
