@@ -119,6 +119,19 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setIsDraggingBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId);
     };
 
+    const handleLocationBoxPointerDown = (e: React.PointerEvent) => {
+        e.stopPropagation(); e.preventDefault();
+        setIsDraggingLocationBox(true); locationDragOffset.current = { x: e.clientX - locationToolboxPos.x, y: e.clientY - locationToolboxPos.y };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+    const handleLocationBoxPointerMove = (e: React.PointerEvent) => {
+        if (!isDraggingLocationBox) return; e.stopPropagation(); e.preventDefault();
+        setLocationToolboxPos({ x: e.clientX - locationDragOffset.current.x, y: e.clientY - locationDragOffset.current.y });
+    };
+    const handleLocationBoxPointerUp = (e: React.PointerEvent) => {
+        setIsDraggingLocationBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+    };
+
     // Countdown Effect
     useEffect(() => {
         if (endingAt && !gameEnded) {
