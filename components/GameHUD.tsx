@@ -247,8 +247,13 @@ const GameHUD: React.FC<GameHUDProps> = ({
     };
 
     const handleLocationBoxPointerDown = (e: React.PointerEvent) => {
-        e.stopPropagation(); e.preventDefault();
-        setIsDraggingLocationBox(true); locationDragOffset.current = { x: e.clientX - locationToolboxPos.x, y: e.clientY - locationToolboxPos.y };
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingLocationBox(true);
+        locationDragOffset.current = { x: e.clientX - locationToolboxPos.x, y: e.clientY - locationToolboxPos.y };
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     };
     const handleLocationBoxPointerMove = (e: React.PointerEvent) => {
@@ -256,12 +261,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setLocationToolboxPos({ x: e.clientX - locationDragOffset.current.x, y: e.clientY - locationDragOffset.current.y });
     };
     const handleLocationBoxPointerUp = (e: React.PointerEvent) => {
-        setIsDraggingLocationBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId); saveToolbarPositions();
+        if (!isDraggingLocationBox) return;
+        setIsDraggingLocationBox(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
     };
 
     const handleTopToolbarPointerDown = (e: React.PointerEvent) => {
-        e.stopPropagation(); e.preventDefault();
-        setIsDraggingTopToolbar(true); topToolbarDragOffset.current = { x: e.clientX - topToolbarPos.x, y: e.clientY - topToolbarPos.y };
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingTopToolbar(true);
+        topToolbarDragOffset.current = { x: e.clientX - topToolbarPos.x, y: e.clientY - topToolbarPos.y };
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     };
     const handleTopToolbarPointerMove = (e: React.PointerEvent) => {
@@ -269,12 +286,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setTopToolbarPos({ x: e.clientX - topToolbarDragOffset.current.x, y: e.clientY - topToolbarDragOffset.current.y });
     };
     const handleTopToolbarPointerUp = (e: React.PointerEvent) => {
-        setIsDraggingTopToolbar(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId); saveToolbarPositions();
+        if (!isDraggingTopToolbar) return;
+        setIsDraggingTopToolbar(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
     };
 
     const handleViewSwitcherPointerDown = (e: React.PointerEvent) => {
-        e.stopPropagation(); e.preventDefault();
-        setIsDraggingViewSwitcher(true); viewSwitcherDragOffset.current = { x: e.clientX - viewSwitcherPos.x, y: e.clientY - viewSwitcherPos.y };
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingViewSwitcher(true);
+        viewSwitcherDragOffset.current = { x: e.clientX - viewSwitcherPos.x, y: e.clientY - viewSwitcherPos.y };
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     };
     const handleViewSwitcherPointerMove = (e: React.PointerEvent) => {
@@ -282,12 +311,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setViewSwitcherPos({ x: e.clientX - viewSwitcherDragOffset.current.x, y: e.clientY - viewSwitcherDragOffset.current.y });
     };
     const handleViewSwitcherPointerUp = (e: React.PointerEvent) => {
-        setIsDraggingViewSwitcher(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId); saveToolbarPositions();
+        if (!isDraggingViewSwitcher) return;
+        setIsDraggingViewSwitcher(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
     };
 
     const handlePinsBoxPointerDown = (e: React.PointerEvent) => {
-        e.stopPropagation(); e.preventDefault();
-        setIsDraggingPinsBox(true); pinsDragOffset.current = { x: e.clientX - pinsToolboxPos.x, y: e.clientY - pinsToolboxPos.y };
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingPinsBox(true);
+        pinsDragOffset.current = { x: e.clientX - pinsToolboxPos.x, y: e.clientY - pinsToolboxPos.y };
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     };
     const handlePinsBoxPointerMove = (e: React.PointerEvent) => {
@@ -295,12 +336,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setPinsToolboxPos({ x: e.clientX - pinsDragOffset.current.x, y: e.clientY - pinsDragOffset.current.y });
     };
     const handlePinsBoxPointerUp = (e: React.PointerEvent) => {
-        setIsDraggingPinsBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId); saveToolbarPositions();
+        if (!isDraggingPinsBox) return;
+        setIsDraggingPinsBox(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
     };
 
     const handleShowBoxPointerDown = (e: React.PointerEvent) => {
-        e.stopPropagation(); e.preventDefault();
-        setIsDraggingShowBox(true); showDragOffset.current = { x: e.clientX - showToolboxPos.x, y: e.clientY - showToolboxPos.y };
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingShowBox(true);
+        showDragOffset.current = { x: e.clientX - showToolboxPos.x, y: e.clientY - showToolboxPos.y };
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     };
     const handleShowBoxPointerMove = (e: React.PointerEvent) => {
@@ -308,7 +361,14 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setShowToolboxPos({ x: e.clientX - showDragOffset.current.x, y: e.clientY - showDragOffset.current.y });
     };
     const handleShowBoxPointerUp = (e: React.PointerEvent) => {
-        setIsDraggingShowBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId); saveToolbarPositions();
+        if (!isDraggingShowBox) return;
+        setIsDraggingShowBox(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
     };
 
     // Countdown Effect
