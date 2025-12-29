@@ -797,7 +797,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                     </button>
                                 </div>
                                 <div className="flex gap-1 text-center">
-                                    <div className="flex-1 text-[7px] font-black text-purple-100 uppercase tracking-widest leading-tight">ID</div>
+                                    <div className="flex-1 text-[7px] font-black text-purple-100 uppercase tracking-widest leading-tight">ORDER ID</div>
                                     <div className="flex-1 text-[7px] font-black text-purple-100 uppercase tracking-widest leading-tight">TITLE</div>
                                     <div className="flex-1 text-[7px] font-black text-purple-100 uppercase tracking-widest leading-tight">SCORES</div>
                                 </div>
