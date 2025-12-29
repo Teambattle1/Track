@@ -108,24 +108,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const [measureBoxPos, setMeasureBoxPos] = useState({ x: window.innerWidth / 2 - 80, y: 120 });
     const [isDraggingMeasure, setIsDraggingMeasure] = useState(false);
     const measureDragOffset = useRef({ x: 0, y: 0 });
-    // LOCATION toolbar - top left
-    const [locationToolboxPos, setLocationToolboxPos] = useState({ x: 50, y: 10 });
+    // LOCATION toolbar - top center-right (to the right of TOOLS)
+    const [locationToolboxPos, setLocationToolboxPos] = useState({ x: 520, y: 10 });
     const [isDraggingLocationBox, setIsDraggingLocationBox] = useState(false);
     const locationDragOffset = useRef({ x: 0, y: 0 });
-    // TOOLS toolbar - top center-left
-    const [topToolbarPos, setTopToolbarPos] = useState({ x: 280, y: 10 });
+    // TOOLS toolbar - top left
+    const [topToolbarPos, setTopToolbarPos] = useState({ x: 420, y: 10 });
     const [isDraggingTopToolbar, setIsDraggingTopToolbar] = useState(false);
     const topToolbarDragOffset = useRef({ x: 0, y: 0 });
     // MAPMODE toolbar - top center-right
     const [viewSwitcherPos, setViewSwitcherPos] = useState({ x: window.innerWidth - 220, y: 10 });
     const [isDraggingViewSwitcher, setIsDraggingViewSwitcher] = useState(false);
     const viewSwitcherDragOffset = useRef({ x: 0, y: 0 });
-    // PINS toolbar - right side, middle
-    const [pinsToolboxPos, setPinsToolboxPos] = useState({ x: window.innerWidth - 180, y: 120 });
+    // PINS toolbar - right side, upper (below MAPMODE)
+    const [pinsToolboxPos, setPinsToolboxPos] = useState({ x: window.innerWidth - 180, y: 75 });
     const [isDraggingPinsBox, setIsDraggingPinsBox] = useState(false);
     const pinsDragOffset = useRef({ x: 0, y: 0 });
-    // SHOW toolbar - right side, lower
-    const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 180, y: 280 });
+    // SHOW toolbar - right side, middle (below PINS)
+    const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 180, y: 140 });
     const [isDraggingShowBox, setIsDraggingShowBox] = useState(false);
     const showDragOffset = useRef({ x: 0, y: 0 });
 
