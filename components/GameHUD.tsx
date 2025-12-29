@@ -534,15 +534,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                     <Ruler className="w-4 h-4" />
                                 </button>
 
-                                {/* Scores Button */}
-                                <button
-                                    onClick={onToggleScores}
-                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${showScores ? 'bg-white text-yellow-600 border-white shadow-lg' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
-                                    title="Scores"
-                                >
-                                    <Trophy className="w-4 h-4" />
-                                </button>
-
                                 {/* Relocate Button */}
                                 <button
                                     onClick={onRelocateGame}
@@ -555,7 +546,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                             <div className="flex gap-1 text-center">
                                 <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">DANGER</div>
                                 <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">MEASURE</div>
-                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">SCORES</div>
                                 <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">RELOCATE</div>
                             </div>
                         </div>
@@ -563,13 +553,13 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 </div>
             )}
 
-            {/* Task ID & Title Toggle Buttons (Under PINS) */}
+            {/* SHOW Toolbar (Task ID, Title, Scores) */}
             {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
                 <div
                     className="absolute z-[1100] pointer-events-auto touch-none"
                     style={{ left: pinsToolboxPos.x, top: pinsToolboxPos.y + 120 }}
                 >
-                    <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl shadow-2xl p-1 group relative">
+                    <div className="bg-purple-600 border-2 border-purple-500 rounded-xl shadow-2xl p-1 group relative">
                         <div className="flex flex-col gap-1">
                             <div className="text-center">
                                 <h3 className="text-[9px] font-black uppercase tracking-widest text-white">SHOW</h3>
@@ -578,7 +568,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 {/* Toggle Task ID Button */}
                                 <button
                                     onClick={() => setShowTaskId(!showTaskId)}
-                                    className={`flex-1 rounded-lg transition-all border flex items-center justify-center group/toolbar relative text-[9px] font-black uppercase tracking-widest py-1.5 px-1 ${showTaskId ? 'bg-white text-yellow-600 border-white shadow-lg' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
+                                    className={`flex-1 rounded-lg transition-all border flex items-center justify-center group/toolbar relative text-[9px] font-black uppercase tracking-widest py-1.5 px-1 ${showTaskId ? 'bg-white text-purple-600 border-white shadow-lg' : 'bg-purple-700 text-purple-100 border-purple-600 hover:bg-purple-800 hover:text-white'}`}
                                     title="Toggle Task ID"
                                 >
                                     ID
@@ -587,10 +577,19 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 {/* Toggle Task Title Button */}
                                 <button
                                     onClick={() => setShowTaskTitle(!showTaskTitle)}
-                                    className={`flex-1 rounded-lg transition-all border flex items-center justify-center group/toolbar relative text-[9px] font-black uppercase tracking-widest py-1.5 px-1 ${showTaskTitle ? 'bg-white text-yellow-600 border-white shadow-lg' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
+                                    className={`flex-1 rounded-lg transition-all border flex items-center justify-center group/toolbar relative text-[9px] font-black uppercase tracking-widest py-1.5 px-1 ${showTaskTitle ? 'bg-white text-purple-600 border-white shadow-lg' : 'bg-purple-700 text-purple-100 border-purple-600 hover:bg-purple-800 hover:text-white'}`}
                                     title="Toggle Task Title"
                                 >
                                     TITLE
+                                </button>
+
+                                {/* Scores Button */}
+                                <button
+                                    onClick={onToggleScores}
+                                    className={`flex-1 rounded-lg transition-all border flex items-center justify-center group/toolbar relative text-[9px] font-black uppercase tracking-widest py-1.5 px-1 ${showScores ? 'bg-white text-purple-600 border-white shadow-lg' : 'bg-purple-700 text-purple-100 border-purple-600 hover:bg-purple-800 hover:text-white'}`}
+                                    title="Scores"
+                                >
+                                    <Trophy className="w-3 h-3" />
                                 </button>
                             </div>
                         </div>
