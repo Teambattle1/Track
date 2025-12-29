@@ -663,7 +663,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     </span>
                   </div>
 
-                  {/* Possible Answers (Multiple Choice Only) */}
+                  {/* Possible Answers (Multiple Choice) */}
                   {point.task.type === 'multiple_choice' && point.task.options && (
                     <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
                       <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-3">Possible Answers</span>
@@ -677,11 +677,48 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     </div>
                   )}
 
+                  {/* Slider Range Display */}
+                  {point.task.type === 'slider' && point.task.range && (
+                    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-3">Answer Range</span>
+                      <div className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-blue-100 dark:border-gray-700">
+                        <div className="flex items-center justify-between">
+                          <div className="text-center flex-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold">MIN</p>
+                            <p className="text-lg font-black text-blue-600 dark:text-blue-400">{point.task.range.min}</p>
+                          </div>
+                          <div className="text-gray-300 px-4">to</div>
+                          <div className="text-center flex-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold">MAX</p>
+                            <p className="text-lg font-black text-blue-600 dark:text-blue-400">{point.task.range.max}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Boolean Options Display */}
+                  {point.task.type === 'boolean' && (
+                    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-3">Possible Answers</span>
+                      <div className="flex gap-2">
+                        <div className="flex-1 p-2 rounded-lg bg-white dark:bg-gray-800 border border-blue-100 dark:border-gray-700 text-sm font-bold text-center text-green-600 dark:text-green-400">
+                          TRUE
+                        </div>
+                        <div className="flex-1 p-2 rounded-lg bg-white dark:bg-gray-800 border border-blue-100 dark:border-gray-700 text-sm font-bold text-center text-red-600 dark:text-red-400">
+                          FALSE
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Solution Block */}
                   <div className="mb-6 bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 rounded-lg p-4 animate-in fade-in">
-                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-2">Solution</span>
+                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-2">Solution / Correct Answer</span>
                     <p className="text-orange-900 dark:text-orange-200 font-medium">
-                        {point.task.answer || point.task.correctAnswers?.join(', ') || "See logic"}
+                        {point.task.type === 'slider' && point.task.correctAnswer ?
+                          `${point.task.correctAnswer}` :
+                          point.task.answer || point.task.correctAnswers?.join(', ') || (point.task.type === 'boolean' ? 'Check logic for bool answer' : "See logic")}
                     </p>
                   </div>
                 </>
