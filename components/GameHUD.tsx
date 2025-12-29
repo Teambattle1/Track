@@ -337,22 +337,22 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     onPointerMove={handleBoxPointerMove}
                     onPointerUp={handleBoxPointerUp}
                 >
-                    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-2xl shadow-2xl p-2 cursor-move group relative">
+                    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl p-1 cursor-move group relative">
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 rounded-full px-2 border border-slate-700 pointer-events-none">
-                            <GripHorizontal className="w-4 h-4" />
+                            <GripHorizontal className="w-3 h-3" />
                         </div>
                         {showLayerMenu && renderLayerMenu()}
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-2">
+                        <div className="flex flex-col gap-1">
+                            <div className="flex gap-1">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setShowLayerMenu(!showLayerMenu); }}
-                                    className={`w-12 h-12 rounded-xl flex items-center justify-center border hover:scale-105 transition-transform group/btn relative ${showLayerMenu ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center border hover:scale-105 transition-transform group/btn relative ${showLayerMenu ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
                                 >
-                                    <Layers className="w-6 h-6" />
+                                    <Layers className="w-5 h-5" />
                                 </button>
                             </div>
-                            <div className="flex gap-2 text-center">
-                                <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">LAYERS</div>
+                            <div className="flex gap-1 text-center">
+                                <div className="flex-1 text-[7px] font-black text-slate-400 uppercase tracking-widest leading-tight">LAYERS</div>
                             </div>
                         </div>
                     </div>
@@ -368,13 +368,13 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     onPointerMove={handleLocationBoxPointerMove}
                     onPointerUp={handleLocationBoxPointerUp}
                 >
-                    <div className="bg-green-900 border-2 border-green-700 rounded-2xl shadow-2xl p-3 cursor-move group relative">
+                    <div className="bg-green-900 border-2 border-green-700 rounded-xl shadow-2xl p-1.5 cursor-move group relative">
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-green-200 opacity-0 group-hover:opacity-100 transition-opacity bg-green-800 rounded-full px-2 border border-green-600 pointer-events-none">
-                            <GripHorizontal className="w-4 h-4" />
+                            <GripHorizontal className="w-3 h-3" />
                         </div>
-                        <div className="flex flex-col gap-3 min-w-[260px]">
+                        <div className="flex flex-col gap-1.5 min-w-[240px]">
                             <div className="text-center">
-                                <h3 className="text-sm font-black uppercase tracking-widest text-green-100 mb-2">Location</h3>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-green-100 mb-1">Location</h3>
                             </div>
                             <LocationSearch
                                 onSelectLocation={onSearchLocation}
@@ -384,16 +384,16 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 onToggleScores={onToggleScores}
                                 showScores={showScores}
                                 locateFeedback={locateFeedback}
-                                compact={false}
+                                compact={true}
                             />
                             {/* MAPSTYLE Button */}
                             <div className="relative">
                                 <button
                                     onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
-                                    className="w-full bg-green-700 hover:bg-green-600 text-green-100 border-2 border-green-600 rounded-xl p-3 font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2 group relative"
+                                    className="w-full bg-green-700 hover:bg-green-600 text-green-100 border border-green-600 rounded-lg p-1.5 font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-1 group relative"
                                     title="Map Styles"
                                 >
-                                    <Layers className="w-5 h-5" />
+                                    <Layers className="w-4 h-4" />
                                     MAPSTYLE
                                     {showLocationMapStyles && <div className="absolute top-0 right-2 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>}
                                 </button>
@@ -413,33 +413,33 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     onPointerMove={handleTopToolbarPointerMove}
                     onPointerUp={handleTopToolbarPointerUp}
                 >
-                    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-2xl shadow-2xl p-2 cursor-move group relative">
+                    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl p-1 cursor-move group relative">
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 rounded-full px-2 border border-slate-700 pointer-events-none">
-                            <GripHorizontal className="w-4 h-4" />
+                            <GripHorizontal className="w-3 h-3" />
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-2">
+                        <div className="flex flex-col gap-1">
+                            <div className="flex gap-1">
                                 {/* Chat Button */}
                                 <button
                                     onClick={onToggleChat}
-                                    className="w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                    className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
                                     title="Chat"
                                 >
-                                    <MessageSquare className="w-5 h-5" />
+                                    <MessageSquare className="w-4 h-4" />
                                 </button>
 
                                 {/* Settings Button */}
                                 <button
                                     onClick={onEditGameSettings}
-                                    className="w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                    className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
                                     title="Settings"
                                 >
-                                    <Settings className="w-5 h-5" />
+                                    <Settings className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="flex gap-2 text-center">
-                                <div className="flex-1 text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">CHAT</div>
-                                <div className="flex-1 text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">SETTINGS</div>
+                            <div className="flex gap-1 text-center">
+                                <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">CHAT</div>
+                                <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">SETTINGS</div>
                             </div>
                         </div>
                     </div>
@@ -455,41 +455,41 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     onPointerMove={handleViewSwitcherPointerMove}
                     onPointerUp={handleViewSwitcherPointerUp}
                 >
-                    <div className="bg-orange-600 border-2 border-orange-500 rounded-2xl shadow-2xl p-2 cursor-move group relative">
+                    <div className="bg-orange-600 border-2 border-orange-500 rounded-xl shadow-2xl p-1 cursor-move group relative">
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-orange-200 opacity-0 group-hover:opacity-100 transition-opacity bg-orange-700 rounded-full px-2 border border-orange-500 pointer-events-none">
-                            <GripHorizontal className="w-4 h-4" />
+                            <GripHorizontal className="w-3 h-3" />
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <div className="text-center mb-1">
-                                <h3 className="text-sm font-black uppercase tracking-widest text-white">MAPMODE</h3>
+                        <div className="flex flex-col gap-1">
+                            <div className="text-center">
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-white">MAPMODE</h3>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                                 <button
                                     onClick={() => onSetMode(GameMode.EDIT)}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.EDIT ? 'bg-white text-orange-600 border-white shadow-lg' : 'bg-orange-700 text-orange-100 border-orange-600 hover:bg-orange-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.EDIT ? 'bg-white text-orange-600 border-white shadow-lg' : 'bg-orange-700 text-orange-100 border-orange-600 hover:bg-orange-800 hover:text-white'}`}
                                     title="Editor View"
                                 >
-                                    <MapIcon className="w-5 h-5" />
+                                    <MapIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => onSetMode(GameMode.INSTRUCTOR)}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.INSTRUCTOR ? 'bg-white text-orange-600 border-white shadow-lg' : 'bg-orange-700 text-orange-100 border-orange-600 hover:bg-orange-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.INSTRUCTOR ? 'bg-white text-orange-600 border-white shadow-lg' : 'bg-orange-700 text-orange-100 border-orange-600 hover:bg-orange-800 hover:text-white'}`}
                                     title="Instructor View"
                                 >
-                                    <Shield className="w-5 h-5" />
+                                    <Shield className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => onSetMode(GameMode.PLAY)}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.PLAY ? 'bg-white text-orange-600 border-white shadow-lg' : 'bg-orange-700 text-orange-100 border-orange-600 hover:bg-orange-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.PLAY ? 'bg-white text-orange-600 border-white shadow-lg' : 'bg-orange-700 text-orange-100 border-orange-600 hover:bg-orange-800 hover:text-white'}`}
                                     title="Team View"
                                 >
-                                    <Users className="w-5 h-5" />
+                                    <Users className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="flex gap-2 text-center">
-                                <div className="flex-1 text-[9px] font-black text-orange-100 uppercase tracking-widest leading-tight">EDITOR</div>
-                                <div className="flex-1 text-[9px] font-black text-orange-100 uppercase tracking-widest leading-tight">INSTRUCTOR</div>
-                                <div className="flex-1 text-[9px] font-black text-orange-100 uppercase tracking-widest leading-tight">TEAM</div>
+                            <div className="flex gap-1 text-center">
+                                <div className="flex-1 text-[7px] font-black text-orange-100 uppercase tracking-widest leading-tight">EDITOR</div>
+                                <div className="flex-1 text-[7px] font-black text-orange-100 uppercase tracking-widest leading-tight">INSTRUCTOR</div>
+                                <div className="flex-1 text-[7px] font-black text-orange-100 uppercase tracking-widest leading-tight">TEAM</div>
                             </div>
                         </div>
                     </div>
@@ -505,56 +505,56 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     onPointerMove={handlePinsBoxPointerMove}
                     onPointerUp={handlePinsBoxPointerUp}
                 >
-                    <div className="bg-yellow-600 border-2 border-yellow-500 rounded-2xl shadow-2xl p-2 cursor-move group relative">
+                    <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl shadow-2xl p-1 cursor-move group relative">
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-yellow-200 opacity-0 group-hover:opacity-100 transition-opacity bg-yellow-700 rounded-full px-2 border border-yellow-500 pointer-events-none">
-                            <GripHorizontal className="w-4 h-4" />
+                            <GripHorizontal className="w-3 h-3" />
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <div className="text-center mb-1">
-                                <h3 className="text-sm font-black uppercase tracking-widest text-white">PINS</h3>
+                        <div className="flex flex-col gap-1">
+                            <div className="text-center">
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-white">PINS</h3>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                                 {/* Danger Zone Button */}
                                 <button
                                     onClick={onAddDangerZone}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white`}
                                     title="Danger Zone"
                                 >
-                                    <Skull className="w-5 h-5" />
+                                    <Skull className="w-4 h-4" />
                                 </button>
 
                                 {/* Measure Button */}
                                 <button
                                     onClick={onToggleMeasure}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative ${isMeasuring ? 'bg-white text-yellow-600 border-white shadow-lg' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${isMeasuring ? 'bg-white text-yellow-600 border-white shadow-lg' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
                                     title="Measure"
                                 >
-                                    <Ruler className="w-5 h-5" />
+                                    <Ruler className="w-4 h-4" />
                                 </button>
 
                                 {/* Scores Button */}
                                 <button
                                     onClick={onToggleScores}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative ${showScores ? 'bg-white text-yellow-600 border-white shadow-lg' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${showScores ? 'bg-white text-yellow-600 border-white shadow-lg' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
                                     title="Scores"
                                 >
-                                    <Trophy className="w-5 h-5" />
+                                    <Trophy className="w-4 h-4" />
                                 </button>
 
                                 {/* Relocate Button */}
                                 <button
                                     onClick={onRelocateGame}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative ${isRelocating ? 'bg-white text-yellow-600 border-white shadow-lg animate-pulse' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${isRelocating ? 'bg-white text-yellow-600 border-white shadow-lg animate-pulse' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
                                     title="Relocate"
                                 >
-                                    <Crosshair className="w-5 h-5" />
+                                    <Crosshair className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="flex gap-2 text-center">
-                                <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">DANGER</div>
-                                <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">MEASURE</div>
-                                <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">SCORES</div>
-                                <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">RELOCATE</div>
+                            <div className="flex gap-1 text-center">
+                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">DANGER</div>
+                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">MEASURE</div>
+                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">SCORES</div>
+                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">RELOCATE</div>
                             </div>
                         </div>
                     </div>
