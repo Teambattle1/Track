@@ -133,11 +133,28 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const saveDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isAdminRef = useRef(false);
 
-    // Load toolbar positions on mount (admin users only)
+    // Default positions (universal)
+    const DEFAULT_POSITIONS = {
+        location: { x: 20, y: 10 },
+        tools: { x: 520, y: 10 },
+        mapmode: { x: window.innerWidth - 210, y: 10 },
+        pins: { x: window.innerWidth - 180, y: 170 },
+        show: { x: window.innerWidth - 180, y: 360 }
+    };
+
+    // Load toolbar positions on mount and reset on new game (admin users only)
     useEffect(() => {
         const isAdmin = authUser?.role === 'Admin' || authUser?.role === 'Owner';
         isAdminRef.current = isAdmin;
 
+        // Always reset to defaults first when entering a new game
+        setLocationToolboxPos(DEFAULT_POSITIONS.location);
+        setTopToolbarPos(DEFAULT_POSITIONS.tools);
+        setViewSwitcherPos(DEFAULT_POSITIONS.mapmode);
+        setPinsToolboxPos(DEFAULT_POSITIONS.pins);
+        setShowToolboxPos(DEFAULT_POSITIONS.show);
+
+        // Then load user's saved positions if admin
         if (isAdmin && authUser?.id) {
             const loadPositions = async () => {
                 const settings = await db.fetchUserSettings(authUser.id);
@@ -152,7 +169,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
             };
             loadPositions();
         }
-    }, [authUser?.id, authUser?.role]);
+    }, [authUser?.id, authUser?.role, activeGameName]);
 
     // Debounced save function for toolbar positions
     const saveToolbarPositions = () => {
