@@ -409,13 +409,13 @@ const GameHUD: React.FC<GameHUDProps> = ({
                     onPointerMove={handleLocationBoxPointerMove}
                     onPointerUp={handleLocationBoxPointerUp}
                 >
-                    <div className="bg-green-900 border-2 border-green-700 rounded-xl shadow-2xl p-1.5 cursor-move group relative">
+                    <div className="bg-green-900 border-2 border-green-700 rounded-xl shadow-2xl p-1 cursor-move group relative">
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-green-200 opacity-0 group-hover:opacity-100 transition-opacity bg-green-800 rounded-full px-2 border border-green-600 pointer-events-none">
                             <GripHorizontal className="w-3 h-3" />
                         </div>
-                        <div className="flex flex-col gap-1.5 min-w-[240px]">
+                        <div className="flex flex-col gap-1 min-w-[240px]">
                             <div className="text-center">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-green-100 mb-1">Location</h3>
+                                <h3 className="text-[9px] font-black uppercase tracking-widest text-green-100">LOCATION</h3>
                             </div>
                             <LocationSearch
                                 onSelectLocation={onSearchLocation}
