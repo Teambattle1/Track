@@ -155,25 +155,52 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
         }));
 
         const finishReason = response.candidates?.[0]?.finishReason;
+        const candidate = response.candidates?.[0];
+
         console.log('[AI Background] Response received:', {
             hasCandidates: !!response.candidates,
             candidateCount: response.candidates?.length,
-            hasInlineData: !!response.candidates?.[0]?.content?.parts?.[0]?.inlineData,
+            hasInlineData: !!candidate?.content?.parts?.[0]?.inlineData,
             finishReason
         });
 
+        // Log the full response structure for debugging
+        console.log('[AI Background] Full response structure:', {
+            candidate: candidate ? {
+                finishReason: candidate.finishReason,
+                safetyRatings: candidate.safetyRatings,
+                content: candidate.content ? {
+                    role: candidate.content.role,
+                    parts: candidate.content.parts?.map(part => ({
+                        hasText: !!part.text,
+                        hasInlineData: !!part.inlineData,
+                        keys: Object.keys(part)
+                    }))
+                } : null
+            } : null,
+            responseKeys: Object.keys(response)
+        });
+
         // STOP means successful completion - extract the image
-        if (response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-            const inlineData = response.candidates[0].content.parts[0].inlineData;
+        if (candidate?.content?.parts?.[0]?.inlineData) {
+            const inlineData = candidate.content.parts[0].inlineData;
             console.log('[AI Background] Successfully generated image');
             return `data:${inlineData.mimeType};base64,${inlineData.data}`;
+        }
+
+        // Check if there's text instead of image
+        if (candidate?.content?.parts?.[0]?.text) {
+            console.warn('[AI Background] Received text instead of image:', candidate.content.parts[0].text);
         }
 
         // Only warn if it's actually blocked (not STOP)
         if (finishReason && finishReason !== 'STOP') {
             console.warn('[AI Background] Generation blocked. Reason:', finishReason);
-        } else if (finishReason === 'STOP' && !response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-            console.warn('[AI Background] Completed but no image data received');
+            if (candidate?.safetyRatings) {
+                console.warn('[AI Background] Safety ratings:', candidate.safetyRatings);
+            }
+        } else if (finishReason === 'STOP' && !candidate?.content?.parts?.[0]?.inlineData) {
+            console.warn('[AI Background] Completed but no image data received - API may not support image generation or prompt was interpreted as text');
         }
 
         return null;
