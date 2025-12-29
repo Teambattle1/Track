@@ -167,6 +167,19 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setIsDraggingViewSwitcher(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId);
     };
 
+    const handlePinsBoxPointerDown = (e: React.PointerEvent) => {
+        e.stopPropagation(); e.preventDefault();
+        setIsDraggingPinsBox(true); pinsDragOffset.current = { x: e.clientX - pinsToolboxPos.x, y: e.clientY - pinsToolboxPos.y };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+    const handlePinsBoxPointerMove = (e: React.PointerEvent) => {
+        if (!isDraggingPinsBox) return; e.stopPropagation(); e.preventDefault();
+        setPinsToolboxPos({ x: e.clientX - pinsDragOffset.current.x, y: e.clientY - pinsDragOffset.current.y });
+    };
+    const handlePinsBoxPointerUp = (e: React.PointerEvent) => {
+        setIsDraggingPinsBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+    };
+
     // Countdown Effect
     useEffect(() => {
         if (endingAt && !gameEnded) {
