@@ -535,6 +535,21 @@ const GameApp: React.FC = () => {
       }
   };
 
+  const handleUpdateGameTime = async (newEndTime: number) => {
+      if (!activeGame) return;
+
+      // Update the game with the new end time
+      const updatedGame = {
+          ...activeGame,
+          timerConfig: {
+              ...activeGame.timerConfig,
+              endTime: new Date(newEndTime).toISOString()
+          }
+      };
+
+      await updateActiveGame(updatedGame);
+  };
+
   const handleLocateMe = () => {
       if (!mapRef.current) return;
 
