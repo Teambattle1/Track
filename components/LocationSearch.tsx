@@ -28,6 +28,7 @@ interface LocationSearchProps {
   labelButtons?: boolean;
   locateFeedback?: string | null;
   compact?: boolean;
+  showLabels?: boolean;
 }
 
 const LocationSearch: React.FC<LocationSearchProps> = ({
