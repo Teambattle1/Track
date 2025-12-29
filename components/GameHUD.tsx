@@ -100,7 +100,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
     // Countdown State
     const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
 
-    // ... Toolbox state ...
+    // ... Toolbox state with default positions matching the image layout ...
     // Position toolbox below the settings button (circular buttons are ~104px total height + gap)
     const [toolboxPos, setToolboxPos] = useState({ x: window.innerWidth - 140, y: 180 });
     const [isDraggingBox, setIsDraggingBox] = useState(false);
@@ -108,19 +108,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const [measureBoxPos, setMeasureBoxPos] = useState({ x: window.innerWidth / 2 - 80, y: 120 });
     const [isDraggingMeasure, setIsDraggingMeasure] = useState(false);
     const measureDragOffset = useRef({ x: 0, y: 0 });
-    const [locationToolboxPos, setLocationToolboxPos] = useState({ x: 20, y: 80 });
+    // LOCATION toolbar - top left
+    const [locationToolboxPos, setLocationToolboxPos] = useState({ x: 20, y: 10 });
     const [isDraggingLocationBox, setIsDraggingLocationBox] = useState(false);
     const locationDragOffset = useRef({ x: 0, y: 0 });
-    const [topToolbarPos, setTopToolbarPos] = useState({ x: window.innerWidth / 2 - 90, y: 20 });
+    // TOOLS toolbar - top center-left
+    const [topToolbarPos, setTopToolbarPos] = useState({ x: 520, y: 10 });
     const [isDraggingTopToolbar, setIsDraggingTopToolbar] = useState(false);
     const topToolbarDragOffset = useRef({ x: 0, y: 0 });
-    const [viewSwitcherPos, setViewSwitcherPos] = useState({ x: window.innerWidth / 2 + 100, y: 20 });
+    // MAPMODE toolbar - top center-right
+    const [viewSwitcherPos, setViewSwitcherPos] = useState({ x: window.innerWidth - 210, y: 10 });
     const [isDraggingViewSwitcher, setIsDraggingViewSwitcher] = useState(false);
     const viewSwitcherDragOffset = useRef({ x: 0, y: 0 });
-    const [pinsToolboxPos, setPinsToolboxPos] = useState({ x: window.innerWidth - 300, y: 120 });
+    // PINS toolbar - right side, middle
+    const [pinsToolboxPos, setPinsToolboxPos] = useState({ x: window.innerWidth - 180, y: 170 });
     const [isDraggingPinsBox, setIsDraggingPinsBox] = useState(false);
     const pinsDragOffset = useRef({ x: 0, y: 0 });
-    const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 300, y: 240 });
+    // SHOW toolbar - right side, lower
+    const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 180, y: 360 });
     const [isDraggingShowBox, setIsDraggingShowBox] = useState(false);
     const showDragOffset = useRef({ x: 0, y: 0 });
 
