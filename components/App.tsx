@@ -466,18 +466,36 @@ const GameApp: React.FC = () => {
   };
 
   const handlePointClick = (point: GamePoint) => {
-      // When measuring is active, don't open task view - just add to measurement path
-      if (isMeasuring && point.location) {
-          setMeasurePath(prev => [...prev, point.location]);
-          // Calculate distance from previous point if exists
-          if (measurePath.length > 0) {
-              const lastPoint = measurePath[measurePath.length - 1];
-              const distance = haversineMeters(lastPoint, point.location);
-              setMeasuredDistance(prev => prev + distance);
+      // CRITICAL: When measuring mode is active, ONLY add to measurement path
+      // Do NOT open any modals or task views
+      if (isMeasuring) {
+          if (!point.location) {
+              console.warn('[Measure] Cannot measure task without location:', point.id);
+              return;
           }
-          return; // Don't open task view when measuring
+
+          // Add task location to measurement path
+          setMeasurePath(prev => {
+              const newPath = [...prev, point.location];
+
+              // Calculate cumulative distance
+              if (prev.length > 0) {
+                  const distance = haversineMeters(prev[prev.length - 1], point.location);
+                  setMeasuredDistance(prevDist => prevDist + distance);
+              }
+
+              // Update point count
+              setMeasurePointsCount(newPath.length);
+
+              console.log('[Measure] Added task to path. Total tasks:', newPath.length, 'Distance:', measuredDistance);
+              return newPath;
+          });
+
+          // CRITICAL: Stop execution here - do NOT open task modal
+          return;
       }
 
+      // Normal mode: Open task modal/editor
       if (mode === GameMode.EDIT) {
           setActiveTask(point);
       } else if (mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR || mode === GameMode.SIMULATION) {
@@ -594,52 +612,23 @@ const GameApp: React.FC = () => {
   };
 
   const handleToggleMeasure = () => {
-      if (isMeasuring && selectedMeasurePointIds.length > 0) {
-          // If already measuring with points selected, complete the measurement
-          handleCompleteMeasurement();
-      } else if (!isMeasuring) {
-          // Enter measuring mode
-          setIsMeasuring(true);
-          setMeasurePath(userLocation ? [userLocation] : []);
-          setSelectedMeasurePointIds([]);
-          setShowMeasureResult(false);
-      } else {
-          // Exit measuring mode without completing
+      if (isMeasuring) {
+          // Exit measuring mode - clear all measurement data
+          console.log('[Measure] Exiting measure mode');
           setIsMeasuring(false);
           setMeasurePath([]);
-          setSelectedMeasurePointIds([]);
-          setShowMeasureResult(false);
+          setMeasuredDistance(0);
+          setMeasurePointsCount(0);
+      } else {
+          // Enter measuring mode - start fresh
+          console.log('[Measure] Entering measure mode');
+          setIsMeasuring(true);
+          setMeasurePath([]);
+          setMeasuredDistance(0);
+          setMeasurePointsCount(0);
       }
   };
 
-  const handleCompleteMeasurement = () => {
-      if (selectedMeasurePointIds.length === 0 || !currentGameObj) {
-          console.warn('[Measure] No points selected');
-          return;
-      }
-
-      // Get selected points in the order they were selected
-      const selectedPoints = selectedMeasurePointIds
-          .map(id => currentGameObj.points.find(p => p.id === id))
-          .filter(Boolean) as GamePoint[];
-
-      if (selectedPoints.length === 0) return;
-
-      // Calculate total distance between consecutive points
-      let totalDistance = 0;
-      const measurementPath = selectedPoints.map(p => p.location);
-
-      for (let i = 0; i < measurementPath.length - 1; i++) {
-          const distance = haversineMeters(measurementPath[i], measurementPath[i + 1]);
-          totalDistance += distance;
-      }
-
-      setMeasurePath(measurementPath);
-      setMeasuredDistance(totalDistance);
-      setMeasurePointsCount(selectedPoints.length);
-      setShowMeasureResult(true);
-      console.log('[Measure] Completed measurement:', { taskCount: selectedPoints.length, totalDistance: totalDistance.toFixed(2) + 'm' });
-  };
 
   const handleLocateMe = () => {
       if (userLocation && mapRef.current) {
