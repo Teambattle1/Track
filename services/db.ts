@@ -687,6 +687,13 @@ export const sendAccountUserMessage = async (targetUserId: string, messageText: 
 // --- USER SETTINGS ---
 export const fetchUserSettings = async (userId: string): Promise<any | null> => {
     try {
+        // Skip database query if userId is not a valid UUID
+        // (hardcoded admin users like 'admin-thomas-permanent' are not UUIDs)
+        if (!isValidUUID(userId)) {
+            console.log(`[DB Service] Skipping fetchUserSettings for non-UUID user: ${userId}`);
+            return null;
+        }
+
         const { data, error } = await supabase
             .from('user_settings')
             .select('data')
