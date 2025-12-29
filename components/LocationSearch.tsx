@@ -94,14 +94,15 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
 
   return (
     <div className={`flex items-center gap-2 pointer-events-auto ${className}`}>
-      
+
       {/* Moved Action Buttons to the Left */}
       {onLocateMe && (
-        <ActionButton 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onLocateMe(); }} 
-            icon={Target} 
-            label="LOCATE" 
-            colorClass="" 
+        <ActionButton
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onLocateMe(); }}
+            icon={Target}
+            label="LOCATE"
+            colorClass=""
+            compact={compact}
         />
       )}
 
@@ -112,6 +113,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
             label="FIT"
             colorClass=""
             title="Fit map to all items"
+            compact={compact}
         />
       )}
 
@@ -122,10 +124,11 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
             label="SCORES"
             colorClass=""
             active={showScores}
+            compact={compact}
         />
       )}
 
-      {locateFeedback && (
+      {locateFeedback && !compact && (
         <div className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg whitespace-nowrap pointer-events-auto ${
           locateFeedback.includes('Error') ? 'bg-red-600/80 text-white' :
           locateFeedback.includes('Located') ? 'bg-green-600/80 text-white' :
@@ -136,7 +139,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       )}
 
       {!hideSearch && (
-        <div className="relative w-full min-w-[180px] sm:w-[260px] h-12">
+        <div className={`relative ${compact ? 'w-[140px]' : 'w-full min-w-[180px] sm:w-[260px]'} ${compact ? 'h-10' : 'h-12'}`}>
           <form onSubmit={handleSearch} className="group relative flex items-center h-full">
             <div className="absolute left-3.5 text-gray-400 group-focus-within:text-orange-500 transition-colors z-10">
               {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
