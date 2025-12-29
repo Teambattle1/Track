@@ -94,7 +94,6 @@ const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any }[] = [
     { id: 'satellite', label: 'Satellite', icon: Layers },
     { id: 'dark', label: 'Dark Mode', icon: MapIcon },
     { id: 'light', label: 'Light Mode', icon: Sun },
-    { id: 'voyager', label: 'Voyager', icon: Navigation },
     { id: 'clean', label: 'Clean', icon: MapIcon },
 ];
 
