@@ -759,12 +759,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     </button>
                 </div>
 
-                <div className="h-px bg-gray-200 dark:bg-gray-800 my-1"></div>
-
-                <button onClick={onOpenTaskMaster} className="w-full py-2 text-gray-500 dark:text-gray-400 font-bold hover:text-gray-800 dark:hover:text-gray-200 transition-colors flex items-center justify-center gap-2 text-xs uppercase tracking-wide">
-                    Manage Global Library <ChevronRight className="w-3 h-3" />
-                </button>
-
                 {!isGameTemplateMode && onSaveGameTemplate && (
                     <button
                         onClick={() => {
