@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GamePoint, TaskList, Coordinate, Game, GameMode, GameRoute } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw, Users, Shield, Route, Upload, EyeOff, Hash, PlayCircle } from 'lucide-react';
+import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, Eye, Filter, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, LayoutList, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw, Users, Shield, Route, Upload, EyeOff, Hash, PlayCircle } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -36,7 +36,7 @@ interface EditorDrawerProps {
   onHoverPoint?: (point: GamePoint | null) => void;
   onOpenPlaygroundEditor?: (playgroundId?: string) => void;
   initialExpanded?: boolean;
-  onAddTask?: (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId?: string) => void;
+  onAddTask?: (type: 'MANUAL' | 'AI' | 'LIBRARY' | 'TASKLIST', playgroundId?: string) => void;
   onExpandChange?: (expanded: boolean) => void; 
   isGameTemplateMode?: boolean; 
   onSaveGameTemplate?: () => void;
@@ -690,11 +690,12 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col gap-2 z-[60]">
                 <div className="grid grid-cols-3 gap-2">
-                    <button 
-                        onClick={() => onAddTask && onAddTask('MANUAL')}
+                    <button
+                        onClick={() => onAddTask && onAddTask('TASKLIST')}
                         className="py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[10px] uppercase tracking-wide border border-blue-200 dark:border-blue-800"
+                        title="Add tasks from a saved tasklist to your game"
                     >
-                        <FilePlus className="w-4 h-4" /> BLANK TASK
+                        <LayoutList className="w-4 h-4" /> FROM TASKLIST
                     </button>
                     <button 
                         onClick={() => onAddTask && onAddTask('AI')}
@@ -705,7 +706,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     <button
                         onClick={() => onAddTask && onAddTask('LIBRARY')}
                         className="py-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[10px] uppercase tracking-wide border border-indigo-200 dark:border-indigo-800"
-                        title="Add tasks from a saved tasklist to your game"
+                        title="Add tasks from the global library"
                     >
                         <Library className="w-4 h-4" /> FROM LIB
                     </button>

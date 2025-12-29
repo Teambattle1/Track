@@ -23,6 +23,7 @@ interface TaskMasterProps {
     games: Game[];
     activeGame?: Game | null;  // Active game to add tasks to
     initialTab?: 'LIBRARY' | 'LISTS' | 'TAGS' | 'CLIENT';
+    initialModal?: 'AI' | 'LOQUIZ' | null;
     onDeleteTagGlobally?: (tagName: string) => Promise<void>;
     onRenameTagGlobally?: (oldTag: string, newTag: string) => Promise<void>;
 }
@@ -36,6 +37,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     games,
     activeGame,
     initialTab = 'LIBRARY',
+    initialModal = null,
     onDeleteTagGlobally,
     onRenameTagGlobally
 }) => {
@@ -50,8 +52,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
 
     // Modals
-    const [showAiGen, setShowAiGen] = useState(false);
-    const [showLoquiz, setShowLoquiz] = useState(false);
+    const [showAiGen, setShowAiGen] = useState(initialModal === 'AI');
+    const [showLoquiz, setShowLoquiz] = useState(initialModal === 'LOQUIZ');
 
     // View State
     const [libraryViewMode, setLibraryViewMode] = useState<'grid' | 'list'>('grid');
