@@ -345,12 +345,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-2">
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); onAddDangerZone(); }}
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center border border-red-900/50 bg-slate-800 text-red-500 hover:bg-red-900/20 hover:text-red-400 hover:scale-105 transition-all group/btn relative"
-                                >
-                                    <Skull className="w-6 h-6" />
-                                </button>
-                                <button
                                     onClick={(e) => { e.stopPropagation(); setShowLayerMenu(!showLayerMenu); }}
                                     className={`w-12 h-12 rounded-xl flex items-center justify-center border hover:scale-105 transition-transform group/btn relative ${showLayerMenu ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
                                 >
@@ -358,7 +352,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 </button>
                             </div>
                             <div className="flex gap-2 text-center">
-                                <div className="flex-1 text-[8px] font-black text-red-400 uppercase tracking-widest leading-tight">DANGER</div>
                                 <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">LAYERS</div>
                             </div>
                         </div>
@@ -521,6 +514,15 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <h3 className="text-sm font-black uppercase tracking-widest text-white">PINS</h3>
                             </div>
                             <div className="flex gap-2">
+                                {/* Danger Zone Button */}
+                                <button
+                                    onClick={onAddDangerZone}
+                                    className={`w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white`}
+                                    title="Danger Zone"
+                                >
+                                    <Skull className="w-5 h-5" />
+                                </button>
+
                                 {/* Measure Button */}
                                 <button
                                     onClick={onToggleMeasure}
@@ -549,6 +551,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 </button>
                             </div>
                             <div className="flex gap-2 text-center">
+                                <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">DANGER</div>
                                 <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">MEASURE</div>
                                 <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">SCORES</div>
                                 <div className="flex-1 text-[9px] font-black text-yellow-100 uppercase tracking-widest leading-tight">RELOCATE</div>
