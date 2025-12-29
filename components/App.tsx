@@ -567,10 +567,25 @@ const GameApp: React.FC = () => {
               penaltyType: 'fixed'
           };
           updateActiveGame({ ...currentGameObj, dangerZones: [...(currentGameObj.dangerZones || []), newZone] }, "Added Danger Zone");
+          setActiveDangerZone(newZone);
           console.log('[Danger Zone] Zone added at:', center);
       } catch (error) {
           console.error('[Danger Zone] Error adding danger zone:', error);
       }
+  };
+
+  const handleSaveDangerZone = async (updatedZone: DangerZone) => {
+      if (!currentGameObj) return;
+      const updatedZones = (currentGameObj.dangerZones || []).map(z => z.id === updatedZone.id ? updatedZone : z);
+      await updateActiveGame({ ...currentGameObj, dangerZones: updatedZones }, "Updated Danger Zone");
+      setActiveDangerZone(null);
+  };
+
+  const handleDeleteDangerZone = async () => {
+      if (!currentGameObj || !activeDangerZone) return;
+      const updatedZones = (currentGameObj.dangerZones || []).filter(z => z.id !== activeDangerZone.id);
+      await updateActiveGame({ ...currentGameObj, dangerZones: updatedZones }, "Deleted Danger Zone");
+      setActiveDangerZone(null);
   };
 
   const handleUpdateRoute = (id: string, updates: Partial<GameRoute>) => {
