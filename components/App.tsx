@@ -564,7 +564,19 @@ const GameApp: React.FC = () => {
   };
 
   const handleRelocateGame = () => {
-      setIsRelocating(!isRelocating);
+      if (!isRelocating && currentGameObj && currentGameObj.points.length > 0) {
+          // Entering relocation mode - calculate scope center
+          const points = currentGameObj.points;
+          const centerLat = points.reduce((sum, p) => sum + p.location.lat, 0) / points.length;
+          const centerLng = points.reduce((sum, p) => sum + p.location.lng, 0) / points.length;
+          setRelocateScopeCenter({ lat: centerLat, lng: centerLng });
+          setIsRelocating(true);
+          console.log('[Relocate] Entered scope mode, center at:', { lat: centerLat, lng: centerLng });
+      } else {
+          // Exiting relocation mode
+          setIsRelocating(false);
+          setRelocateScopeCenter(null);
+      }
   };
 
   const handleToggleMeasure = () => {
