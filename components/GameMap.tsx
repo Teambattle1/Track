@@ -322,8 +322,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
         point.areaColor, // New: Override color if zone color set
         mode === GameMode.EDIT && point.isHiddenBeforeScan,
         showScore ? point.points : undefined,
-        point.iconUrl,
-        isRelocateSelected // Pass relocation selection state
+        point.iconUrl
     );
 
     // Only render markers for points with valid map locations (not playground-only points)
