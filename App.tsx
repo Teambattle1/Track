@@ -1428,6 +1428,7 @@ const GameApp: React.FC = () => {
                 measuredDistance={measuredDistance}
                 hoveredPointId={hoveredPointId}
                 hoveredDangerZoneId={hoveredDangerZoneId}
+                onPointHover={(point) => setMapHoveredPointId(point?.id || null)}
             />
         </div>
 
