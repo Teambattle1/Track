@@ -600,6 +600,25 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         setIsOverDeleteZone(false);
     };
 
+    // CRITICAL NULL CHECK: Prevent crashes if no playground exists
+    if (!activePlayground) {
+        return (
+            <div className="fixed inset-0 z-[5000] bg-[#0f172a] text-white flex items-center justify-center">
+                <div className="text-center p-8 bg-slate-900 rounded-2xl border border-red-500 shadow-2xl max-w-md">
+                    <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-black uppercase mb-2">No Playground Available</h2>
+                    <p className="text-slate-400 mb-6">This game has no playgrounds configured. Please create one to continue.</p>
+                    <button
+                        onClick={onClose}
+                        className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors"
+                    >
+                        CLOSE EDITOR
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="fixed inset-0 z-[5000] bg-[#0f172a] text-white flex flex-row overflow-hidden font-sans animate-in fade-in">
 
