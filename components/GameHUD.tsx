@@ -65,6 +65,9 @@ interface GameHUDProps {
     locateFeedback?: string | null;
     // User Auth Props
     authUser?: AuthUser | null;
+    // Game Props
+    activeGame?: Game | null;
+    onUpdateGame?: (game: Game) => Promise<void>;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any }[] = [
