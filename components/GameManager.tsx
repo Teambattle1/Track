@@ -96,29 +96,32 @@ const getGameStatusTab = (game: Game, now: Date): GameStatusTab => {
 };
 
 const GameSummaryCard: React.FC<{
-  game: Game;
+  game?: Game | null;
   isActive: boolean;
   onPrimaryAction: () => void;
   onDelete: () => void;
 }> = ({ game, isActive, onPrimaryAction, onDelete }) => {
-  // CRITICAL: Guard against undefined game data
-  if (!game) {
-    console.error('[GameSummaryCard] Received undefined game - this should never happen');
+  // CRITICAL: Guard against undefined/null game data - must be first check
+  if (!game || typeof game !== 'object') {
+    console.error('[GameSummaryCard] Invalid game data:', game);
     return null;
   }
 
-  // Additional safety checks
-  if (!game.points) {
-    console.warn('[GameSummaryCard] Game missing points array:', game.id);
-  }
-  if (!game.playgrounds) {
-    console.warn('[GameSummaryCard] Game missing playgrounds array:', game.id);
-  }
+  // Safely compute values with fallbacks
+  let sessionDate: Date;
+  let mapTaskCount: number;
+  let zoneCount: number;
 
-  const sessionDate = getGameSessionDate(game);
-
-  const mapTaskCount = (game.points || []).filter(p => !p.playgroundId && !p.isSectionHeader).length;
-  const zoneCount = (game.playgrounds || []).length;
+  try {
+    sessionDate = getGameSessionDate(game);
+    mapTaskCount = Array.isArray(game.points)
+      ? game.points.filter(p => p && !p.playgroundId && !p.isSectionHeader).length
+      : 0;
+    zoneCount = Array.isArray(game.playgrounds) ? game.playgrounds.length : 0;
+  } catch (error) {
+    console.error('[GameSummaryCard] Error computing game stats:', error, game);
+    return null;
+  }
 
   return (
     <div
