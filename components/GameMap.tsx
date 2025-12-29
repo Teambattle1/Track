@@ -277,25 +277,35 @@ const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
 });
 
 // Task Marker Component
-const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMove, onDelete }: any) => {
+const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMove, onDelete, onDragStart, onDragEnd }: any) => {
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
-    
+
     // Draggable in Edit & Instructor Mode (only when parent provides onMove handler)
     const draggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !!onMove;
-    
+
     const eventHandlers = React.useMemo(
         () => ({
             click: () => onClick(point),
+            dragstart(e: any) {
+                if (onDragStart) onDragStart(point.id);
+            },
             dragend(e: any) {
+                const shouldDelete = onDragEnd ? onDragEnd(point.id) : false;
+                // If onDragEnd returns true, it means delete - don't move
+                if (shouldDelete === true) {
+                    // Reset marker position to original
+                    e.target.setLatLng([point.location.lat, point.location.lng]);
+                    return;
+                }
+                // Otherwise move the marker
                 if (onMove) {
                     const latlng = e.target.getLatLng();
-                    // Convert Leaflet LatLng to plain Coordinate object
                     onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
                 }
             },
         }),
-        [point, onClick, onMove]
+        [point, onClick, onMove, onDragStart, onDragEnd]
     );
 
     const icon = getLeafletIcon(
