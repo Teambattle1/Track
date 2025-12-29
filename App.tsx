@@ -29,6 +29,7 @@ import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
 import MessagePopup from './components/MessagePopup';
 import Dashboard from './components/Dashboard';
+import DangerZoneModal from './components/DangerZoneModal';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
@@ -554,7 +555,9 @@ const GameApp: React.FC = () => {
           title: 'NEW ZONE',
           penaltyType: 'fixed'
       };
+      // Add to game and immediately open editor
       updateActiveGame({ ...activeGame, dangerZones: [...(activeGame.dangerZones || []), newZone] });
+      setActiveDangerZone(newZone);
   };
 
   const handleUpdateRoute = (id: string, updates: Partial<GameRoute>) => {
