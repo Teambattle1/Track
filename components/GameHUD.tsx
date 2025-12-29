@@ -186,6 +186,19 @@ const GameHUD: React.FC<GameHUDProps> = ({
         setIsDraggingPinsBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId);
     };
 
+    const handleShowBoxPointerDown = (e: React.PointerEvent) => {
+        e.stopPropagation(); e.preventDefault();
+        setIsDraggingShowBox(true); showDragOffset.current = { x: e.clientX - showToolboxPos.x, y: e.clientY - showToolboxPos.y };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+    const handleShowBoxPointerMove = (e: React.PointerEvent) => {
+        if (!isDraggingShowBox) return; e.stopPropagation(); e.preventDefault();
+        setShowToolboxPos({ x: e.clientX - showDragOffset.current.x, y: e.clientY - showDragOffset.current.y });
+    };
+    const handleShowBoxPointerUp = (e: React.PointerEvent) => {
+        setIsDraggingShowBox(false); (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+    };
+
     // Countdown Effect
     useEffect(() => {
         if (endingAt && !gameEnded) {
