@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Loader2, MapPin, X, Target, Maximize, Hash } from 'lucide-react';
+import { Search, Loader2, MapPin, X, Target, Maximize } from 'lucide-react';
 import { Coordinate } from '../types';
 import { isValidCoordinate } from '../utils/geo';
 
