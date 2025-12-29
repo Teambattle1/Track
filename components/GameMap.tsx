@@ -92,6 +92,8 @@ interface GameMapProps {
   onDeletePoint?: (pointId: string) => void;
   onPointHover?: (point: GamePoint | null) => void;
   showScores?: boolean;
+  showTaskId?: boolean;
+  showTaskTitle?: boolean;
   onZoneClick?: (zone: DangerZone) => void;
   gameEnded?: boolean; // New prop
   returnPath?: Coordinate[]; // New prop for return line
