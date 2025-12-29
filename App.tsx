@@ -1385,6 +1385,7 @@ const GameApp: React.FC = () => {
                 }}
                 accuracy={gpsAccuracy}
                 isRelocating={isRelocating}
+                isMeasuring={isMeasuring}
                 relocateScopeCenter={relocateScopeCenter}
                 relocateAllTaskIds={relocateAllTaskIds}
                 showScores={showScores}
