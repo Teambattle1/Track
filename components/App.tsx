@@ -474,19 +474,20 @@ const GameApp: React.FC = () => {
   };
 
   const handlePointClick = (point: GamePoint) => {
-      if (mode === GameMode.EDIT) {
-          if (isMeasuring) {
-              // In measuring mode, toggle the point selection
-              setSelectedMeasurePointIds(prev => {
-                  if (prev.includes(point.id)) {
-                      return prev.filter(id => id !== point.id);
-                  } else {
-                      return [...prev, point.id];
-                  }
-              });
-          } else {
-              setActiveTask(point);
+      // When measuring is active, don't open task view - just add to measurement path
+      if (isMeasuring && point.location) {
+          setMeasurePath(prev => [...prev, point.location]);
+          // Calculate distance from previous point if exists
+          if (measurePath.length > 0) {
+              const lastPoint = measurePath[measurePath.length - 1];
+              const distance = haversineMeters(lastPoint, point.location);
+              setMeasuredDistance(prev => prev + distance);
           }
+          return; // Don't open task view when measuring
+      }
+
+      if (mode === GameMode.EDIT) {
+          setActiveTask(point);
       } else if (mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR || mode === GameMode.SIMULATION) {
           // Logic Execution: On Open
           if (point.logic?.onOpen) {
