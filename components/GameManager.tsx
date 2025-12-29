@@ -89,6 +89,11 @@ const GameSummaryCard: React.FC<{
   onPrimaryAction: () => void;
   onDelete: () => void;
 }> = ({ game, isActive, onPrimaryAction, onDelete }) => {
+  // Guard against undefined game data
+  if (!game) {
+    return null;
+  }
+
   const sessionDate = getGameSessionDate(game);
 
   const mapTaskCount = (game.points || []).filter(p => !p.playgroundId && !p.isSectionHeader).length;
