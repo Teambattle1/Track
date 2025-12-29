@@ -4,15 +4,15 @@ import { Coordinate } from '../types';
 import { isValidCoordinate } from '../utils/geo';
 
 // Extracted to prevent re-mounting on every render
-const ActionButton = ({ onClick, icon: Icon, label, colorClass, active = false }: { onClick: (e: React.MouseEvent) => void, icon: any, label: string, colorClass: string, active?: boolean }) => (
-    <button 
+const ActionButton = ({ onClick, icon: Icon, label, colorClass, active = false, compact = false }: { onClick: (e: React.MouseEvent) => void, icon: any, label: string, colorClass: string, active?: boolean, compact?: boolean }) => (
+    <button
       type="button"
-      onClick={onClick} 
-      className={`w-12 h-12 rounded-2xl shadow-lg border flex flex-col items-center justify-center transition-all active:scale-95 group pointer-events-auto ${active ? 'bg-orange-600 border-orange-500 hover:bg-orange-500' : 'bg-[#1a202c] border-slate-700 hover:border-slate-500 hover:bg-slate-800'}`}
+      onClick={onClick}
+      className={`${compact ? 'w-10 h-10' : 'w-12 h-12'} rounded-2xl shadow-lg border flex flex-col items-center justify-center transition-all active:scale-95 group pointer-events-auto ${active ? 'bg-orange-600 border-orange-500 hover:bg-orange-500' : 'bg-[#1a202c] border-slate-700 hover:border-slate-500 hover:bg-slate-800'}`}
       title={label}
     >
-      <Icon className={`w-5 h-5 mb-0.5 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-      <span className={`text-[8px] font-black uppercase tracking-widest hidden sm:block leading-none ${active ? 'text-white' : 'text-slate-500 group-hover:text-white'}`}>{label}</span>
+      <Icon className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} ${compact ? 'mb-0' : 'mb-0.5'} ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+      {!compact && <span className={`text-[8px] font-black uppercase tracking-widest hidden sm:block leading-none ${active ? 'text-white' : 'text-slate-500 group-hover:text-white'}`}>{label}</span>}
     </button>
 );
 
