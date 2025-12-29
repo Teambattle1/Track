@@ -1516,7 +1516,7 @@ const GameApp: React.FC = () => {
             onToggleChat={() => setShowChatDrawer(!showChatDrawer)}
             unreadMessagesCount={0}
             onAddDangerZone={handleAddDangerZone}
-            activeDangerZone={mode === GameMode.PLAY ? currentDangerZone : null}
+            activeDangerZone={activeDangerZone}
             onEditGameSettings={() => { setGameToEdit(activeGame || null); setShowGameCreator(true); }}
             onOpenGameChooser={() => setShowGameChooser(true)}
             routes={currentGameObj?.routes}
