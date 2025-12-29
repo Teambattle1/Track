@@ -99,6 +99,7 @@ interface GameMapProps {
   showTaskId?: boolean;
   showTaskTitle?: boolean;
   onZoneClick?: (zone: DangerZone) => void;
+  onZoneMove?: (zoneId: string, newLoc: Coordinate) => void; // NEW: For dragging danger zones
   gameEnded?: boolean; // New prop
   returnPath?: Coordinate[]; // New prop for return line
   showUserLocation?: boolean; // New prop for user location visibility
