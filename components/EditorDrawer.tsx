@@ -283,6 +283,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   onSearchLocation,
   onHoverPoint,
   onHoverDangerZone,
+  mapHoveredPointId,
   onOpenPlaygroundEditor,
   initialExpanded = false,
   onAddTask,
