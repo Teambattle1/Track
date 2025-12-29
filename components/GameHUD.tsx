@@ -336,17 +336,10 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 >
                                     <Layers className="w-6 h-6" />
                                 </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onRelocateGame(); }}
-                                    className={`w-12 h-12 rounded-xl flex items-center justify-center border hover:scale-105 transition-transform group/btn relative ${isRelocating ? 'bg-green-600 border-green-400 text-white animate-pulse' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`}
-                                >
-                                    <Crosshair className="w-6 h-6" />
-                                </button>
                             </div>
                             <div className="flex gap-2 text-center">
                                 <div className="flex-1 text-[8px] font-black text-red-400 uppercase tracking-widest leading-tight">DANGER</div>
                                 <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">LAYERS</div>
-                                <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">RELOCATE</div>
                             </div>
                         </div>
                     </div>
