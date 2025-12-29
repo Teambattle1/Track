@@ -86,6 +86,8 @@ const GameApp: React.FC = () => {
   const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [showScores, setShowScores] = useState(false);
+  const [showTaskId, setShowTaskId] = useState(true); // Task order (001, 002, etc.)
+  const [showTaskTitle, setShowTaskTitle] = useState(false); // Task name/title
   const [currentDangerZone, setCurrentDangerZone] = useState<DangerZone | null>(null);
   const [activeDangerZone, setActiveDangerZone] = useState<DangerZone | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
