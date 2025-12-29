@@ -134,11 +134,12 @@ const GameStatsModal: React.FC<GameStatsModalProps> = ({ onClose, game, teams })
           ) : (
             <div className="space-y-3">
               {/* Header Row */}
-              <div className="grid grid-cols-5 gap-3 mb-4 px-4 py-2 bg-gray-800/50 rounded-lg">
+              <div className="grid grid-cols-6 gap-2 mb-4 px-4 py-2 bg-gray-800/50 rounded-lg">
                 <div className="text-xs font-black text-gray-400 uppercase tracking-wider">TEAM</div>
                 <div className="text-xs font-black text-gray-400 uppercase tracking-wider text-center">TASKS</div>
-                <div className="text-xs font-black text-gray-400 uppercase tracking-wider text-center">DISTANCE</div>
+                <div className="text-xs font-black text-gray-400 uppercase tracking-wider text-center">TOTAL KM</div>
                 <div className="text-xs font-black text-gray-400 uppercase tracking-wider text-center">TASK/KM</div>
+                <div className="text-xs font-black text-gray-400 uppercase tracking-wider text-center">MEMBERS</div>
                 <div className="text-xs font-black text-gray-400 uppercase tracking-wider text-right">SCORE</div>
               </div>
 
@@ -146,7 +147,7 @@ const GameStatsModal: React.FC<GameStatsModalProps> = ({ onClose, game, teams })
               {teamStats.map((stat, idx) => (
                 <div
                   key={stat.teamId}
-                  className="grid grid-cols-5 gap-3 p-4 rounded-xl border border-gray-700 bg-gray-800/50 hover:bg-gray-800 transition-colors"
+                  className="grid grid-cols-6 gap-2 p-4 rounded-xl border border-gray-700 bg-gray-800/50 hover:bg-gray-800 transition-colors"
                 >
                   {/* Team Name */}
                   <div className="flex items-center gap-2">
@@ -155,32 +156,40 @@ const GameStatsModal: React.FC<GameStatsModalProps> = ({ onClose, game, teams })
                       style={{ backgroundColor: stat.teamColor || '#3b82f6' }}
                     />
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-white truncate">{stat.teamName}</p>
-                      <p className="text-[10px] text-gray-500">#{idx + 1}</p>
+                      <p className="text-xs font-bold text-white truncate">{stat.teamName}</p>
+                      <p className="text-[9px] text-gray-500">#{idx + 1}</p>
                     </div>
                   </div>
 
                   {/* Tasks Completed */}
                   <div className="flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-xl font-black text-cyan-400">{stat.completedTasks}</p>
-                      <p className="text-[9px] text-gray-500 font-bold">TASKS</p>
+                      <p className="text-lg font-black text-cyan-400">{stat.completedTasks}</p>
+                      <p className="text-[8px] text-gray-500 font-bold">TASKS</p>
                     </div>
                   </div>
 
-                  {/* Distance */}
+                  {/* Total Distance (Captain × Members) */}
                   <div className="flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-xl font-black text-orange-400">{stat.distanceKm}</p>
-                      <p className="text-[9px] text-gray-500 font-bold">KM</p>
+                      <p className="text-lg font-black text-orange-400">{stat.totalDistanceKm}</p>
+                      <p className="text-[8px] text-gray-500 font-bold">KM</p>
                     </div>
                   </div>
 
                   {/* TASK/KM Ratio */}
                   <div className="flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-xl font-black text-green-400">{stat.taskPerKm}</p>
-                      <p className="text-[9px] text-gray-500 font-bold">RATIO</p>
+                      <p className="text-lg font-black text-green-400">{stat.taskPerKm}</p>
+                      <p className="text-[8px] text-gray-500 font-bold">RATIO</p>
+                    </div>
+                  </div>
+
+                  {/* Team Members Count */}
+                  <div className="flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-lg font-black text-purple-400">{stat.memberCount}</p>
+                      <Users className="w-3 h-3 text-purple-400 mx-auto mt-1" />
                     </div>
                   </div>
 
