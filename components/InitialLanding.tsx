@@ -363,19 +363,26 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           color="bg-teal-500"
                           onClick={() => setView('PREVIEW_SELECT')} 
                       />
-                      <NavCard 
-                          title="QR CODES" 
-                          subtitle="PRINT & DOWNLOAD" 
-                          icon={QrCode} 
+                      <NavCard
+                          title="QR CODES"
+                          subtitle="PRINT & DOWNLOAD"
+                          icon={QrCode}
                           color="bg-indigo-500"
                           onClick={() => onAction('QR_CODES')}
                       />
-                      <NavCard 
-                          title="DELETE GAMES" 
-                          subtitle="REMOVE SESSIONS" 
-                          icon={Trash2} 
+                      <NavCard
+                          title="GAMESTATS"
+                          subtitle="GAME ANALYTICS"
+                          icon={BarChart3}
+                          color="bg-cyan-500"
+                          onClick={() => onAction('GAMESTATS')}
+                      />
+                      <NavCard
+                          title="DELETE GAMES"
+                          subtitle="REMOVE SESSIONS"
+                          icon={Trash2}
                           color="bg-red-600"
-                          onClick={() => onAction('DELETE_GAMES')} 
+                          onClick={() => onAction('DELETE_GAMES')}
                       />
                   </div>
               );
