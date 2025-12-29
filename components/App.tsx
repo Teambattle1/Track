@@ -458,9 +458,14 @@ const GameApp: React.FC = () => {
   };
 
   const handleDeleteItem = async (pointId: string) => {
-      if (!currentGameObj) return;
+      if (!currentGameObj || !pointId) return;
+      console.log('[Delete] Deleting point:', pointId);
+
       const updatedPoints = currentGameObj.points.filter(p => p.id !== pointId);
       const updatedZones = (currentGameObj.dangerZones || []).filter(z => z.id !== pointId);
+
+      console.log('[Delete] Updated points count:', updatedPoints.length, 'Total before:', currentGameObj.points.length);
+
       await updateActiveGame({ ...currentGameObj, points: updatedPoints, dangerZones: updatedZones }, "Deleted Task/Zone");
       if (activeTask?.id === pointId) setActiveTask(null);
   };
