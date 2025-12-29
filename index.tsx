@@ -1,8 +1,8 @@
-
 import React, { ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { registerServiceWorker } from './utils/serviceWorkerRegistration';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -77,3 +77,12 @@ root.render(
     </ErrorBoundary>
   </React.StrictMode>
 );
+
+// Register Service Worker for offline support
+if (import.meta.env.PROD) {
+  registerServiceWorker().then(registration => {
+    if (registration) {
+      console.log('[App] Service Worker registered - Offline support enabled');
+    }
+  });
+}
