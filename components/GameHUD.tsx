@@ -110,6 +110,9 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const [viewSwitcherPos, setViewSwitcherPos] = useState({ x: window.innerWidth / 2 + 100, y: 20 });
     const [isDraggingViewSwitcher, setIsDraggingViewSwitcher] = useState(false);
     const viewSwitcherDragOffset = useRef({ x: 0, y: 0 });
+    const [pinsToolboxPos, setPinsToolboxPos] = useState({ x: window.innerWidth - 300, y: 120 });
+    const [isDraggingPinsBox, setIsDraggingPinsBox] = useState(false);
+    const pinsDragOffset = useRef({ x: 0, y: 0 });
 
     // ... Drag handlers (omitted for brevity, assume unchanged) ...
     const handleBoxPointerDown = (e: React.PointerEvent) => {
