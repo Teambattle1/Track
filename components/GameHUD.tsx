@@ -436,19 +436,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 locateFeedback={locateFeedback}
                                 compact={true}
                             />
-                            {/* MAPSTYLE Button */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
-                                    className="w-full bg-green-700 hover:bg-green-600 text-green-100 border border-green-600 rounded-lg p-1.5 font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-1 group relative"
-                                    title="Map Styles"
-                                >
-                                    <Layers className="w-4 h-4" />
-                                    MAPSTYLE
-                                    {showLocationMapStyles && <div className="absolute top-0 right-2 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>}
-                                </button>
-                                {showLocationMapStyles && renderLocationMapStylesMenu()}
-                            </div>
                         </div>
                     </div>
                 </div>
