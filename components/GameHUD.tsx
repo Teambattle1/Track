@@ -383,8 +383,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 onLocateMe={onLocateMe}
                                 onFitBounds={onFitBounds}
                                 hideSearch={false}
-                                onToggleScores={onToggleScores}
-                                showScores={showScores}
                                 locateFeedback={locateFeedback}
                                 compact={true}
                             />
