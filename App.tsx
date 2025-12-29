@@ -1119,11 +1119,33 @@ const GameApp: React.FC = () => {
               />
           )}
           {latestMessage && (
-              <MessagePopup 
-                  message={latestMessage.message} 
-                  sender={latestMessage.sender} 
+              <MessagePopup
+                  message={latestMessage.message}
+                  sender={latestMessage.sender}
                   onClose={() => setLatestMessage(null)}
                   isUrgent={latestMessage.isUrgent}
+              />
+          )}
+          {activeDangerZone && (
+              <DangerZoneModal
+                  zone={activeDangerZone}
+                  onSave={(updatedZone) => {
+                      if (!activeGame) return;
+                      const updatedZones = (activeGame.dangerZones || []).map(z =>
+                          z.id === updatedZone.id ? updatedZone : z
+                      );
+                      updateActiveGame({ ...activeGame, dangerZones: updatedZones });
+                      setActiveDangerZone(null);
+                  }}
+                  onDelete={() => {
+                      if (!activeGame) return;
+                      const updatedZones = (activeGame.dangerZones || []).filter(z =>
+                          z.id !== activeDangerZone.id
+                      );
+                      updateActiveGame({ ...activeGame, dangerZones: updatedZones });
+                      setActiveDangerZone(null);
+                  }}
+                  onClose={() => setActiveDangerZone(null)}
               />
           )}
       </>
