@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Ruler, X } from 'lucide-react';
 
 interface MeasureBoxProps {
@@ -7,8 +7,27 @@ interface MeasureBoxProps {
     onClose: () => void;
 }
 
+const STORAGE_KEY = 'measurebox-position';
+
 const MeasureBox: React.FC<MeasureBoxProps> = ({ taskCount, distance, onClose }) => {
-    const [position, setPosition] = useState({ x: 20, y: 100 });
+    // Load saved position from localStorage or default to bottom-left
+    const getInitialPosition = () => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch {
+                // If parsing fails, use default
+            }
+        }
+        // Default position: bottom-left of screen
+        return {
+            x: 20,
+            y: window.innerHeight - 280 // 280px is approximate height of measure box
+        };
+    };
+
+    const [position, setPosition] = useState(getInitialPosition);
     const [isDragging, setIsDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0 });
 
@@ -31,6 +50,8 @@ const MeasureBox: React.FC<MeasureBoxProps> = ({ taskCount, distance, onClose })
 
     const handleMouseUp = () => {
         setIsDragging(false);
+        // Save position to localStorage when drag ends
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
     };
 
     React.useEffect(() => {
@@ -42,7 +63,7 @@ const MeasureBox: React.FC<MeasureBoxProps> = ({ taskCount, distance, onClose })
                 window.removeEventListener('mouseup', handleMouseUp);
             };
         }
-    }, [isDragging]);
+    }, [isDragging, position]); // Add position to dependencies
 
     // Calculate time estimation
     const distanceKm = distance / 1000;
