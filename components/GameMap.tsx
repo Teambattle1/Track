@@ -441,7 +441,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
            prev.isRelocating === next.isRelocating; // CRITICAL: Re-render when relocate mode changes
 });
 
-const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode }: any) => {
+const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }: any) => {
     const draggable = mode === GameMode.EDIT && !!onMove;
 
     const dangerIcon = L.divIcon({
@@ -453,20 +453,31 @@ const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode }: any) => {
 
     return (
         <React.Fragment>
-            {/* Danger Zone Circle */}
+            {/* Danger Zone Circle with slow glow */}
             <Circle
                 center={[zone.location.lat, zone.location.lng]}
                 radius={zone.radius}
                 pathOptions={{
-                    color: '#ef4444',
-                    fillColor: '#ef4444',
-                    fillOpacity: 0.2,
-                    weight: 2,
-                    dashArray: '10, 10',
-                    className: 'animate-pulse-slow'
+                    color: isHovered ? '#ff0000' : '#ef4444',
+                    fillColor: isHovered ? '#ff0000' : '#ef4444',
+                    fillOpacity: isHovered ? 0.3 : 0.2,
+                    weight: isHovered ? 3 : 2,
+                    dashArray: '10, 10'
                 }}
                 interactive={false}
+                className="danger-zone-glow"
             />
+
+            {/* CSS for slow glow animation */}
+            <style>{`
+                @keyframes danger-glow {
+                    0%, 100% { opacity: 0.6; }
+                    50% { opacity: 1; }
+                }
+                .danger-zone-glow {
+                    animation: danger-glow 3s ease-in-out infinite;
+                }
+            `}</style>
 
             {/* Draggable Center Marker */}
             {mode === GameMode.EDIT && (
