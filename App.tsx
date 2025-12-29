@@ -447,12 +447,21 @@ const GameApp: React.FC = () => {
               return;
           }
 
-          console.log('[Measure] Task clicked in measure mode:', point.id);
+          console.log('[Measure] Task clicked in measure mode:', point.id, 'Location:', point.location);
 
           // Calculate distance BEFORE updating state
           const distanceToAdd = measurePath.length > 0
               ? haversineMeters(measurePath[measurePath.length - 1], point.location)
               : 0;
+
+          console.log('[Measure] Distance calculation:', {
+              previousPoint: measurePath[measurePath.length - 1],
+              currentPoint: point.location,
+              distanceToAdd: distanceToAdd.toFixed(2) + 'm'
+          });
+
+          // Add task ID to selected list (for visual feedback)
+          setSelectedMeasurePointIds(prev => [...prev, point.id]);
 
           // Add task location to measurement path
           setMeasurePath(prev => [...prev, point.location]);
@@ -460,14 +469,14 @@ const GameApp: React.FC = () => {
           // Update distance with the calculated value
           setMeasuredDistance(prev => {
               const newDistance = prev + distanceToAdd;
-              console.log('[Measure] Distance update:', prev, '+', distanceToAdd, '=', newDistance);
+              console.log('[Measure] Distance update:', prev.toFixed(2) + 'm', '+', distanceToAdd.toFixed(2) + 'm', '=', newDistance.toFixed(2) + 'm');
               return newDistance;
           });
 
           // Update point count
           setMeasurePointsCount(prev => prev + 1);
 
-          console.log('[Measure] Added task to path. Distance added:', distanceToAdd.toFixed(2) + 'm');
+          console.log('[Measure] ✓ Added task to path. Total distance:', (measuredDistance + distanceToAdd).toFixed(2) + 'm');
 
           // CRITICAL: Stop execution here - do NOT open task modal
           return;
@@ -482,9 +491,10 @@ const GameApp: React.FC = () => {
   };
 
   const handleMapClick = async (coord: Coordinate) => {
-      // Measure tool
+      // DISABLED: Measure tool should ONLY work with tasks, not random map points
+      // Users should click tasks to measure between them
       if (mode === GameMode.EDIT && isMeasuring) {
-          setMeasurePath(prev => [...prev, coord]);
+          console.log('[Measure] Map click ignored - please click tasks to measure between them');
           return;
       }
 
@@ -558,13 +568,15 @@ const GameApp: React.FC = () => {
           setMeasurePath([]);
           setMeasuredDistance(0);
           setMeasurePointsCount(0);
+          setSelectedMeasurePointIds([]);
       } else {
           // Enter measuring mode - start fresh
-          console.log('[Measure] Entering measure mode');
+          console.log('[Measure] Entering measure mode - Click tasks to measure distances');
           setIsMeasuring(true);
           setMeasurePath([]);
           setMeasuredDistance(0);
           setMeasurePointsCount(0);
+          setSelectedMeasurePointIds([]);
       }
   };
 
