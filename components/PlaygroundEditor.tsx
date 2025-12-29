@@ -2017,9 +2017,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             </button>
                         </div>
                         <div className="p-4 space-y-3">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                Describe the background you want. Examples: "forest at sunset", "futuristic city", "underwater temple", "medieval castle"
-                            </p>
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                    Describe the background you want. Examples: "forest at sunset", "futuristic city", "underwater temple", "medieval castle"
+                                </p>
+                                <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-2">
+                                    <p className="text-[9px] text-yellow-200 uppercase font-bold">⚠️ Troubleshooting</p>
+                                    <p className="text-[8px] text-yellow-300/80 mt-1">If generation fails, press F12 to open console and check logs. Image generation requires Gemini API with imagen model access.</p>
+                                </div>
+                            </div>
                             <div>
                                 <label className="text-[9px] font-bold uppercase text-slate-500 mb-1 block">Zone: <span className="text-orange-400">{activePlayground?.title || 'Unknown'}</span></label>
                                 <textarea
