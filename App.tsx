@@ -82,7 +82,9 @@ const GameApp: React.FC = () => {
   const [locateFeedback, setLocateFeedback] = useState<string | null>(null);
   const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(null); // Storing ID instead of Object to prevent stale state
   const [score, setScore] = useState(0);
-  const [showScores, setShowScores] = useState(false);
+  const [showScores, setShowScores] = useState(true);
+  const [showTaskId, setShowTaskId] = useState(true);
+  const [showTaskTitle, setShowTaskTitle] = useState(true);
   const [currentDangerZone, setCurrentDangerZone] = useState<DangerZone | null>(null);
   const [activeDangerZone, setActiveDangerZone] = useState<DangerZone | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
