@@ -663,8 +663,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     </span>
                   </div>
 
-                  {/* Possible Answers (Multiple Choice) */}
-                  {point.task.type === 'multiple_choice' && point.task.options && (
+                  {/* Possible Answers (Multiple Choice, Checkbox, Radio) */}
+                  {(point.task.type === 'multiple_choice' || point.task.type === 'checkbox' || point.task.type === 'radio') && point.task.options && (
                     <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
                       <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-3">Possible Answers</span>
                       <div className="space-y-2">
