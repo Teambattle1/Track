@@ -385,36 +385,50 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                 />
             )}
 
-            {/* Hover Highlight - Bright circle when hovered from list */}
+            {/* Radius Circle - Enhanced when hovered from list */}
+            {(mode === GameMode.EDIT || isUnlocked) && (
+                <Circle
+                    center={[point.location.lat, point.location.lng]}
+                    radius={point.radiusMeters}
+                    pathOptions={{
+                        color: isHovered ? '#f97316' : (isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6'))),
+                        fillColor: isHovered ? '#f97316' : (isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6'))),
+                        fillOpacity: isHovered ? 0.3 : 0.1,
+                        weight: isHovered ? 4 : 1,
+                        dashArray: isCompleted ? undefined : '5, 10',
+                        className: isHovered ? 'task-hover-pulse' : undefined
+                    }}
+                    interactive={false}
+                />
+            )}
+
+            {/* Extra glow ring when hovered */}
             {isHovered && (
                 <Circle
                     center={[point.location.lat, point.location.lng]}
-                    radius={point.radiusMeters * 1.2}
+                    radius={point.radiusMeters * 1.5}
                     pathOptions={{
-                        color: '#3b82f6',
-                        fillColor: '#3b82f6',
-                        fillOpacity: 0.2,
-                        weight: 3,
+                        color: '#f97316',
+                        fillColor: 'transparent',
+                        fillOpacity: 0,
+                        weight: 2,
                         className: 'animate-pulse'
                     }}
                     interactive={false}
                 />
             )}
 
-            {/* Radius Circle */}
-            {(mode === GameMode.EDIT || isUnlocked) && (
-                <Circle
-                    center={[point.location.lat, point.location.lng]}
-                    radius={point.radiusMeters}
-                    pathOptions={{
-                        color: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')),
-                        fillColor: isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6')),
-                        fillOpacity: 0.1,
-                        weight: 1,
-                        dashArray: isCompleted ? undefined : '5, 10'
-                    }}
-                    interactive={false}
-                />
+            {/* CSS for hover pulse animation */}
+            {isHovered && (
+                <style>{`
+                    @keyframes task-hover-pulse {
+                        0%, 100% { opacity: 0.8; }
+                        50% { opacity: 1; }
+                    }
+                    .task-hover-pulse {
+                        animation: task-hover-pulse 1s ease-in-out infinite;
+                    }
+                `}</style>
             )}
         </React.Fragment>
     );
