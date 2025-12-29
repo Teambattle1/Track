@@ -85,7 +85,7 @@ const GameApp: React.FC = () => {
   const { userLocation, gpsAccuracy } = useLocation();
   const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(null);
   const [score, setScore] = useState(0);
-  const [showScores, setShowScores] = useState(false);
+  const [showScores, setShowScores] = useState(true);
   const [showTaskId, setShowTaskId] = useState(true); // Task order (001, 002, etc.)
   const [showTaskTitle, setShowTaskTitle] = useState(true); // Task name/title
   const [currentDangerZone, setCurrentDangerZone] = useState<DangerZone | null>(null);
