@@ -717,6 +717,13 @@ export const fetchUserSettings = async (userId: string): Promise<any | null> => 
 
 export const saveUserSettings = async (userId: string, settings: any): Promise<boolean> => {
     try {
+        // Skip database operation if userId is not a valid UUID
+        // (hardcoded admin users like 'admin-thomas-permanent' are not UUIDs)
+        if (!isValidUUID(userId)) {
+            console.log(`[DB Service] Skipping saveUserSettings for non-UUID user: ${userId}`);
+            return true; // Return true to prevent error cascading
+        }
+
         const { error } = await supabase
             .from('user_settings')
             .upsert({
