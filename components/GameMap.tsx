@@ -632,6 +632,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                     mode={mode}
                     label={getLabel(point)}
                     showScore={showScores}
+                    isRelocateSelected={relocateAllTaskIds.includes(point.id)}
                     onClick={onPointClick}
                     onMove={onPointMove}
                     onDelete={onDeletePoint}
