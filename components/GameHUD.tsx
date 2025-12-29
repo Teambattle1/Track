@@ -379,7 +379,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-green-200 opacity-0 group-hover:opacity-100 transition-opacity bg-green-800 rounded-full px-2 border border-green-600 pointer-events-none">
                             <GripHorizontal className="w-4 h-4" />
                         </div>
-                        <div className="flex flex-col gap-2 min-w-[260px]">
+                        <div className="flex flex-col gap-3 min-w-[260px]">
                             <div className="text-center">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-green-100 mb-2">Location</h3>
                             </div>
@@ -393,6 +393,19 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 locateFeedback={locateFeedback}
                                 compact={false}
                             />
+                            {/* MAPSTYLE Button */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
+                                    className="w-full bg-green-700 hover:bg-green-600 text-green-100 border-2 border-green-600 rounded-xl p-3 font-black uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2 group relative"
+                                    title="Map Styles"
+                                >
+                                    <Layers className="w-5 h-5" />
+                                    MAPSTYLE
+                                    {showLocationMapStyles && <div className="absolute top-0 right-2 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>}
+                                </button>
+                                {showLocationMapStyles && renderLocationMapStylesMenu()}
+                            </div>
                         </div>
                     </div>
                 </div>
