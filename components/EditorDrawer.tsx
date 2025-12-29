@@ -71,7 +71,6 @@ const SortablePointItem: React.FC<{
   const [dragOffset, setDragOffset] = useState(0);
   const startX = useRef<number | null>(null);
   const itemRef = useRef<HTMLDivElement>(null);
-  const hoverTimeoutRef = useRef<number | null>(null);
   
   const style = { 
       transform: CSS.Transform.toString(transform), 
