@@ -286,7 +286,7 @@ const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
 });
 
 // Task Marker Component
-const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isMeasuring, isRelocating, onClick, onMove, onDelete, onDragStart, onDragEnd }: any) => {
+const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isHovered, isMeasuring, isRelocating, onClick, onMove, onDelete, onDragStart, onDragEnd }: any) => {
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
 
