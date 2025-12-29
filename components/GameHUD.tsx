@@ -424,6 +424,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 hideSearch={false}
                                 locateFeedback={locateFeedback}
                                 compact={true}
+                                showLabels={true}
                             />
                         </div>
                     </div>
