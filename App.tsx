@@ -1534,6 +1534,8 @@ const GameApp: React.FC = () => {
                     if (coords && coords.length > 0) mapRef.current?.fitBounds(coords);
                     else mapRef.current?.fitBounds(activeGame?.points || []);
                 }}
+                onHoverPoint={(point) => setHoveredPointId(point?.id || null)}
+                onHoverDangerZone={(zoneId) => setHoveredDangerZoneId(zoneId)}
                 onOpenPlaygroundEditor={async (playgroundId?: string) => {
                     if (playgroundId) {
                         setViewingPlaygroundId(playgroundId);
