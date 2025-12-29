@@ -112,6 +112,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     const [showLayerMenu, setShowLayerMenu] = useState(false);
     const [showMapStylesMenu, setShowMapStylesMenu] = useState(false);
     const [showLocationMapStyles, setShowLocationMapStyles] = useState(false);
+    const [showAdjustGameTime, setShowAdjustGameTime] = useState(false);
     // Countdown State
     const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
 
