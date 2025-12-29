@@ -133,13 +133,13 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const saveDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isAdminRef = useRef(false);
 
-    // Default positions (universal) - Updated to match new editor screen layout
+    // Default positions (universal) - Updated to match PICTURE 2 editor screen layout
     const DEFAULT_POSITIONS = {
-        location: { x: 50, y: 10 },
-        tools: { x: 280, y: 10 },
+        tools: { x: 420, y: 10 },
+        location: { x: 520, y: 10 },
         mapmode: { x: window.innerWidth - 220, y: 10 },
-        pins: { x: window.innerWidth - 180, y: 120 },
-        show: { x: window.innerWidth - 180, y: 280 }
+        pins: { x: window.innerWidth - 180, y: 75 },
+        show: { x: window.innerWidth - 180, y: 140 }
     };
 
     // Load toolbar positions on mount and reset on new game (admin users only)
