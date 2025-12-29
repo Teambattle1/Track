@@ -655,20 +655,28 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
 
         {/* Visual Trash Bin - Editor Mode Only */}
         {mode === GameMode.EDIT && (
-            <div className="absolute bottom-6 right-6 z-[1000] pointer-events-auto">
-                <div className="bg-slate-900 border-2 border-slate-700 text-slate-400 p-4 rounded-2xl shadow-xl hover:border-red-600 hover:text-red-500 hover:bg-slate-800 transition-all group">
+            <div
+                id="map-trash-bin"
+                className="absolute bottom-6 right-6 z-[1000] pointer-events-auto"
+                onMouseEnter={() => draggingPointId && setIsOverTrash(true)}
+                onMouseLeave={() => setIsOverTrash(false)}
+            >
+                <div className={`border-2 p-4 rounded-2xl shadow-xl transition-all ${
+                    isOverTrash
+                        ? 'bg-red-600 border-red-500 text-white scale-125 animate-pulse shadow-red-500/50'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-red-600 hover:text-red-500 hover:bg-slate-800'
+                }`}>
                     <div className="flex flex-col items-center gap-2">
-                        <Trash2 className="w-8 h-8 group-hover:animate-bounce" />
-                        <div className="text-[10px] font-black uppercase tracking-wider text-center">
-                            Drag<br/>Tasks<br/>Here
+                        <Trash2 className={`w-8 h-8 ${isOverTrash ? 'animate-bounce' : 'group-hover:animate-bounce'}`} />
+                        <div className="text-[10px] font-black uppercase tracking-wider text-center" dangerouslySetInnerHTML={{
+                            __html: isOverTrash ? 'DROP TO<br/>DELETE!' : 'Drag<br/>Tasks<br/>Here'
+                        }} />
+                    </div>
+                    {!isOverTrash && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            ✕
                         </div>
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                        ✕
-                    </div>
-                </div>
-                <div className="mt-2 text-center text-[9px] text-slate-500 font-bold max-w-[120px]">
-                    Use popup menu to delete tasks
+                    )}
                 </div>
             </div>
         )}
