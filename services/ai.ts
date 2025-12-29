@@ -159,6 +159,9 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
             }
         }));
 
+        // Log raw response for debugging
+        console.log('[AI Background] Raw API response:', JSON.stringify(response, null, 2));
+
         const finishReason = response.candidates?.[0]?.finishReason;
         const candidate = response.candidates?.[0];
 
