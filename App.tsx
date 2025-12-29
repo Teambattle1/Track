@@ -111,6 +111,7 @@ const GameApp: React.FC = () => {
   const [measurePath, setMeasurePath] = useState<Coordinate[]>([]);
   const [measuredDistance, setMeasuredDistance] = useState(0);
   const [measurePointsCount, setMeasurePointsCount] = useState(0);
+  const [selectedMeasurePointIds, setSelectedMeasurePointIds] = useState<string[]>([]);
 
   // --- INITIALIZATION ---
   useEffect(() => {
