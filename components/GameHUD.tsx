@@ -385,6 +385,35 @@ const GameHUD: React.FC<GameHUDProps> = ({
                 </div>
             )}
 
+            {/* Draggable Location Search Toolbox */}
+            {mode === GameMode.EDIT && (
+                <div
+                    className="absolute z-[1100] pointer-events-auto touch-none"
+                    style={{ left: locationToolboxPos.x, top: locationToolboxPos.y }}
+                    onPointerDown={handleLocationBoxPointerDown}
+                    onPointerMove={handleLocationBoxPointerMove}
+                    onPointerUp={handleLocationBoxPointerUp}
+                >
+                    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-2xl shadow-2xl p-3 cursor-move group relative">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 rounded-full px-2 border border-slate-700 pointer-events-none">
+                            <GripHorizontal className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col gap-3 min-w-[260px]">
+                            <LocationSearch
+                                onSelectLocation={onSearchLocation}
+                                onLocateMe={onLocateMe}
+                                onFitBounds={onFitBounds}
+                                hideSearch={false}
+                                onToggleScores={onToggleScores}
+                                showScores={showScores}
+                                locateFeedback={locateFeedback}
+                                compact={false}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Bottom Bar Logic ... */}
             {!isSkiMode && (
                 <div className="flex justify-between items-end pointer-events-none">
