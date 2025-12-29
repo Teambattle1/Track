@@ -98,6 +98,7 @@ const GameApp: React.FC = () => {
   // --- MAP STATE ---
   const [localMapStyle, setLocalMapStyle] = useState<MapStyleId>('osm');
   const mapRef = useRef<GameMapHandle>(null);
+  const gameHudRef = useRef<GameHUDHandle>(null);
   const geofenceCheckRunningRef = useRef(false);
   const [isRelocating, setIsRelocating] = useState(false);
   const [relocateScopeCenter, setRelocateScopeCenter] = useState<Coordinate | null>(null);
