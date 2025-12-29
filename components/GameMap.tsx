@@ -511,6 +511,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     measuredDistance = 0,
     onZoneClick,
     onZoneMove,
+    hoveredPointId,
+    hoveredDangerZoneId,
     gameEnded = false, // Destructure new prop
     returnPath,
     showUserLocation = true // Default true
