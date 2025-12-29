@@ -74,6 +74,7 @@ interface GameMapProps {
   teamTrails?: Record<string, Coordinate[]>;
   pointLabels?: Record<string, string>;
   measurePath?: Coordinate[];
+  measuredDistance?: number; // Distance in meters for measure mode
   logicLinks?: any[];
   playgroundMarkers?: any[];
   dangerZones?: DangerZone[];
