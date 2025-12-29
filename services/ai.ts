@@ -142,30 +142,43 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     const key = ensureApiKey();
     const ai = new GoogleGenAI({ apiKey: key });
 
-    const prompt = `Create a stunning, professional, high-quality game background image.
-${zoneName ? `Zone/Theme: ${zoneName}\n` : ''}Keywords: ${keywords}
-
-Requirements:
-- Aspect Ratio: 16:9 widescreen format
-- Visual Style: Vibrant, immersive, game-ready
-- Resolution: High quality, suitable for game environments
-- Composition: Engaging background that doesn't overpower UI elements
-- Colors: Rich, saturated, professional game aesthetic
-
-Make it a stunning background perfect for a game zone.`;
+    // Simplified prompt - more direct and game-focused
+    const theme = zoneName || keywords;
+    const prompt = `Create a vibrant game background: ${theme}. 16:9 widescreen format. Bright colors, engaging scene, suitable for adventure game zone.`;
 
     try {
+        console.log('[AI Background] Generating with prompt:', prompt);
         const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: prompt,
         }));
 
+        console.log('[AI Background] Response received:', {
+            hasCandidates: !!response.candidates,
+            candidateCount: response.candidates?.length,
+            hasInlineData: !!response.candidates?.[0]?.content?.parts?.[0]?.inlineData,
+            finishReason: response.candidates?.[0]?.finishReason
+        });
+
         if (response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-            return `data:${response.candidates[0].content.parts[0].inlineData.mimeType};base64,${response.candidates[0].content.parts[0].inlineData.data}`;
+            const inlineData = response.candidates[0].content.parts[0].inlineData;
+            console.log('[AI Background] Successfully generated image');
+            return `data:${inlineData.mimeType};base64,${inlineData.data}`;
         }
+
+        // Check for safety ratings or blocks
+        if (response.candidates?.[0]?.finishReason) {
+            console.warn('[AI Background] Generation blocked. Reason:', response.candidates[0].finishReason);
+        }
+
         return null;
-    } catch (e) {
-        console.error('Error generating AI background:', e);
+    } catch (e: any) {
+        console.error('[AI Background] Error generating:', e);
+        console.error('[AI Background] Error details:', {
+            message: e.message,
+            status: e.status,
+            errorDetails: e.errorDetails
+        });
         return null;
     }
 };
