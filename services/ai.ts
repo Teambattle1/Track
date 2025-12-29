@@ -150,10 +150,13 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
         console.log('[AI Background] Generating with keywords:', keywords);
         console.log('[AI Background] Full prompt:', prompt);
 
-        // Try with imagen-3.0-generate-001 model (Gemini's image generation model)
         const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'imagen-3.0-generate-001', // Changed from gemini-2.5-flash-image
+            model: 'gemini-2.5-flash-image',
             contents: prompt,
+            config: {
+                temperature: 0.9, // Higher creativity for images
+                candidateCount: 1
+            }
         }));
 
         const finishReason = response.candidates?.[0]?.finishReason;
