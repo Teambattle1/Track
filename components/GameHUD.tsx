@@ -178,6 +178,15 @@ const GameHUD: React.FC<GameHUDProps> = ({
         }, 500);
     };
 
+    // Cleanup debounce timer on unmount
+    useEffect(() => {
+        return () => {
+            if (saveDebounceTimerRef.current) {
+                clearTimeout(saveDebounceTimerRef.current);
+            }
+        };
+    }, []);
+
     // ... Drag handlers (omitted for brevity, assume unchanged) ...
     const handleBoxPointerDown = (e: React.PointerEvent) => {
         e.stopPropagation(); e.preventDefault();
