@@ -2023,7 +2023,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 </p>
                                 <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-2">
                                     <p className="text-[9px] text-yellow-200 uppercase font-bold">⚠️ Troubleshooting</p>
-                                    <p className="text-[8px] text-yellow-300/80 mt-1">If generation fails, press F12 to open console and check logs. Image generation requires Gemini API with imagen model access.</p>
+                                    <p className="text-[8px] text-yellow-300/80 mt-1">If generation fails, press F12 to open console and check logs. Image generation uses Imagen 3 and requires a Gemini API key with Imagen access enabled.</p>
                                 </div>
                             </div>
                             <div>
