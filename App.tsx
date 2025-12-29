@@ -1248,8 +1248,7 @@ const GameApp: React.FC = () => {
                             case 'PLAYGROUNDS': setShowPlaygroundManager(true); break;
                             case 'DATABASE': setShowDatabaseTools(true); break;
                             case 'GAMESTATS':
-                                // Placeholder for GameStats feature
-                                alert('Game Statistics feature coming soon!');
+                                setShowGameStats(true);
                                 break;
                             case 'CLIENT_PORTAL':
                                 setDashboardTab('client');
