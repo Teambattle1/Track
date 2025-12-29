@@ -85,7 +85,8 @@ const fetchInChunks = async <T>(
             );
 
             if (error) {
-                console.error(`[DB Service] Query error at offset ${offset}:`, error);
+                const errorMessage = typeof error === 'string' ? error : (error?.message || JSON.stringify(error));
+                console.error(`[DB Service] Query error at offset ${offset}:`, errorMessage);
                 throw error;
             }
 
