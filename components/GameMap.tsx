@@ -435,6 +435,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     onDeletePoint,
     onPointHover,
     showScores,
+    showTaskId,
+    showTaskTitle,
     onZoneClick,
     gameEnded = false, // Destructure new prop
     returnPath,
