@@ -115,8 +115,9 @@ const GameApp: React.FC = () => {
   const [selectedMeasurePointIds, setSelectedMeasurePointIds] = useState<string[]>([]);
 
   // --- HOVER STATE ---
-  const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
-  const [hoveredDangerZoneId, setHoveredDangerZoneId] = useState<string | null>(null);
+  const [hoveredPointId, setHoveredPointId] = useState<string | null>(null); // List → Map
+  const [hoveredDangerZoneId, setHoveredDangerZoneId] = useState<string | null>(null); // List → Map
+  const [mapHoveredPointId, setMapHoveredPointId] = useState<string | null>(null); // Map → List (reverse)
 
   // --- INITIALIZATION ---
   useEffect(() => {
