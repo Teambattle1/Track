@@ -300,7 +300,8 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [isExpanded, setIsExpanded] = useState(initialExpanded); 
   const [isSaved, setIsSaved] = useState(false);
   const [isRoutesCollapsed, setIsRoutesCollapsed] = useState(true);
-  
+  const [isDangerZonesCollapsed, setIsDangerZonesCollapsed] = useState(true);
+
   const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': false });
   const [activeAddMenu, setActiveAddMenu] = useState<string | null>(null);
   
