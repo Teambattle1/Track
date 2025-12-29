@@ -593,14 +593,21 @@ const GameApp: React.FC = () => {
   };
 
   const handleToggleMeasure = () => {
-      setIsMeasuring(!isMeasuring);
-      if (!isMeasuring) {
+      if (isMeasuring && selectedMeasurePointIds.length > 0) {
+          // If already measuring with points selected, complete the measurement
+          handleCompleteMeasurement();
+      } else if (!isMeasuring) {
+          // Enter measuring mode
+          setIsMeasuring(true);
           setMeasurePath(userLocation ? [userLocation] : []);
           setSelectedMeasurePointIds([]);
           setShowMeasureResult(false);
       } else {
+          // Exit measuring mode without completing
+          setIsMeasuring(false);
           setMeasurePath([]);
           setSelectedMeasurePointIds([]);
+          setShowMeasureResult(false);
       }
   };
 
