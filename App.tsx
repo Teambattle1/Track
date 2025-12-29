@@ -27,6 +27,7 @@ import ClientSubmissionView from './components/ClientSubmissionView';
 import GameCreator from './components/GameCreator';
 import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
+import GameStatsModal from './components/GameStatsModal';
 import MessagePopup from './components/MessagePopup';
 import Dashboard from './components/Dashboard';
 import DangerZoneModal from './components/DangerZoneModal';
