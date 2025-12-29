@@ -1,13 +1,20 @@
 # GameManager Null Safety Fix
 
 ## Issue
-**Error**: `TypeError: Cannot read properties of undefined (reading 'length')`  
-**Location**: `GameSummaryCard` component in `components/GameManager.tsx`
+**Error**: `TypeError: Cannot read properties of undefined (reading 'length')`
+**Location**: `GameSummaryCard` component in `components/GameManager.tsx` at line 155
 
 ## Root Cause
-The `games` array was containing `undefined` or `null` entries, which were not being filtered out before processing. This caused crashes when:
-1. Helper functions (`getGameStatusTab`, `isGameCompleted`, `getGameSessionDate`) tried to access properties on undefined games
-2. The `GameSummaryCard` component tried to render undefined game data
+**Critical Issue Found**: The JSX was directly accessing `game.points.length` without null-safe navigation:
+```typescript
+// BROKEN CODE (Line 155):
+{sessionDate.toLocaleDateString()} • {game.points.length} Tasks • ...
+```
+
+Even though there were null guards at the component level, the JSX was still trying to read `.length` on a potentially undefined `game.points` array. This caused crashes when:
+1. Games with missing or undefined `points` arrays were passed to the component
+2. The `games` array contained `null` or malformed entries
+3. Database queries returned incomplete game objects
 
 ## Solution
 
