@@ -600,7 +600,10 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                                             <button
                                                 onClick={() => {
                                                     setBatchAudioUrl(null);
-                                                    if (audioRef.current) audioRef.current.src = '';
+                                                    if (audioRef.current) {
+                                                        audioRef.current.removeAttribute('src');
+                                                        audioRef.current.load();
+                                                    }
                                                     setIsPlayingSound(false);
                                                 }}
                                                 className="p-1 text-slate-500 hover:text-red-500 transition-colors flex-shrink-0"
