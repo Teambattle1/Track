@@ -104,6 +104,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
             label="LOCATE"
             colorClass=""
             compact={compact}
+            showLabel={showLabels}
         />
       )}
 
@@ -115,6 +116,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
             colorClass=""
             title="Fit map to all items"
             compact={compact}
+            showLabel={showLabels}
         />
       )}
 
