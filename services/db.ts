@@ -411,7 +411,8 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
         const rows = await fetchInChunks(
             (offset, limit) => supabase.from('library').select('id, data').range(offset, offset + limit - 1),
             'fetchLibrary',
-            CHUNK_SIZE
+            LIBRARY_CHUNK_SIZE,
+            LIBRARY_FETCH_TIMEOUT_MS
         );
         return rows.map((row: any) => {
             // Handle both direct data objects and stringified JSON
@@ -420,10 +421,17 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
         });
     } catch (e) {
         logError('fetchLibrary', e);
-        // Try fallback: fetch without chunking as last resort
+        console.warn('[DB Service] Initial fetch failed for fetchLibrary. Check database connection and table permissions.');
+        // Try fallback: fetch a smaller batch without chunking as last resort
         try {
-            console.warn('[DB Service] Attempting fetchLibrary fallback (no chunking)...');
-            const { data, error } = await supabase.from('library').select('id, data').limit(10000);
+            console.warn('[DB Service] Attempting fetchLibrary fallback (small batch)...');
+            const { data, error } = await Promise.race([
+                supabase.from('library').select('id, data').limit(100).order('id', { ascending: false }),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Fallback query timeout after 10s')), 10000)
+                )
+            ]) as Promise<{ data: any[] | null; error: any }>;
+
             if (error) throw error;
             if (!data) return [];
             return data.map((row: any) => {
@@ -432,6 +440,7 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
             });
         } catch (fallbackError) {
             logError('fetchLibrary[fallback]', fallbackError);
+            console.warn('[DB Service] All fetchLibrary attempts failed. Returning empty array.');
             return [];
         }
     }
