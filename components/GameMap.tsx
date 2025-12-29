@@ -382,6 +382,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
            prev.point.isUnlocked === next.point.isUnlocked &&
            prev.point.isCompleted === next.point.isCompleted &&
            prev.mode === next.mode &&
+           prev.label === next.label && // CRITICAL: Include label to detect reorder changes
            prev.showScore === next.showScore &&
            prev.point.isHiddenBeforeScan === next.point.isHiddenBeforeScan &&
            prev.point.iconId === next.point.iconId &&
