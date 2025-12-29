@@ -230,7 +230,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
     );
 
     const renderLayerMenu = () => (
-        <div className="absolute right-full top-0 mr-3 bg-slate-900 border border-slate-700 rounded-xl p-2 min-w-[160px] shadow-xl animate-in slide-in-from-right-2 max-h-[60vh] overflow-y-auto custom-scrollbar pointer-events-auto z-[3000]">
+        <div className="fixed top-24 left-20 bg-slate-900 border border-slate-700 rounded-xl p-2 min-w-[200px] shadow-xl animate-in slide-in-from-top-2 max-h-[60vh] overflow-y-auto custom-scrollbar pointer-events-auto z-[3000]">
             <div className="mb-2 px-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">MAP STYLE</div>
             {MAP_STYLES_LIST.map((style) => (
                 <button
