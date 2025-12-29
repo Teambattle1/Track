@@ -650,12 +650,41 @@ const TaskModal: React.FC<TaskModalProps> = ({
               </div>
 
               {(isInstructor || isEditMode) && point.task.type !== 'timeline' && (
-                <div className="mb-6 bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 rounded-lg p-3 animate-in fade-in">
-                  <span className="text-xs font-bold text-orange-500 dark:text-orange-400 uppercase tracking-wider">Solution</span>
-                  <p className="text-orange-900 dark:text-orange-200 font-medium mt-1">
-                      {point.task.answer || point.task.correctAnswers?.join(', ') || "See logic"}
-                  </p>
-                </div>
+                <>
+                  {/* Question Type Badge */}
+                  <div className="mb-4 flex gap-2 items-center flex-wrap">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      {point.task.type === 'multiple_choice' ? '📋 Multiple Choice' :
+                       point.task.type === 'text' ? '📝 Text Input' :
+                       point.task.type === 'slider' ? '🎚️ Slider' :
+                       point.task.type === 'boolean' ? '✓ True/False' :
+                       point.task.type === 'timeline' ? '📅 Timeline' :
+                       point.task.type}
+                    </span>
+                  </div>
+
+                  {/* Possible Answers (Multiple Choice Only) */}
+                  {point.task.type === 'multiple_choice' && point.task.options && (
+                    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-3">Possible Answers</span>
+                      <div className="space-y-2">
+                        {point.task.options.map((option, idx) => (
+                          <div key={idx} className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-blue-100 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                            {option}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Solution Block */}
+                  <div className="mb-6 bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 rounded-lg p-4 animate-in fade-in">
+                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-2">Solution</span>
+                    <p className="text-orange-900 dark:text-orange-200 font-medium">
+                        {point.task.answer || point.task.correctAnswers?.join(', ') || "See logic"}
+                    </p>
+                  </div>
+                </>
               )}
 
               {!point.isCompleted && !isEditMode ? (
