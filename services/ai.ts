@@ -142,33 +142,38 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     const key = ensureApiKey();
     const ai = new GoogleGenAI({ apiKey: key });
 
-    // Simplified prompt - more direct and game-focused
-    const theme = zoneName || keywords;
-    const prompt = `Create a vibrant game background: ${theme}. 16:9 widescreen format. Bright colors, engaging scene, suitable for adventure game zone.`;
+    // Use the keywords provided by the user and optionally include zone name for context
+    const zoneContext = zoneName ? ` for game zone "${zoneName}"` : '';
+    const prompt = `Create a vibrant widescreen game background image${zoneContext}. Theme and elements: ${keywords}. 16:9 landscape format. Bright, colorful, engaging scene suitable for adventure game.`;
 
     try {
-        console.log('[AI Background] Generating with prompt:', prompt);
+        console.log('[AI Background] Generating with keywords:', keywords);
+        console.log('[AI Background] Full prompt:', prompt);
         const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: prompt,
         }));
 
+        const finishReason = response.candidates?.[0]?.finishReason;
         console.log('[AI Background] Response received:', {
             hasCandidates: !!response.candidates,
             candidateCount: response.candidates?.length,
             hasInlineData: !!response.candidates?.[0]?.content?.parts?.[0]?.inlineData,
-            finishReason: response.candidates?.[0]?.finishReason
+            finishReason
         });
 
+        // STOP means successful completion - extract the image
         if (response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
             const inlineData = response.candidates[0].content.parts[0].inlineData;
             console.log('[AI Background] Successfully generated image');
             return `data:${inlineData.mimeType};base64,${inlineData.data}`;
         }
 
-        // Check for safety ratings or blocks
-        if (response.candidates?.[0]?.finishReason) {
-            console.warn('[AI Background] Generation blocked. Reason:', response.candidates[0].finishReason);
+        // Only warn if it's actually blocked (not STOP)
+        if (finishReason && finishReason !== 'STOP') {
+            console.warn('[AI Background] Generation blocked. Reason:', finishReason);
+        } else if (finishReason === 'STOP' && !response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+            console.warn('[AI Background] Completed but no image data received');
         }
 
         return null;
