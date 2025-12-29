@@ -104,7 +104,13 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const [locationToolboxPos, setLocationToolboxPos] = useState({ x: 20, y: 80 });
     const [isDraggingLocationBox, setIsDraggingLocationBox] = useState(false);
     const locationDragOffset = useRef({ x: 0, y: 0 });
-    
+    const [topToolbarPos, setTopToolbarPos] = useState({ x: window.innerWidth / 2 - 90, y: 20 });
+    const [isDraggingTopToolbar, setIsDraggingTopToolbar] = useState(false);
+    const topToolbarDragOffset = useRef({ x: 0, y: 0 });
+    const [viewSwitcherPos, setViewSwitcherPos] = useState({ x: window.innerWidth / 2 + 100, y: 20 });
+    const [isDraggingViewSwitcher, setIsDraggingViewSwitcher] = useState(false);
+    const viewSwitcherDragOffset = useRef({ x: 0, y: 0 });
+
     // ... Drag handlers (omitted for brevity, assume unchanged) ...
     const handleBoxPointerDown = (e: React.PointerEvent) => {
         e.stopPropagation(); e.preventDefault();
