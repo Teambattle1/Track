@@ -91,7 +91,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
     mapStyle, onSetMapStyle, language, onBackToHub, activeGameName, onOpenInstructorDashboard,
     isMeasuring, onToggleMeasure, measuredDistance, measurePointsCount = 0, playgrounds, onOpenPlayground, onOpenTeamDashboard,
     onRelocateGame, isRelocating, timerConfig, onFitBounds, onLocateMe, onSearchLocation,
-    isDrawerExpanded, showScores, onToggleScores, hiddenPlaygroundIds, onToggleChat, unreadMessagesCount,
+    isDrawerExpanded, showScores, onToggleScores, showTaskId, onToggleTaskId, showTaskTitle, onToggleTaskTitle, hiddenPlaygroundIds, onToggleChat, unreadMessagesCount,
     targetPlaygroundId, onAddDangerZone, activeDangerZone, onEditGameSettings, onOpenGameChooser,
     routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true, locateFeedback,
     authUser, activeGame, onUpdateGame
