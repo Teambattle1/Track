@@ -141,23 +141,23 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       {!hideSearch && (
         <div className={`relative ${compact ? 'w-[140px]' : 'w-full min-w-[180px] sm:w-[260px]'} ${compact ? 'h-10' : 'h-12'}`}>
           <form onSubmit={handleSearch} className="group relative flex items-center h-full">
-            <div className="absolute left-3.5 text-gray-400 group-focus-within:text-orange-500 transition-colors z-10">
-              {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            <div className={`absolute text-gray-400 group-focus-within:text-orange-500 transition-colors z-10 ${compact ? 'left-2.5' : 'left-3.5'}`}>
+              {isSearching ? <Loader2 className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} animate-spin`} /> : <Search className={compact ? 'w-3 h-3' : 'w-4 h-4'} />}
             </div>
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search location..."
-              className="w-full h-full pl-10 pr-10 bg-[#1a202c] dark:bg-gray-900 backdrop-blur-md border-2 border-slate-700 hover:border-slate-600 rounded-2xl shadow-xl text-xs sm:text-sm outline-none focus:border-orange-500 transition-all text-white font-bold placeholder:text-slate-500"
+              placeholder={compact ? "Search..." : "Search location..."}
+              className={`w-full h-full ${compact ? 'pl-8 pr-8' : 'pl-10 pr-10'} bg-[#1a202c] dark:bg-gray-900 backdrop-blur-md border-2 border-slate-700 hover:border-slate-600 rounded-2xl shadow-xl ${compact ? 'text-[11px]' : 'text-xs sm:text-sm'} outline-none focus:border-orange-500 transition-all text-white font-bold placeholder:text-slate-500`}
             />
             {query && (
-              <button 
-                type="button" 
-                onClick={() => { setQuery(''); setResults([]); setShowResults(false); }} 
-                className="absolute right-3 p-1.5 text-gray-400 hover:text-white z-10 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+              <button
+                type="button"
+                onClick={() => { setQuery(''); setResults([]); setShowResults(false); }}
+                className={`absolute ${compact ? 'right-2' : 'right-3'} p-1.5 text-gray-400 hover:text-white z-10 bg-white/5 hover:bg-white/10 rounded-lg transition-colors`}
               >
-                <X className="w-3.5 h-3.5" />
+                <X className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
               </button>
             )}
           </form>
