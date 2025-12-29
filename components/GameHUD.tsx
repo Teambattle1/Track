@@ -101,6 +101,9 @@ const GameHUD: React.FC<GameHUDProps> = ({
     const [measureBoxPos, setMeasureBoxPos] = useState({ x: window.innerWidth / 2 - 80, y: 120 });
     const [isDraggingMeasure, setIsDraggingMeasure] = useState(false);
     const measureDragOffset = useRef({ x: 0, y: 0 });
+    const [locationToolboxPos, setLocationToolboxPos] = useState({ x: 20, y: 80 });
+    const [isDraggingLocationBox, setIsDraggingLocationBox] = useState(false);
+    const locationDragOffset = useRef({ x: 0, y: 0 });
     
     // ... Drag handlers (omitted for brevity, assume unchanged) ...
     const handleBoxPointerDown = (e: React.PointerEvent) => {
