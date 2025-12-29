@@ -34,8 +34,6 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
     className = "",
     hideSearch = false,
     labelButtons = false,
-    onToggleScores,
-    showScores,
     locateFeedback,
     compact = false
 }) => {
