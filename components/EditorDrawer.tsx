@@ -164,7 +164,7 @@ const SortablePointItem: React.FC<{
                 transform: transform ? CSS.Transform.toString(transform) : `translateX(${dragOffset}px)`
             }} 
             className={`bg-white dark:bg-gray-800 border-y border-r border-gray-100 dark:border-gray-700 rounded-r-xl p-2 flex items-center gap-2 transition-colors cursor-pointer relative z-10
-                ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-750'}
+                ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' : isMapHovered ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-750'}
             `}
             onClick={() => onSelect(point)}
             onTouchStart={handleTouchStart}
@@ -586,12 +586,13 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                             <div className="space-y-1">
                                 {mapPoints.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks on map yet. Drop items here or Add New.</div>}
                                 {mapPoints.map((point, index) => (
-                                    <SortablePointItem 
-                                        key={point.id} 
-                                        point={point} 
+                                    <SortablePointItem
+                                        key={point.id}
+                                        point={point}
                                         index={index}
                                         isSelected={point.id === selectedPointId}
-                                        isDragDisabled={isFiltered} 
+                                        isMapHovered={point.id === mapHoveredPointId}
+                                        isDragDisabled={isFiltered}
                                         onEdit={onEditPoint}
                                         onSelect={onSelectPoint}
                                         onDelete={onDeletePoint}
