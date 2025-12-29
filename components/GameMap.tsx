@@ -283,17 +283,35 @@ const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
 });
 
 // Task Marker Component
-const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, onClick, onMove, onDelete, onDragStart, onDragEnd }: any) => {
+const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isMeasuring, isRelocating, onClick, onMove, onDelete, onDragStart, onDragEnd }: any) => {
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
 
     // Draggable in Edit & Instructor Mode (only when parent provides onMove handler)
-    const draggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !!onMove;
+    // CRITICAL: Disable dragging when tools are active
+    const draggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !!onMove && !isMeasuring && !isRelocating;
 
     const eventHandlers = React.useMemo(
         () => ({
-            click: () => onClick(point),
+            click: (e: any) => {
+                // CRITICAL: When tools are active, always call onClick
+                // The onClick handler (handlePointClick in App.tsx) will handle the tool logic
+                console.log('[MapTaskMarker] Click event:', {
+                    pointId: point.id,
+                    isMeasuring,
+                    isRelocating,
+                    mode
+                });
+                onClick(point);
+            },
             dragstart(e: any) {
+                // Prevent drag when tools are active
+                if (isMeasuring || isRelocating) {
+                    console.log('[MapTaskMarker] Drag prevented - tool active');
+                    e.originalEvent?.preventDefault();
+                    e.originalEvent?.stopPropagation();
+                    return;
+                }
                 if (onDragStart) onDragStart(point.id);
             },
             dragend(e: any) {
@@ -311,7 +329,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                 }
             },
         }),
-        [point, onClick, onMove, onDragStart, onDragEnd]
+        [point, onClick, onMove, onDragStart, onDragEnd, isMeasuring, isRelocating, mode]
     );
 
     const icon = getLeafletIcon(
