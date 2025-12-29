@@ -14,6 +14,16 @@ import * as db from '../services/db';
 
 // ... Imports ...
 
+export interface GameHUDHandle {
+    getToolbarPositions: () => {
+        locationToolboxPos: { x: number; y: number };
+        topToolbarPos: { x: number; y: number };
+        viewSwitcherPos: { x: number; y: number };
+        pinsToolboxPos: { x: number; y: number };
+        showToolboxPos: { x: number; y: number };
+    };
+}
+
 interface GameHUDProps {
     accuracy: number | null;
     mode: GameMode;
