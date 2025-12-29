@@ -466,37 +466,38 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 >
                                     <Settings className="w-4 h-4" />
                                 </button>
+
+                                {/* MAPSTYLE Button */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
+                                        className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                        title="Map Styles"
+                                    >
+                                        <Layers className="w-4 h-4" />
+                                        {showLocationMapStyles && <div className="absolute top-0 right-0 w-2 h-2 bg-slate-300 rounded-full animate-pulse"></div>}
+                                    </button>
+                                    {showLocationMapStyles && (
+                                        <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-slate-900 border-2 border-slate-700 rounded-xl p-2 shadow-xl animate-in slide-in-from-top-2 pointer-events-auto z-[3001] flex gap-2 flex-wrap max-w-[300px]">
+                                            {MAP_STYLES_LIST.map((style) => (
+                                                <button
+                                                    key={style.id}
+                                                    onClick={(e) => { e.stopPropagation(); onSetMapStyle(style.id); setShowLocationMapStyles(false); }}
+                                                    className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all border-2 ${mapStyle === style.id ? 'bg-slate-700 border-slate-500 shadow-lg shadow-slate-500/50' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-slate-600'}`}
+                                                    title={style.label}
+                                                >
+                                                    <style.icon className={`w-4 h-4 ${mapStyle === style.id ? 'text-white' : 'text-slate-300'}`} />
+                                                    <span className={`text-[7px] font-black uppercase tracking-widest ${mapStyle === style.id ? 'text-white' : 'text-slate-400'}`}>{style.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex gap-1 text-center">
                                 <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">CHAT</div>
                                 <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">SETTINGS</div>
-                            </div>
-                            {/* MAPSTYLE Button */}
-                            <div className="flex flex-col items-center gap-0.5">
-                                <button
-                                    onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
-                                    className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                                    title="Map Styles"
-                                >
-                                    <Layers className="w-4 h-4" />
-                                    {showLocationMapStyles && <div className="absolute top-0 right-0 w-2 h-2 bg-slate-300 rounded-full animate-pulse"></div>}
-                                </button>
-                                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-tight">MAP</span>
-                                {showLocationMapStyles && (
-                                    <div className="absolute top-full mt-1 bg-slate-900 border-2 border-slate-700 rounded-xl p-2 shadow-xl animate-in slide-in-from-top-2 pointer-events-auto z-[3001] flex gap-2 flex-wrap max-w-[300px]">
-                                        {MAP_STYLES_LIST.map((style) => (
-                                            <button
-                                                key={style.id}
-                                                onClick={(e) => { e.stopPropagation(); onSetMapStyle(style.id); setShowLocationMapStyles(false); }}
-                                                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all border-2 ${mapStyle === style.id ? 'bg-slate-700 border-slate-500 shadow-lg shadow-slate-500/50' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-slate-600'}`}
-                                                title={style.label}
-                                            >
-                                                <style.icon className={`w-4 h-4 ${mapStyle === style.id ? 'text-white' : 'text-slate-300'}`} />
-                                                <span className={`text-[7px] font-black uppercase tracking-widest ${mapStyle === style.id ? 'text-white' : 'text-slate-400'}`}>{style.label}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+                                <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">MAP</div>
                             </div>
                         </div>
                     </div>
