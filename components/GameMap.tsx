@@ -223,7 +223,6 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string, className?:
   light: { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
   ancient: { url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', attribution: '&copy; Stamen Design' },
   clean: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
-  voyager: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
   // Updated: Winter now uses OSM with a cold CSS filter for reliability
   winter: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors', className: 'map-filter-winter' },
   // Updated: Ski uses OpenSkiMap but falls back gracefully if down
