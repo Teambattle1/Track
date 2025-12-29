@@ -1570,7 +1570,15 @@ const GameApp: React.FC = () => {
                 onDeletePoint={handleDeleteItem}
                 onReorderPoints={async (pts) => { if (activeGame) await updateActiveGame({ ...activeGame, points: pts }, "Reordered Points"); }}
                 onClearMap={() => { if (activeGame && confirm("Clear all points?")) updateActiveGame({ ...activeGame, points: [] }, "Cleared Map"); }}
-                onSaveGame={() => updateActiveGame(activeGame!, "Saved via Editor")}
+                onSaveGame={() => {
+                    if (!activeGame) return;
+                    // Get current toolbar positions from GameHUD
+                    const toolbarPositions = gameHudRef.current?.getToolbarPositions();
+                    const gameToSave = toolbarPositions
+                        ? { ...activeGame, toolbarPositions }
+                        : activeGame;
+                    updateActiveGame(gameToSave, "Saved via Editor");
+                }}
                 onOpenTaskMaster={() => setShowTaskMaster(true)}
                 onFitBounds={(coords) => {
                     try {
