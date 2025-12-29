@@ -155,23 +155,23 @@ const SortablePointItem: React.FC<{
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
-            <div 
-                {...(!isDragDisabled ? {...attributes, ...listeners} : {})} 
-                className={`text-gray-300 dark:text-gray-600 p-1 touch-none ${isDragDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'}`}
+            <div
+                {...(!isDragDisabled ? {...attributes, ...listeners} : {})}
+                className={`p-1 touch-none ${isMapHovered ? 'text-white' : 'text-gray-300 dark:text-gray-600'} ${isDragDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'}`}
             >
                 <GripVertical className="w-4 h-4" />
             </div>
             
             <div className="relative">
-                <div className={`p-1.5 rounded-lg flex-shrink-0 transition-colors ${isSelected ? 'bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
+                <div className={`p-1.5 rounded-lg flex-shrink-0 transition-colors ${isSelected ? 'bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-200' : isMapHovered ? 'bg-white text-orange-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
                     <Icon className="w-4 h-4" />
                 </div>
             </div>
 
             <div className="flex-1 min-w-0 flex items-center gap-2">
-                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'}`}>{displayId}</span>
+                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded transition-colors ${isSelected ? 'bg-blue-600 text-white' : isMapHovered ? 'bg-white text-orange-600' : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'}`}>{displayId}</span>
                 <div className="min-w-0">
-                    <p className={`font-bold text-xs truncate ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-gray-800 dark:text-gray-200'}`}>{point.title}</p>
+                    <p className={`font-bold text-xs truncate ${isSelected ? 'text-blue-900 dark:text-blue-100' : isMapHovered ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>{point.title}</p>
                     {sourceList && (
                         <p className="text-[8px] text-gray-400 uppercase tracking-wide truncate" style={{ color: sourceList.color }}>
                             {sourceList.name}
@@ -180,10 +180,10 @@ const SortablePointItem: React.FC<{
                 </div>
             </div>
             
-            <div className={`flex gap-1 pl-2 border-l border-gray-100 dark:border-gray-700 transition-opacity ${dragOffset > 0 ? 'opacity-0' : 'opacity-100'}`}>
-                <button 
-                    onClick={(e) => { e.stopPropagation(); onEdit(point); }} 
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+            <div className={`flex gap-1 pl-2 transition-opacity ${isMapHovered ? 'border-l border-orange-700' : 'border-l border-gray-100 dark:border-gray-700'} ${dragOffset > 0 ? 'opacity-0' : 'opacity-100'}`}>
+                <button
+                    onClick={(e) => { e.stopPropagation(); onEdit(point); }}
+                    className={`p-2 rounded-lg transition-colors ${isMapHovered ? 'text-white hover:text-orange-100 hover:bg-orange-600' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                     title="Edit Task"
                 >
                     <Edit2 className="w-4 h-4" />
