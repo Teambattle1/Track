@@ -422,23 +422,56 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
            prev.isRelocating === next.isRelocating; // CRITICAL: Re-render when relocate mode changes
 });
 
-const DangerZoneMarker = React.memo(({ zone, onClick, mode }: any) => {
+const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode }: any) => {
+    const draggable = mode === GameMode.EDIT && !!onMove;
+
+    const dangerIcon = L.divIcon({
+        className: 'custom-danger-icon',
+        html: `<div style="width: 32px; height: 32px; background-color: #ef4444; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5); cursor: ${draggable ? 'move' : 'pointer'};">⚠</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+    });
+
     return (
-        <Circle
-            center={[zone.location.lat, zone.location.lng]}
-            radius={zone.radius}
-            pathOptions={{
-                color: '#ef4444',
-                fillColor: '#ef4444',
-                fillOpacity: 0.2,
-                weight: 2,
-                dashArray: '10, 10',
-                className: 'animate-pulse-slow' // Custom CSS animation class if needed
-            }}
-            eventHandlers={{ click: () => mode === GameMode.EDIT && onClick && onClick(zone) }}
-        >
-            {mode === GameMode.EDIT && <Tooltip permanent direction="center" className="custom-leaflet-tooltip font-bold text-red-500">{zone.title || 'DANGER'}</Tooltip>}
-        </Circle>
+        <React.Fragment>
+            {/* Danger Zone Circle */}
+            <Circle
+                center={[zone.location.lat, zone.location.lng]}
+                radius={zone.radius}
+                pathOptions={{
+                    color: '#ef4444',
+                    fillColor: '#ef4444',
+                    fillOpacity: 0.2,
+                    weight: 2,
+                    dashArray: '10, 10',
+                    className: 'animate-pulse-slow'
+                }}
+                interactive={false}
+            />
+
+            {/* Draggable Center Marker */}
+            {mode === GameMode.EDIT && (
+                <Marker
+                    position={[zone.location.lat, zone.location.lng]}
+                    icon={dangerIcon}
+                    draggable={draggable}
+                    eventHandlers={{
+                        click: () => onClick && onClick(zone),
+                        dragend(e: any) {
+                            if (onMove) {
+                                const latlng = e.target.getLatLng();
+                                onMove(zone.id, { lat: latlng.lat, lng: latlng.lng });
+                            }
+                        }
+                    }}
+                    zIndexOffset={200}
+                >
+                    <Tooltip permanent direction="top" offset={[0, -20]} className="custom-leaflet-tooltip font-bold text-xs text-red-500 bg-white px-2 py-1 rounded shadow-lg">
+                        {zone.title || 'DANGER ZONE'}
+                    </Tooltip>
+                </Marker>
+            )}
+        </React.Fragment>
     );
 });
 
