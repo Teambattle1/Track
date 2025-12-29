@@ -291,7 +291,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, onClick, onMo
                 if (onDragStart) onDragStart(point.id);
             },
             dragend(e: any) {
-                const shouldDelete = onDragEnd ? onDragEnd(point.id) : false;
+                const shouldDelete = onDragEnd ? onDragEnd(point.id, e) : false;
                 // If onDragEnd returns true, it means delete - don't move
                 if (shouldDelete === true) {
                     // Reset marker position to original
@@ -593,15 +593,45 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                         console.log('[Drag] Started dragging point:', id);
                         setDraggingPointId(id);
                     }}
-                    onDragEnd={(id: string) => {
-                        console.log('[Drag] Ended drag for point:', id, 'isOverTrash:', isOverTrash);
+                    onDragEnd={(id: string, e: any) => {
+                        const trashEl = document.getElementById('map-trash-bin');
+                        const trashRect = trashEl?.getBoundingClientRect();
+
+                        let overTrash = false;
+
+                        if (trashRect) {
+                            const originalEvent = e?.originalEvent;
+                            const touchPoint = originalEvent?.changedTouches?.[0] || originalEvent?.touches?.[0];
+
+                            const clientX = typeof originalEvent?.clientX === 'number' ? originalEvent.clientX : (typeof touchPoint?.clientX === 'number' ? touchPoint.clientX : null);
+                            const clientY = typeof originalEvent?.clientY === 'number' ? originalEvent.clientY : (typeof touchPoint?.clientY === 'number' ? touchPoint.clientY : null);
+
+                            if (typeof clientX === 'number' && typeof clientY === 'number') {
+                                overTrash = clientX >= trashRect.left && clientX <= trashRect.right && clientY >= trashRect.top && clientY <= trashRect.bottom;
+                            } else {
+                                const markerEl = typeof e?.target?.getElement === 'function' ? e.target.getElement() : null;
+                                const markerRect = markerEl?.getBoundingClientRect();
+                                if (markerRect) {
+                                    overTrash = !(
+                                        markerRect.right < trashRect.left ||
+                                        markerRect.left > trashRect.right ||
+                                        markerRect.bottom < trashRect.top ||
+                                        markerRect.top > trashRect.bottom
+                                    );
+                                }
+                            }
+                        }
+
+                        console.log('[Drag] Ended drag for point:', id, 'overTrash:', overTrash, 'isOverTrash(state):', isOverTrash);
                         setDraggingPointId(null);
-                        if (isOverTrash && onDeletePoint) {
+
+                        if (overTrash && onDeletePoint) {
                             console.log('[Drag] Calling delete for:', id);
                             onDeletePoint(id);
                             setIsOverTrash(false);
                             return true; // Signal deletion
                         }
+
                         setIsOverTrash(false);
                         return false;
                     }}
