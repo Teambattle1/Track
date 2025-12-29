@@ -7,6 +7,7 @@ import {
     MapPin, Play, LogOut, Navigation as NavigationIcon, ExternalLink, Trophy, Hash, Type
 } from 'lucide-react';
 import LocationSearch from './LocationSearch';
+import AdjustGameTimeModal from './AdjustGameTimeModal';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { parseGPX } from '../utils/gpx';
 import { timeService } from '../services/time';
