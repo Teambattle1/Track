@@ -60,6 +60,7 @@ interface GameHUDProps {
     showTaskTitle: boolean;
     onToggleTaskTitle: () => void;
     hiddenPlaygroundIds: string[];
+    onUpdateGameTime?: (newEndTime: number) => Promise<void>;
     onToggleChat: () => void;
     unreadMessagesCount: number;
     targetPlaygroundId?: string;
