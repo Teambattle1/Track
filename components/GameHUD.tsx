@@ -236,17 +236,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                         <ChevronLeft className="w-6 h-6 text-slate-700 dark:text-slate-200" />
                     </button>
                     {mode === GameMode.EDIT && renderGameNameButton()}
-                    <LocationSearch
-                        onSelectLocation={onSearchLocation}
-                        onLocateMe={onLocateMe}
-                        onFitBounds={onFitBounds}
-                        hideSearch={window.innerWidth < 640 && mode !== GameMode.EDIT}
-                        onToggleScores={onToggleScores}
-                        showScores={showScores}
-                        className="shadow-xl"
-                        locateFeedback={locateFeedback}
-                        compact={true}
-                    />
                 </div>
 
                 <div className={`flex flex-col items-center gap-2 pointer-events-auto transition-transform duration-300 ease-in-out ${sidebarOffset}`}>
