@@ -1282,10 +1282,16 @@ const GameApp: React.FC = () => {
                     setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
                     setActiveGame(updated);
                 }}
+                onDragStart={(pointId) => {
+                    const point = activeGame?.points.find(p => p.id === pointId);
+                    if (point) setActiveTask(point);
+                }}
                 accuracy={gpsAccuracy}
                 isRelocating={isRelocating}
                 relocateScopeCenter={relocateScopeCenter}
                 showScores={showScores}
+                showTaskId={showTaskId}
+                showTaskTitle={showTaskTitle}
             />
         </div>
 
