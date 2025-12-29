@@ -432,7 +432,7 @@ const GameApp: React.FC = () => {
 
   const handlePointClick = (point: GamePoint) => {
       // In MEASURE mode, add task to measure path instead of opening modal
-      if (isMeasuring && mode === GameMode.EDIT && point.location) {
+      if (isMeasuring && point.location) {
           setMeasurePath(prev => [...prev, point.location]);
           // Calculate distance from previous point if exists
           if (measurePath.length > 0) {
@@ -440,7 +440,7 @@ const GameApp: React.FC = () => {
               const distance = haversineMeters(lastPoint, point.location);
               setMeasuredDistance(prev => prev + distance);
           }
-          return;
+          return; // Don't open task view when measuring
       }
 
       if (mode === GameMode.EDIT) {
