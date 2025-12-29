@@ -286,7 +286,7 @@ const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
 });
 
 // Task Marker Component
-const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isHovered, isMeasuring, isRelocating, onClick, onMove, onDelete, onDragStart, onDragEnd }: any) => {
+const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isHovered, isMeasuring, isRelocating, onClick, onMove, onDelete, onDragStart, onDragEnd, onHover }: any) => {
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
 
@@ -306,6 +306,12 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                     mode
                 });
                 onClick(point);
+            },
+            mouseover: () => {
+                if (onHover) onHover(point);
+            },
+            mouseout: () => {
+                if (onHover) onHover(null);
             },
             dragstart(e: any) {
                 // Prevent drag when tools are active
@@ -332,7 +338,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                 }
             },
         }),
-        [point, onClick, onMove, onDragStart, onDragEnd, isMeasuring, isRelocating, mode]
+        [point, onClick, onMove, onDragStart, onDragEnd, onHover, isMeasuring, isRelocating, mode]
     );
 
     const icon = getLeafletIcon(
