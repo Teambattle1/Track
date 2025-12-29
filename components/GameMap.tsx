@@ -85,6 +85,7 @@ interface GameMapProps {
   mapStyle: MapStyleId;
   selectedPointId?: string | null;
   isRelocating?: boolean;
+  isMeasuring?: boolean; // NEW: Measure mode flag to prevent task modals
   relocateScopeCenter?: Coordinate | null; // Center point when relocating all tasks
   relocateAllTaskIds?: string[]; // Task IDs selected for relocation
   onPointClick: (point: GamePoint) => void;
