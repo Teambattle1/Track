@@ -409,15 +409,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                     <MessageSquare className="w-5 h-5" />
                                 </button>
 
-                                {/* Measure Button */}
-                                <button
-                                    onClick={onToggleMeasure}
-                                    className={`w-12 h-12 rounded-xl transition-all border flex flex-col items-center justify-center group/toolbar relative ${isMeasuring ? 'bg-orange-500 border-orange-400 text-white shadow-lg shadow-orange-500/20' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                                    title="Measure"
-                                >
-                                    <Ruler className="w-5 h-5" />
-                                </button>
-
                                 {/* Settings Button */}
                                 <button
                                     onClick={onEditGameSettings}
@@ -429,7 +420,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                             </div>
                             <div className="flex gap-2 text-center">
                                 <div className="flex-1 text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">CHAT</div>
-                                <div className="flex-1 text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">MEASURE</div>
                                 <div className="flex-1 text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">SETTINGS</div>
                             </div>
                         </div>
