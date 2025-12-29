@@ -185,12 +185,6 @@ const GameApp: React.FC = () => {
       };
   }, [activeGameId, mode, activeTask]);
 
-  // Measure mode: fly to user location when activated
-  useEffect(() => {
-      if (isMeasuring && userLocation && mapRef.current) {
-          mapRef.current.jumpTo(userLocation);
-      }
-  }, [isMeasuring]);
 
   useEffect(() => {
       if (activeGameId) {
