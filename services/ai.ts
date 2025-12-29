@@ -149,13 +149,16 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     try {
         console.log('[AI Background] Generating with keywords:', keywords);
         console.log('[AI Background] Full prompt:', prompt);
+        console.log('[AI Background] Using Imagen 3 model for professional quality');
 
-        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: prompt,
+        // Use Imagen 3 - Google's dedicated image generation model
+        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateImages({
+            model: 'imagen-3.0-generate-002',
+            prompt: prompt,
             config: {
-                temperature: 0.9, // Higher creativity for images
-                candidateCount: 1
+                numberOfImages: 1,
+                aspectRatio: '16:9', // Landscape for game backgrounds
+                safetySetting: 'block_some' // Allow creative freedom
             }
         }));
 
