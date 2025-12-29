@@ -557,7 +557,7 @@ const GameApp: React.FC = () => {
           }));
 
           updateActiveGame({ ...currentGameObj, points: relocatedPoints }, "Relocated All Tasks");
-          setIsRelocating(false);
+          // Keep scope active for multiple relocations - user must click button again to exit
           console.log('[Relocate] Moved all tasks by offset:', { latOffset, lngOffset });
       }
   };
