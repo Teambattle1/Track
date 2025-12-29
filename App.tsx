@@ -114,6 +114,10 @@ const GameApp: React.FC = () => {
   const [measurePointsCount, setMeasurePointsCount] = useState(0);
   const [selectedMeasurePointIds, setSelectedMeasurePointIds] = useState<string[]>([]);
 
+  // --- HOVER STATE ---
+  const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
+  const [hoveredDangerZoneId, setHoveredDangerZoneId] = useState<string | null>(null);
+
   // --- INITIALIZATION ---
   useEffect(() => {
     const init = async () => {
