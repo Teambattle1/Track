@@ -34,6 +34,7 @@ import Dashboard from './components/Dashboard';
 import DangerZoneModal from './components/DangerZoneModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/OfflineIndicator';
+import MeasureBox from './components/MeasureBox';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
@@ -1423,19 +1424,13 @@ const GameApp: React.FC = () => {
             />
         </div>
 
-        {/* MEASURE MODE BANNER */}
+        {/* DRAGGABLE MEASURE BOX */}
         {isMeasuring && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[2000] pointer-events-none animate-in fade-in slide-in-from-top">
-                <div className="bg-orange-600 text-white px-6 py-3 rounded-full shadow-2xl border-2 border-orange-400 flex items-center gap-3">
-                    <Ruler className="w-5 h-5 animate-pulse" />
-                    <div className="font-black uppercase tracking-wider text-sm">
-                        MEASURE MODE: Click tasks to calculate distance
-                    </div>
-                    <div className="bg-orange-800 px-3 py-1 rounded-full text-xs font-bold">
-                        {measurePointsCount} tasks • {Math.round(measuredDistance)}m
-                    </div>
-                </div>
-            </div>
+            <MeasureBox
+                taskCount={measurePointsCount}
+                distance={measuredDistance}
+                onClose={handleToggleMeasure}
+            />
         )}
 
         {/* RELOCATE MODE BANNER */}
