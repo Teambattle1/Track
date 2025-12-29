@@ -379,6 +379,22 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                 />
             )}
 
+            {/* Hover Highlight - Bright circle when hovered from list */}
+            {isHovered && (
+                <Circle
+                    center={[point.location.lat, point.location.lng]}
+                    radius={point.radiusMeters * 1.2}
+                    pathOptions={{
+                        color: '#3b82f6',
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.2,
+                        weight: 3,
+                        className: 'animate-pulse'
+                    }}
+                    interactive={false}
+                />
+            )}
+
             {/* Radius Circle */}
             {(mode === GameMode.EDIT || isUnlocked) && (
                 <Circle
@@ -420,6 +436,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
            prev.point.radiusMeters === next.point.radiusMeters &&
            prev.point.areaColor === next.point.areaColor &&
            prev.isRelocateSelected === next.isRelocateSelected &&
+           prev.isHovered === next.isHovered && // CRITICAL: Re-render when hover state changes
            prev.isMeasuring === next.isMeasuring && // CRITICAL: Re-render when measure mode changes
            prev.isRelocating === next.isRelocating; // CRITICAL: Re-render when relocate mode changes
 });
