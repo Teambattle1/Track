@@ -541,15 +541,19 @@ const GameApp: React.FC = () => {
 
   const handleToggleMeasure = () => {
       if (isMeasuring) {
-          // Turn OFF measure - clear the path
+          // Exit measuring mode - clear all measurement data
+          console.log('[Measure] Exiting measure mode');
           setIsMeasuring(false);
           setMeasurePath([]);
           setMeasuredDistance(0);
+          setMeasurePointsCount(0);
       } else {
-          // Turn ON measure - start fresh, will fly to location via useEffect
+          // Enter measuring mode - start fresh
+          console.log('[Measure] Entering measure mode');
           setIsMeasuring(true);
           setMeasurePath([]);
           setMeasuredDistance(0);
+          setMeasurePointsCount(0);
       }
   };
 
