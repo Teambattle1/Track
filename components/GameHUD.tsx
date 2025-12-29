@@ -771,7 +771,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 <div className="flex gap-1">
                                     {/* Toggle Task ID Button */}
                                     <button
-                                        onClick={() => setShowTaskId(!showTaskId)}
+                                        onClick={onToggleTaskId}
                                         className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/toolbar relative ${showTaskId ? 'bg-white text-purple-600 border-white shadow-lg' : 'bg-purple-700 text-purple-100 border-purple-600 hover:bg-purple-800 hover:text-white'}`}
                                         title="Toggle Task ID"
                                     >
