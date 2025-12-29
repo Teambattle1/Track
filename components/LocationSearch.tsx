@@ -117,17 +117,6 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
         />
       )}
 
-      {onToggleScores && (
-        <ActionButton
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleScores(); }}
-            icon={Hash}
-            label="SCORES"
-            colorClass=""
-            active={showScores}
-            compact={compact}
-        />
-      )}
-
       {locateFeedback && !compact && (
         <div className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg whitespace-nowrap pointer-events-auto ${
           locateFeedback.includes('Error') ? 'bg-red-600/80 text-white' :
