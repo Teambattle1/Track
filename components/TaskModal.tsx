@@ -119,8 +119,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
       };
   }, [point, isEditMode, isInstructor, isSimulation]);
 
-  if (!point) return null;
-
   // UNLOCK LOGIC: Allow open if Unlocked OR Instructor OR Editor OR Playground OR Simulation
   const isLocked = !point.isUnlocked && !isInstructor && !isEditMode && !isPlayground && !isSimulation;
 
