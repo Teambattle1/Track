@@ -467,7 +467,18 @@ const GameApp: React.FC = () => {
 
   const handlePointClick = (point: GamePoint) => {
       if (mode === GameMode.EDIT) {
-          setActiveTask(point);
+          if (isMeasuring) {
+              // In measuring mode, toggle the point selection
+              setSelectedMeasurePointIds(prev => {
+                  if (prev.includes(point.id)) {
+                      return prev.filter(id => id !== point.id);
+                  } else {
+                      return [...prev, point.id];
+                  }
+              });
+          } else {
+              setActiveTask(point);
+          }
       } else if (mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR || mode === GameMode.SIMULATION) {
           // Logic Execution: On Open
           if (point.logic?.onOpen) {
