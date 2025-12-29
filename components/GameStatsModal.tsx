@@ -10,18 +10,18 @@ interface GameStatsModalProps {
 }
 
 const GameStatsModal: React.FC<GameStatsModalProps> = ({ onClose, game, teams }) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
   // Calculate team stats
   const teamStats = useMemo(() => {
     if (!game || !teams) return [];
 
-    return teams.map(({ team, location }) => {
+    return teams.map(({ team, location, memberCount = 1 }) => {
       // Count completed tasks for this team
-      // In a real implementation, you'd track which team completed which task
-      // For now, we'll calculate based on team data
       const completedTasks = team.score ? Math.floor(team.score / 10) : 0; // Rough estimate
-      
+
       // Calculate distance walked (from team captain location to game center)
-      // This is a simplified calculation - in reality you'd track the actual path
       const gameCenter = game.points && game.points.length > 0
         ? {
             lat: game.points.reduce((sum, p) => sum + (p.location?.lat || 0), 0) / game.points.length,
@@ -29,24 +29,83 @@ const GameStatsModal: React.FC<GameStatsModalProps> = ({ onClose, game, teams })
           }
         : { lat: 0, lng: 0 };
 
-      const distanceKm = location && gameCenter
+      const captainDistanceKm = location && gameCenter
         ? haversineKm(location, gameCenter)
         : 0;
 
+      // Total distance = captain distance × number of team members
+      const totalDistanceKm = captainDistanceKm * memberCount;
+
       // Calculate TASK/KM ratio
-      const taskPerKm = distanceKm > 0 ? (completedTasks / distanceKm).toFixed(2) : '0';
+      const taskPerKm = totalDistanceKm > 0 ? (completedTasks / totalDistanceKm).toFixed(2) : '0';
 
       return {
         teamId: team.id,
         teamName: team.name,
         teamColor: team.color,
         completedTasks,
-        distanceKm: distanceKm.toFixed(1),
+        captainDistanceKm: captainDistanceKm.toFixed(1),
+        totalDistanceKm: totalDistanceKm.toFixed(1),
         taskPerKm,
-        score: team.score || 0
+        score: team.score || 0,
+        memberCount
       };
     }).sort((a, b) => b.score - a.score); // Sort by score descending
   }, [game, teams]);
+
+  const handleSaveStats = async () => {
+    if (!game) return;
+
+    setIsSaving(true);
+    setSaveMessage(null);
+
+    try {
+      // Prepare stats data for saving
+      const statsData = {
+        gameId: game.id,
+        gameName: game.name,
+        timestamp: new Date().toISOString(),
+        teams: teamStats.map(stat => ({
+          teamId: stat.teamId,
+          teamName: stat.teamName,
+          score: stat.score,
+          completedTasks: stat.completedTasks,
+          captainDistanceKm: parseFloat(stat.captainDistanceKm),
+          totalDistanceKm: parseFloat(stat.totalDistanceKm),
+          taskPerKmRatio: parseFloat(stat.taskPerKm),
+          memberCount: stat.memberCount
+        })),
+        totalStats: {
+          teamsCount: teamStats.length,
+          totalTasksCompleted: teamStats.reduce((sum, t) => sum + t.completedTasks, 0),
+          averageScore: teamStats.length > 0
+            ? Math.round(teamStats.reduce((sum, t) => sum + t.score, 0) / teamStats.length)
+            : 0,
+          totalDistanceWalked: teamStats.reduce((sum, t) => sum + parseFloat(t.totalDistanceKm), 0)
+        }
+      };
+
+      // Save to Supabase
+      await db.saveGameStats(statsData);
+
+      setSaveMessage({
+        type: 'success',
+        text: 'Game statistics saved successfully!'
+      });
+
+      setTimeout(() => {
+        setSaveMessage(null);
+      }, 3000);
+    } catch (error) {
+      console.error('Error saving game stats:', error);
+      setSaveMessage({
+        type: 'error',
+        text: 'Failed to save game statistics. Please try again.'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
