@@ -31,7 +31,7 @@ interface GameHUDProps {
     isMeasuring: boolean;
     onToggleMeasure: () => void;
     measuredDistance: number;
-    measurePointsCount?: number; 
+    measurePointsCount?: number;
     playgrounds?: Playground[];
     onOpenPlayground: (id: string) => void;
     onOpenTeamDashboard: () => void;
@@ -63,6 +63,8 @@ interface GameHUDProps {
     // Permission Props
     allowChatting?: boolean;
     locateFeedback?: string | null;
+    // User Auth Props
+    authUser?: AuthUser | null;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any }[] = [
