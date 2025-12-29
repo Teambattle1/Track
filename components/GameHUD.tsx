@@ -274,18 +274,6 @@ const GameHUD: React.FC<GameHUDProps> = ({
                             </button>
                         </div>
 
-                        <LocationSearch
-                            onSelectLocation={onSearchLocation}
-                            onLocateMe={onLocateMe}
-                            onFitBounds={onFitBounds}
-                            hideSearch={window.innerWidth < 640 && mode !== GameMode.EDIT}
-                            onToggleScores={onToggleScores}
-                            showScores={showScores}
-                            className="shadow-xl"
-                            locateFeedback={locateFeedback}
-                            compact={true}
-                        />
-
                         {/* View Switcher Toolbox (All operational modes) */}
                         {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
                             <div className="flex gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-xl p-2">
