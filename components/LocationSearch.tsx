@@ -39,7 +39,8 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
     hideSearch = false,
     labelButtons = false,
     locateFeedback,
-    compact = false
+    compact = false,
+    showLabels = false
 }) => {
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
