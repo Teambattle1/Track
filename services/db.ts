@@ -121,7 +121,8 @@ export const fetchGames = async (): Promise<Game[]> => {
         const rows = await fetchInChunks(
             (offset, limit) => supabase.from('games').select('id, data, updated_at').range(offset, offset + limit - 1),
             'fetchGames',
-            CHUNK_SIZE
+            CHUNK_SIZE,
+            FETCH_TIMEOUT_MS
         );
         return rows.map((row: any) => {
             const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
@@ -129,10 +130,16 @@ export const fetchGames = async (): Promise<Game[]> => {
         });
     } catch (e) {
         logError('fetchGames', e);
-        // Try fallback: fetch without chunking as last resort
+        // Try fallback: fetch a smaller batch without chunking as last resort
         try {
-            console.warn('[DB Service] Attempting fetchGames fallback (no chunking)...');
-            const { data, error } = await supabase.from('games').select('id, data, updated_at').limit(10000);
+            console.warn('[DB Service] Attempting fetchGames fallback (small batch)...');
+            const { data, error } = await Promise.race([
+                supabase.from('games').select('id, data, updated_at').limit(500).order('id', { ascending: false }),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Fallback query timeout after 10s')), 10000)
+                )
+            ]) as Promise<{ data: any[] | null; error: any }>;
+
             if (error) throw error;
             if (!data) return [];
             return data.map((row: any) => {
