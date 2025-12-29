@@ -1527,6 +1527,7 @@ const GameApp: React.FC = () => {
                 updateActiveGame({ ...currentGameObj, routes: updated }, "Toggled Route");
             }}
             allowChatting={currentGameObj?.allowChatting ?? true}
+            authUser={authUser}
         />
 
         {(mode === GameMode.EDIT || playgroundTemplateToEdit) && (
