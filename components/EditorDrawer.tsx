@@ -730,12 +730,13 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                 <div className="space-y-1">
                                     {pg.points.length === 0 && <div className="text-[10px] text-gray-400 italic p-2">No tasks in this playground. Add items here.</div>}
                                     {pg.points.map((point, index) => (
-                                        <SortablePointItem 
-                                            key={point.id} 
-                                            point={point} 
+                                        <SortablePointItem
+                                            key={point.id}
+                                            point={point}
                                             index={index}
                                             isSelected={point.id === selectedPointId}
-                                            isDragDisabled={isFiltered} 
+                                            isMapHovered={point.id === mapHoveredPointId}
+                                            isDragDisabled={isFiltered}
                                             onEdit={onEditPoint}
                                             onSelect={onSelectPoint}
                                             onDelete={onDeletePoint}
