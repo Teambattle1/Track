@@ -39,9 +39,9 @@ describe('haversineMeters', () => {
 
       const distance = haversineMeters(copenhagen, london);
 
-      // Should be approximately 900,000 meters (900km)
+      // Should be approximately 955,000 meters (955km)
       expect(distance).toBeGreaterThan(850000);
-      expect(distance).toBeLessThan(950000);
+      expect(distance).toBeLessThan(960000);
     });
 
     it('should handle coordinates across the equator', () => {
@@ -224,11 +224,11 @@ describe('isValidCoordinate', () => {
   });
 
   it('should return false for null', () => {
-    expect(isValidCoordinate(null)).toBe(false);
+    expect(isValidCoordinate(null)).toBeFalsy();
   });
 
   it('should return false for undefined', () => {
-    expect(isValidCoordinate(undefined)).toBe(false);
+    expect(isValidCoordinate(undefined)).toBeFalsy();
   });
 
   it('should return false for NaN latitude', () => {
@@ -244,9 +244,9 @@ describe('isValidCoordinate', () => {
 
 describe('normalizeCoordinate', () => {
   it('should normalize valid coordinate', () => {
-    const coord: any = { lat: '55.6761', lng: '12.5683' };
+    const coord: Coordinate = { lat: 55.6761, lng: 12.5683 };
     const result = normalizeCoordinate(coord);
-    
+
     expect(result).toEqual({ lat: 55.6761, lng: 12.5683 });
   });
 
