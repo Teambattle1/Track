@@ -8,7 +8,7 @@ import { teamSync } from '../services/teamSync';
 import { LocationProvider, useLocation } from '../contexts/LocationContext';
 import { haversineMeters, isWithinRadius } from '../utils/geo';
 import GameMap, { GameMapHandle } from './GameMap';
-import GameHUD from './components/GameHUD';
+import GameHUD, { type GameHUDHandle } from './components/GameHUD';
 import GameManager from './components/GameManager';
 import TaskMaster from './components/TaskMaster';
 import TeamsModal from './components/TeamsModal';
