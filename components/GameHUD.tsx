@@ -238,15 +238,15 @@ const GameHUD: React.FC<GameHUDProps> = ({
                                 </div>
                             </button>
 
-                            {/* Playgrounds/Editor Button */}
+                            {/* Measure Button (Moved from Floating Toolbox) */}
                             <button
-                                onClick={onOpenGameManager}
-                                className="w-10 h-10 rounded-xl transition-all border flex items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                                title="Game Manager"
+                                onClick={onToggleMeasure}
+                                className={`w-10 h-10 rounded-xl transition-all border flex items-center justify-center group/toolbar relative ${isMeasuring ? 'bg-orange-500 border-orange-400 text-white shadow-lg shadow-orange-500/20' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                                title="Measure"
                             >
-                                <Layers className="w-5 h-5" />
+                                <Ruler className="w-5 h-5" />
                                 <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/toolbar:opacity-100 transition-opacity pointer-events-none">
-                                    GAMES
+                                    MEASURE
                                 </div>
                             </button>
 
@@ -272,6 +272,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
                             showScores={showScores}
                             className="shadow-xl"
                             locateFeedback={locateFeedback}
+                            compact={true}
                         />
 
                         {/* View Switcher Toolbox (All operational modes) */}
