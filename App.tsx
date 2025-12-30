@@ -35,11 +35,15 @@ import DangerZoneModal from './components/DangerZoneModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/OfflineIndicator';
 import MeasureBox from './components/MeasureBox';
+import SupabaseDiagnostic from './components/SupabaseDiagnostic';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
   // --- AUTH & USER STATE ---
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+
+  // --- SUPABASE DIAGNOSTIC ---
+  const [showSupabaseDiagnostic, setShowSupabaseDiagnostic] = useState(false);
 
   // CRITICAL NULL CHECK: Validate props before rendering
   // This prevents crashes from undefined game/playground states
