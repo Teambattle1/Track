@@ -779,60 +779,22 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   const customPreview = mapStylePreviews[style.id];
                                   const previewUrl = customPreview || style.preview;
                                   const isCustom = !!customPreview;
-                                  const [imageError, setImageError] = useState(false);
-                                  const [imageLoaded, setImageLoaded] = useState(false);
 
                                   return (
-                                      <div key={style.id} className="relative group">
-                                          <button
-                                              onClick={() => setSelectedMapStyle(style.id)}
-                                              className={`relative w-full rounded-xl overflow-hidden border-2 transition-all ${selectedMapStyle === style.id ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-slate-700 hover:border-white'}`}
-                                          >
-                                              <div className="aspect-square bg-slate-800 relative flex items-center justify-center">
-                                                  {previewUrl && !imageError ? (
-                                                      <>
-                                                          {!imageLoaded && (
-                                                              <div className="absolute inset-0 flex items-center justify-center">
-                                                                  <Loader2 className="w-6 h-6 text-slate-600 animate-spin" />
-                                                              </div>
-                                                          )}
-                                                          <img
-                                                              src={previewUrl}
-                                                              alt={style.label}
-                                                              className={`w-full h-full object-cover ${!isCustom && style.className ? style.className : ''} transition-opacity ${imageLoaded ? 'opacity-80 group-hover:opacity-100' : 'opacity-0'}`}
-                                                              onLoad={() => setImageLoaded(true)}
-                                                              onError={() => setImageError(true)}
-                                                              crossOrigin="anonymous"
-                                                          />
-                                                      </>
-                                                  ) : (
-                                                      <div className="text-slate-500 group-hover:text-white transition-colors flex flex-col items-center gap-2">
-                                                          {Icon ? <Icon className="w-10 h-10" /> : <MapIcon className="w-10 h-10" />}
-                                                          {imageError && previewUrl && (
-                                                              <span className="text-[8px] text-slate-600">Preview unavailable</span>
-                                                          )}
-                                                      </div>
-                                                  )}
-                                              </div>
-                                              <div className="absolute bottom-0 left-0 right-0 bg-black/80 p-2 text-center">
-                                                  <span className="text-[10px] font-black uppercase text-white">{style.label}</span>
-                                              </div>
-                                              {selectedMapStyle === style.id && (
-                                                  <div className="absolute top-2 right-2 bg-orange-600 text-white rounded-full p-1 shadow-lg">
-                                                      <CheckCircle className="w-4 h-4" />
-                                                  </div>
-                                              )}
-                                          </button>
-
-                                          {/* Edit Thumbnail Button */}
-                                          <button
-                                              onClick={(e) => { e.stopPropagation(); setEditingStyleId(style.id); mapPreviewInputRef.current?.click(); }}
-                                              className="absolute top-2 left-2 p-1.5 bg-slate-800/80 hover:bg-white text-white hover:text-black rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
-                                              title="Upload Custom Thumbnail"
-                                          >
-                                              <Edit className="w-3 h-3" />
-                                          </button>
-                                      </div>
+                                      <MapStyleCard
+                                          key={style.id}
+                                          style={style}
+                                          previewUrl={previewUrl}
+                                          isCustom={isCustom}
+                                          Icon={Icon}
+                                          isSelected={selectedMapStyle === style.id}
+                                          onSelect={() => setSelectedMapStyle(style.id)}
+                                          onEditThumbnail={(e) => {
+                                              e.stopPropagation();
+                                              setEditingStyleId(style.id);
+                                              mapPreviewInputRef.current?.click();
+                                          }}
+                                      />
                                   );
                               })}
                           </div>
