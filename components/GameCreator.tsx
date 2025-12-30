@@ -313,12 +313,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [showSnazzyMapsBrowser, setShowSnazzyMapsBrowser] = useState(false);
   const [showCreateStyleModal, setShowCreateStyleModal] = useState(false);
   const [customStyleName, setCustomStyleName] = useState('');
-  const [customStyles, setCustomStyles] = useState<Array<{id: string; name: string; json: string}>>([]);
+  const [customStyles, setCustomStyles] = useState<Array<{id: string; name: string; json: string; previewUrl?: string}>>([]);
+  const [editingCustomStyleId, setEditingCustomStyleId] = useState<string | null>(null);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const templateImgInputRef = useRef<HTMLInputElement>(null);
   const mapPreviewInputRef = useRef<HTMLInputElement>(null);
   const taskBgInputRef = useRef<HTMLInputElement>(null);
+  const customStylePreviewInputRef = useRef<HTMLInputElement>(null);
 
   // Load Tag Colors & Fetch Unique Tags on mount
   useEffect(() => {
