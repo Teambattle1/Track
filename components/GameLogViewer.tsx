@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Game } from '../types';
 import { getFormattedLogs, getGameLogStats, exportGameLog } from '../utils/gameLog';
 import { Download, AlertCircle, Clock, User, History } from 'lucide-react';
+import { formatDateTime, formatDateShort } from '../utils/date';
 
 interface GameLogViewerProps {
   game: Game | null | undefined;
