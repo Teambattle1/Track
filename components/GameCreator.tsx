@@ -1037,22 +1037,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   />
                                   
                                   <div className="flex justify-between items-center gap-2">
-                                      <div className="flex gap-2">
-                                          <button
-                                              onClick={() => setShowSnazzyMapsBrowser(true)}
-                                              className="text-[10px] font-bold text-white uppercase flex items-center gap-1 bg-purple-600 hover:bg-purple-700 border border-purple-500 px-3 py-2 rounded-lg transition-colors"
-                                          >
-                                              <Search className="w-3 h-3" /> BROWSE & IMPORT
-                                          </button>
-                                          <a
-                                              href="https://snazzymaps.com/"
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="text-[10px] font-bold text-slate-500 hover:text-white uppercase flex items-center gap-1 bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg transition-colors"
-                                          >
-                                              <ExternalLink className="w-3 h-3" /> OPEN SNAZZY MAPS
-                                          </a>
-                                      </div>
+                                      <a
+                                          href="https://snazzymaps.com/"
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[10px] font-bold text-slate-500 hover:text-white uppercase flex items-center gap-1 bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg transition-colors"
+                                      >
+                                          <ExternalLink className="w-3 h-3" /> OPEN SNAZZY MAPS
+                                      </a>
 
                                       <div className="flex gap-2">
                                           <button
