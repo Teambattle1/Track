@@ -21,6 +21,8 @@ interface TaskMasterProps {
     onImportTaskList?: (list: TaskList, gameId?: string) => void;
     taskLists: TaskList[];
     onUpdateTaskLists: (lists: TaskList[]) => void;
+    taskLibrary: TaskTemplate[]; // Cached library from App
+    onUpdateTaskLibrary: (library: TaskTemplate[]) => void; // Update cache
     games: Game[];
     activeGame?: Game | null;  // Active game to add tasks to
     initialTab?: 'LIBRARY' | 'LISTS' | 'TAGS' | 'CLIENT';
@@ -35,6 +37,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     onImportTaskList,
     taskLists,
     onUpdateTaskLists,
+    taskLibrary: cachedLibrary,
+    onUpdateTaskLibrary,
     games,
     activeGame,
     initialTab = 'LIBRARY',
@@ -43,8 +47,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     onRenameTagGlobally
 }) => {
     const [tab, setTab] = useState<'LIBRARY' | 'LISTS' | 'TAGS' | 'CLIENT'>(initialTab);
-    const [library, setLibrary] = useState<TaskTemplate[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [library, setLibrary] = useState<TaskTemplate[]>(cachedLibrary); // Initialize with cache
+    const [loading, setLoading] = useState(false); // No loading needed on mount
     const [searchQuery, setSearchQuery] = useState('');
 
     // Editor State
@@ -119,14 +123,24 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         }
     };
 
+    // Sync with cached library from App
     useEffect(() => {
-        loadLibrary();
-    }, []);
+        if (cachedLibrary.length > 0 && library.length === 0) {
+            setLibrary(cachedLibrary);
+        }
+    }, [cachedLibrary]);
 
-    const loadLibrary = async () => {
+    const loadLibrary = async (forceRefresh = false) => {
+        if (!forceRefresh && cachedLibrary.length > 0) {
+            // Use cache if available
+            setLibrary(cachedLibrary);
+            return;
+        }
+
         setLoading(true);
         const data = await db.fetchLibrary();
         setLibrary(data);
+        onUpdateTaskLibrary(data); // Update cache in App
         setLoading(false);
     };
 
