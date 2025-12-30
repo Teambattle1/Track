@@ -1059,6 +1059,13 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                               }}
                                               className={`relative w-full rounded-xl overflow-hidden border-2 transition-all ${selectedMapStyle === 'google_custom' && customMapJson === customStyle.json ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-slate-700 hover:border-white'}`}
                                           >
+                                              {/* Usage Count Badge for Custom Styles */}
+                                              {mapStyleUsage['google_custom'] !== undefined && (
+                                                  <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-0.5 rounded-full text-[9px] font-black uppercase z-10 shadow-lg">
+                                                      {mapStyleUsage['google_custom'] === 0 ? 'Not used' : `Used in ${mapStyleUsage['google_custom']} game${mapStyleUsage['google_custom'] > 1 ? 's' : ''}`}
+                                                  </div>
+                                              )}
+
                                               <div className="aspect-square bg-gradient-to-br from-purple-900 to-blue-900 relative flex items-center justify-center">
                                                   {customStyle.previewUrl ? (
                                                       <img
