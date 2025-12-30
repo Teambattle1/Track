@@ -1232,9 +1232,10 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            // Always clear selection when toggling bulk mode
+                                            // Clear selection when toggling bulk mode (both entering and exiting)
                                             setSelectedTemplateIds([]);
                                             setBulkSelectionMode(!bulkSelectionMode);
+                                            console.log('[Bulk Mode] Selection cleared, bulkMode toggled');
                                         }}
                                         className={`flex-1 sm:flex-none px-4 py-2 rounded-xl font-bold uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 border ${bulkSelectionMode ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-indigo-900/20 text-indigo-400 border-indigo-500/30 hover:bg-indigo-900/40'}`}
                                     >
