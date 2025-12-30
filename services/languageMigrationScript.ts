@@ -9,7 +9,7 @@
  * or add a button in the UI to trigger it.
  */
 
-import { supabase } from './supabase';
+import { supabase } from '../lib/supabase';
 import { detectLanguageFromText, normalizeLanguage } from '../utils/i18n';
 import { TaskTemplate, TaskList } from '../types';
 
