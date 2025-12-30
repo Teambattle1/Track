@@ -1470,6 +1470,31 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 ⚡
                                             </div>
                                         )}
+
+                                        {/* Task Status Marker - Correct (Green Check) or Incorrect (Red X) */}
+                                        {showTaskStatus && (point.isCompleted || (point as any).answeredIncorrectly) && (
+                                            <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${
+                                                (point as any).answeredIncorrectly ? 'opacity-90' : 'opacity-80'
+                                            }`}>
+                                                {(point as any).answeredIncorrectly ? (
+                                                    // Red X for incorrect
+                                                    <div className="relative">
+                                                        <XCircle className="w-16 h-16 text-red-500 drop-shadow-[0_2px_8px_rgba(239,68,68,0.8)]" strokeWidth={3} />
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                            <div className="w-12 h-12 bg-red-500/20 rounded-full blur-xl"></div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    // Green check for correct
+                                                    <div className="relative">
+                                                        <CheckCircle className="w-16 h-16 text-green-500 drop-shadow-[0_2px_8px_rgba(34,197,94,0.8)]" strokeWidth={3} />
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                            <div className="w-12 h-12 bg-green-500/20 rounded-full blur-xl"></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                         {isMarkMode ? (isMarked ? '✓ MARKED' : 'CLICK TO MARK') : point.title}
