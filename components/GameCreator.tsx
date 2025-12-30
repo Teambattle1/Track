@@ -746,12 +746,13 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold hover:border-red-500 transition-colors text-left flex items-center justify-between group"
                                       >
                                           <span className={endDateTime ? 'text-white' : 'text-slate-500'}>
-                                              {endDateTime ? new Date(endDateTime).toLocaleString('en-GB', {
+                                              {endDateTime ? formatDateTime(endDateTime, language, {
                                                   day: '2-digit',
                                                   month: 'short',
                                                   year: 'numeric',
                                                   hour: '2-digit',
-                                                  minute: '2-digit'
+                                                  minute: '2-digit',
+                                                  hour12: false
                                               }) : 'Click to select date & time'}
                                           </span>
                                           <Calendar className="w-5 h-5 text-red-500 group-hover:scale-110 transition-transform" />
