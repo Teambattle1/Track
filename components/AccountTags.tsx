@@ -117,10 +117,15 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
         if (count > 0) {
             setPurgeTarget(name);
         } else {
+            // Tag not in use, just remove from registry
             const next = { ...tagColors };
             delete next[name];
+            delete next[name.toLowerCase()]; // Also remove lowercase version if it exists
             saveTags(next);
-            if (editingOldName === name) handleCancelEdit();
+            console.log(`[AccountTags] Removed unused tag "${name}" from registry`);
+            if (editingOldName === name || editingOldName?.toLowerCase() === name.toLowerCase()) {
+                handleCancelEdit();
+            }
         }
     };
 
