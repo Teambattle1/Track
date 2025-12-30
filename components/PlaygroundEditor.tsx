@@ -968,19 +968,44 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 })}
                             </div>
 
-                            <div className="space-y-2 mb-4">
+                            <div className="grid grid-cols-2 gap-2 mb-4">
                                 <button
                                     onClick={() => iconInputRef.current?.click()}
-                                    className="w-full py-2 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 uppercase hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-2"
+                                    className="py-2.5 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 uppercase hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1.5"
                                 >
-                                    <Upload className="w-3 h-3" /> UPLOAD CUSTOM ICON
+                                    <Upload className="w-3 h-3" /> UPLOAD
                                 </button>
                                 <input ref={iconInputRef} type="file" className="hidden" accept="image/*" onChange={handleIconUpload} />
+
+                                <button
+                                    onClick={() => {
+                                        setAiIconPromptValue('');
+                                        setShowAiIconPrompt(true);
+                                    }}
+                                    disabled={isGeneratingIcon}
+                                    className={`py-2.5 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1.5 transition-all ${
+                                        isGeneratingIcon
+                                            ? 'bg-purple-600/50 text-purple-300 cursor-wait border border-purple-500'
+                                            : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
+                                    }`}
+                                    title="Generate zone icon with AI"
+                                >
+                                    {isGeneratingIcon ? (
+                                        <>
+                                            <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                                            <span className="text-[9px]">GENERATING...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Wand2 className="w-3 h-3" /> AI ICON
+                                        </>
+                                    )}
+                                </button>
 
                                 {activePlayground.imageUrl && (
                                     <button
                                         onClick={() => updatePlayground({ iconUrl: activePlayground.imageUrl })}
-                                        className={`w-full py-2 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-2 transition-colors ${
+                                        className={`col-span-2 py-2.5 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-2 transition-colors ${
                                             activePlayground.iconUrl === activePlayground.imageUrl
                                                 ? 'bg-purple-600 text-white border border-purple-500'
                                                 : 'bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
