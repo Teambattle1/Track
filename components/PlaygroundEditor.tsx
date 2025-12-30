@@ -30,6 +30,7 @@ interface PlaygroundEditorProps {
   isTemplateMode: boolean;
   onAddZoneFromLibrary: () => void;
   onOpenPlayground?: (id: string) => void; // Optional prop for compatibility
+  isAdmin?: boolean; // Admin privilege for task status marking
 }
 
 const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
@@ -45,7 +46,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     onHome,
     onSaveTemplate,
     isTemplateMode,
-    onAddZoneFromLibrary
+    onAddZoneFromLibrary,
+    isAdmin = false
 }) => {
     // State
     const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
