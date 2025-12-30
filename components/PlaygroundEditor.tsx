@@ -1218,25 +1218,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     </button>
                                     <span className={`text-[8px] font-black uppercase tracking-widest ${showTaskActions ? 'text-orange-300' : 'text-slate-500'}`}>ACTIONS</span>
                                 </div>
-                                <div className="flex flex-col items-center gap-0.5">
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            setShowTaskStatus(!showTaskStatus);
-                                        }}
-                                        className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
-                                            showTaskStatus
-                                                ? 'bg-orange-600 text-white shadow-lg'
-                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                        }`}
-                                        title="Show/Hide Task Status Markers (Correct/Incorrect)"
-                                        type="button"
-                                    >
-                                        <CheckCircle className="w-4 h-4" />
-                                    </button>
-                                    <span className={`text-[8px] font-black uppercase tracking-widest ${showTaskStatus ? 'text-orange-300' : 'text-slate-500'}`}>STATUS</span>
-                                </div>
                             </div>
                         </div>
                         <button
