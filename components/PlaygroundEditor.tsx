@@ -2414,7 +2414,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         <div className="p-4 border-b border-slate-700 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Wand2 className="w-4 h-4 text-purple-400" />
-                                <h3 className="text-xs font-black uppercase tracking-widest text-white">AI ICON PROMPT</h3>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-white">
+                                    GENERATE {selectedTask ? 'TASK' : 'ZONE'} ICON
+                                </h3>
                             </div>
                             <button
                                 onClick={() => setShowAiIconPrompt(false)}
