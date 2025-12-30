@@ -310,6 +310,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showMapStylePreview, setShowMapStylePreview] = useState(false);
   const [previewMapStyle, setPreviewMapStyle] = useState<MapStyleId | null>(null);
+  const [previewCustomStyle, setPreviewCustomStyle] = useState<{id: string; name: string; json: string; previewUrl?: string} | null>(null);
   const [showSnazzyMapsBrowser, setShowSnazzyMapsBrowser] = useState(false);
   const [showCreateStyleModal, setShowCreateStyleModal] = useState(false);
   const [customStyleName, setCustomStyleName] = useState('');
