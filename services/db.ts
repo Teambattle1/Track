@@ -581,12 +581,17 @@ export const saveTemplate = async (template: TaskTemplate) => {
             }
         };
 
-        const { error } = await supabase.from('library').upsert({
-            id: normalizedTemplate.id,
-            data: normalizedTemplate,
-            updated_at: new Date().toISOString()
-        });
-        if (error) throw error;
+        await retryWithBackoff(
+            () => supabase.from('library').upsert({
+                id: normalizedTemplate.id,
+                data: normalizedTemplate,
+                updated_at: new Date().toISOString()
+            }).then(result => {
+                if (result.error) throw result.error;
+                return result;
+            }),
+            'saveTemplate'
+        );
     } catch (e) { logError('saveTemplate', e); }
 };
 
