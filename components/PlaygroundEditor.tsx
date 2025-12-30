@@ -68,6 +68,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showTaskOrder, setShowTaskOrder] = useState(true);
     const [showTaskActions, setShowTaskActions] = useState(true);
     const [showTaskStatus, setShowTaskStatus] = useState(true);
+    const [showTaskNames, setShowTaskNames] = useState(true);
 
     const [editorOrientation, setEditorOrientation] = useState<'portrait' | 'landscape'>('landscape');
     const [showAiIconPrompt, setShowAiIconPrompt] = useState(false);
@@ -1251,6 +1252,25 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     </button>
                                     <span className={`text-[8px] font-black uppercase tracking-widest ${showTaskActions ? 'text-orange-300' : 'text-slate-500'}`}>ACTIONS</span>
                                 </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setShowTaskNames(!showTaskNames);
+                                        }}
+                                        className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
+                                            showTaskNames
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title="Show/Hide Task Names"
+                                        type="button"
+                                    >
+                                        <Type className="w-4 h-4" />
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${showTaskNames ? 'text-orange-300' : 'text-slate-500'}`}>NAME</span>
+                                </div>
                             </div>
                         </div>
                         <button
@@ -1510,9 +1530,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             </div>
                                         )}
                                     </div>
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        {isMarkMode ? (isMarked ? '✓ MARKED' : 'CLICK TO MARK') : point.title}
-                                    </div>
+
+                                    {/* Task Name - Always Visible when showTaskNames is true */}
+                                    {showTaskNames && (
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-black/90 text-white text-[9px] font-bold px-2 py-1 rounded uppercase whitespace-nowrap pointer-events-none shadow-lg border border-orange-500/30">
+                                            {point.title}
+                                        </div>
+                                    )}
+
+                                    {/* Hover Tooltip - Only visible when names are hidden OR in mark mode */}
+                                    {(!showTaskNames || isMarkMode) && (
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                            {isMarkMode ? (isMarked ? '✓ MARKED' : 'CLICK TO MARK') : point.title}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
