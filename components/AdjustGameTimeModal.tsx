@@ -78,11 +78,11 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
 
   return (
     <div
-      className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in pointer-events-auto"
       onClick={onClose}
     >
       <div
-        className="bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700"
+        className="bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700 pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
       >
         
