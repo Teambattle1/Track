@@ -448,7 +448,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           const parsed = JSON.parse(customMapJson);
           if (Array.isArray(parsed)) {
               setJsonValidationStatus('VALID');
-              setTimeout(() => setJsonValidationStatus('IDLE'), 2000);
+              // Apply the custom map style
+              setSelectedMapStyle('google_custom');
+              // Reset validation status after showing success
+              setTimeout(() => setJsonValidationStatus('IDLE'), 3000);
           } else {
               setJsonValidationStatus('INVALID');
           }
