@@ -979,6 +979,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           onPreview={(e) => {
                                               e.stopPropagation();
                                               setPreviewMapStyle(style.id);
+                                              setPreviewCustomStyle(null);
                                               setShowMapStylePreview(true);
                                           }}
                                       />
