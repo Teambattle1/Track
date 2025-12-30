@@ -1254,7 +1254,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 </div>
                             </div>
 
-                            <div className={taskListViewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[200px]' : 'space-y-3 min-h-[200px]'}>
+                            <div className={taskListViewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[200px]' : 'space-y-2 min-h-[200px]'}>
                                 {taskLists.length === 0 && (
                                     <div className="col-span-full py-16 text-center">
                                         <LayoutList className="w-16 h-16 text-slate-700 mx-auto mb-4" />
@@ -1263,55 +1263,66 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     </div>
                                 )}
                                 {taskLists.map(list => (
-                                    <div key={list.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg group hover:border-blue-500/50 transition-all flex flex-col h-full">
-                                        <div className="h-32 bg-slate-800 relative">
-                                            {list.imageUrl ? (
-                                                <img src={list.imageUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-slate-600">
-                                                    <LayoutList className="w-10 h-10" />
-                                                </div>
-                                            )}
-                                            <div className="absolute top-2 right-2 bg-black/60 text-white text-[9px] font-bold px-2 py-1 rounded">
-                                                {list.tasks.length} TASKS
+                                    taskListViewMode === 'list' ? (
+                                        // COMPACT ONE-LINE LIST VIEW
+                                        <div key={list.id} className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-md group hover:border-blue-500/50 transition-all flex items-center gap-3 px-4 py-3">
+                                            {/* Thumbnail */}
+                                            <div className="w-12 h-12 bg-slate-800 rounded-lg flex-shrink-0 overflow-hidden">
+                                                {list.imageUrl ? (
+                                                    <img src={list.imageUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-600">
+                                                        <LayoutList className="w-6 h-6" />
+                                                    </div>
+                                                )}
                                             </div>
-                                            {countGameUsage(list.id) > 0 && (
-                                                <div className="absolute top-2 left-2 bg-purple-600 text-white text-[9px] font-bold px-2 py-1 rounded flex items-center gap-1">
-                                                    📊 {countGameUsage(list.id)} GAME{countGameUsage(list.id) !== 1 ? 'S' : ''}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="p-5 flex flex-col flex-1">
-                                            <h3 className="text-lg font-black text-white uppercase truncate mb-1">{list.name}</h3>
-                                            <p className="text-xs text-slate-500 line-clamp-2 mb-3 h-8 flex-grow">{list.description || "No description"}</p>
 
-                                            {/* Language Flags */}
-                                            {getLanguagesFromTasks(list.tasks).length > 0 && (
-                                                <div className="mb-3 flex flex-wrap gap-1">
-                                                    {getLanguagesFromTasks(list.tasks).map(lang => (
-                                                        <span key={lang} title={lang} className="text-lg">
-                                                            {getLanguageFlag(lang)}
-                                                        </span>
-                                                    ))}
+                                            {/* Title & Description */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-sm font-black text-white uppercase truncate">{list.name}</h3>
+                                                    {getLanguagesFromTasks(list.tasks).length > 0 && (
+                                                        <div className="flex gap-1">
+                                                            {getLanguagesFromTasks(list.tasks).map(lang => (
+                                                                <span key={lang} title={lang} className="text-base">
+                                                                    {getLanguageFlag(lang)}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
+                                                <p className="text-xs text-slate-500 truncate">{list.description || "No description"}</p>
+                                            </div>
 
-                                            <div className="flex gap-2 mt-auto">
+                                            {/* Badges */}
+                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                                <div className="bg-slate-800 text-slate-300 text-[9px] font-bold px-2 py-1 rounded">
+                                                    {list.tasks.length} TASKS
+                                                </div>
+                                                {countGameUsage(list.id) > 0 && (
+                                                    <div className="bg-purple-600 text-white text-[9px] font-bold px-2 py-1 rounded">
+                                                        {countGameUsage(list.id)} GAME{countGameUsage(list.id) !== 1 ? 'S' : ''}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="flex gap-2 flex-shrink-0">
                                                 {onImportTaskList && (
                                                     <button
                                                         onClick={() => {
                                                             handleImportListWithGameSelect(list);
                                                             if (activeGame) onClose();
                                                         }}
-                                                        className="flex-1 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-bold uppercase text-[10px] tracking-wide transition-all shadow-lg hover:shadow-green-600/30"
+                                                        className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-bold uppercase text-[9px] tracking-wide transition-all shadow-md"
                                                         title={activeGame ? `Add this entire tasklist to ${activeGame.name}` : 'Add this entire tasklist to your game'}
                                                     >
-                                                        ✓ {activeGame ? 'ADD' : 'ADD TO GAME'}
+                                                        ✓ ADD
                                                     </button>
                                                 )}
                                                 <button
                                                     onClick={() => setEditingList(list)}
-                                                    className="flex-1 py-2 bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white rounded-lg font-bold uppercase text-[10px] tracking-wide transition-colors"
+                                                    className="px-3 py-1.5 bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white rounded-lg font-bold uppercase text-[9px] tracking-wide transition-colors"
                                                 >
                                                     EDIT
                                                 </button>
@@ -1332,7 +1343,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                         onUpdateTaskLists(updated);
                                                         db.saveTaskList(copiedList);
                                                     }}
-                                                    className="p-2 bg-slate-800 hover:bg-purple-600 text-slate-400 hover:text-white rounded-lg transition-colors"
+                                                    className="p-1.5 bg-slate-800 hover:bg-purple-600 text-slate-400 hover:text-white rounded-lg transition-colors"
                                                     title="Duplicate this tasklist"
                                                 >
                                                     <Copy className="w-4 h-4" />
@@ -1345,13 +1356,104 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                             db.deleteTaskList(list.id);
                                                         }
                                                     }}
-                                                    className="p-2 bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition-colors"
+                                                    className="p-1.5 bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        // GRID CARD VIEW (original)
+                                        <div key={list.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg group hover:border-blue-500/50 transition-all flex flex-col h-full">
+                                            <div className="h-32 bg-slate-800 relative">
+                                                {list.imageUrl ? (
+                                                    <img src={list.imageUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-600">
+                                                        <LayoutList className="w-10 h-10" />
+                                                    </div>
+                                                )}
+                                                <div className="absolute top-2 right-2 bg-black/60 text-white text-[9px] font-bold px-2 py-1 rounded">
+                                                    {list.tasks.length} TASKS
+                                                </div>
+                                                {countGameUsage(list.id) > 0 && (
+                                                    <div className="absolute top-2 left-2 bg-purple-600 text-white text-[9px] font-bold px-2 py-1 rounded flex items-center gap-1">
+                                                        📊 {countGameUsage(list.id)} GAME{countGameUsage(list.id) !== 1 ? 'S' : ''}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-5 flex flex-col flex-1">
+                                                <h3 className="text-lg font-black text-white uppercase truncate mb-1">{list.name}</h3>
+                                                <p className="text-xs text-slate-500 line-clamp-2 mb-3 h-8 flex-grow">{list.description || "No description"}</p>
+
+                                                {/* Language Flags */}
+                                                {getLanguagesFromTasks(list.tasks).length > 0 && (
+                                                    <div className="mb-3 flex flex-wrap gap-1">
+                                                        {getLanguagesFromTasks(list.tasks).map(lang => (
+                                                            <span key={lang} title={lang} className="text-lg">
+                                                                {getLanguageFlag(lang)}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <div className="flex gap-2 mt-auto">
+                                                    {onImportTaskList && (
+                                                        <button
+                                                            onClick={() => {
+                                                                handleImportListWithGameSelect(list);
+                                                                if (activeGame) onClose();
+                                                            }}
+                                                            className="flex-1 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-bold uppercase text-[10px] tracking-wide transition-all shadow-lg hover:shadow-green-600/30"
+                                                            title={activeGame ? `Add this entire tasklist to ${activeGame.name}` : 'Add this entire tasklist to your game'}
+                                                        >
+                                                            ✓ {activeGame ? 'ADD' : 'ADD TO GAME'}
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => setEditingList(list)}
+                                                        className="flex-1 py-2 bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white rounded-lg font-bold uppercase text-[10px] tracking-wide transition-colors"
+                                                    >
+                                                        EDIT
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const copiedList: TaskList = {
+                                                                id: `list-${Date.now()}`,
+                                                                name: `${list.name} (Copy)`,
+                                                                description: list.description,
+                                                                tasks: [...list.tasks],
+                                                                color: list.color,
+                                                                iconId: list.iconId,
+                                                                imageUrl: list.imageUrl,
+                                                                usageCount: 0,
+                                                                createdAt: Date.now()
+                                                            };
+                                                            const updated = [...taskLists, copiedList];
+                                                            onUpdateTaskLists(updated);
+                                                            db.saveTaskList(copiedList);
+                                                        }}
+                                                        className="p-2 bg-slate-800 hover:bg-purple-600 text-slate-400 hover:text-white rounded-lg transition-colors"
+                                                        title="Duplicate this tasklist"
+                                                    >
+                                                        <Copy className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (confirm('Delete this list?')) {
+                                                                const updated = taskLists.filter(l => l.id !== list.id);
+                                                                onUpdateTaskLists(updated);
+                                                                db.deleteTaskList(list.id);
+                                                            }
+                                                        }}
+                                                        className="p-2 bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
                                 ))}
                             </div>
                         </div>
