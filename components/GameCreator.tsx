@@ -1721,6 +1721,26 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               />
                           </div>
                       </div>
+
+                      {/* Team Voting Mode */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <label className="block text-[10px] font-bold text-white uppercase mb-4">Team Voting Mode</label>
+                          <p className="text-xs text-slate-400 mb-4">How team answers are submitted for tasks</p>
+                          <div className="space-y-3">
+                              <RadioOption
+                                  label="Require Consensus - All active members must agree"
+                                  sublabel="Team must reach 100% agreement on answers (retired members don't count)"
+                                  selected={teamVotingMode === 'require_consensus'}
+                                  onClick={() => setTeamVotingMode('require_consensus')}
+                              />
+                              <RadioOption
+                                  label="Captain Submit - Captain can submit without full consensus"
+                                  sublabel="Captain can submit any time, team votes are visible but not required"
+                                  selected={teamVotingMode === 'captain_submit'}
+                                  onClick={() => setTeamVotingMode('captain_submit')}
+                              />
+                          </div>
+                      </div>
                   </div>
               );
           case 'PLAYGROUNDS':
