@@ -1418,6 +1418,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                       </p>
                   </div>
               );
+          case 'LOGS':
+              return (
+                  <GameLogViewer game={baseGame} />
+              );
           default:
               return null;
       }
