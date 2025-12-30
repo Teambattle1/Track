@@ -44,7 +44,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   // Voting State
   const [isVoting, setIsVoting] = useState(false);
   const [teamVotes, setTeamVotes] = useState<TaskVote[]>([]);
-  const [memberCount, setMemberCount] = useState(1);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]); // Track all team members with retirement status
 
   // Manual Unlock State
   const [unlockCode, setUnlockCode] = useState('');
@@ -101,8 +101,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
       const unsubscribeVotes = teamSync.subscribeToVotesForTask(point.id, (votes) => {
           setTeamVotes(votes);
       });
-      const unsubscribeMembers = teamSync.subscribeToMemberCount((count) => {
-          setMemberCount(Math.max(count, 1));
+      const unsubscribeMembers = teamSync.subscribeToMembers((members) => {
+          setTeamMembers(members);
       });
 
       const existing = teamSync.getVotesForTask(point.id);
@@ -135,8 +135,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const checkConsensus = () => {
       if (teamVotes.length === 0) return false;
 
-      // Require everyone currently online to have voted.
-      if (teamVotes.length < memberCount) return false;
+      // Count only active (non-retired) members
+      const activeMembers = teamMembers.filter(m => !m.isRetired);
+      const activeMemberCount = Math.max(activeMembers.length, 1);
+
+      // Require everyone currently online (and not retired) to have voted.
+      if (teamVotes.length < activeMemberCount) return false;
 
       const firstAnswer = normalizeAnswerForConsensus(teamVotes[0].answer);
       return teamVotes.every(v => normalizeAnswerForConsensus(v.answer) === firstAnswer);
