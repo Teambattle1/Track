@@ -1640,7 +1640,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             title={snapToRoadMode ? 'Click and drag on map to select tasks' : 'Snap selected tasks to road network'}
                                             type="button"
                                         >
-                                            <Road className="w-4 h-4" />
+                                            <Navigation className="w-4 h-4" />
                                             <span className="text-xs font-black uppercase tracking-wider">SNAP ROAD</span>
                                         </button>
                                     </div>
