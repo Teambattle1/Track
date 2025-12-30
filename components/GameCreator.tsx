@@ -345,6 +345,29 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       fetchUniqueTags().then(tags => setExistingTags(tags));
   }, []);
 
+  // Load map style usage counts
+  useEffect(() => {
+      const loadUsageCounts = async () => {
+          setIsLoadingUsage(true);
+          const usage: Record<string, number> = {};
+
+          // Count usage for all standard map styles
+          for (const style of MAP_STYLES) {
+              const count = await countMapStyleUsage(style.id);
+              usage[style.id] = count;
+          }
+
+          // Count usage for custom styles (they all use 'google_custom' as the ID)
+          const googleCustomCount = await countMapStyleUsage('google_custom');
+          usage['google_custom'] = googleCustomCount;
+
+          setMapStyleUsage(usage);
+          setIsLoadingUsage(false);
+      };
+
+      loadUsageCounts();
+  }, [customStyles]);
+
   const saveTagColors = (newColors: Record<string, string>) => {
       setTagColors(newColors);
       localStorage.setItem('geohunt_tag_colors', JSON.stringify(newColors));
