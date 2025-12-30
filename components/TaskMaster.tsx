@@ -647,9 +647,15 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             const destinationList = destination as TaskList;
             const existingTaskIds = new Set(destinationList.tasks.map(t => t.id));
 
-            // Separate duplicates from new tasks
-            const duplicateTasks = addToTasksSelection.filter(task => existingTaskIds.has(task.id));
-            const newTasks = addToTasksSelection.filter(task => !existingTaskIds.has(task.id));
+            // Separate duplicates from new tasks (by ID or by title+question match)
+            const duplicateTasks = addToTasksSelection.filter(task =>
+                existingTaskIds.has(task.id) ||
+                destinationList.tasks.some(t => t.title === task.title && t.task?.question === task.task?.question)
+            );
+            const newTasks = addToTasksSelection.filter(task =>
+                !existingTaskIds.has(task.id) &&
+                !destinationList.tasks.some(t => t.title === task.title && t.task?.question === task.task?.question)
+            );
 
             // Show warning if there are duplicates
             if (duplicateTasks.length > 0) {
