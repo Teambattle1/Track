@@ -56,7 +56,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [showLoquiz, setShowLoquiz] = useState(initialModal === 'LOQUIZ');
 
     // View State
-    const [libraryViewMode, setLibraryViewMode] = useState<'grid' | 'list'>('grid');
+    const [libraryViewMode, setLibraryViewMode] = useState<'grid' | 'list'>('list');
 
     // Template Editing
     const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | null>(null);
@@ -69,6 +69,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
     const [bulkSelectionMode, setBulkSelectionMode] = useState(false);
+    const [languageFilters, setLanguageFilters] = useState<Record<string, boolean>>({});
     const [showGameSelector, setShowGameSelector] = useState(false);
     const [gameForBulkAdd, setGameForBulkAdd] = useState<Game | null>(null);
     const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -202,6 +203,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         setEditingTaskIndex(null);
     };
 
+    // All available languages in the app
+    const AVAILABLE_LANGUAGES = ['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew'];
+
     const getLanguagesFromTasks = (tasks: TaskTemplate[]) => {
         const languages = new Set<string>();
         tasks.forEach(task => {
@@ -210,6 +214,17 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             }
         });
         return Array.from(languages);
+    };
+
+    // Get all languages actually used in the library
+    const getUsedLanguagesInLibrary = (): string[] => {
+        const used = new Set<string>();
+        library.forEach(task => {
+            if (task.settings?.language) {
+                used.add(task.settings.language);
+            }
+        });
+        return Array.from(used).sort();
     };
 
     const getLanguageFlag = (language: string): string => {
@@ -266,10 +281,25 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     };
 
     const getFilteredAndSortedLibrary = () => {
+        // Get selected languages (if any selected, only show those)
+        const selectedLanguages = Object.keys(languageFilters).filter(lang => languageFilters[lang]);
+
         let filtered = library.filter(task => {
-            // Apply search query
-            if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase()) && !task.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))) {
-                return false;
+            // Apply search query (searches both title and tags)
+            if (searchQuery) {
+                const titleMatch = task.title.toLowerCase().includes(searchQuery.toLowerCase());
+                const tagsMatch = task.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                if (!titleMatch && !tagsMatch) {
+                    return false;
+                }
+            }
+
+            // Apply language filters (if any language is selected, task must match)
+            if (selectedLanguages.length > 0) {
+                const taskLanguage = task.settings?.language || 'Unknown';
+                if (!selectedLanguages.includes(taskLanguage)) {
+                    return false;
+                }
             }
 
             // Apply column filters
@@ -800,10 +830,42 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="SEARCH TASKS..."
+                                        placeholder="SEARCH TASK & TAGS..."
                                         className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-xs font-bold text-white outline-none focus:border-blue-500 transition-all uppercase"
                                     />
                                 </div>
+
+                                {/* Language Filter */}
+                                <div className="w-full sm:w-auto">
+                                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">Filter by Language:</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {getUsedLanguagesInLibrary().map(lang => (
+                                                <label key={lang} className="flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={languageFilters[lang] || false}
+                                                        onChange={(e) => setLanguageFilters(prev => ({
+                                                            ...prev,
+                                                            [lang]: e.target.checked
+                                                        }))}
+                                                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-blue-600"
+                                                    />
+                                                    <span>{getLanguageFlag(lang)} {lang}</span>
+                                                </label>
+                                            ))}
+                                            {Object.keys(languageFilters).some(lang => languageFilters[lang]) && (
+                                                <button
+                                                    onClick={() => setLanguageFilters({})}
+                                                    className="text-[9px] font-bold text-orange-400 hover:text-orange-300 uppercase ml-2"
+                                                >
+                                                    Clear Filters
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
                                     <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
                                         <button
