@@ -1110,6 +1110,8 @@ const GameApp: React.FC = () => {
                   }}
                   taskLists={taskLists}
                   onUpdateTaskLists={setTaskLists}
+                  taskLibrary={taskLibrary}
+                  onUpdateTaskLibrary={setTaskLibrary}
                   games={games}
                   onDeleteTagGlobally={handleDeleteTagGlobally}
                   onRenameTagGlobally={handleRenameTagGlobally}
