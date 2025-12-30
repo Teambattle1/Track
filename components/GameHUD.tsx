@@ -498,9 +498,24 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 <button
                     key={style.id}
                     onClick={(e) => { e.stopPropagation(); onSetMapStyle(style.id); setShowLayerMenu(false); }}
-                    className={`w-full flex items-center gap-2 p-2 rounded-lg text-xs font-bold uppercase mb-1 last:mb-0 transition-colors ${mapStyle === style.id ? 'bg-orange-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
+                    onMouseEnter={() => setHoveredMapStyle(style.id)}
+                    onMouseLeave={() => setHoveredMapStyle(null)}
+                    className={`w-full flex items-center gap-2 p-2 rounded-lg text-xs font-bold uppercase mb-1 last:mb-0 transition-colors relative ${mapStyle === style.id ? 'bg-orange-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
                 >
                     <style.icon className="w-4 h-4" /> {style.label}
+
+                    {/* Hover Preview Thumbnail */}
+                    {hoveredMapStyle === style.id && style.preview && (
+                        <div className="absolute left-full ml-2 top-0 bg-slate-950 border-2 border-slate-700 rounded-lg shadow-2xl p-2 animate-in fade-in slide-in-from-left-2 pointer-events-none z-[3001]">
+                            <img
+                                src={style.preview}
+                                alt={style.label}
+                                className={`w-40 h-40 object-cover rounded ${style.className || ''}`}
+                                loading="lazy"
+                            />
+                            <div className="mt-1 text-center text-[9px] font-black text-slate-400 uppercase">{style.label}</div>
+                        </div>
+                    )}
                 </button>
             ))}
         </div>
