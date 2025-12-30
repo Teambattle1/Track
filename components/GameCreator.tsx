@@ -316,6 +316,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [customStyleName, setCustomStyleName] = useState('');
   const [customStyles, setCustomStyles] = useState<Array<{id: string; name: string; json: string; previewUrl?: string}>>([]);
   const [editingCustomStyleId, setEditingCustomStyleId] = useState<string | null>(null);
+  const [mapStyleUsage, setMapStyleUsage] = useState<Record<string, number>>({});
+  const [isLoadingUsage, setIsLoadingUsage] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const templateImgInputRef = useRef<HTMLInputElement>(null);
