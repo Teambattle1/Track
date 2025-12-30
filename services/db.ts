@@ -8,7 +8,7 @@ const logError = (context: string, error: any) => {
         return;
     }
 
-    // Enhanced error logging
+    // Enhanced error logging with network diagnostics
     const errorMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
     const errorDetails = {
         message: errorMsg,
@@ -21,6 +21,24 @@ const logError = (context: string, error: any) => {
     console.error(`[DB Service] Error in ${context}:`, errorMsg);
     if (Object.values(errorDetails).some(v => v !== undefined)) {
         console.error(`[DB Service] Error details:`, errorDetails);
+    }
+
+    // Special handling for network errors
+    if (errorMsg.includes('Failed to fetch') || errorMsg.includes('fetch')) {
+        console.error(`[DB Service] Network Error Detected:
+
+📡 Possible Causes:
+   1. No internet connection - Check your network
+   2. Firewall/Ad blocker blocking Supabase - Disable extensions
+   3. CORS policy violation - Check Supabase dashboard
+   4. Supabase service temporarily down - Check status.supabase.com
+
+💡 Quick Fixes:
+   - Refresh the page
+   - Check browser console for CORS errors
+   - Try in incognito mode (to test extensions)
+   - Verify Supabase URL: ${(supabase as any).supabaseUrl || 'unknown'}
+        `);
     }
 };
 
