@@ -60,21 +60,19 @@ const GameLogViewer: React.FC<GameLogViewerProps> = ({ game }) => {
         <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
           <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Latest Change</p>
           <p className="text-sm font-bold text-orange-400">
-            {stats.latestChange ? stats.latestChange.toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            {stats.latestChange ? formatDateTime(stats.latestChange, game.language || 'English', {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
             }) : '—'}
           </p>
         </div>
         <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
           <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Earliest Change</p>
           <p className="text-sm font-bold text-slate-400">
-            {stats.earliestChange ? stats.earliestChange.toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric'
-            }) : '—'}
+            {stats.earliestChange ? formatDateShort(stats.earliestChange, game.language || 'English') : '—'}
           </p>
         </div>
       </div>
