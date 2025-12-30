@@ -682,7 +682,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 {filtered.map(task => {
                     const Icon = ICON_COMPONENTS[task.iconId] || ICON_COMPONENTS.default;
                     const isSelected = selectedTemplateIds.includes(task.id);
-                    const isAlreadyInList = editingList && editingList.tasks.some(t => t.id === task.id);
+                    const isAlreadyInList = editingList && editingList.tasks.some(t =>
+                        t.id === task.id || (t.title === task.title && t.task?.question === task.task?.question)
+                    );
 
                     return (
                         <div
