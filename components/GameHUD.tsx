@@ -879,12 +879,26 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                             );
                         })}
                     </div>
-                    {/* Team Dash */}
-                    <div className="pointer-events-auto">
+                    {/* Team Dash & QR Scanner */}
+                    <div className="pointer-events-auto flex gap-3">
                         {mode === GameMode.PLAY && (
-                            <button onClick={onOpenTeamDashboard} className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-xl flex items-center justify-center border-2 border-orange-400 hover:scale-105 transition-transform">
-                                <Users className="w-8 h-8 text-white" />
-                            </button>
+                            <>
+                                <button onClick={onOpenTeamDashboard} className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-xl flex items-center justify-center border-2 border-orange-400 hover:scale-105 transition-transform">
+                                    <Users className="w-8 h-8 text-white" />
+                                </button>
+                                {activeGame?.designConfig?.enableCodeScanner && (
+                                    <button
+                                        onClick={() => {
+                                            // TODO: Open QR scanner modal
+                                            alert('QR Scanner functionality - Coming soon');
+                                        }}
+                                        className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-xl flex items-center justify-center border-2 border-blue-400 hover:scale-105 transition-transform"
+                                        title="Scan QR Code"
+                                    >
+                                        <QrCode className="w-8 h-8 text-white" />
+                                    </button>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
