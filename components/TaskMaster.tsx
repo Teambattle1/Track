@@ -14,7 +14,8 @@ import AccountTags from './AccountTags';
 import Dashboard from './Dashboard';
 import TaskEditor from './TaskEditor';
 import TaskModal from './TaskModal';
-import { runCompleteLanguageMigration } from '../services/languageMigrationScript'; 
+import { runCompleteLanguageMigration } from '../services/languageMigrationScript';
+import NotificationModal from './NotificationModal'; 
 
 interface TaskMasterProps {
     onClose: () => void;
