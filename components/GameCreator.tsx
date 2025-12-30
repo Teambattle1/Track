@@ -251,7 +251,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [showRanking, setShowRanking] = useState(baseGame?.showRankingToPlayers || false);
   const [allowChatting, setAllowChatting] = useState(baseGame?.allowChatting ?? true);
   const [showPlayerLocations, setShowPlayerLocations] = useState(baseGame?.showPlayerLocations ?? true);
-  const [showTaskDetails, setShowTaskDetails] = useState(baseGame?.showTaskDetailsToPlayers || false);
+  const [showTaskDetails, setShowTaskDetails] = useState(baseGame?.showTaskDetailsToPlayers ?? true);
 
   // New Fields
   const [aboutTemplate, setAboutTemplate] = useState(baseGame?.aboutTemplate || '');
@@ -1703,14 +1703,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               />
                           </div>
 
-                          <div className="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800 opacity-60">
+                          <div className="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
                               <div>
                                   <p className="text-xs font-bold text-white uppercase">Show task breakdown</p>
                                   <p className="text-[10px] text-slate-500">Players see detailed list: Completed/Total (X/Y)</p>
                               </div>
-                              <input 
-                                  type="checkbox" 
-                                  checked={showTaskDetails} 
+                              <input
+                                  type="checkbox"
+                                  checked={showTaskDetails}
                                   onChange={(e) => setShowTaskDetails(e.target.checked)}
                                   className="w-5 h-5 accent-orange-600 cursor-pointer"
                               />
