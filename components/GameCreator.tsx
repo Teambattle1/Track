@@ -1053,8 +1053,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                                   <button
                                                       onClick={(e) => {
                                                           e.stopPropagation();
-                                                          // Create a temporary style object for preview
-                                                          setPreviewMapStyle('google_custom');
+                                                          setPreviewCustomStyle(customStyle);
+                                                          setPreviewMapStyle(null);
                                                           setShowMapStylePreview(true);
                                                       }}
                                                       className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all flex items-center justify-center gap-1.5 text-[10px] font-black uppercase"
