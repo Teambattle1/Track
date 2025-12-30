@@ -194,6 +194,17 @@ const MapStyleCard: React.FC<MapStyleCardProps> = ({
             >
                 <Edit className="w-3 h-3" />
             </button>
+
+            {/* Preview Map Style Button */}
+            {previewUrl && (
+                <button
+                    onClick={onPreview}
+                    className="absolute top-2 right-2 p-1.5 bg-blue-600/90 hover:bg-blue-500 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                    title="Preview on OpenStreetMap"
+                >
+                    <ExternalLink className="w-3 h-3" />
+                </button>
+            )}
         </div>
     );
 };
