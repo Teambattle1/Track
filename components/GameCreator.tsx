@@ -108,7 +108,7 @@ const TABS = [
     { id: 'MAP', label: 'Map', icon: MapIcon },
     { id: 'TIMING', label: 'Timing', icon: Clock }, // New Timing Tab
     { id: 'PLAY', label: 'Play', icon: PlayCircle },
-    { id: 'DESIGN', label: 'Design', icon: PenTool },
+    { id: 'DESIGN', label: 'Game Setup', icon: PenTool },
     { id: 'TASKS', label: 'Tasks', icon: List },
     { id: 'PLAYGROUNDS', label: 'Zones', icon: LayoutGrid },
     { id: 'SETTINGS', label: 'Settings', icon: Settings },
