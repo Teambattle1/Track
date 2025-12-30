@@ -87,14 +87,14 @@ interface GameHUDProps {
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
-    { id: 'osm', label: 'Standard', icon: Globe, preview: 'https://a.tile.openstreetmap.org/12/2177/1258.png' },
-    { id: 'ski', label: 'Ski Map', icon: Snowflake, preview: 'https://tiles.openskimap.org/map/12/2177/1258.png' },
-    { id: 'norwegian', label: 'Norwegian', icon: Snowflake, preview: 'https://tiles.openskimap.org/map/12/2177/1258.png', className: 'saturate-115 brightness-108' },
-    { id: 'winter', label: 'Winter', icon: Mountain, preview: 'https://a.tile.openstreetmap.org/12/2177/1258.png', className: 'brightness-125 hue-rotate-180 saturate-50' },
-    { id: 'satellite', label: 'Satellite', icon: Layers, preview: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/12/1258/2177' },
-    { id: 'dark', label: 'Dark Mode', icon: MapIcon, preview: 'https://a.basemaps.cartocdn.com/dark_all/12/2177/1258.png' },
-    { id: 'light', label: 'Light Mode', icon: Sun, preview: 'https://a.basemaps.cartocdn.com/light_all/12/2177/1258.png' },
-    { id: 'clean', label: 'Clean', icon: MapIcon, preview: 'https://a.tile.openstreetmap.org/12/2177/1258.png' },
+    { id: 'osm', label: 'Standard', icon: Globe, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png' },
+    { id: 'ski', label: 'Ski Map', icon: Snowflake, preview: 'https://tiles.openskimap.org/map/13/4285/2722.png' },
+    { id: 'norwegian', label: 'Norwegian', icon: Snowflake, preview: 'https://tiles.openskimap.org/map/13/4285/2722.png', className: 'saturate-115 brightness-108' },
+    { id: 'winter', label: 'Winter', icon: Mountain, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'brightness-125 hue-rotate-180 saturate-50' },
+    { id: 'satellite', label: 'Satellite', icon: Layers, preview: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/2722/4285' },
+    { id: 'dark', label: 'Dark Mode', icon: MapIcon, preview: 'https://a.basemaps.cartocdn.com/dark_all/13/4285/2722.png' },
+    { id: 'light', label: 'Light Mode', icon: Sun, preview: 'https://a.basemaps.cartocdn.com/light_all/13/4285/2722.png' },
+    { id: 'clean', label: 'Clean', icon: MapIcon, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png' },
 ];
 
 const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, toggleMode, onSetMode, onOpenGameManager, onOpenTaskMaster, onOpenTeams,
@@ -695,18 +695,6 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                                         <span className={`text-[7px] font-black uppercase tracking-widest ${mapStyle === style.id ? 'text-white' : 'text-slate-400'}`}>{style.label}</span>
                                                     </button>
 
-                                                    {/* Hover Preview Thumbnail */}
-                                                    {hoveredMapStyle === style.id && style.preview && (
-                                                        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-950 border-2 border-slate-700 rounded-lg shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 pointer-events-none z-[3002]">
-                                                            <img
-                                                                src={style.preview}
-                                                                alt={style.label}
-                                                                className={`w-40 h-40 object-cover rounded ${style.className || ''}`}
-                                                                loading="lazy"
-                                                            />
-                                                            <div className="mt-1 text-center text-[9px] font-black text-slate-400 uppercase">{style.label}</div>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             ))}
                                         </div>
