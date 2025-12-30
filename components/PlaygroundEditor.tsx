@@ -876,19 +876,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </button>
                 </div>
 
-                {/* PLAYZONE TABS */}
+                {/* PLAYZONE TABS - ZONE SELECTOR */}
                 <div className="px-5 py-3 border-b border-slate-800 bg-slate-900 overflow-x-auto">
                     <div className="flex gap-2">
-                        {game.playgrounds && game.playgrounds.length > 1 && game.playgrounds.map((pg) => (
+                        {game.playgrounds?.map((pg, index) => (
                             <button
                                 key={pg.id}
                                 onClick={() => setActivePlaygroundId(pg.id)}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 ${
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 flex items-center gap-1.5 ${
                                     activePlaygroundId === pg.id
                                         ? 'bg-orange-600 text-white shadow-lg'
                                         : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
                                 }`}
                             >
+                                <span className="text-[9px] opacity-70">{String(index + 1).padStart(2, '0')}</span>
                                 {pg.title}
                             </button>
                         ))}
