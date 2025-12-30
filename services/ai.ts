@@ -205,45 +205,58 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
 };
 
 // Smart domain extraction from company name
-const guessDomain = (query: string): string[] => {
+const guessDomain = (query: string): string => {
     const normalized = query.toLowerCase().trim();
-    const cleaned = normalized.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '');
 
-    // Common patterns
-    const domains: string[] = [];
+    // Remove common suffixes and legal terms
+    const cleaned = normalized
+        .replace(/\s+(a\/s|aps|as|inc|llc|ltd|limited|corp|corporation|gmbh|ab)\s*$/i, '')
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '');
 
-    // Direct .com
-    domains.push(`${cleaned}.com`);
+    // Special cases for known Danish/Nordic companies
+    const specialCases: { [key: string]: string } = {
+        'tv2': 'tv2.dk',
+        'dr': 'dr.dk',
+        'berlingske': 'berlingske.dk',
+        'politiken': 'politiken.dk',
+        'bt': 'bt.dk',
+        'ekstrabl': 'ekstrabladet.dk',
+        'ekstrabladet': 'ekstrabladet.dk',
+        'jyllandsposten': 'jyllandsposten.dk',
+        'jp': 'jyllandsposten.dk'
+    };
 
-    // Common variations for multi-word names
-    if (normalized.includes(' ')) {
-        const words = normalized.split(/\s+/);
-        // First word only
-        domains.push(`${words[0].replace(/[^a-z0-9]/g, '')}.com`);
-        // Acronym
-        domains.push(`${words.map(w => w[0]).join('')}.com`);
+    if (specialCases[cleaned]) {
+        return specialCases[cleaned];
     }
 
-    // Try other common TLDs
-    domains.push(`${cleaned}.dk`); // Danish companies
-    domains.push(`${cleaned}.io`);
-    domains.push(`${cleaned}.net`);
+    // For multi-word names, try first word if it makes sense
+    if (normalized.includes(' ')) {
+        const words = normalized.split(/\s+/);
+        const firstWord = words[0].replace(/[^a-z0-9]/g, '');
 
-    return domains;
+        // If first word is substantial (4+ chars), use it
+        if (firstWord.length >= 4) {
+            return `${firstWord}.com`;
+        }
+    }
+
+    // Default: cleaned name + .com
+    return `${cleaned}.com`;
 };
 
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
     console.log('[Logo Search] Starting search for:', query);
 
-    // Generate domain guesses
-    const domains = guessDomain(query);
-    console.log('[Logo Search] Trying domains:', domains);
+    // Generate best domain guess
+    const domain = guessDomain(query);
+    console.log('[Logo Search] Guessed domain:', domain);
 
-    // Return Clearbit URL for primary domain
-    // The browser will handle loading - if it fails, the img element can use onError to try fallbacks
+    // Return Clearbit URL
+    // The browser will handle loading - if it fails, the img onError handler will try Google favicon
     // This avoids CORS issues from pre-flight verification
-    const primaryDomain = domains[0];
-    const logoUrl = `https://logo.clearbit.com/${primaryDomain}`;
+    const logoUrl = `https://logo.clearbit.com/${domain}`;
 
     console.log('[Logo Search] Using Clearbit logo:', logoUrl);
     return logoUrl;
