@@ -12,7 +12,8 @@ import AiTaskGenerator from './AiTaskGenerator';
 import LoquizImporter from './LoquizImporter';
 import AccountTags from './AccountTags';
 import Dashboard from './Dashboard';
-import TaskEditor from './TaskEditor'; 
+import TaskEditor from './TaskEditor';
+import { runCompleteLanguageMigration } from '../services/languageMigrationScript'; 
 
 interface TaskMasterProps {
     onClose: () => void;
@@ -88,6 +89,33 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
 
     // Refs
     const listImageInputRef = useRef<HTMLInputElement>(null);
+
+    // Language Migration State
+    const [showMigrationModal, setShowMigrationModal] = useState(false);
+    const [migrationRunning, setMigrationRunning] = useState(false);
+    const [migrationLog, setMigrationLog] = useState<string[]>([]);
+    const [migrationResults, setMigrationResults] = useState<{totalUpdated: number; totalErrors: number} | null>(null);
+
+    const handleRunMigration = async () => {
+        setMigrationRunning(true);
+        setMigrationLog(['Starting language migration...']);
+
+        try {
+            const results = await runCompleteLanguageMigration();
+            setMigrationLog(results.log);
+            setMigrationResults({
+                totalUpdated: results.totalUpdated,
+                totalErrors: results.totalErrors
+            });
+
+            // Reload library to show updated languages
+            await loadLibrary();
+        } catch (error: any) {
+            setMigrationLog(prev => [...prev, `Error: ${error.message}`]);
+        } finally {
+            setMigrationRunning(false);
+        }
+    };
 
     useEffect(() => {
         loadLibrary();
