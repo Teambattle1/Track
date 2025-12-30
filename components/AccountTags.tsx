@@ -128,21 +128,31 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
         if (!purgeTarget || !onDeleteTagGlobally) return;
         setIsPurging(true);
         const tagToPurge = purgeTarget;
+
         try {
+            console.log(`[AccountTags] Starting global purge of tag: "${tagToPurge}"`);
+
             // Delete from database FIRST (all tasks/games)
             await onDeleteTagGlobally(tagToPurge);
+
+            console.log(`[AccountTags] Database purge complete for: "${tagToPurge}"`);
 
             // THEN delete from localStorage to complete the operation
             const next = { ...tagColors };
             delete next[tagToPurge];
+            delete next[tagToPurge.toLowerCase()]; // Also remove lowercase version if it exists
             saveTags(next);
 
+            console.log(`[AccountTags] Tag "${tagToPurge}" removed from registry`);
+
             setPurgeTarget(null);
-            if (editingOldName === tagToPurge) handleCancelEdit();
+            if (editingOldName === tagToPurge || editingOldName?.toLowerCase() === tagToPurge.toLowerCase()) {
+                handleCancelEdit();
+            }
         } catch (error) {
             console.error("Tag purge failed:", error);
-            // Restore purge target so user can retry
-            setPurgeTarget(tagToPurge);
+            alert(`Failed to delete tag "${tagToPurge}". Please try again.\n\nError: ${error}`);
+            // Keep purge target so user can retry
         } finally {
             setIsPurging(false);
         }
