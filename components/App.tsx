@@ -91,6 +91,14 @@ const GameApp: React.FC = () => {
   const [showScores, setShowScores] = useState(true);
   const [showTaskId, setShowTaskId] = useState(true); // Task order (001, 002, etc.)
   const [showTaskTitle, setShowTaskTitle] = useState(true); // Task name/title
+
+  // Update showScores when game changes based on designConfig.hideScore
+  useEffect(() => {
+    const currentGame = games.find(g => g.id === activeGameId);
+    if (currentGame?.designConfig?.hideScore !== undefined) {
+      setShowScores(!currentGame.designConfig.hideScore);
+    }
+  }, [activeGameId, games]);
   const [currentDangerZone, setCurrentDangerZone] = useState<DangerZone | null>(null);
   const [activeDangerZone, setActiveDangerZone] = useState<DangerZone | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
