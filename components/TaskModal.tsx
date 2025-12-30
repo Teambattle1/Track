@@ -323,12 +323,20 @@ const TaskModal: React.FC<TaskModalProps> = ({
           onClose();
       } else {
           if (onTaskIncorrect) onTaskIncorrect();
+
+          // Use custom incorrect message if available
+          const incorrectMsg = point.feedback?.showIncorrectMessage && point.feedback.incorrectMessage
+              ? point.feedback.incorrectMessage
+              : (isDoubleTrouble
+                  ? `DOUBLE TROUBLE! Incorrect answer. You lost ${point.points} points.`
+                  : "Team answer is incorrect. Try again!");
+
           if (isDoubleTrouble && onPenalty) {
               onPenalty(point.points);
-              setErrorMsg(`DOUBLE TROUBLE! Incorrect answer. You lost ${point.points} points.`);
-          } else {
-              setErrorMsg("Team answer is incorrect. Try again!");
           }
+
+          setErrorMsg(incorrectMsg);
+
           // Show correct answer if configured
           if (point.settings?.showCorrectAnswerOnMiss) {
               setShowCorrectAnswer(true);
