@@ -321,7 +321,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
           } else {
               setErrorMsg("Team answer is incorrect. Try again!");
           }
-          setIsVoting(false); 
+          // Show correct answer if configured
+          if (point.settings?.showCorrectAnswerOnMiss) {
+              setShowCorrectAnswer(true);
+          }
+          setIsVoting(false);
       }
   };
 
