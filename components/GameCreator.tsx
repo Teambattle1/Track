@@ -921,17 +921,25 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       className="w-full h-32 bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs font-mono text-slate-300 outline-none focus:border-orange-500 custom-scrollbar resize-none mb-2"
                                   />
                                   
-                                  <div className="flex justify-between items-center">
-                                      <a 
-                                          href="https://snazzymaps.com/" 
-                                          target="_blank" 
-                                          rel="noopener noreferrer" 
-                                          className="text-[10px] font-bold text-slate-500 hover:text-white uppercase flex items-center gap-1 bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg transition-colors"
-                                      >
-                                          <ExternalLink className="w-3 h-3" /> OPEN SNAZZY MAPS
-                                      </a>
-                                      
-                                      <button 
+                                  <div className="flex justify-between items-center gap-2">
+                                      <div className="flex gap-2">
+                                          <button
+                                              onClick={() => setShowSnazzyMapsBrowser(true)}
+                                              className="text-[10px] font-bold text-white uppercase flex items-center gap-1 bg-purple-600 hover:bg-purple-700 border border-purple-500 px-3 py-2 rounded-lg transition-colors"
+                                          >
+                                              <Search className="w-3 h-3" /> BROWSE & IMPORT
+                                          </button>
+                                          <a
+                                              href="https://snazzymaps.com/"
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-[10px] font-bold text-slate-500 hover:text-white uppercase flex items-center gap-1 bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg transition-colors"
+                                          >
+                                              <ExternalLink className="w-3 h-3" /> OPEN SNAZZY MAPS
+                                          </a>
+                                      </div>
+
+                                      <button
                                           onClick={validateJson}
                                           className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${jsonValidationStatus === 'VALID' ? 'bg-green-600 text-white' : (jsonValidationStatus === 'INVALID' ? 'bg-red-600 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white')}`}
                                       >
