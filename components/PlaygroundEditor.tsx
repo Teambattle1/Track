@@ -1629,6 +1629,26 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
+                                                setSnapToRoadMode(!snapToRoadMode);
+                                                setSelectionBox({ start: null, current: null });
+                                            }}
+                                            className={`px-3 py-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center gap-2 ${
+                                                snapToRoadMode
+                                                    ? 'bg-cyan-600 text-white shadow-lg hover:bg-cyan-700'
+                                                    : 'bg-slate-700 text-slate-300 shadow-lg hover:bg-slate-600'
+                                            }`}
+                                            title={snapToRoadMode ? 'Click and drag on map to select tasks' : 'Snap selected tasks to road network'}
+                                            type="button"
+                                        >
+                                            <Road className="w-4 h-4" />
+                                            <span className="text-xs font-black uppercase tracking-wider">SNAP ROAD</span>
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-0.5">
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
                                                 onStartSimulation();
                                             }}
                                             className="px-3 py-2 rounded transition-all cursor-pointer pointer-events-auto bg-purple-600 text-white shadow-lg hover:bg-purple-700 hover:shadow-xl active:scale-95 flex items-center gap-2"
