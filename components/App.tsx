@@ -1178,12 +1178,19 @@ const GameApp: React.FC = () => {
               />
           )}
           {showTeamDashboard && activeGameId && (
-              <TeamDashboard 
+              <TeamDashboard
                   gameId={activeGameId}
                   totalMapPoints={currentGameObj?.points.length || 0}
                   onOpenAgents={() => {}}
                   onClose={() => setShowTeamDashboard(false)}
                   chatHistory={chatHistory}
+              />
+          )}
+          {showTeamLobby && currentTeam && (
+              <TeamLobbyPanel
+                  isOpen={showTeamLobby}
+                  onClose={() => setShowTeamLobby(false)}
+                  isCaptain={currentTeam.captainDeviceId === teamSync.getDeviceId() || mode === GameMode.SIMULATION}
               />
           )}
           {showDeleteGames && (
