@@ -2160,6 +2160,79 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 </div>
             )}
 
+            {/* Logo Search Prompt Modal */}
+            {showLogoPrompt && (
+                <div className="fixed inset-0 z-[6500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Globe className="w-4 h-4 text-blue-400" />
+                                <h3 className="text-xs font-black uppercase tracking-widest text-white">COMPANY LOGO SEARCH</h3>
+                            </div>
+                            <button
+                                onClick={() => setShowLogoPrompt(false)}
+                                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                type="button"
+                                title="Close"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <div className="p-4 space-y-3">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                Enter the company name to search for its logo online (e.g. "Nike", "Coca-Cola", "Apple")
+                            </p>
+                            <input
+                                value={logoCompanyName}
+                                onChange={(e) => setLogoCompanyName(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !isSearchingLogo && logoCompanyName.trim()) {
+                                        handleSearchCompanyLogo(logoCompanyName);
+                                    }
+                                }}
+                                disabled={isSearchingLogo}
+                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-sm font-bold text-white outline-none focus:border-blue-500 disabled:opacity-50"
+                                placeholder="COMPANY NAME..."
+                                autoFocus
+                            />
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowLogoPrompt(false)}
+                                    disabled={isSearchingLogo}
+                                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors"
+                                    type="button"
+                                >
+                                    CANCEL
+                                </button>
+                                <button
+                                    onClick={() => handleSearchCompanyLogo(logoCompanyName)}
+                                    disabled={!logoCompanyName.trim() || isSearchingLogo}
+                                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-colors flex items-center justify-center gap-2"
+                                    type="button"
+                                >
+                                    {isSearchingLogo ? (
+                                        <>
+                                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            SEARCHING...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Globe className="w-3 h-3" />
+                                            SEARCH LOGO
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                            <div className="pt-3 border-t border-slate-700">
+                                <p className="text-[8px] text-slate-500 uppercase tracking-wide">
+                                    ℹ️ This will search online databases (Clearbit, Google) for the company's official logo
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* AI Background Prompt Modal */}
             {showAiBackgroundPrompt && (
                 <div className="fixed inset-0 z-[6500] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
