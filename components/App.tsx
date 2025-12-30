@@ -1060,6 +1060,8 @@ const GameApp: React.FC = () => {
                   onUnlock={handleManualUnlock}
                   mode={mode}
                   isInstructorMode={mode === GameMode.INSTRUCTOR}
+                  game={activeGame}
+                  isCaptain={currentTeam?.captainDeviceId === teamSync.getDeviceId() || mode === GameMode.SIMULATION}
               />
           )}
           {showTaskMaster && (
