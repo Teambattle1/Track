@@ -794,10 +794,15 @@ export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> =>
 
 export const savePlaygroundTemplate = async (template: PlaygroundTemplate) => {
     try {
-        const { error } = await supabase.from('playground_library').upsert({
-            id: template.id, title: template.title, is_global: template.isGlobal, data: template, updated_at: new Date().toISOString()
-        });
-        if (error) throw error;
+        await retryWithBackoff(
+            () => supabase.from('playground_library').upsert({
+                id: template.id, title: template.title, is_global: template.isGlobal, data: template, updated_at: new Date().toISOString()
+            }).then(result => {
+                if (result.error) throw result.error;
+                return result;
+            }),
+            'savePlaygroundTemplate'
+        );
     } catch (e) { logError('savePlaygroundTemplate', e); }
 };
 
