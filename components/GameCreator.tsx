@@ -998,7 +998,16 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                               className={`relative w-full rounded-xl overflow-hidden border-2 transition-all ${selectedMapStyle === 'google_custom' && customMapJson === customStyle.json ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-slate-700 hover:border-white'}`}
                                           >
                                               <div className="aspect-square bg-gradient-to-br from-purple-900 to-blue-900 relative flex items-center justify-center">
-                                                  <Settings className="w-10 h-10 text-purple-300" />
+                                                  {customStyle.previewUrl ? (
+                                                      <img
+                                                          src={customStyle.previewUrl}
+                                                          alt={customStyle.name}
+                                                          className="w-full h-full object-cover"
+                                                          crossOrigin="anonymous"
+                                                      />
+                                                  ) : (
+                                                      <Settings className="w-10 h-10 text-purple-300" />
+                                                  )}
                                               </div>
                                               <div className="absolute bottom-0 left-0 right-0 bg-black/80 p-2 text-center">
                                                   <span className="text-[10px] font-black uppercase text-white">{customStyle.name}</span>
@@ -1008,6 +1017,19 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                                       <CheckCircle className="w-4 h-4" />
                                                   </div>
                                               )}
+                                          </button>
+
+                                          {/* Upload Thumbnail Button */}
+                                          <button
+                                              onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setEditingCustomStyleId(customStyle.id);
+                                                  customStylePreviewInputRef.current?.click();
+                                              }}
+                                              className="absolute top-2 right-2 p-1.5 bg-slate-800/80 hover:bg-white text-white hover:text-black rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                                              title="Upload Thumbnail"
+                                          >
+                                              <Edit className="w-3 h-3" />
                                           </button>
 
                                           {/* Delete Button */}
@@ -1023,6 +1045,24 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           >
                                               <Trash2 className="w-3 h-3" />
                                           </button>
+
+                                          {/* Preview Button */}
+                                          {customStyle.previewUrl && (
+                                              <div className="mt-1">
+                                                  <button
+                                                      onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          // Create a temporary style object for preview
+                                                          setPreviewMapStyle('google_custom');
+                                                          setShowMapStylePreview(true);
+                                                      }}
+                                                      className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all flex items-center justify-center gap-1.5 text-[10px] font-black uppercase"
+                                                  >
+                                                      <Eye className="w-3.5 h-3.5" />
+                                                      PREVIEW
+                                                  </button>
+                                              </div>
+                                          )}
                                       </div>
                                   );
                               })}
