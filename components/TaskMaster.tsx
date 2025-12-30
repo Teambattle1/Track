@@ -1216,6 +1216,13 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                             </button>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {taskLists.length === 0 && (
+                                    <div className="col-span-full py-16 text-center">
+                                        <LayoutList className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+                                        <h3 className="text-xl font-bold text-slate-400 mb-2">No Task Lists Yet</h3>
+                                        <p className="text-sm text-slate-500">Create your first task list to organize and reuse tasks across multiple games.</p>
+                                    </div>
+                                )}
                                 {taskLists.map(list => (
                                     <div key={list.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg group hover:border-blue-500/50 transition-all flex flex-col h-full">
                                         <div className="h-32 bg-slate-800 relative">
