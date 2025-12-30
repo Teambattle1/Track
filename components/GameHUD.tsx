@@ -100,7 +100,7 @@ const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: str
 const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, toggleMode, onSetMode, onOpenGameManager, onOpenTaskMaster, onOpenTeams,
     mapStyle, onSetMapStyle, language, onBackToHub, activeGameName, onOpenInstructorDashboard,
     isMeasuring, onToggleMeasure, measuredDistance, measurePointsCount = 0, playgrounds, onOpenPlayground, onOpenTeamDashboard, onOpenTeamLobby,
-    onRelocateGame, isRelocating, timerConfig, onFitBounds, onLocateMe, onSearchLocation,
+    onRelocateGame, isRelocating, onUpdateGameTime, timerConfig, onFitBounds, onLocateMe, onSearchLocation,
     isDrawerExpanded, showScores, onToggleScores, showTaskId, onToggleTaskId, showTaskTitle, onToggleTaskTitle, hiddenPlaygroundIds, onToggleChat, unreadMessagesCount,
     targetPlaygroundId, onAddDangerZone, activeDangerZone, onEditGameSettings, onOpenGameChooser,
     routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true, locateFeedback,
