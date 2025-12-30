@@ -83,8 +83,8 @@ const FETCH_TIMEOUT_MS = 20000; // 20 second timeout per chunk (reduced)
 const TAGS_FETCH_TIMEOUT_MS = 5000; // 5 second timeout for tag fetches (fail fast)
 const LIBRARY_FETCH_TIMEOUT_MS = 15000; // 15 second timeout for library fetches
 
-// Retry helper for timeout errors with exponential backoff
-const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 2, timeoutMs?: number): Promise<T> => {
+// Retry helper for timeout and network errors with exponential backoff
+const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 3, timeoutMs?: number): Promise<T> => {
     let lastError: any;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -100,17 +100,26 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRet
             return await fn();
         } catch (e: any) {
             lastError = e;
-            // Detect timeout errors more robustly
+            // Detect retryable errors (timeout or network failures)
             const isTimeout =
                 e?.message?.includes('timeout') ||
                 e?.message?.includes('canceling statement') ||
                 e?.code === 'QUERY_TIMEOUT' ||
                 e?.code === '57014'; // Postgres timeout error code
 
-            if (!isTimeout || attempt === maxRetries - 1) throw e;
+            const isNetworkError =
+                e?.message?.includes('Failed to fetch') ||
+                e?.message?.includes('fetch') ||
+                e?.message?.includes('network') ||
+                e?.name === 'TypeError'; // Failed to fetch is a TypeError
+
+            const shouldRetry = (isTimeout || isNetworkError) && attempt < maxRetries - 1;
+
+            if (!shouldRetry) throw e;
 
             const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5 second wait
-            console.warn(`[DB Service] Timeout in ${context}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+            const errorType = isNetworkError ? 'Network error' : 'Timeout';
+            console.warn(`[DB Service] ${errorType} in ${context}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
