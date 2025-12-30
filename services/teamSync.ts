@@ -109,6 +109,15 @@ class TeamSyncService {
         this.members.set(member.deviceId, merged);
         this.notifyMemberListeners();
       })
+      .on('broadcast', { event: 'retire_player' }, (payload: any) => {
+        const { deviceId, isRetired } = payload.payload;
+
+        // If this is me being retired/unretired by captain
+        if (deviceId === this.deviceId) {
+            this.isRetired = isRetired;
+            this.sendPresence();
+        }
+      })
       .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
            this.sendPresence();
