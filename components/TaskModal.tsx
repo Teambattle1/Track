@@ -768,7 +768,50 @@ const TaskModal: React.FC<TaskModalProps> = ({
                                 </div>
                             )}
 
-                            <button 
+                            {/* Show Correct Answer when wrong */}
+                            {showCorrectAnswer && (
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 animate-in slide-in-from-top-2">
+                                    <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">
+                                        Correct Answer:
+                                    </p>
+                                    <p className="text-blue-900 dark:text-blue-200 font-bold text-lg">
+                                        {point.task.type === 'slider' ?
+                                            (point.task.range?.correctValue !== undefined ? `${point.task.range.correctValue}` : point.task.answer || "Not specified") :
+                                            point.task.type === 'checkbox' || point.task.type === 'multi_select_dropdown' ?
+                                            point.task.correctAnswers?.join(', ') || point.task.answer || "Not specified" :
+                                            point.task.answer || point.task.correctAnswers?.[0] || "Not specified"}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Hint Button - Only show in team view if hint exists and not already revealed */}
+                            {!isInstructor && !isSimulation && point.feedback?.hint && !hintRevealed && (
+                                <button
+                                    type="button"
+                                    onClick={handleRevealHint}
+                                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2"
+                                >
+                                    <Lightbulb className="w-5 h-5" />
+                                    HINT ({point.feedback.hintCost || -50} points)
+                                </button>
+                            )}
+
+                            {/* Show Revealed Hint */}
+                            {hintRevealed && point.feedback?.hint && (
+                                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 animate-in slide-in-from-top-2">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Lightbulb className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                                        <p className="text-xs font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-wider">
+                                            Hint:
+                                        </p>
+                                    </div>
+                                    <p className="text-yellow-900 dark:text-yellow-200 font-medium">
+                                        {point.feedback.hint}
+                                    </p>
+                                </div>
+                            )}
+
+                            <button
                                 type="submit"
                                 className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-orange-600/20 mt-4"
                             >
