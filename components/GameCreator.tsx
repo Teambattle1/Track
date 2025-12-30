@@ -198,7 +198,7 @@ const MapStyleCard: React.FC<MapStyleCardProps> = ({
             {/* Edit Thumbnail Button */}
             <button
                 onClick={onEditThumbnail}
-                className="absolute top-2 left-2 p-1.5 bg-slate-800/80 hover:bg-white text-white hover:text-black rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                className="absolute bottom-2 left-2 p-1.5 bg-slate-800/80 hover:bg-white text-white hover:text-black rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
                 title="Upload Custom Thumbnail"
             >
                 <Edit className="w-3 h-3" />
