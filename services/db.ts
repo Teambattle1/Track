@@ -25,21 +25,33 @@ const logError = (context: string, error: any) => {
     }
 
     // Special handling for network errors
-    if (errorMsg.includes('Failed to fetch') || errorMsg.includes('fetch')) {
-        console.error(`[DB Service] Network Error Detected:
+    if (errorMsg.includes('Failed to fetch') || errorMsg.includes('fetch') || errorMsg.includes('NetworkError')) {
+        console.error(`[DB Service] ❌ SUPABASE CONNECTION FAILED
 
-📡 Possible Causes:
-   1. No internet connection - Check your network
-   2. Firewall/Ad blocker blocking Supabase - Disable extensions
-   3. CORS policy violation - Check Supabase dashboard
-   4. Supabase service temporarily down - Check status.supabase.com
+📡 Most Likely Causes:
+   1. ⏸️  Supabase project is PAUSED (free tier auto-pauses after 7 days)
+   2. 🗑️  Supabase project was DELETED
+   3. 🔒 CORS/Network policy blocking requests
+   4. 🌐 Internet connection issues
 
-💡 Quick Fixes:
-   - Refresh the page
-   - Check browser console for CORS errors
-   - Try in incognito mode (to test extensions)
-   - Verify Supabase URL: ${(supabase as any).supabaseUrl || 'unknown'}
+💡 IMMEDIATE ACTIONS:
+   1. Open Supabase Dashboard: https://supabase.com/dashboard
+   2. Check if project exists and is active
+   3. Click "Resume Project" if paused
+   4. Verify project URL: ${(supabase as any).supabaseUrl || 'unknown'}
+
+🛠️ SOLUTIONS:
+   - Create new Supabase project if deleted
+   - Update credentials in app settings
+   - Switch to demo mode (no database needed)
         `);
+
+        // Dispatch custom event to show diagnostic modal
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('supabase-connection-error', {
+                detail: { error: errorMsg, context }
+            }));
+        }
     }
 };
 
