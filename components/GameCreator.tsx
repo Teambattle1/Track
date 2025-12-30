@@ -1067,8 +1067,9 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   );
                               })}
                           </div>
-                          
+
                           <input ref={mapPreviewInputRef} type="file" accept="image/*" className="hidden" onChange={handleMapPreviewUpload} />
+                          <input ref={customStylePreviewInputRef} type="file" accept="image/*" className="hidden" onChange={handleCustomStylePreviewUpload} />
 
                           {selectedMapStyle === 'google_custom' && (
                               <div className="mt-6 bg-slate-950 border border-slate-700 rounded-xl p-4 animate-in fade-in slide-in-from-top-2 relative">
