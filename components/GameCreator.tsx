@@ -405,13 +405,18 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       if (file && editingCustomStyleId) {
           const url = await uploadImage(file);
           if (url) {
-              const updatedStyles = customStyles.map(style =>
-                  style.id === editingCustomStyleId
-                      ? { ...style, previewUrl: url }
-                      : style
-              );
-              setCustomStyles(updatedStyles);
-              localStorage.setItem('geohunt_custom_styles', JSON.stringify(updatedStyles));
+              const styleToUpdate = customStyles.find(s => s.id === editingCustomStyleId);
+              if (styleToUpdate) {
+                  const updatedStyle = { ...styleToUpdate, previewUrl: url };
+                  // Save to Supabase
+                  const savedStyle = await saveCustomMapStyle(updatedStyle);
+                  if (savedStyle) {
+                      const updatedStyles = customStyles.map(style =>
+                          style.id === editingCustomStyleId ? savedStyle : style
+                      );
+                      setCustomStyles(updatedStyles);
+                  }
+              }
           }
       }
       setEditingCustomStyleId(null);
