@@ -1218,7 +1218,7 @@ const GameApp: React.FC = () => {
               />
           )}
           {(viewingPlaygroundId || playgroundTemplateToEdit) && (
-              <PlaygroundEditor 
+              <PlaygroundEditor
                   game={playgroundTemplateToEdit ? {
                       id: 'template-edit',
                       name: playgroundTemplateToEdit.title,
@@ -1227,7 +1227,7 @@ const GameApp: React.FC = () => {
                       points: playgroundTemplateToEdit.tasks,
                       playgrounds: [playgroundTemplateToEdit.playgroundData]
                   } as Game : (currentGameObj || { id: 'temp', name: 'Temp', points: [], createdAt: 0 } as any)}
-                  
+
                   onUpdateGame={(updatedGame) => {
                       if (playgroundTemplateToEdit) {
                           setPlaygroundTemplateToEdit({
@@ -1274,6 +1274,7 @@ const GameApp: React.FC = () => {
                       }
                   }}
                   onAddZoneFromLibrary={() => {}}
+                  onStartSimulation={!playgroundTemplateToEdit && currentGameObj ? () => handleStartSimulation(currentGameObj) : undefined}
               />
           )}
           {showChatDrawer && activeGameId && (
