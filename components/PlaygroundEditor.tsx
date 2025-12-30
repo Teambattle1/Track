@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Game, Playground, GamePoint, IconId, TaskTemplate } from '../types';
+import { Game, Playground, GamePoint, IconId, TaskTemplate, TaskList } from '../types';
 import {
     X, Plus, LayoutGrid, Globe, Map as MapIcon, ArrowLeft, Trash2, Edit2,
     Image as ImageIcon, Upload, Grid, MousePointer2, Move, ZoomIn, ZoomOut,
@@ -32,6 +32,10 @@ interface PlaygroundEditorProps {
   onOpenPlayground?: (id: string) => void; // Optional prop for compatibility
   isAdmin?: boolean; // Admin privilege for task status marking
   onStartSimulation?: () => void; // Start simulation mode from editor
+  taskLists: TaskList[]; // Task lists for TaskMaster
+  onUpdateTaskLists: (lists: TaskList[]) => void; // Update task lists
+  taskLibrary: TaskTemplate[]; // Task library for TaskMaster
+  onUpdateTaskLibrary: (library: TaskTemplate[]) => void; // Update task library
 }
 
 const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
@@ -48,6 +52,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     onSaveTemplate,
     isTemplateMode,
     onAddZoneFromLibrary,
+    taskLists,
+    onUpdateTaskLists,
+    taskLibrary,
+    onUpdateTaskLibrary,
     isAdmin = false,
     onStartSimulation
 }) => {
