@@ -1093,9 +1093,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                                   setCustomMapJson(customStyle.json);
                                                   setJsonValidationStatus('VALID');
                                                   setShowMapStylePreview(false);
-                                                  // Clear the JSON box when applying a saved style
-                                                  setCustomMapJson('');
-                                                  setJsonValidationStatus('IDLE');
                                               }}
                                               className={`relative w-full rounded-xl overflow-hidden border-2 transition-all ${selectedMapStyle === 'google_custom' && customMapJson === customStyle.json ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-slate-700 hover:border-white'}`}
                                           >
