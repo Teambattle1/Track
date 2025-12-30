@@ -803,3 +803,108 @@ export const saveGameStats = async (statsData: any): Promise<boolean> => {
         return false;
     }
 };
+
+// --- MAP STYLES ---
+export const fetchCustomMapStyles = async (): Promise<Array<{id: string; name: string; json: string; previewUrl?: string}>> => {
+    try {
+        const { data, error } = await supabase
+            .from('map_styles')
+            .select('id, name, json, preview_url')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            if (error.code === '42P01') {
+                // Table doesn't exist yet
+                console.warn('[DB Service] map_styles table not found');
+                return [];
+            }
+            throw error;
+        }
+
+        // Transform preview_url to previewUrl for consistency
+        return (data || []).map(style => ({
+            id: style.id,
+            name: style.name,
+            json: style.json,
+            previewUrl: style.preview_url
+        }));
+    } catch (e) {
+        logError('fetchCustomMapStyles', e);
+        return [];
+    }
+};
+
+export const saveCustomMapStyle = async (style: {id?: string; name: string; json: string; previewUrl?: string}): Promise<{id: string; name: string; json: string; previewUrl?: string} | null> => {
+    try {
+        if (style.id) {
+            // Update existing style
+            const { error } = await supabase
+                .from('map_styles')
+                .update({
+                    name: style.name,
+                    json: style.json,
+                    preview_url: style.previewUrl || null,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', style.id);
+
+            if (error) throw error;
+
+            return {
+                id: style.id,
+                name: style.name,
+                json: style.json,
+                previewUrl: style.previewUrl
+            };
+        } else {
+            // Create new style
+            const newId = `map-style-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+            const { error } = await supabase
+                .from('map_styles')
+                .insert({
+                    id: newId,
+                    name: style.name,
+                    json: style.json,
+                    preview_url: style.previewUrl || null,
+                    created_by: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+
+            if (error) throw error;
+
+            return {
+                id: newId,
+                name: style.name,
+                json: style.json,
+                previewUrl: style.previewUrl
+            };
+        }
+    } catch (e) {
+        logError('saveCustomMapStyle', e);
+        return null;
+    }
+};
+
+export const deleteCustomMapStyle = async (styleId: string): Promise<boolean> => {
+    try {
+        // First check if this style is being used in any games
+        const gamesUsingStyle = await countMapStyleUsage('google_custom');
+
+        if (gamesUsingStyle > 0) {
+            // Replace with OSM style in all games using google_custom
+            await replaceMapStyleInGames('google_custom', 'osm');
+        }
+
+        const { error } = await supabase
+            .from('map_styles')
+            .delete()
+            .eq('id', styleId);
+
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        logError('deleteCustomMapStyle', e);
+        return false;
+    }
+};
