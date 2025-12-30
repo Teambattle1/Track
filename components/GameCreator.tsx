@@ -101,11 +101,12 @@ const TABS = [
     { id: 'TEAMS', label: 'Teams', icon: Users },
     { id: 'MAP', label: 'Map', icon: MapIcon },
     { id: 'TIMING', label: 'Timing', icon: Clock }, // New Timing Tab
-    { id: 'PLAY', label: 'Play', icon: PlayCircle }, 
+    { id: 'PLAY', label: 'Play', icon: PlayCircle },
     { id: 'DESIGN', label: 'Design', icon: PenTool },
     { id: 'TASKS', label: 'Tasks', icon: List },
     { id: 'PLAYGROUNDS', label: 'Zones', icon: LayoutGrid },
     { id: 'SETTINGS', label: 'Settings', icon: Settings },
+    { id: 'LOGS', label: 'Logs', icon: ScrollText },
 ];
 
 const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, onDelete }) => {
