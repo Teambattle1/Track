@@ -957,7 +957,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-2 ${jsonValidationStatus === 'VALID' ? 'bg-green-600 text-white' : (jsonValidationStatus === 'INVALID' ? 'bg-red-600 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white')}`}
                                       >
                                           {jsonValidationStatus === 'VALID' ? <Check className="w-3 h-3" /> : (jsonValidationStatus === 'INVALID' ? <AlertTriangle className="w-3 h-3" /> : <Code className="w-3 h-3" />)}
-                                          {jsonValidationStatus === 'VALID' ? 'VALID JSON' : (jsonValidationStatus === 'INVALID' ? 'INVALID JSON' : 'VALIDATE & APPLY')}
+                                          {jsonValidationStatus === 'VALID' ? '✓ APPLIED' : (jsonValidationStatus === 'INVALID' ? 'INVALID JSON' : 'VALIDATE & APPLY')}
                                       </button>
                                   </div>
                               </div>
