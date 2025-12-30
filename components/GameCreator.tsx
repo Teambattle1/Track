@@ -1693,6 +1693,128 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                 onClose={() => setShowMapPicker(false)}
             />
         )}
+
+        {/* Map Style Preview Modal */}
+        {showMapStylePreview && previewMapStyle && (
+            <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in">
+                <div className="bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 border-b-2 border-blue-500 flex justify-between items-center">
+                        <div>
+                            <h3 className="text-lg font-black text-white uppercase">Map Style Preview</h3>
+                            <p className="text-xs text-blue-100 uppercase font-bold mt-1">
+                                {MAP_STYLES.find(s => s.id === previewMapStyle)?.label}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowMapStylePreview(false)}
+                            className="p-2 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                    <div className="p-6">
+                        <div className="aspect-video w-full rounded-xl overflow-hidden border-2 border-slate-700">
+                            <iframe
+                                src={`https://www.openstreetmap.org/#map=13/55.6761/12.5683`}
+                                className="w-full h-full"
+                                title="Map Style Preview"
+                            />
+                        </div>
+                        <div className="mt-4 flex gap-3 justify-end">
+                            <button
+                                onClick={() => window.open('https://www.openstreetmap.org', '_blank')}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center gap-2"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                                Open in OpenStreetMap
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setSelectedMapStyle(previewMapStyle);
+                                    setShowMapStylePreview(false);
+                                }}
+                                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center gap-2"
+                            >
+                                <Check className="w-4 h-4" />
+                                Use This Style
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Snazzy Maps Browser Modal */}
+        {showSnazzyMapsBrowser && (
+            <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in">
+                <div className="bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4">
+                    <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 border-b-2 border-purple-500 flex justify-between items-center">
+                        <div>
+                            <h3 className="text-lg font-black text-white uppercase">Browse Snazzy Maps</h3>
+                            <p className="text-xs text-purple-100 uppercase font-bold mt-1">Find and import custom Google Map styles</p>
+                        </div>
+                        <button
+                            onClick={() => setShowSnazzyMapsBrowser(false)}
+                            className="p-2 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                    <div className="p-6">
+                        <div className="bg-slate-950 border border-slate-700 rounded-xl p-4 mb-4">
+                            <h4 className="text-sm font-black text-white uppercase mb-2 flex items-center gap-2">
+                                <Info className="w-4 h-4 text-blue-400" />
+                                How to Import from Snazzy Maps
+                            </h4>
+                            <ol className="text-xs text-slate-300 space-y-2">
+                                <li className="flex gap-2">
+                                    <span className="text-orange-500 font-bold">1.</span>
+                                    <span>Click "Browse Snazzy Maps" below to open the website</span>
+                                </li>
+                                <li className="flex gap-2">
+                                    <span className="text-orange-500 font-bold">2.</span>
+                                    <span>Find a map style you like and click on it</span>
+                                </li>
+                                <li className="flex gap-2">
+                                    <span className="text-orange-500 font-bold">3.</span>
+                                    <span>Scroll down and click "Copy JSON" button</span>
+                                </li>
+                                <li className="flex gap-2">
+                                    <span className="text-orange-500 font-bold">4.</span>
+                                    <span>Return here, select "Google Custom" map style, and paste the JSON</span>
+                                </li>
+                            </ol>
+                        </div>
+                        <div className="aspect-video w-full rounded-xl overflow-hidden border-2 border-slate-700">
+                            <iframe
+                                src="https://snazzymaps.com/explore"
+                                className="w-full h-full"
+                                title="Snazzy Maps Browser"
+                            />
+                        </div>
+                        <div className="mt-4 flex gap-3">
+                            <button
+                                onClick={() => window.open('https://snazzymaps.com/explore', '_blank')}
+                                className="flex-1 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center justify-center gap-2"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                                Browse Snazzy Maps
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowSnazzyMapsBrowser(false);
+                                    setSelectedMapStyle('google_custom');
+                                }}
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center justify-center gap-2"
+                            >
+                                <Code className="w-4 h-4" />
+                                Go to JSON Import
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
     </div>
   );
 };
