@@ -217,10 +217,17 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         if (!editingList) return;
         const selected = library.filter(t => selectedTemplateIds.includes(t.id));
 
-        // Check for duplicates
-        const existingTaskIds = new Set(editingList.tasks.map(t => t.id));
-        const duplicates = selected.filter(task => existingTaskIds.has(task.id));
-        const newTasks = selected.filter(task => !existingTaskIds.has(task.id));
+        // Check for duplicates (by ID or by title+question match)
+        const duplicates = selected.filter(task =>
+            editingList.tasks.some(t =>
+                t.id === task.id || (t.title === task.title && t.task?.question === task.task?.question)
+            )
+        );
+        const newTasks = selected.filter(task =>
+            !editingList.tasks.some(t =>
+                t.id === task.id || (t.title === task.title && t.task?.question === task.task?.question)
+            )
+        );
 
         // Show warning if there are duplicates
         if (duplicates.length > 0) {
