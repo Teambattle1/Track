@@ -604,10 +604,16 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           }
       }
 
-      // Remove from custom styles
-      const updatedStyles = customStyles.filter(s => s.id !== styleId);
-      setCustomStyles(updatedStyles);
-      localStorage.setItem('geohunt_custom_styles', JSON.stringify(updatedStyles));
+      // Delete from Supabase
+      const deleted = await deleteCustomMapStyle(styleId);
+
+      if (deleted) {
+          // Remove from custom styles in state
+          const updatedStyles = customStyles.filter(s => s.id !== styleId);
+          setCustomStyles(updatedStyles);
+      } else {
+          alert('Failed to delete custom style from database. Please try again.');
+      }
   };
 
   const handleCreate = () => {
