@@ -1582,6 +1582,54 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 />
                             </div>
 
+                            {/* Task Status Markers */}
+                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-3">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                    <CheckCircle className="w-3 h-3" /> TASK STATUS MARKERS
+                                </label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <button
+                                        onClick={() => updateTask({ isCompleted: true, answeredIncorrectly: false } as any)}
+                                        className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border-2 flex flex-col items-center gap-1 ${
+                                            selectedTask.isCompleted && !(selectedTask as any).answeredIncorrectly
+                                                ? 'bg-green-600 border-green-500 text-white shadow-lg'
+                                                : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
+                                        }`}
+                                        title="Mark as correct"
+                                    >
+                                        <CheckCircle className="w-5 h-5" />
+                                        <span>Correct</span>
+                                    </button>
+                                    <button
+                                        onClick={() => updateTask({ isCompleted: false, answeredIncorrectly: true } as any)}
+                                        className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border-2 flex flex-col items-center gap-1 ${
+                                            (selectedTask as any).answeredIncorrectly
+                                                ? 'bg-red-600 border-red-500 text-white shadow-lg'
+                                                : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
+                                        }`}
+                                        title="Mark as incorrect"
+                                    >
+                                        <XCircle className="w-5 h-5" />
+                                        <span>Wrong</span>
+                                    </button>
+                                    <button
+                                        onClick={() => updateTask({ isCompleted: false, answeredIncorrectly: false } as any)}
+                                        className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border-2 flex flex-col items-center gap-1 ${
+                                            !selectedTask.isCompleted && !(selectedTask as any).answeredIncorrectly
+                                                ? 'bg-slate-600 border-slate-500 text-white shadow-lg'
+                                                : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
+                                        }`}
+                                        title="Clear status"
+                                    >
+                                        <X className="w-5 h-5" />
+                                        <span>Clear</span>
+                                    </button>
+                                </div>
+                                <p className="text-[8px] text-slate-400 uppercase tracking-wide">
+                                    {selectedTask.isCompleted ? '✓ Marked as correct' : (selectedTask as any).answeredIncorrectly ? '✗ Marked as incorrect' : 'No status set'}
+                                </p>
+                            </div>
+
                             {/* Icon Size Slider */}
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
                                 <div className="flex justify-between items-center">
