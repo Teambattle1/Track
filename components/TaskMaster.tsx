@@ -80,6 +80,12 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [pendingImportList, setPendingImportList] = useState<TaskList | null>(null);
     const [showGameSelectorForImport, setShowGameSelectorForImport] = useState(false);
 
+    // ADD TO destination selector (for bulk and single task)
+    const [showAddToModal, setShowAddToModal] = useState(false);
+    const [addToTasksSelection, setAddToTasksSelection] = useState<TaskTemplate[]>([]);
+    const [addToDestinationType, setAddToDestinationType] = useState<'GAME' | 'PLAYZONE' | 'TASKLIST' | null>(null);
+    const [showDestinationSelector, setShowDestinationSelector] = useState(false);
+
     // Refs
     const listImageInputRef = useRef<HTMLInputElement>(null);
 
