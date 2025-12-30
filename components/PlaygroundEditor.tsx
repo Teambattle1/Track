@@ -164,7 +164,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             toolbarPositions: {
                 ...game.toolbarPositions,
                 editorOrientationPos: orientationToolbarPos,
-                editorShowPos: showToolbarPos
+                editorShowPos: showToolbarPos,
+                editorToolsPos: toolsToolbarPos
             }
         };
         onUpdateGame(updatedGame);
