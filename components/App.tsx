@@ -1436,7 +1436,10 @@ const GameApp: React.FC = () => {
   // Active Game View
   return (
     <div className={`fixed inset-0 w-full h-full overflow-hidden bg-slate-900 text-white ${mode === GameMode.SIMULATION ? 'border-4 border-orange-500 shadow-[inset_0_0_50px_rgba(249,115,22,0.5)]' : ''}`}>
-        
+
+        {/* CONNECTION STATUS BANNER */}
+        <ConnectionStatus />
+
         {/* SIMULATION BANNER */}
         {mode === GameMode.SIMULATION && (
             <div className="absolute top-0 left-0 right-0 h-12 bg-orange-600/90 backdrop-blur-md flex items-center justify-between px-6 z-[6000] shadow-xl border-b border-orange-400">
