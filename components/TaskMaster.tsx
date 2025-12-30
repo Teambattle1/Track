@@ -131,7 +131,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     }, [cachedLibrary]);
 
     const loadLibrary = async (forceRefresh = false) => {
-        if (!forceRefresh && cachedLibrary.length > 0) {
+        if (!forceRefresh && cachedLibrary && Array.isArray(cachedLibrary) && cachedLibrary.length > 0) {
             // Use cache if available
             setLibrary(cachedLibrary);
             return;
