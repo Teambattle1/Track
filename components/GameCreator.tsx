@@ -1883,10 +1883,13 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
         )}
 
         {/* Map Style Preview Modal */}
-        {showMapStylePreview && previewMapStyle && (
+        {showMapStylePreview && (previewMapStyle || previewCustomStyle) && (
             <div
                 className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in"
-                onClick={() => setShowMapStylePreview(false)}
+                onClick={() => {
+                    setShowMapStylePreview(false);
+                    setPreviewCustomStyle(null);
+                }}
             >
                 <div
                     className="bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4"
@@ -1896,11 +1899,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                         <div>
                             <h3 className="text-lg font-black text-white uppercase">Map Style Preview</h3>
                             <p className="text-xs text-blue-100 uppercase font-bold mt-1">
-                                {MAP_STYLES.find(s => s.id === previewMapStyle)?.label}
+                                {previewCustomStyle ? previewCustomStyle.name : MAP_STYLES.find(s => s.id === previewMapStyle)?.label}
                             </p>
                         </div>
                         <button
-                            onClick={() => setShowMapStylePreview(false)}
+                            onClick={() => {
+                                setShowMapStylePreview(false);
+                                setPreviewCustomStyle(null);
+                            }}
                             className="p-2 hover:bg-white/20 rounded-full text-white transition-colors"
                         >
                             <X className="w-6 h-6" />
@@ -1908,8 +1914,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                     </div>
                     <div className="p-6">
                         {(() => {
-                            const style = MAP_STYLES.find(s => s.id === previewMapStyle);
-                            const previewUrl = style?.preview;
+                            const style = previewMapStyle ? MAP_STYLES.find(s => s.id === previewMapStyle) : null;
+                            const previewUrl = previewCustomStyle?.previewUrl || style?.preview;
 
                             return (
                                 <>
