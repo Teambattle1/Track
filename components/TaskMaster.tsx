@@ -143,6 +143,15 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         }
     }, [cachedLibrary]);
 
+    // Cleanup hover timer on unmount
+    useEffect(() => {
+        return () => {
+            if (hoverTimerRef.current) {
+                clearTimeout(hoverTimerRef.current);
+            }
+        };
+    }, []);
+
     const loadLibrary = async (forceRefresh = false) => {
         if (!forceRefresh && cachedLibrary && Array.isArray(cachedLibrary) && cachedLibrary.length > 0) {
             // Use cache if available
