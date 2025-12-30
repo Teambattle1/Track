@@ -227,6 +227,34 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         saveToolbarPositions();
     };
 
+    // Drag handlers for Tools toolbar
+    const handleToolsPointerDown = (e: React.PointerEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingTools(true);
+        toolsDragOffset.current = { x: e.clientX - toolsToolbarPos.x, y: e.clientY - toolsToolbarPos.y };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+    const handleToolsPointerMove = (e: React.PointerEvent) => {
+        if (!isDraggingTools) return;
+        e.stopPropagation();
+        e.preventDefault();
+        setToolsToolbarPos({ x: e.clientX - toolsDragOffset.current.x, y: e.clientY - toolsDragOffset.current.y });
+    };
+    const handleToolsPointerUp = (e: React.PointerEvent) => {
+        if (!isDraggingTools) return;
+        setIsDraggingTools(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
+    };
+
     const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId) || game.playgrounds?.[0];
 
     // CRITICAL NULL CHECK: Prevent crash if no playground exists
