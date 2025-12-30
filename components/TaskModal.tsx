@@ -368,6 +368,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   const renderConsensusView = () => {
+      // Count only active (non-retired) members
+      const activeMembers = teamMembers.filter(m => !m.isRetired);
+      const activeMemberCount = Math.max(activeMembers.length, 1);
+
       // Group votes by answer to show distribution
       const voteGroups: Record<string, string[]> = {};
       teamVotes.forEach(v => {
@@ -383,6 +387,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
           voteGroups[ansStr].push(v.userName);
       });
 
+      // Find who hasn't voted yet
+      const votedDeviceIds = new Set(teamVotes.map(v => v.deviceId));
+      const notVotedYet = activeMembers.filter(m => !votedDeviceIds.has(m.deviceId));
+
       return (
           <div className="space-y-6 animate-in fade-in">
               <div className="text-center">
@@ -391,8 +399,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   </div>
                   <h3 className="text-lg font-black uppercase text-gray-900 dark:text-white">TEAM CONSENSUS</h3>
                   <p className="text-sm text-gray-500 font-bold">
-                      {teamVotes.length} / {memberCount} VOTES CAST
+                      {teamVotes.length} / {activeMemberCount} VOTES CAST
                   </p>
+                  {notVotedYet.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-1">
+                          Waiting for: {notVotedYet.map(m => m.userName).join(', ')}
+                      </p>
+                  )}
               </div>
 
               <div className="space-y-3">
