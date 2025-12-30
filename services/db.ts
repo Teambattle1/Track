@@ -482,11 +482,16 @@ export const updateTeamProgress = async (teamId: string, pointId: string, newSco
             // But we reinforce here:
             if (!completed.has(pointId)) {
                 completed.add(pointId);
-                const { error } = await supabase.from('teams').update({ 
-                    score: newScore, // Caller should calculate score, OR we use RPC logic separately
-                    completed_point_ids: Array.from(completed)
-                }).eq('id', teamId);
-                if (error) throw error;
+                await retryWithBackoff(
+                    () => supabase.from('teams').update({
+                        score: newScore, // Caller should calculate score, OR we use RPC logic separately
+                        completed_point_ids: Array.from(completed)
+                    }).eq('id', teamId).then(result => {
+                        if (result.error) throw result.error;
+                        return result;
+                    }),
+                    'updateTeamProgress'
+                );
             }
         }
     } catch (e) {
