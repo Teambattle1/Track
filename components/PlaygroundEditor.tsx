@@ -336,6 +336,34 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     };
 
+    const handleSearchCompanyLogo = async (companyName: string) => {
+        if (!companyName.trim()) {
+            alert('Please enter a company name');
+            return;
+        }
+        if (!selectedTask) return;
+
+        setIsSearchingLogo(true);
+        try {
+            console.log('[Logo Search] Searching for:', companyName);
+            const logoUrl = await searchLogoUrl(companyName);
+
+            if (logoUrl) {
+                console.log('[Logo Search] Found logo:', logoUrl);
+                updateTask({ iconUrl: logoUrl });
+                setShowLogoPrompt(false);
+                setLogoCompanyName('');
+            } else {
+                alert('Could not find a logo for this company. Please try uploading manually.');
+            }
+        } catch (error) {
+            console.error('[Logo Search] Error:', error);
+            alert('Failed to search for logo. Please try again.');
+        } finally {
+            setIsSearchingLogo(false);
+        }
+    };
+
     // Throttle playground position updates to prevent excessive re-renders and DB writes
     const pendingUpdatesRef = useRef<Record<string, { x: number; y: number }>>({});
     const updateTimeoutRef = useRef<number | null>(null);
