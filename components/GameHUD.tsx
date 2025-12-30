@@ -704,6 +704,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                             <div className="flex gap-1 text-center">
                                 <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">CHAT</div>
                                 <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">SETTINGS</div>
+                                <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">TIME</div>
                                 <div className="flex-1 text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight">MAP</div>
                             </div>
                         </div>
