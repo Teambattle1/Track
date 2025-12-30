@@ -1763,8 +1763,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
         {/* Snazzy Maps Browser Modal */}
         {showSnazzyMapsBrowser && (
-            <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in">
-                <div className="bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4">
+            <div
+                className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in"
+                onClick={() => setShowSnazzyMapsBrowser(false)}
+            >
+                <div
+                    className="bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 border-b-2 border-purple-500 flex justify-between items-center">
                         <div>
                             <h3 className="text-lg font-black text-white uppercase">Browse Snazzy Maps</h3>
