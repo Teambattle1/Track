@@ -1897,7 +1897,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                             </div>
                                             <div className="mt-4 p-3 bg-slate-900 rounded-lg">
                                                 <p className="text-xs text-slate-400">
-                                                    <span className="font-bold text-white">Note:</span> This preview shows a sample map tile.
+                                                    <span className="font-bold text-white">Note:</span> The left shows a single map tile, the right shows how multiple tiles connect.
                                                     The actual map will cover your entire game area with this visual style.
                                                 </p>
                                             </div>
