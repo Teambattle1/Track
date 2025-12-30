@@ -653,8 +653,14 @@ export const saveTaskList = async (list: TaskList) => {
             data: normalizedList,
             updated_at: new Date().toISOString()
         });
-        if (error) throw error;
-    } catch (e) { logError('saveTaskList', e); }
+        if (error) {
+            logError('saveTaskList', error);
+            throw error;
+        }
+    } catch (e) {
+        logError('saveTaskList', e);
+        throw e; // Re-throw so caller can handle it
+    }
 };
 
 export const deleteTaskList = async (id: string) => {
