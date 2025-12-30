@@ -1243,6 +1243,10 @@ const GameApp: React.FC = () => {
                   isTemplateMode={false}
                   onAddZoneFromLibrary={() => setShowTaskMaster(true)}
                   isAdmin={authUser?.role === 'Owner' || authUser?.role === 'Admin'}
+                  taskLists={taskLists}
+                  onUpdateTaskLists={setTaskLists}
+                  taskLibrary={taskLibrary}
+                  onUpdateTaskLibrary={setTaskLibrary}
               />
           )}
           {showChatDrawer && activeGameId && (
