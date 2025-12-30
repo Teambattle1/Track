@@ -714,6 +714,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 <tr
                                     key={task.id}
                                     onClick={() => (selectionMode || bulkSelectionMode) ? toggleSelection(task.id) : null}
+                                    onMouseEnter={() => handleTaskMouseEnter(task)}
+                                    onMouseLeave={handleTaskMouseLeave}
                                     className={`hover:bg-slate-800/50 transition-colors cursor-pointer ${isSelected ? 'bg-indigo-900/30 border-l-4 border-indigo-600' : ''}`}
                                 >
                                     {bulkSelectionMode && (
