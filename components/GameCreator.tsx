@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { searchLogoUrl } from '../services/ai';
 import { uploadImage } from '../services/storage';
-import { fetchUniqueTags } from '../services/db';
+import { fetchUniqueTags, countMapStyleUsage, replaceMapStyleInGames } from '../services/db';
 import { resizeImage } from '../utils/image';
 import GameLogViewer from './GameLogViewer';
 import MeetingPointMapPicker from './MeetingPointMapPicker';
