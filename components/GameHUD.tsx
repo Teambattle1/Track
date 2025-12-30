@@ -93,7 +93,6 @@ const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: str
     { id: 'winter', label: 'Winter', icon: Mountain, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'brightness-125 hue-rotate-180 saturate-50' },
     { id: 'satellite', label: 'Satellite', icon: Layers, preview: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/2722/4285' },
     { id: 'dark', label: 'Dark Mode', icon: MapIcon, preview: 'https://a.basemaps.cartocdn.com/dark_all/13/4285/2722.png' },
-    { id: 'light', label: 'Light Mode', icon: Sun, preview: 'https://a.basemaps.cartocdn.com/light_all/13/4285/2722.png' },
     { id: 'clean', label: 'Clean', icon: MapIcon, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png' },
 ];
 

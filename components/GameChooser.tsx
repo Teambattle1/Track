@@ -20,7 +20,6 @@ const MAP_LABELS: Record<MapStyleId, string> = {
     osm: 'Standard',
     satellite: 'Satellite',
     dark: 'Dark Mode',
-    light: 'Light Mode',
     ancient: 'Ancient',
     clean: 'Clean',
     winter: 'Winter',
