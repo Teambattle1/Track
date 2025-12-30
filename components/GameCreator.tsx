@@ -963,6 +963,49 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       />
                                   );
                               })}
+
+                              {/* Custom Saved Styles */}
+                              {customStyles.map(customStyle => {
+                                  return (
+                                      <div key={customStyle.id} className="relative group">
+                                          <button
+                                              onClick={() => {
+                                                  setSelectedMapStyle('google_custom');
+                                                  setCustomMapJson(customStyle.json);
+                                                  setJsonValidationStatus('VALID');
+                                                  setShowMapStylePreview(false);
+                                              }}
+                                              className={`relative w-full rounded-xl overflow-hidden border-2 transition-all ${selectedMapStyle === 'google_custom' && customMapJson === customStyle.json ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-slate-700 hover:border-white'}`}
+                                          >
+                                              <div className="aspect-square bg-gradient-to-br from-purple-900 to-blue-900 relative flex items-center justify-center">
+                                                  <Settings className="w-10 h-10 text-purple-300" />
+                                              </div>
+                                              <div className="absolute bottom-0 left-0 right-0 bg-black/80 p-2 text-center">
+                                                  <span className="text-[10px] font-black uppercase text-white">{customStyle.name}</span>
+                                              </div>
+                                              {selectedMapStyle === 'google_custom' && customMapJson === customStyle.json && (
+                                                  <div className="absolute top-2 right-2 bg-orange-600 text-white rounded-full p-1 shadow-lg">
+                                                      <CheckCircle className="w-4 h-4" />
+                                                  </div>
+                                              )}
+                                          </button>
+
+                                          {/* Delete Button */}
+                                          <button
+                                              onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  if (confirm(`Delete custom style "${customStyle.name}"?`)) {
+                                                      handleDeleteCustomStyle(customStyle.id);
+                                                  }
+                                              }}
+                                              className="absolute top-2 left-2 p-1.5 bg-red-600/90 hover:bg-red-500 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                                              title="Delete Custom Style"
+                                          >
+                                              <Trash2 className="w-3 h-3" />
+                                          </button>
+                                      </div>
+                                  );
+                              })}
                           </div>
                           
                           <input ref={mapPreviewInputRef} type="file" accept="image/*" className="hidden" onChange={handleMapPreviewUpload} />
