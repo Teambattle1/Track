@@ -220,11 +220,11 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             clearTimeout(hoverTimerRef.current);
         }
 
-        // Set a 2-second timer to show the preview
+        // Set a 1-second timer to show the preview
         hoverTimerRef.current = setTimeout(() => {
             setHoveredTask(task);
             setShowPreview(true);
-        }, 2000);
+        }, 1000);
     };
 
     const handleTaskMouseLeave = () => {
