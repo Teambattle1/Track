@@ -1441,13 +1441,98 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                   </div>
               );
           case 'PLAYGROUNDS':
+              const gamePlaygrounds = baseGame?.playgrounds || [];
               return (
-                  <div className="flex flex-col items-center justify-center h-full text-center p-10 opacity-50">
-                      <LayoutGrid className="w-16 h-16 mb-4 text-slate-600" />
-                      <h3 className="text-xl font-black text-white uppercase tracking-widest mb-2">MANAGED IN EDITOR</h3>
-                      <p className="text-sm text-slate-400 max-w-xs uppercase">
-                          Playgrounds and zones are built using the visual editor.
-                      </p>
+                  <div className="space-y-6 max-w-4xl animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between mb-4">
+                          <div>
+                              <h3 className="text-xl font-black text-white uppercase tracking-widest">GAME ZONES</h3>
+                              <p className="text-xs text-slate-500 uppercase font-bold mt-1">
+                                  {gamePlaygrounds.length} zone{gamePlaygrounds.length !== 1 ? 's' : ''} in this game
+                              </p>
+                          </div>
+                          {onOpenPlaygroundEditor && gamePlaygrounds.length > 0 && (
+                              <button
+                                  onClick={() => onOpenPlaygroundEditor()}
+                                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold uppercase text-xs tracking-wide flex items-center gap-2 transition-colors shadow-lg"
+                              >
+                                  <LayoutGrid className="w-4 h-4" />
+                                  OPEN EDITOR
+                              </button>
+                          )}
+                      </div>
+
+                      {gamePlaygrounds.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center h-64 text-center p-10 bg-slate-900 border border-slate-800 rounded-2xl">
+                              <LayoutGrid className="w-16 h-16 mb-4 text-slate-600" />
+                              <h3 className="text-lg font-black text-white uppercase tracking-widest mb-2">NO ZONES YET</h3>
+                              <p className="text-sm text-slate-400 max-w-xs uppercase mb-4">
+                                  Playgrounds and zones are built using the visual editor.
+                              </p>
+                              {onOpenPlaygroundEditor && (
+                                  <button
+                                      onClick={() => onOpenPlaygroundEditor()}
+                                      className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold uppercase text-xs tracking-wide flex items-center gap-2 transition-colors shadow-lg"
+                                  >
+                                      <Plus className="w-4 h-4" />
+                                      CREATE FIRST ZONE
+                                  </button>
+                              )}
+                          </div>
+                      ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                              {gamePlaygrounds.map((playground, index) => (
+                                  <div
+                                      key={playground.id}
+                                      onClick={() => onOpenPlaygroundEditor?.(playground.id)}
+                                      className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:border-orange-500 transition-all group cursor-pointer flex flex-col"
+                                  >
+                                      <div className="aspect-video bg-slate-800 relative overflow-hidden">
+                                          {playground.imageUrl ? (
+                                              <img
+                                                  src={playground.imageUrl}
+                                                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                                  alt={playground.title}
+                                              />
+                                          ) : (
+                                              <div className="w-full h-full flex items-center justify-center text-slate-600">
+                                                  <LayoutGrid className="w-12 h-12" />
+                                              </div>
+                                          )}
+                                          <div className="absolute top-2 left-2 bg-orange-600 text-white text-[10px] font-bold px-2 py-1 rounded">
+                                              ZONE #{index + 1}
+                                          </div>
+                                          {playground.buttonVisible && (
+                                              <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm">
+                                                  INTERACTIVE
+                                              </div>
+                                          )}
+                                      </div>
+                                      <div className="p-4 flex-1 flex flex-col">
+                                          <h3 className="font-bold text-white uppercase truncate mb-2 group-hover:text-orange-400 transition-colors">
+                                              {playground.title}
+                                          </h3>
+                                          <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase font-bold">
+                                              {playground.orientationLock && playground.orientationLock !== 'none' && (
+                                                  <span className="bg-slate-800 px-2 py-1 rounded">
+                                                      {playground.orientationLock}
+                                                  </span>
+                                              )}
+                                              {playground.audioUrl && (
+                                                  <span className="bg-slate-800 px-2 py-1 rounded">
+                                                      🔊 AUDIO
+                                                  </span>
+                                              )}
+                                          </div>
+                                          <div className="mt-auto pt-3 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 uppercase font-bold">
+                                              <span>Click to edit</span>
+                                              <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-orange-500 transition-colors" />
+                                          </div>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      )}
                   </div>
               );
           case 'LOGS':
