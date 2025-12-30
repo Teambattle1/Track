@@ -1912,10 +1912,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             {/* Task Status Markers Toggle */}
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-3">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                    <CheckCircle className="w-3 h-3" /> SHOW STATUS MARKERS
+                                    <CheckCircle className="w-3 h-3" /> SHOW OK/WRONG ANSWER MARKERS
                                 </label>
                                 <p className="text-[8px] text-slate-400">
-                                    When enabled, this task will display visual markers (✓ correct / ✗ wrong) when teams re-enter the playzone after solving it.
+                                    When enabled, this task will display visual markers (✓ OK / ✗ WRONG) when teams re-enter the playzone after solving it.
                                 </p>
                                 <button
                                     onClick={() => updateTask({ showStatusMarkers: !(selectedTask.showStatusMarkers ?? true) })}
