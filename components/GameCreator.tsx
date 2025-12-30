@@ -293,6 +293,9 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [isUploadingTaskBg, setIsUploadingTaskBg] = useState(false);
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [showMapStylePreview, setShowMapStylePreview] = useState(false);
+  const [previewMapStyle, setPreviewMapStyle] = useState<MapStyleId | null>(null);
+  const [showSnazzyMapsBrowser, setShowSnazzyMapsBrowser] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const templateImgInputRef = useRef<HTMLInputElement>(null);
