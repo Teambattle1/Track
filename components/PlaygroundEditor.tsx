@@ -958,7 +958,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             )}
 
                             <div className="grid grid-cols-4 gap-2 mb-3">
-                                {['default', 'star', 'flag', 'trophy', 'camera', 'question', 'skull', 'treasure'].map((iconKey) => {
+                                {['default', 'star', 'flag', 'trophy', 'camera', 'question', 'skull', 'treasure', 'music', 'nature', 'world'].map((iconKey) => {
                                     const Icon = ICON_COMPONENTS[iconKey as IconId];
                                     const isActive = activePlayground.iconId === iconKey && !activePlayground.iconUrl;
                                     return (
