@@ -29,6 +29,9 @@ const ICON_COLORS: Record<IconId, string> = {
   question: '#8b5cf6', // Violet
   skull: '#1f2937',   // Gray
   treasure: '#10b981', // Emerald
+  music: '#ec4899',   // Pink
+  nature: '#22c55e',  // Green
+  world: '#06b6d4',   // Cyan
 };
 
 /**
