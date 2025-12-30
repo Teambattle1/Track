@@ -128,8 +128,11 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
                           onChange={(e) => handleUpdateAction(action.id, { targetId: e.target.value })}
                       >
                           <option value="" disabled>Select Target Task...</option>
-                          {allPoints.filter(p => p.id !== point.id && !p.isSectionHeader).map((p, idx) => (
-                              <option key={p.id} value={p.id}>#{String(idx + 1).padStart(2, '0')} {p.title}</option>
+                          {allPoints
+                              .map((p, idx) => ({ ...p, order: idx + 1 }))
+                              .filter(p => p.id !== point.id && !p.isSectionHeader)
+                              .map(p => (
+                              <option key={p.id} value={p.id}>#{String(p.order).padStart(2, '0')} {p.title}</option>
                           ))}
                       </select>
                   )}
