@@ -267,6 +267,38 @@ export const deleteGame = async (id: string) => {
     } catch (e) { logError('deleteGame', e); }
 };
 
+// --- MAP STYLES ---
+export const countMapStyleUsage = async (mapStyleId: string): Promise<number> => {
+    try {
+        const games = await fetchGames();
+        return games.filter(game => game.defaultMapStyle === mapStyleId).length;
+    } catch (e) {
+        logError('countMapStyleUsage', e);
+        return 0;
+    }
+};
+
+export const replaceMapStyleInGames = async (oldStyleId: string, newStyleId: string = 'osm'): Promise<number> => {
+    try {
+        const games = await fetchGames();
+        const affectedGames = games.filter(game => game.defaultMapStyle === oldStyleId);
+
+        // Update each game
+        for (const game of affectedGames) {
+            const updatedGame = {
+                ...game,
+                defaultMapStyle: newStyleId
+            };
+            await saveGame(updatedGame);
+        }
+
+        return affectedGames.length;
+    } catch (e) {
+        logError('replaceMapStyleInGames', e);
+        return 0;
+    }
+};
+
 // --- TEAMS ---
 export const fetchTeams = async (gameId: string): Promise<Team[]> => {
     try {
