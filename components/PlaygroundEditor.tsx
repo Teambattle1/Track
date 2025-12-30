@@ -139,6 +139,85 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     }, [game.playgrounds]);
 
+    // Load toolbar positions from game
+    useEffect(() => {
+        if (game.toolbarPositions?.editorOrientationPos) {
+            setOrientationToolbarPos(game.toolbarPositions.editorOrientationPos);
+        }
+        if (game.toolbarPositions?.editorShowPos) {
+            setShowToolbarPos(game.toolbarPositions.editorShowPos);
+        }
+    }, [game.id]);
+
+    // Save toolbar positions to game
+    const saveToolbarPositions = () => {
+        const updatedGame = {
+            ...game,
+            toolbarPositions: {
+                ...game.toolbarPositions,
+                editorOrientationPos: orientationToolbarPos,
+                editorShowPos: showToolbarPos
+            }
+        };
+        onUpdateGame(updatedGame);
+    };
+
+    // Drag handlers for Orientation toolbar
+    const handleOrientationPointerDown = (e: React.PointerEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingOrientation(true);
+        orientationDragOffset.current = { x: e.clientX - orientationToolbarPos.x, y: e.clientY - orientationToolbarPos.y };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+    const handleOrientationPointerMove = (e: React.PointerEvent) => {
+        if (!isDraggingOrientation) return;
+        e.stopPropagation();
+        e.preventDefault();
+        setOrientationToolbarPos({ x: e.clientX - orientationDragOffset.current.x, y: e.clientY - orientationDragOffset.current.y });
+    };
+    const handleOrientationPointerUp = (e: React.PointerEvent) => {
+        if (!isDraggingOrientation) return;
+        setIsDraggingOrientation(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
+    };
+
+    // Drag handlers for Show toolbar
+    const handleShowPointerDown = (e: React.PointerEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingShow(true);
+        showDragOffset.current = { x: e.clientX - showToolbarPos.x, y: e.clientY - showToolbarPos.y };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+    const handleShowPointerMove = (e: React.PointerEvent) => {
+        if (!isDraggingShow) return;
+        e.stopPropagation();
+        e.preventDefault();
+        setShowToolbarPos({ x: e.clientX - showDragOffset.current.x, y: e.clientY - showDragOffset.current.y });
+    };
+    const handleShowPointerUp = (e: React.PointerEvent) => {
+        if (!isDraggingShow) return;
+        setIsDraggingShow(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
+    };
+
     const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId) || game.playgrounds?.[0];
 
     // CRITICAL NULL CHECK: Prevent crash if no playground exists
