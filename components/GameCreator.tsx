@@ -1539,6 +1539,82 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                 </div>
             </div>
         )}
+
+        {/* Date & Time Picker Modal */}
+        {showDateTimePicker && (
+            <div className="fixed inset-0 z-[7000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+                    <div className="p-6 border-b border-slate-700 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-red-600/20 rounded-lg">
+                                <Calendar className="w-6 h-6 text-red-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-white uppercase">SELECT END TIME</h3>
+                                <p className="text-xs text-slate-400 uppercase font-bold mt-1">Choose date and time</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowDateTimePicker(false)}
+                            className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                    <div className="p-6 flex justify-center">
+                        <DatePicker
+                            selected={endDateTime ? new Date(endDateTime) : new Date()}
+                            onChange={(date: Date | null) => {
+                                if (date) {
+                                    // Convert to datetime-local format (YYYY-MM-DDTHH:mm)
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const hours = String(date.getHours()).padStart(2, '0');
+                                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                                    setEndDateTime(`${year}-${month}-${day}T${hours}:${minutes}`);
+                                }
+                            }}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            timeCaption="Time"
+                            dateFormat="MMMM d, yyyy h:mm aa"
+                            inline
+                            className="bg-slate-950"
+                        />
+                    </div>
+                    <div className="p-4 border-t border-slate-700 bg-slate-950 flex gap-3">
+                        <button
+                            onClick={() => setShowDateTimePicker(false)}
+                            className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold uppercase text-xs transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={() => setShowDateTimePicker(false)}
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-bold uppercase text-xs transition-all shadow-lg flex items-center justify-center gap-2"
+                        >
+                            <Check className="w-4 h-4" />
+                            CONFIRM
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Meeting Point Map Picker Modal */}
+        {showMapPicker && (
+            <MeetingPointMapPicker
+                initialLat={endLat ? parseFloat(endLat) : 55.6761}
+                initialLng={endLng ? parseFloat(endLng) : 12.5683}
+                onLocationSelect={(lat, lng) => {
+                    setEndLat(lat.toString());
+                    setEndLng(lng.toString());
+                }}
+                onClose={() => setShowMapPicker(false)}
+            />
+        )}
     </div>
   );
 };
