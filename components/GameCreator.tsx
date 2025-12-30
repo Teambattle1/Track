@@ -468,6 +468,56 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       }
   };
 
+  const handleCreateCustomStyle = () => {
+      if (!customStyleName.trim()) {
+          alert('Please enter a name for your custom style');
+          return;
+      }
+
+      if (!customMapJson.trim()) {
+          alert('Please add custom map JSON first');
+          return;
+      }
+
+      try {
+          // Validate JSON
+          const parsed = JSON.parse(customMapJson);
+          if (!Array.isArray(parsed)) {
+              alert('Invalid JSON format');
+              return;
+          }
+
+          // Create new custom style
+          const newStyle = {
+              id: `custom_${Date.now()}`,
+              name: customStyleName.trim(),
+              json: customMapJson
+          };
+
+          // Add to custom styles
+          const updatedStyles = [...customStyles, newStyle];
+          setCustomStyles(updatedStyles);
+
+          // Save to localStorage
+          localStorage.setItem('geohunt_custom_styles', JSON.stringify(updatedStyles));
+
+          // Close modal and reset
+          setShowCreateStyleModal(false);
+          setCustomStyleName('');
+
+          // Show success
+          alert(`Custom style "${newStyle.name}" added to library!`);
+      } catch (e) {
+          alert('Failed to create custom style. Please check your JSON format.');
+      }
+  };
+
+  const handleDeleteCustomStyle = (styleId: string) => {
+      const updatedStyles = customStyles.filter(s => s.id !== styleId);
+      setCustomStyles(updatedStyles);
+      localStorage.setItem('geohunt_custom_styles', JSON.stringify(updatedStyles));
+  };
+
   const handleCreate = () => {
       if (!name.trim()) {
           alert("Game Name is required");
