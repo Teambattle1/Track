@@ -195,15 +195,17 @@ const MapStyleCard: React.FC<MapStyleCardProps> = ({
                 <Edit className="w-3 h-3" />
             </button>
 
-            {/* Preview Map Style Button */}
+            {/* Preview Button - Bottom Bar */}
             {previewUrl && (
-                <button
-                    onClick={onPreview}
-                    className="absolute top-2 right-2 p-1.5 bg-blue-600/90 hover:bg-blue-500 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
-                    title="Preview on OpenStreetMap"
-                >
-                    <ExternalLink className="w-3 h-3" />
-                </button>
+                <div className="mt-1">
+                    <button
+                        onClick={onPreview}
+                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all flex items-center justify-center gap-1.5 text-[10px] font-black uppercase"
+                    >
+                        <Eye className="w-3.5 h-3.5" />
+                        PREVIEW
+                    </button>
+                </div>
             )}
         </div>
     );
