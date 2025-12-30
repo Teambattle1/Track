@@ -38,6 +38,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [sliderValue, setSliderValue] = useState<number>(point?.task.range?.min || 0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [hintRevealed, setHintRevealed] = useState(false);
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
   // Voting State
   const [isVoting, setIsVoting] = useState(false);
