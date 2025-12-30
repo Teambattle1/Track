@@ -446,18 +446,28 @@ export const registerTeam = async (team: Team) => {
 // ATOMIC UPDATE (Fixes Race Condition Point 5)
 export const updateTeamScore = async (teamId: string, delta: number) => {
     try {
-        // Attempt to use RPC for atomic increment
-        const { error: rpcError } = await supabase.rpc('increment_score', { team_id: teamId, amount: delta });
-        
-        if (rpcError) {
-            // Fallback to legacy read-modify-write if RPC missing
-            console.warn("RPC increment_score missing, falling back to standard update");
+        // Attempt to use RPC for atomic increment with retry logic
+        await retryWithBackoff(
+            () => supabase.rpc('increment_score', { team_id: teamId, amount: delta }).then(result => {
+                if (result.error) throw result.error;
+                return result;
+            }),
+            'updateTeamScore (RPC)'
+        ).catch(async (e) => {
+            // Fallback to legacy read-modify-write if RPC fails
+            console.warn("RPC increment_score failed, falling back to standard update:", e.message);
             const team = await fetchTeam(teamId);
             if (team) {
                 const newScore = Math.max(0, team.score + delta);
-                await supabase.from('teams').update({ score: newScore }).eq('id', teamId);
+                await retryWithBackoff(
+                    () => supabase.from('teams').update({ score: newScore }).eq('id', teamId).then(result => {
+                        if (result.error) throw result.error;
+                        return result;
+                    }),
+                    'updateTeamScore (fallback)'
+                );
             }
-        }
+        });
     } catch (e) {
         logError('updateTeamScore', e);
     }
