@@ -991,26 +991,35 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               </div>
 
                               {enableMeetingPoint && (
-                                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                                      <div>
-                                          <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Latitude</label>
-                                          <input
-                                              type="text"
-                                              value={endLat}
-                                              onChange={(e) => setEndLat(e.target.value)}
-                                              placeholder="55.6761"
-                                              className="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold focus:border-orange-500 outline-none uppercase"
-                                          />
-                                      </div>
-                                      <div>
-                                          <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Longitude</label>
-                                          <input
-                                              type="text"
-                                              value={endLng}
-                                              onChange={(e) => setEndLng(e.target.value)}
-                                              placeholder="12.5683"
-                                              className="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold focus:border-orange-500 outline-none uppercase"
-                                          />
+                                  <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                      <button
+                                          onClick={() => setShowMapPicker(true)}
+                                          className="w-full p-4 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-xl font-bold uppercase text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 group"
+                                      >
+                                          <MapPin className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                          PICK LOCATION ON MAP
+                                      </button>
+                                      <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                              <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Latitude</label>
+                                              <input
+                                                  type="text"
+                                                  value={endLat}
+                                                  onChange={(e) => setEndLat(e.target.value)}
+                                                  placeholder="55.6761"
+                                                  className="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold focus:border-orange-500 outline-none uppercase"
+                                              />
+                                          </div>
+                                          <div>
+                                              <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Longitude</label>
+                                              <input
+                                                  type="text"
+                                                  value={endLng}
+                                                  onChange={(e) => setEndLng(e.target.value)}
+                                                  placeholder="12.5683"
+                                                  className="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold focus:border-orange-500 outline-none uppercase"
+                                              />
+                                          </div>
                                       </div>
                                   </div>
                               )}
