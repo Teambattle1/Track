@@ -618,13 +618,32 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             alert(`✓ Successfully added ${addToTasksSelection.length} task${addToTasksSelection.length !== 1 ? 's' : ''} to "${(destination as Game).name}"`);
         } else if (addToDestinationType === 'TASKLIST' && 'tasks' in destination) {
             // Add to tasklist
-            const updatedList = {
-                ...(destination as TaskList),
-                tasks: [...(destination as TaskList).tasks, ...addToTasksSelection]
-            };
-            await db.saveTaskList(updatedList);
-            onUpdateTaskLists(taskLists.map(t => t.id === updatedList.id ? updatedList : t));
-            alert(`✓ Successfully added ${addToTasksSelection.length} task${addToTasksSelection.length !== 1 ? 's' : ''} to "${(destination as TaskList).name}"`);
+            const destinationList = destination as TaskList;
+            const existingTaskIds = new Set(destinationList.tasks.map(t => t.id));
+
+            // Separate duplicates from new tasks
+            const duplicateTasks = addToTasksSelection.filter(task => existingTaskIds.has(task.id));
+            const newTasks = addToTasksSelection.filter(task => !existingTaskIds.has(task.id));
+
+            // Show warning if there are duplicates
+            if (duplicateTasks.length > 0) {
+                const duplicateNames = duplicateTasks.map(t => `"${t.title}"`).join(', ');
+                const message = duplicateTasks.length === 1
+                    ? `⚠️ The task ${duplicateNames} is already in this list and was skipped.`
+                    : `⚠️ ${duplicateTasks.length} tasks are already in this list and were skipped: ${duplicateNames}`;
+                alert(message);
+            }
+
+            // Only proceed if there are new tasks to add
+            if (newTasks.length > 0) {
+                const updatedList = {
+                    ...destinationList,
+                    tasks: [...destinationList.tasks, ...newTasks]
+                };
+                await db.saveTaskList(updatedList);
+                onUpdateTaskLists(taskLists.map(t => t.id === updatedList.id ? updatedList : t));
+                alert(`✓ Successfully added ${newTasks.length} task${newTasks.length !== 1 ? 's' : ''} to "${destinationList.name}"`);
+            }
         }
 
         // Reset all states including bulk selection
