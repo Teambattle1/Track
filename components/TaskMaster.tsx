@@ -1255,7 +1255,12 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     </div>
                                     <div className="flex gap-3">
                                         <button
-                                            onClick={() => handleShowAddToModal(library.filter(t => selectedTemplateIds.includes(t.id)))}
+                                            onClick={() => {
+                                                const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
+                                                console.log(`[ADD TO] Selected IDs: ${selectedTemplateIds.join(', ')}`);
+                                                console.log(`[ADD TO] Filtered tasks: ${selectedTasks.length} (from ${selectedTemplateIds.length} IDs in library of ${library.length})`);
+                                                handleShowAddToModal(selectedTasks);
+                                            }}
                                             className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold uppercase text-xs tracking-wide flex items-center gap-2 shadow-lg transition-all"
                                         >
                                             <Plus className="w-4 h-4" /> ADD TO
