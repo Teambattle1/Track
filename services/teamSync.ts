@@ -33,6 +33,7 @@ class TeamSyncService {
   private userName: string = 'Anonymous';
   private userLocation: Coordinate | null = null; // Track local location
   private isSolving: boolean = false; // Track solving status locally
+  private isRetired: boolean = false; // Track if user has retired from the team
 
   private gameId: string | null = null;
   private teamKey: string | null = null;
