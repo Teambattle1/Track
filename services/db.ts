@@ -894,15 +894,19 @@ export const saveUserSettings = async (userId: string, settings: any): Promise<b
             return true; // Return true to prevent error cascading
         }
 
-        const { error } = await supabase
-            .from('user_settings')
-            .upsert({
-                user_id: userId,
-                data: settings,
-                updated_at: new Date().toISOString()
-            });
-
-        if (error) throw error;
+        await retryWithBackoff(
+            () => supabase
+                .from('user_settings')
+                .upsert({
+                    user_id: userId,
+                    data: settings,
+                    updated_at: new Date().toISOString()
+                }).then(result => {
+                    if (result.error) throw result.error;
+                    return result;
+                }),
+            'saveUserSettings'
+        );
         return true;
     } catch (e) {
         logError('saveUserSettings', e);
