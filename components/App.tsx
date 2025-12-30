@@ -72,6 +72,7 @@ const GameApp: React.FC = () => {
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [showTeamsHub, setShowTeamsHub] = useState(false);
   const [showGameCreator, setShowGameCreator] = useState(false);
+  const [showTeamLobby, setShowTeamLobby] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
   
   // --- DASHBOARD STATE ---
