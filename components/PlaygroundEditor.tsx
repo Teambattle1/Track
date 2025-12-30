@@ -1714,7 +1714,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 )}
 
                                 {/* Icon Buttons */}
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-3 gap-2">
                                     <button
                                         onClick={() => taskIconInputRef.current?.click()}
                                         className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
@@ -1723,6 +1723,32 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         <Upload className="w-3 h-3" /> UPLOAD
                                     </button>
                                     <input ref={taskIconInputRef} type="file" className="hidden" accept="image/*" onChange={handleTaskIconUpload} />
+
+                                    <button
+                                        onClick={() => {
+                                            setLogoCompanyName('');
+                                            setShowLogoPrompt(true);
+                                        }}
+                                        disabled={isSearchingLogo}
+                                        className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
+                                            isSearchingLogo
+                                                ? 'bg-blue-600/50 text-blue-300 cursor-wait'
+                                                : 'border border-dashed border-blue-600 text-blue-400 hover:text-blue-300 hover:border-blue-400'
+                                        }`}
+                                        title="Search for company logo online"
+                                        type="button"
+                                    >
+                                        {isSearchingLogo ? (
+                                            <>
+                                                <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
+                                                <span className="text-[9px]">SEARCHING...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Globe className="w-3 h-3" /> LOGO
+                                            </>
+                                        )}
+                                    </button>
 
                                     <button
                                         onClick={() => {
