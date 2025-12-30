@@ -57,8 +57,9 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
   // For the Templates tab, split between My and Free
   const myTemplates = listsArr.filter(l => !l.isClientList).slice(0, 4);
 
+  // Use centralized date formatting (defaults to English for task lists without language)
   const formatDate = (ts: number) => {
-    return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return formatDateShort(ts, 'English');
   };
 
   const getFlag = (list: TaskList) => {
