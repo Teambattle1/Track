@@ -23,8 +23,9 @@ import { formatDateTime, formatDateShort, formatTimeShort, getLocaleFromLanguage
 interface GameCreatorProps {
   onClose: () => void;
   onCreate: (game: Partial<Game>) => void;
-  baseGame?: Game; 
+  baseGame?: Game;
   onDelete?: (id: string) => void;
+  onOpenPlaygroundEditor?: (playgroundId?: string) => void;
 }
 
 // Map Styles with working preview logic
