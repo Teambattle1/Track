@@ -313,6 +313,54 @@ NOTIFY pgrst, 'reload config';`;
                   )}
               </div>
           )}
+
+          {/* Feature Catalog Export */}
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                          <Book className="w-5 h-5 text-green-400" />
+                      </div>
+                      <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-white">FEATURE CATALOG</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">
+                              Download PDF for users
+                          </p>
+                          <p className="text-[10px] text-slate-600 font-bold mt-2 leading-snug">
+                              Professional feature documentation with all app capabilities for new users
+                          </p>
+                      </div>
+                  </div>
+              </div>
+
+              <button
+                  onClick={async () => {
+                      setIsGeneratingPDF(true);
+                      try {
+                          await generateFeatureCatalogPDF();
+                      } catch (error) {
+                          console.error('Error generating PDF:', error);
+                          alert('Failed to generate PDF. Check console for details.');
+                      } finally {
+                          setIsGeneratingPDF(false);
+                      }
+                  }}
+                  disabled={isGeneratingPDF}
+                  className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 disabled:cursor-not-allowed text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2"
+              >
+                  {isGeneratingPDF ? (
+                      <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          GENERATING...
+                      </>
+                  ) : (
+                      <>
+                          <Download className="w-4 h-4" />
+                          DOWNLOAD PDF
+                      </>
+                  )}
+              </button>
+          </div>
         </div>
 
         {/* Footer */}
