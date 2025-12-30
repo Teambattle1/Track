@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { Game, Team, TeamMember, Coordinate, GameMode, TeamStatus } from '../types';
-import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, AlertTriangle, Loader2 } from 'lucide-react';
+import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, AlertTriangle, Loader2, BookOpen, CheckCircle } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
@@ -54,6 +54,24 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   // Playground state for Instructor
   const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
   const [terminating, setTerminating] = useState(false);
+
+  // Instructor Notes State
+  const [notesRead, setNotesRead] = useState<boolean>(() => {
+    const readNotes = localStorage.getItem('instructorNotesRead');
+    if (readNotes) {
+      const parsed = JSON.parse(readNotes);
+      return parsed[game.id] || false;
+    }
+    return false;
+  });
+
+  const markNotesAsRead = () => {
+    const readNotes = localStorage.getItem('instructorNotesRead');
+    const parsed = readNotes ? JSON.parse(readNotes) : {};
+    parsed[game.id] = true;
+    localStorage.setItem('instructorNotesRead', JSON.stringify(parsed));
+    setNotesRead(true);
+  };
 
   const mapRef = useRef<GameMapHandle>(null);
 
@@ -380,6 +398,31 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                 </button>
             </div>
         </div>
+
+        {/* Instructor Notes Banner */}
+        {game.instructorNotes && !notesRead && (
+            <div className="bg-blue-900/30 border-b border-blue-500/50 p-4 animate-in slide-in-from-top-2">
+                <div className="flex items-start gap-3">
+                    <BookOpen className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-sm font-bold text-blue-300 uppercase tracking-wide">Notes for Instructor</h3>
+                            <button
+                                onClick={markNotesAsRead}
+                                className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold uppercase transition-colors"
+                            >
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                Mark as Read
+                            </button>
+                        </div>
+                        <div
+                            className="text-sm text-blue-100 prose prose-invert prose-sm max-w-none"
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(game.instructorNotes) }}
+                        />
+                    </div>
+                </div>
+            </div>
+        )}
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
