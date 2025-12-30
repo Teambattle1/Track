@@ -725,8 +725,6 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 <tr
                                     key={task.id}
                                     onClick={() => (selectionMode || bulkSelectionMode) ? toggleSelection(task.id) : null}
-                                    onMouseEnter={() => handleTaskMouseEnter(task)}
-                                    onMouseLeave={handleTaskMouseLeave}
                                     className={`hover:bg-slate-800/50 transition-colors cursor-pointer ${isSelected ? 'bg-indigo-900/30 border-l-4 border-indigo-600' : ''}`}
                                 >
                                     {bulkSelectionMode && (
@@ -763,7 +761,13 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     >
                                         {task.title}
                                     </td>
-                                    <td className="px-4 py-3 text-slate-400 truncate max-w-sm">{task.task.question}</td>
+                                    <td
+                                        className="px-4 py-3 text-slate-400 truncate max-w-sm"
+                                        onMouseEnter={() => handleTaskMouseEnter(task)}
+                                        onMouseLeave={handleTaskMouseLeave}
+                                    >
+                                        {task.task.question}
+                                    </td>
                                     <td className="px-4 py-3">
                                         {task.settings?.language ? (
                                             <span title={task.settings.language} className="text-lg">
