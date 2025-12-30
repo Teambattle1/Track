@@ -1553,6 +1553,7 @@ const GameApp: React.FC = () => {
             playgrounds={currentGameObj?.playgrounds}
             onOpenPlayground={(id) => setViewingPlaygroundId(id)}
             onOpenTeamDashboard={() => setShowTeamDashboard(true)}
+            onOpenTeamLobby={() => setShowTeamLobby(true)}
             onRelocateGame={handleRelocateGame}
             isRelocating={isRelocating}
             timerConfig={currentGameObj?.timerConfig}
