@@ -1105,11 +1105,9 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           <button
                                               onClick={(e) => {
                                                   e.stopPropagation();
-                                                  if (confirm(`Delete custom style "${customStyle.name}"?`)) {
-                                                      handleDeleteCustomStyle(customStyle.id);
-                                                  }
+                                                  handleDeleteCustomStyle(customStyle.id);
                                               }}
-                                              className="absolute top-2 left-2 p-1.5 bg-red-600/90 hover:bg-red-500 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                                              className="absolute bottom-2 left-2 p-1.5 bg-red-600/90 hover:bg-red-500 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
                                               title="Delete Custom Style"
                                           >
                                               <Trash2 className="w-3 h-3" />
