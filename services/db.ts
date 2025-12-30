@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { Game, GamePoint, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage, Coordinate, GameChangeLogEntry } from '../types';
 import { DEMO_TASKS, DEMO_LISTS, getDemoGames } from '../utils/demoContent';
+import { detectLanguageFromText, normalizeLanguage } from '../utils/i18n';
 
 const logError = (context: string, error: any) => {
     if (error?.code === '42P01') {
@@ -547,7 +548,21 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
 
 export const saveTemplate = async (template: TaskTemplate) => {
     try {
-        const { error } = await supabase.from('library').upsert({ id: template.id, data: template, updated_at: new Date().toISOString() });
+        // Auto-detect language from task question before saving
+        const detectedLanguage = detectLanguageFromText(template.task.question || '');
+        const normalizedTemplate = {
+            ...template,
+            settings: {
+                ...template.settings,
+                language: detectedLanguage
+            }
+        };
+
+        const { error } = await supabase.from('library').upsert({
+            id: normalizedTemplate.id,
+            data: normalizedTemplate,
+            updated_at: new Date().toISOString()
+        });
         if (error) throw error;
     } catch (e) { logError('saveTemplate', e); }
 };
@@ -607,7 +622,26 @@ export const fetchTaskListByToken = async (token: string): Promise<TaskList | nu
 
 export const saveTaskList = async (list: TaskList) => {
     try {
-        const { error } = await supabase.from('task_lists').upsert({ id: list.id, data: list, updated_at: new Date().toISOString() });
+        // Auto-detect language for all tasks in the list before saving
+        const normalizedList = {
+            ...list,
+            tasks: list.tasks.map(task => {
+                const detectedLanguage = detectLanguageFromText(task.task.question || '');
+                return {
+                    ...task,
+                    settings: {
+                        ...task.settings,
+                        language: detectedLanguage
+                    }
+                };
+            })
+        };
+
+        const { error } = await supabase.from('task_lists').upsert({
+            id: normalizedList.id,
+            data: normalizedList,
+            updated_at: new Date().toISOString()
+        });
         if (error) throw error;
     } catch (e) { logError('saveTaskList', e); }
 };
