@@ -108,6 +108,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [showMigrationModal, setShowMigrationModal] = useState(false);
     const [migrationRunning, setMigrationRunning] = useState(false);
     const [migrationLog, setMigrationLog] = useState<string[]>([]);
+
+    // Notification State
+    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'warning' | 'error' } | null>(null);
     const [migrationResults, setMigrationResults] = useState<{totalUpdated: number; totalErrors: number} | null>(null);
 
     const handleRunMigration = async () => {
