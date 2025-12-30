@@ -44,7 +44,7 @@ class TeamSyncService {
 
   private votes: Record<string, TaskVote[]> = {};
   private members: Map<string, TeamMember> = new Map();
-  
+
   // Track other team locations (Global view)
   private otherTeams: Map<string, { location: Coordinate, name: string, photoUrl?: string, teamId: string, timestamp: number }> = new Map();
 
@@ -54,6 +54,10 @@ class TeamSyncService {
   private globalLocationListeners: GlobalLocationCallback[] = [];
 
   private presenceIntervalId: number | null = null;
+
+  // Debouncing for performance optimization
+  private memberNotifyTimeout: number | null = null;
+  private lastMemberListHash: string = '';
 
   // Track latest vote timestamp PER DEVICE to safely ignore out-of-order packets without global clock sync issues
   private deviceVoteTimestamps: Record<string, number> = {}; 
