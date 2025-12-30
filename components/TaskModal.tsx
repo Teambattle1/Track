@@ -866,7 +866,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 )
               ) : (!isEditMode && (
                 <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
-                  <p className="text-green-800 dark:text-green-300 font-medium">Task Completed!</p>
+                  <p className="text-green-800 dark:text-green-300 font-medium">
+                    {point.feedback?.showCorrectMessage && point.feedback.correctMessage
+                      ? point.feedback.correctMessage
+                      : "Task Completed!"}
+                  </p>
                   <p className="text-sm text-green-600 dark:text-green-400">You earned {isDoubleTrouble ? point.points * 2 : point.points} points.</p>
                 </div>
               ))}
