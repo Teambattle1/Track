@@ -131,7 +131,9 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     tags: point.tags || []
   });
 
-  const [activeTab, setActiveTab] = useState<'GENERAL' | 'IMAGE' | 'SETTINGS' | 'ACTIONS'>('GENERAL');
+  const [activeTab, setActiveTab] = useState<'GENERAL' | 'IMAGE' | 'SETTINGS' | 'ANSWER' | 'ACTIONS'>('GENERAL');
+  const [showTaskTypeTooltip, setShowTaskTypeTooltip] = useState(false);
+  const [hoveredTaskType, setHoveredTaskType] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState(false);
   
@@ -529,11 +531,12 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
         ) : (
            <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
                {/* ... Tab Navigation (Same as before) ... */}
-               <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
+               <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0 overflow-x-auto">
                    {[
                        {id: 'GENERAL', label: 'General', icon: AlignLeft},
                        {id: 'IMAGE', label: 'Image', icon: ImageIcon},
                        {id: 'SETTINGS', label: 'Config', icon: SlidersHorizontal},
+                       {id: 'ANSWER', label: 'Answer', icon: MessageSquare},
                        {id: 'ACTIONS', label: 'Actions', icon: Zap},
                    ].map(tab => (
                        <button
