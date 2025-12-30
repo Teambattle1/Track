@@ -519,6 +519,52 @@ class TeamSyncService {
   public getVotesForTask(pointId: string): TaskVote[] {
       return this.votes[pointId] || [];
   }
+
+  // Retire myself from the team (votes won't count)
+  public retireMyself() {
+      this.isRetired = true;
+      this.sendPresence();
+  }
+
+  // Un-retire myself (rejoin voting)
+  public unretireMyself() {
+      this.isRetired = false;
+      this.sendPresence();
+  }
+
+  // Captain can retire another player by deviceId
+  public retirePlayer(deviceId: string) {
+      if (!this.channel) return;
+
+      // Broadcast retirement command
+      this.channel.send({
+          type: 'broadcast',
+          event: 'retire_player',
+          payload: { deviceId, isRetired: true }
+      });
+  }
+
+  // Captain can un-retire another player
+  public unretirePlayer(deviceId: string) {
+      if (!this.channel) return;
+
+      // Broadcast un-retirement command
+      this.channel.send({
+          type: 'broadcast',
+          event: 'retire_player',
+          payload: { deviceId, isRetired: false }
+      });
+  }
+
+  // Get current retirement status
+  public isPlayerRetired(): boolean {
+      return this.isRetired;
+  }
+
+  // Get all members including their retirement status
+  public getAllMembers(): TeamMember[] {
+      return Array.from(this.members.values());
+  }
 }
 
 export const teamSync = new TeamSyncService();
