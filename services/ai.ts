@@ -204,27 +204,6 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     }
 };
 
-// Helper to verify if an image URL is valid and loadable with timeout
-const verifyImage = (url: string, timeout: number = 3000): Promise<boolean> => {
-    return new Promise((resolve) => {
-        const img = new Image();
-        const timer = setTimeout(() => {
-            img.src = ''; // Cancel loading
-            resolve(false);
-        }, timeout);
-
-        img.onload = () => {
-            clearTimeout(timer);
-            resolve(true);
-        };
-        img.onerror = () => {
-            clearTimeout(timer);
-            resolve(false);
-        };
-        img.src = url;
-    });
-};
-
 // Smart domain extraction from company name
 const guessDomain = (query: string): string[] => {
     const normalized = query.toLowerCase().trim();
@@ -256,48 +235,18 @@ const guessDomain = (query: string): string[] => {
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
     console.log('[Logo Search] Starting search for:', query);
 
-    // Generate multiple domain guesses
+    // Generate domain guesses
     const domains = guessDomain(query);
     console.log('[Logo Search] Trying domains:', domains);
 
-    // Try all domains in parallel with multiple logo services
-    const logoPromises: Promise<string | null>[] = [];
+    // Return Clearbit URL for primary domain
+    // The browser will handle loading - if it fails, the img element can use onError to try fallbacks
+    // This avoids CORS issues from pre-flight verification
+    const primaryDomain = domains[0];
+    const logoUrl = `https://logo.clearbit.com/${primaryDomain}`;
 
-    for (const domain of domains.slice(0, 3)) { // Limit to first 3 guesses
-        // Clearbit (high quality, free tier)
-        logoPromises.push(
-            verifyImage(`https://logo.clearbit.com/${domain}`, 2000).then(valid =>
-                valid ? `https://logo.clearbit.com/${domain}` : null
-            )
-        );
-
-        // Logo.dev (alternative service)
-        logoPromises.push(
-            verifyImage(`https://img.logo.dev/${domain}?token=pk_X-bheklTA6O5tx_v6O0w`, 2000).then(valid =>
-                valid ? `https://img.logo.dev/${domain}?token=pk_X-bheklTA6O5tx_v6O0w` : null
-            )
-        );
-    }
-
-    // Race all promises and return first valid result
-    try {
-        const results = await Promise.all(logoPromises);
-        const firstValid = results.find(url => url !== null);
-
-        if (firstValid) {
-            console.log('[Logo Search] Found logo:', firstValid);
-            return firstValid;
-        }
-
-        // Fallback to Google favicon for first domain
-        const fallbackUrl = `https://www.google.com/s2/favicons?domain=${domains[0]}&sz=128`;
-        console.log('[Logo Search] Using fallback favicon:', fallbackUrl);
-        return fallbackUrl;
-    } catch (e) {
-        console.error('[Logo Search] Error:', e);
-        // Last resort fallback
-        return `https://www.google.com/s2/favicons?domain=${domains[0]}&sz=128`;
-    }
+    console.log('[Logo Search] Using Clearbit logo:', logoUrl);
+    return logoUrl;
 };
 
 // Generate a mood-based audio vignette using Web Audio API
