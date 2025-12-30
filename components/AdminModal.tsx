@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Game } from '../types';
-import { X, Database, Terminal, Copy, Check, ExternalLink, CheckCircle, KeyRound, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { X, Database, Terminal, Copy, Check, ExternalLink, CheckCircle, KeyRound, Eye, EyeOff, Trash2, Download, Book } from 'lucide-react';
+import { generateFeatureCatalogPDF } from '../utils/pdfGenerator';
 
 interface AdminModalProps {
   games: Game[]; 
