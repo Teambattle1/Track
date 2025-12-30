@@ -1054,9 +1054,6 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     <button onClick={() => setShowAiGen(true)} className="flex-1 sm:flex-none px-4 py-2 bg-purple-900/20 text-purple-400 border border-purple-500/30 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-purple-900/40 transition-all flex items-center justify-center gap-2">
                                         <RefreshCw className="w-3 h-3" /> AI
                                     </button>
-                                    <button onClick={() => setShowLoquiz(true)} className="flex-1 sm:flex-none px-4 py-2 bg-blue-900/20 text-blue-400 border border-blue-500/30 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-blue-900/40 transition-all flex items-center justify-center gap-2">
-                                        <Library className="w-3 h-3" /> LOQUIZ
-                                    </button>
                                     <button
                                         onClick={() => {
                                             setBulkSelectionMode(!bulkSelectionMode);
