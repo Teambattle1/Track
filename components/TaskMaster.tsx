@@ -1207,7 +1207,11 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
 
                     {tab === 'LISTS' && (
                         <div className="space-y-6">
-                            <button 
+                            {(() => {
+                                console.log('TaskMaster LISTS tab - taskLists count:', taskLists.length);
+                                return null;
+                            })()}
+                            <button
                                 onClick={handleCreateList}
                                 className="w-full py-4 border-2 border-dashed border-slate-700 rounded-2xl flex items-center justify-center gap-2 text-slate-500 hover:text-white hover:border-slate-500 transition-all group"
                             >
@@ -1215,7 +1219,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 <span className="font-bold uppercase tracking-widest text-xs">CREATE NEW LIST</span>
                             </button>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[200px]">
                                 {taskLists.length === 0 && (
                                     <div className="col-span-full py-16 text-center">
                                         <LayoutList className="w-16 h-16 text-slate-700 mx-auto mb-4" />
