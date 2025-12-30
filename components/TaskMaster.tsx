@@ -634,7 +634,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     };
 
     const renderLibraryList = (selectionMode = false) => {
-        const filtered = library.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+        const filtered = getFilteredAndSortedLibrary();
 
         return (
             <div className="overflow-x-auto">
