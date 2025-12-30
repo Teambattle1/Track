@@ -1104,16 +1104,16 @@ const GameApp: React.FC = () => {
           )}
           {/* ... Rest of modals ... */}
           {showGameCreator && (
-              <GameCreator 
+              <GameCreator
                   onClose={() => setShowGameCreator(false)}
                   onCreate={async (gameData) => {
                       if (gameToEdit && gameToEdit.id === gameData.id) {
                           await updateActiveGame({ ...gameToEdit, ...gameData }, "Updated Game Settings");
                       } else {
-                          const newGame = { 
-                              ...gameData, 
-                              id: `game-${Date.now()}`, 
-                              points: [], 
+                          const newGame = {
+                              ...gameData,
+                              id: `game-${Date.now()}`,
+                              points: [],
                               createdAt: Date.now(),
                               createdBy: authUser?.name,
                               changeLog: [{ timestamp: Date.now(), user: authUser?.name || 'Unknown', action: 'Created Game' }]
@@ -1128,6 +1128,10 @@ const GameApp: React.FC = () => {
                   }}
                   baseGame={gameToEdit || undefined}
                   onDelete={handleDeleteGame}
+                  onOpenPlaygroundEditor={(playgroundId) => {
+                      setShowGameCreator(false);
+                      setViewingPlaygroundId(playgroundId || null);
+                  }}
               />
           )}
           {showTeamsHub && (
