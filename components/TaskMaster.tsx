@@ -200,7 +200,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             onUpdateTaskLists(updatedLists);
             setEditingList(null);
 
-            alert('✓ Task list saved successfully!');
+            setNotification({ message: '✓ Task list saved successfully!', type: 'success' });
         } catch (error) {
             console.error('Error saving task list:', error);
             alert('❌ Failed to save task list. Check console for details.');
