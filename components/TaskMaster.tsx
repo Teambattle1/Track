@@ -216,10 +216,29 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const handleAddSelectedToEditingList = () => {
         if (!editingList) return;
         const selected = library.filter(t => selectedTemplateIds.includes(t.id));
-        setEditingList({
-            ...editingList,
-            tasks: [...editingList.tasks, ...selected]
-        });
+
+        // Check for duplicates
+        const existingTaskIds = new Set(editingList.tasks.map(t => t.id));
+        const duplicates = selected.filter(task => existingTaskIds.has(task.id));
+        const newTasks = selected.filter(task => !existingTaskIds.has(task.id));
+
+        // Show warning if there are duplicates
+        if (duplicates.length > 0) {
+            const duplicateNames = duplicates.map(t => `"${t.title}"`).join(', ');
+            const message = duplicates.length === 1
+                ? `⚠️ The task ${duplicateNames} is already in this list and was skipped.`
+                : `⚠️ ${duplicates.length} tasks are already in this list and were skipped: ${duplicateNames}`;
+            alert(message);
+        }
+
+        // Only add new tasks
+        if (newTasks.length > 0) {
+            setEditingList({
+                ...editingList,
+                tasks: [...editingList.tasks, ...newTasks]
+            });
+        }
+
         setSelectedTemplateIds([]);
         setIsSelectingForCurrentList(false);
     };
