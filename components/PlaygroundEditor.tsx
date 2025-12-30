@@ -75,10 +75,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     // Toolbar positions (draggable)
     const [orientationToolbarPos, setOrientationToolbarPos] = useState({ x: 420, y: 24 });
     const [showToolbarPos, setShowToolbarPos] = useState({ x: 750, y: 24 });
+    const [toolsToolbarPos, setToolsToolbarPos] = useState({ x: 1050, y: 24 });
     const [isDraggingOrientation, setIsDraggingOrientation] = useState(false);
     const [isDraggingShow, setIsDraggingShow] = useState(false);
+    const [isDraggingTools, setIsDraggingTools] = useState(false);
     const orientationDragOffset = useRef({ x: 0, y: 0 });
     const showDragOffset = useRef({ x: 0, y: 0 });
+    const toolsDragOffset = useRef({ x: 0, y: 0 });
 
     const [editorOrientation, setEditorOrientation] = useState<'portrait' | 'landscape'>('landscape');
     const [showAiIconPrompt, setShowAiIconPrompt] = useState(false);
