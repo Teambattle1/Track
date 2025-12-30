@@ -285,6 +285,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [hintLimit, setHintLimit] = useState<number>(baseGame?.taskConfig?.hintLimit || 3);
   const [showAnswerCorrectnessMode, setShowAnswerCorrectnessMode] = useState<'never' | 'always' | 'task_specific'>(baseGame?.taskConfig?.showAnswerCorrectnessMode || 'task_specific');
   const [showAfterAnswerComment, setShowAfterAnswerComment] = useState<boolean>(baseGame?.taskConfig?.showAfterAnswerComment ?? true);
+  const [teamVotingMode, setTeamVotingMode] = useState<'require_consensus' | 'captain_submit'>(baseGame?.taskConfig?.teamVotingMode || 'require_consensus');
 
   // Map Configuration (New)
   const [pinDisplayMode, setPinDisplayMode] = useState<'order' | 'score' | 'none'>(baseGame?.mapConfig?.pinDisplayMode || 'none');
