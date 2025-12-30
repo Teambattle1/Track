@@ -1398,6 +1398,13 @@ const GameApp: React.FC = () => {
                     teams={[]} // In real implementation, get teams from game state
                 />
             )}
+
+            {showSupabaseDiagnostic && (
+                <SupabaseDiagnostic
+                    onClose={() => setShowSupabaseDiagnostic(false)}
+                />
+            )}
+
             {renderModals()}
           </>
       );
