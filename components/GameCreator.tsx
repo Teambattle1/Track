@@ -125,6 +125,7 @@ interface MapStyleCardProps {
     onSelect: () => void;
     onEditThumbnail: (e: React.MouseEvent) => void;
     onPreview: (e: React.MouseEvent) => void;
+    usageCount?: number;
 }
 
 const MapStyleCard: React.FC<MapStyleCardProps> = ({
