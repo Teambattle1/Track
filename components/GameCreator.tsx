@@ -1742,32 +1742,74 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                         </button>
                     </div>
                     <div className="p-6">
-                        <div className="aspect-video w-full rounded-xl overflow-hidden border-2 border-slate-700">
-                            <iframe
-                                src={`https://www.openstreetmap.org/#map=13/55.6761/12.5683`}
-                                className="w-full h-full"
-                                title="Map Style Preview"
-                            />
-                        </div>
-                        <div className="mt-4 flex gap-3 justify-end">
-                            <button
-                                onClick={() => window.open('https://www.openstreetmap.org', '_blank')}
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center gap-2"
-                            >
-                                <ExternalLink className="w-4 h-4" />
-                                Open in OpenStreetMap
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setSelectedMapStyle(previewMapStyle);
-                                    setShowMapStylePreview(false);
-                                }}
-                                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center gap-2"
-                            >
-                                <Check className="w-4 h-4" />
-                                Use This Style
-                            </button>
-                        </div>
+                        {(() => {
+                            const style = MAP_STYLES.find(s => s.id === previewMapStyle);
+                            const previewUrl = style?.preview;
+
+                            return (
+                                <>
+                                    {previewUrl ? (
+                                        <div className="bg-slate-950 rounded-xl overflow-hidden border-2 border-slate-700 p-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Tile Preview (Original Size)</p>
+                                                    <img
+                                                        src={previewUrl}
+                                                        alt={style?.label}
+                                                        className={`w-full rounded-lg border border-slate-700 ${style?.className || ''}`}
+                                                        crossOrigin="anonymous"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Large Preview</p>
+                                                    <div className="aspect-square rounded-lg border border-slate-700 overflow-hidden">
+                                                        <img
+                                                            src={previewUrl}
+                                                            alt={style?.label}
+                                                            className={`w-full h-full object-cover ${style?.className || ''}`}
+                                                            crossOrigin="anonymous"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-4 p-3 bg-slate-900 rounded-lg">
+                                                <p className="text-xs text-slate-400">
+                                                    <span className="font-bold text-white">Note:</span> This preview shows a sample map tile.
+                                                    The actual map will cover your entire game area with this visual style.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-slate-950 rounded-xl border-2 border-slate-700 p-8 flex flex-col items-center justify-center gap-4">
+                                            <EyeOff className="w-16 h-16 text-slate-600" />
+                                            <p className="text-sm text-slate-400 text-center">
+                                                No preview available for this map style
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-4 flex gap-3 justify-end">
+                                        <button
+                                            onClick={() => window.open('https://www.openstreetmap.org/#map=13/55.6761/12.5683', '_blank')}
+                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center gap-2"
+                                        >
+                                            <ExternalLink className="w-4 h-4" />
+                                            Open in OpenStreetMap
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedMapStyle(previewMapStyle);
+                                                setShowMapStylePreview(false);
+                                            }}
+                                            className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold uppercase text-xs transition-all flex items-center gap-2"
+                                        >
+                                            <Check className="w-4 h-4" />
+                                            Use This Style
+                                        </button>
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
             </div>
