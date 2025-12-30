@@ -239,6 +239,7 @@ export interface GamePoint {
   settings?: TaskSettings;
   completionLogic?: PointCompletionLogic;
   instructorNotes?: string;
+  showStatusMarkers?: boolean; // Show visual markers (✓/✗) when task is completed
   
   // Event Logic
   logic?: TaskLogic;
