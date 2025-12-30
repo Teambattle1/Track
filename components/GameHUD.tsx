@@ -115,6 +115,9 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     // Countdown State
     const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
 
+    // Map style hover preview state
+    const [hoveredMapStyle, setHoveredMapStyle] = useState<MapStyleId | null>(null);
+
     // ... Toolbox state with default positions matching the image layout ...
     // Position toolbox below the settings button (circular buttons are ~104px total height + gap)
     const [toolboxPos, setToolboxPos] = useState({ x: window.innerWidth - 140, y: 180 });
