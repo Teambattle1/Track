@@ -46,6 +46,7 @@ interface GameHUDProps {
     playgrounds?: Playground[];
     onOpenPlayground: (id: string) => void;
     onOpenTeamDashboard: () => void;
+    onOpenTeamLobby?: () => void;
     onRelocateGame: () => void;
     isRelocating: boolean;
     timerConfig?: TimerConfig;
@@ -98,7 +99,7 @@ const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: str
 
 const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, toggleMode, onSetMode, onOpenGameManager, onOpenTaskMaster, onOpenTeams,
     mapStyle, onSetMapStyle, language, onBackToHub, activeGameName, onOpenInstructorDashboard,
-    isMeasuring, onToggleMeasure, measuredDistance, measurePointsCount = 0, playgrounds, onOpenPlayground, onOpenTeamDashboard,
+    isMeasuring, onToggleMeasure, measuredDistance, measurePointsCount = 0, playgrounds, onOpenPlayground, onOpenTeamDashboard, onOpenTeamLobby,
     onRelocateGame, isRelocating, timerConfig, onFitBounds, onLocateMe, onSearchLocation,
     isDrawerExpanded, showScores, onToggleScores, showTaskId, onToggleTaskId, showTaskTitle, onToggleTaskTitle, hiddenPlaygroundIds, onToggleChat, unreadMessagesCount,
     targetPlaygroundId, onAddDangerZone, activeDangerZone, onEditGameSettings, onOpenGameChooser,
@@ -904,9 +905,14 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     <div className="pointer-events-auto flex gap-3">
                         {mode === GameMode.PLAY && (
                             <>
-                                <button onClick={onOpenTeamDashboard} className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-xl flex items-center justify-center border-2 border-orange-400 hover:scale-105 transition-transform">
+                                <button onClick={onOpenTeamDashboard} className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-xl flex items-center justify-center border-2 border-orange-400 hover:scale-105 transition-transform" title="Team Dashboard">
                                     <Users className="w-8 h-8 text-white" />
                                 </button>
+                                {onOpenTeamLobby && (
+                                    <button onClick={onOpenTeamLobby} className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl shadow-xl flex items-center justify-center border-2 border-blue-400 hover:scale-105 transition-transform" title="Team Lobby - Manage Members">
+                                        <Shield className="w-8 h-8 text-white" />
+                                    </button>
+                                )}
                                 {activeGame?.designConfig?.enableCodeScanner && (
                                     <button
                                         onClick={() => {
