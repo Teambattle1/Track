@@ -123,6 +123,19 @@ const GameApp: React.FC = () => {
   const [hoveredDangerZoneId, setHoveredDangerZoneId] = useState<string | null>(null); // List → Map
   const [mapHoveredPointId, setMapHoveredPointId] = useState<string | null>(null); // Map → List (reverse)
 
+  // --- SUPABASE ERROR DETECTION ---
+  useEffect(() => {
+    const handleSupabaseError = (event: CustomEvent) => {
+      console.error('[App] Supabase connection error detected:', event.detail);
+      setShowSupabaseDiagnostic(true);
+    };
+
+    window.addEventListener('supabase-connection-error' as any, handleSupabaseError);
+    return () => {
+      window.removeEventListener('supabase-connection-error' as any, handleSupabaseError);
+    };
+  }, []);
+
   // --- INITIALIZATION ---
   useEffect(() => {
     const init = async () => {
