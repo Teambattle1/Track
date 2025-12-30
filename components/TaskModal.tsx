@@ -31,7 +31,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
     mode,
     onOpenActions,
     onTaskOpen,
-    onTaskIncorrect
+    onTaskIncorrect,
+    game,
+    isCaptain = false
 }) => {
   // CRITICAL: Check for null point BEFORE any hooks to prevent crashes
   if (!point) return null;
