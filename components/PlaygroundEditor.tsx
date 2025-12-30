@@ -1988,6 +1988,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     <Trash2 className="w-5 h-5" />
                 </button>
 
+                {/* Snap-to-Road Selection Box Visualization */}
+                {snapToRoadMode && selectionBox.start && selectionBox.current && (
+                    <div
+                        className="absolute border-2 border-cyan-500 bg-cyan-500/10 pointer-events-none z-40"
+                        style={{
+                            left: `${Math.min(selectionBox.start.x, selectionBox.current.x)}px`,
+                            top: `${Math.min(selectionBox.start.y, selectionBox.current.y)}px`,
+                            width: `${Math.abs(selectionBox.current.x - selectionBox.start.x)}px`,
+                            height: `${Math.abs(selectionBox.current.y - selectionBox.start.y)}px`,
+                            boxShadow: '0 0 8px rgba(34, 211, 238, 0.5)'
+                        }}
+                    />
+                )}
+
                 {/* Right Tasks Drawer Toggle Button */}
                 {!isTasksDrawerOpen && (
                     <button
