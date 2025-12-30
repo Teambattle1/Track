@@ -204,55 +204,100 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     }
 };
 
-// Helper to verify if an image URL is valid and loadable
-const verifyImage = (url: string): Promise<boolean> => {
+// Helper to verify if an image URL is valid and loadable with timeout
+const verifyImage = (url: string, timeout: number = 3000): Promise<boolean> => {
     return new Promise((resolve) => {
         const img = new Image();
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
+        const timer = setTimeout(() => {
+            img.src = ''; // Cancel loading
+            resolve(false);
+        }, timeout);
+
+        img.onload = () => {
+            clearTimeout(timer);
+            resolve(true);
+        };
+        img.onerror = () => {
+            clearTimeout(timer);
+            resolve(false);
+        };
         img.src = url;
     });
 };
 
+// Smart domain extraction from company name
+const guessDomain = (query: string): string[] => {
+    const normalized = query.toLowerCase().trim();
+    const cleaned = normalized.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '');
+
+    // Common patterns
+    const domains: string[] = [];
+
+    // Direct .com
+    domains.push(`${cleaned}.com`);
+
+    // Common variations for multi-word names
+    if (normalized.includes(' ')) {
+        const words = normalized.split(/\s+/);
+        // First word only
+        domains.push(`${words[0].replace(/[^a-z0-9]/g, '')}.com`);
+        // Acronym
+        domains.push(`${words.map(w => w[0]).join('')}.com`);
+    }
+
+    // Try other common TLDs
+    domains.push(`${cleaned}.dk`); // Danish companies
+    domains.push(`${cleaned}.io`);
+    domains.push(`${cleaned}.net`);
+
+    return domains;
+};
+
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
-    let domain = '';
-    const key = getApiKey(); // Don't throw yet, try graceful fallback first
+    console.log('[Logo Search] Starting search for:', query);
 
-    // 1. Try AI-powered domain search if key exists
-    if (key) {
-        try {
-            const ai = new GoogleGenAI({ apiKey: key });
-            const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
-                contents: `What is the official website domain for "${query}"? Return ONLY the domain (e.g. "example.com"). Do not include https:// or www.`,
-                config: {
-                    tools: [{ googleSearch: {} }],
-                }
-            }));
+    // Generate multiple domain guesses
+    const domains = guessDomain(query);
+    console.log('[Logo Search] Trying domains:', domains);
 
-            const text = response.text || '';
-            const domainMatch = text.match(/([a-z0-9][a-z0-9-]{0,61}[a-z0-9]\.)+[a-z]{2,}/i);
-            if (domainMatch) {
-                domain = domainMatch[0];
-            }
-        } catch (e) {
-            console.warn("AI Domain search failed, falling back to naive guess", e);
+    // Try all domains in parallel with multiple logo services
+    const logoPromises: Promise<string | null>[] = [];
+
+    for (const domain of domains.slice(0, 3)) { // Limit to first 3 guesses
+        // Clearbit (high quality, free tier)
+        logoPromises.push(
+            verifyImage(`https://logo.clearbit.com/${domain}`, 2000).then(valid =>
+                valid ? `https://logo.clearbit.com/${domain}` : null
+            )
+        );
+
+        // Logo.dev (alternative service)
+        logoPromises.push(
+            verifyImage(`https://img.logo.dev/${domain}?token=pk_X-bheklTA6O5tx_v6O0w`, 2000).then(valid =>
+                valid ? `https://img.logo.dev/${domain}?token=pk_X-bheklTA6O5tx_v6O0w` : null
+            )
+        );
+    }
+
+    // Race all promises and return first valid result
+    try {
+        const results = await Promise.all(logoPromises);
+        const firstValid = results.find(url => url !== null);
+
+        if (firstValid) {
+            console.log('[Logo Search] Found logo:', firstValid);
+            return firstValid;
         }
-    }
 
-    // 2. Fallback to naive guess if AI failed or no key
-    if (!domain) {
-        domain = `${query.replace(/\s/g, '').toLowerCase()}.com`;
+        // Fallback to Google favicon for first domain
+        const fallbackUrl = `https://www.google.com/s2/favicons?domain=${domains[0]}&sz=128`;
+        console.log('[Logo Search] Using fallback favicon:', fallbackUrl);
+        return fallbackUrl;
+    } catch (e) {
+        console.error('[Logo Search] Error:', e);
+        // Last resort fallback
+        return `https://www.google.com/s2/favicons?domain=${domains[0]}&sz=128`;
     }
-
-    // 3. Try Clearbit
-    const clearbitUrl = `https://logo.clearbit.com/${domain}`;
-    if (await verifyImage(clearbitUrl)) {
-        return clearbitUrl;
-    }
-
-    // 4. Fallback to Google Favicon (Best effort)
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 };
 
 // Generate a mood-based audio vignette using Web Audio API
