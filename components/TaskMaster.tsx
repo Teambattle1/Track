@@ -466,10 +466,12 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const handleAddToPlayzone = () => {
         // For PLAYZONE: these tasks already exist in the library
         // Just close the modal - they're already available globally
-        alert(`✓ Selected ${addToTasksSelection.length} task(s) are available in Global Playzone Library`);
+        alert(`✓ Selected ${addToTasksSelection.length} task${addToTasksSelection.length !== 1 ? 's are' : ' is'} available in Global Playzone Library`);
         setShowAddToModal(false);
         setAddToTasksSelection([]);
         setAddToDestinationType(null);
+        setSelectedTemplateIds([]);
+        setBulkSelectionMode(false);
     };
 
     const handleConfirmAddTo = async (destination: Game | TaskList) => {
