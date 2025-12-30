@@ -846,10 +846,12 @@ const GameApp: React.FC = () => {
   };
 
   const handleDeleteTagGlobally = async (tagToDelete: string) => {
+      const tagToDeleteLower = tagToDelete.toLowerCase();
+
       const removeInTasks = (tasks: TaskTemplate[]) => {
           return tasks.map(t => ({
               ...t,
-              tags: t.tags?.filter(tag => tag !== tagToDelete) || []
+              tags: t.tags?.filter(tag => tag.toLowerCase() !== tagToDeleteLower) || []
           }));
       };
 
@@ -868,7 +870,7 @@ const GameApp: React.FC = () => {
           ...g,
           points: g.points.map(p => ({
               ...p,
-              tags: p.tags?.filter(tag => tag !== tagToDelete) || []
+              tags: p.tags?.filter(tag => tag.toLowerCase() !== tagToDeleteLower) || []
           }))
       }));
       for (const g of updatedGames) await db.saveGame(g);
