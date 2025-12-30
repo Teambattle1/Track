@@ -5,7 +5,7 @@ import {
     Image as ImageIcon, Upload, Grid, MousePointer2, Move, ZoomIn, ZoomOut,
     Maximize, Lock, Settings, Home, Save, Check, Type, Gamepad2, Library, Users, Shield,
     Smartphone, Tablet, Monitor, MousePointerClick, Music, Repeat, PlayCircle, ChevronLeft, ChevronRight,
-    Wand2, Zap
+    Wand2, Zap, CheckCircle, XCircle
 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { uploadImage } from '../services/storage'; // IMPORTED
@@ -65,6 +65,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showTaskScores, setShowTaskScores] = useState(true);
     const [showTaskOrder, setShowTaskOrder] = useState(true);
     const [showTaskActions, setShowTaskActions] = useState(true);
+    const [showTaskStatus, setShowTaskStatus] = useState(true);
 
     const [editorOrientation, setEditorOrientation] = useState<'portrait' | 'landscape'>('landscape');
     const [showAiIconPrompt, setShowAiIconPrompt] = useState(false);
