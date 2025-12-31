@@ -858,7 +858,12 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     const textColor = brightness > 155 ? '#000000' : '#ffffff';
 
                                     return (
-                                        <span key={`${tag}-${index}`} style={{ backgroundColor: tagColor, color: textColor }} className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
+                                        <span
+                                            key={`${tag}-${index}`}
+                                            onClick={(e) => { e.stopPropagation(); setEditingTemplate(task); }}
+                                            style={{ backgroundColor: tagColor, color: textColor }}
+                                            className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider cursor-pointer hover:opacity-80 transition-opacity"
+                                        >
                                             {tag}
                                         </span>
                                     );
