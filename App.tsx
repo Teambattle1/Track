@@ -977,7 +977,7 @@ const GameApp: React.FC = () => {
           )}
 
           {showGameChooser && (
-              <GameManager 
+              <GameManager
                   games={games}
                   taskLists={taskLists}
                   activeGameId={activeGameId}
@@ -1012,6 +1012,11 @@ const GameApp: React.FC = () => {
                   onClearMap={() => updateActiveGame({ ...activeGame!, points: [] })}
                   mode={mode}
                   onSetMode={setMode}
+                  onOpenGameCreator={() => {
+                      setGameToEdit(null);
+                      setShowGameCreator(true);
+                      setShowGameChooser(false);
+                  }}
               />
           )}
 
