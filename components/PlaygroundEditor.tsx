@@ -83,9 +83,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showBackground, setShowBackground] = useState(true);
 
     // Toolbar positions (draggable)
-    const [orientationToolbarPos, setOrientationToolbarPos] = useState({ x: 420, y: 24 });
-    const [showToolbarPos, setShowToolbarPos] = useState({ x: 750, y: 24 });
-    const [toolsToolbarPos, setToolsToolbarPos] = useState({ x: 1050, y: 24 });
+    const [orientationToolbarPos, setOrientationToolbarPos] = useState({ x: 240, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
+    const [showToolbarPos, setShowToolbarPos] = useState({ x: 520, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
+    const [toolsToolbarPos, setToolsToolbarPos] = useState({ x: 820, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
     const [isDraggingOrientation, setIsDraggingOrientation] = useState(false);
     const [isDraggingShow, setIsDraggingShow] = useState(false);
     const [isDraggingTools, setIsDraggingTools] = useState(false);
@@ -1380,61 +1380,56 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </button>
                 )}
 
-                {/* Top Overlay Bar - Title, Zones, and Home */}
+                {/* Top Overlay Bar - Title and Home */}
                 <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
-                    <div className="p-4 flex flex-col gap-3">
-                        {/* Top Row: Title and Home */}
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-4 pointer-events-auto">
-                                <div className="flex items-center gap-3 bg-slate-900/80 backdrop-blur-sm border border-orange-500/30 rounded-xl px-4 py-2 shadow-xl">
-                                    <LayoutGrid className="w-5 h-5 text-orange-500" />
-                                    <div>
-                                        <h1 className="text-sm font-black text-white uppercase tracking-widest">
-                                            PLAYZONE EDITOR
-                                        </h1>
-                                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                                            {game.playgrounds?.length || 0} ZONES ACTIVE
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 pointer-events-auto">
-                                <button
-                                    onClick={onHome}
-                                    className="p-3 bg-slate-900/80 backdrop-blur-sm hover:bg-slate-800 text-slate-400 hover:text-white rounded-full shadow-xl border border-slate-700 transition-all"
-                                    title="Return Home"
-                                >
-                                    <ArrowLeft className="w-5 h-5" />
-                                </button>
+                    <div className="p-4 flex justify-between items-center">
+                        <div className="flex items-center gap-3 bg-slate-900/80 backdrop-blur-sm border border-orange-500/30 rounded-xl px-4 py-2 shadow-xl pointer-events-auto">
+                            <LayoutGrid className="w-5 h-5 text-orange-500" />
+                            <div>
+                                <h1 className="text-sm font-black text-white uppercase tracking-widest">
+                                    PLAYZONE EDITOR
+                                </h1>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                                    {game.playgrounds?.length || 0} ZONES ACTIVE
+                                </p>
                             </div>
                         </div>
 
-                        {/* Zone Tabs Row */}
-                        <div className="flex gap-2 overflow-x-auto pointer-events-auto max-w-[calc(100%-80px)] hide-scrollbar">
-                            {game.playgrounds?.map((pg, index) => (
-                                <button
-                                    key={pg.id}
-                                    onClick={() => setActivePlaygroundId(pg.id)}
-                                    className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 flex items-center gap-2 shadow-lg border-2 ${
-                                        activePlaygroundId === pg.id
-                                            ? 'bg-orange-600 text-white border-orange-500 shadow-orange-500/50'
-                                            : 'bg-slate-800/80 backdrop-blur-sm text-slate-300 border-slate-700 hover:text-white hover:bg-slate-700 hover:border-slate-600'
-                                    }`}
-                                    title={`Switch to ${pg.title}`}
-                                >
-                                    <span className="text-[10px] font-black opacity-70">{String(index + 1).padStart(2, '0')}</span>
-                                    {pg.title}
-                                </button>
-                            ))}
+                        <button
+                            onClick={onHome}
+                            className="p-3 bg-slate-900/80 backdrop-blur-sm hover:bg-slate-800 text-slate-400 hover:text-white rounded-full shadow-xl border border-slate-700 transition-all pointer-events-auto"
+                            title="Return Home"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Zone Tabs - Top Center */}
+                <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none flex justify-center pt-20">
+                    <div className="flex gap-2 overflow-x-auto pointer-events-auto hide-scrollbar max-w-[calc(100vw-200px)]">
+                        {game.playgrounds?.map((pg, index) => (
                             <button
-                                onClick={addNewZone}
-                                className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
-                                title="Add a new zone to the game"
+                                key={pg.id}
+                                onClick={() => setActivePlaygroundId(pg.id)}
+                                className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 flex items-center gap-2 shadow-lg border-2 ${
+                                    activePlaygroundId === pg.id
+                                        ? 'bg-orange-600 text-white border-orange-500 shadow-orange-500/50'
+                                        : 'bg-slate-800/80 backdrop-blur-sm text-slate-300 border-slate-700 hover:text-white hover:bg-slate-700 hover:border-slate-600'
+                                }`}
+                                title={`Switch to ${pg.title}`}
                             >
-                                <Plus className="w-4 h-4" /> ADD NEW
+                                <span className="text-[10px] font-black opacity-70">{String(index + 1).padStart(2, '0')}</span>
+                                {pg.title}
                             </button>
-                        </div>
+                        ))}
+                        <button
+                            onClick={addNewZone}
+                            className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
+                            title="Add a new zone to the game"
+                        >
+                            <Plus className="w-4 h-4" /> ADD NEW
+                        </button>
                     </div>
                 </div>
 
