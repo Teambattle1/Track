@@ -95,7 +95,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     ...point,
     points: point.points || 100,
     shortIntro: point.shortIntro || '',
-    activationTypes: point.activationTypes || ['radius'],
+    activationTypes: point.activationTypes && point.activationTypes.length > 0 ? point.activationTypes : ['radius'], // GPS (radius) enabled by default
     areaColor: point.areaColor || '',
     iconUrl: point.iconUrl || '',
     completionLogic: point.completionLogic || 'remove_any',
