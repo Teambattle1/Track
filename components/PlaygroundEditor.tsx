@@ -1359,7 +1359,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     {isDrawerOpen ? <ChevronLeft className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
                 </button>
 
-                {/* Top Overlay Bar - Title, Zone Tabs, and Home */}
+                {/* Top Overlay Bar - Title, Zone Tabs, Reset, and Home */}
                 <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
                     <div className="p-4 flex justify-between items-center gap-4">
                         <div className="flex items-center gap-3 bg-slate-900/80 backdrop-blur-sm border border-orange-500/30 rounded-xl px-4 py-2 shadow-xl pointer-events-auto">
@@ -1374,8 +1374,27 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             </div>
                         </div>
 
-                        {/* Zone Tabs - Inline in Title Bar */}
-                        <div className="flex gap-2 overflow-x-auto pointer-events-auto hide-scrollbar flex-1">
+                        {/* Zone Tabs - Centered in Editor View */}
+                        <div className="flex gap-2 overflow-x-auto pointer-events-auto hide-scrollbar justify-center flex-1">
+                            {/* ADD NEW Button First */}
+                            <button
+                                onClick={addNewZone}
+                                className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
+                                title="Add a new zone to the game"
+                            >
+                                <Plus className="w-4 h-4" /> ADD NEW
+                            </button>
+
+                            {/* Reset Background Button */}
+                            <button
+                                onClick={handleResetBackground}
+                                className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white shadow-lg border-2 border-blue-500 flex items-center justify-center gap-2"
+                                title="Reset and center background"
+                            >
+                                <Maximize className="w-4 h-4" />
+                            </button>
+
+                            {/* Zone Tabs */}
                             {game.playgrounds?.map((pg, index) => (
                                 <button
                                     key={pg.id}
@@ -1391,13 +1410,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     {pg.title}
                                 </button>
                             ))}
-                            <button
-                                onClick={addNewZone}
-                                className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
-                                title="Add a new zone to the game"
-                            >
-                                <Plus className="w-4 h-4" /> ADD NEW
-                            </button>
                         </div>
 
                         <button
