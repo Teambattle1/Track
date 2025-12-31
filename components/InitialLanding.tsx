@@ -392,6 +392,13 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           onClick={() => onAction('GAMESTATS')}
                       />
                       <NavCard
+                          title="DIAGNOSTICS"
+                          subtitle="DATABASE & CONNECTION"
+                          icon={Gauge}
+                          color="bg-green-600"
+                          onClick={() => onAction('DIAGNOSTICS')}
+                      />
+                      <NavCard
                           title="DELETE GAMES"
                           subtitle="REMOVE SESSIONS"
                           icon={Trash2}
