@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GamePoint, TaskTemplate } from '../types';
 import { X, Wand2, Loader, Plus, CheckCircle } from 'lucide-react';
 import { generateAiTasks } from '../services/ai';
+import GeminiApiKeyModal from './GeminiApiKeyModal';
 
 interface AiTaskGeneratorModalProps {
     onClose: () => void;
