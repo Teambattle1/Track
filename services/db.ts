@@ -961,6 +961,25 @@ export const saveGameStats = async (statsData: any): Promise<boolean> => {
     }
 };
 
+// --- QR CODE MANAGEMENT ---
+export const checkQRCodeDuplicate = async (qrCodeString: string, gameId: string, excludePointId?: string): Promise<boolean> => {
+    try {
+        const game = await fetchGame(gameId);
+        if (!game) return false;
+
+        // Check if any other point in the game has the same QR code
+        const isDuplicate = game.points.some(point =>
+            point.qrCodeString === qrCodeString &&
+            (!excludePointId || point.id !== excludePointId)
+        );
+
+        return isDuplicate;
+    } catch (e) {
+        logError('checkQRCodeDuplicate', e);
+        return false;
+    }
+};
+
 // --- MAP STYLES ---
 export const fetchCustomMapStyles = async (): Promise<Array<{id: string; name: string; json: string; previewUrl?: string}>> => {
     try {
