@@ -42,15 +42,16 @@ export const migrateAllTasksToGpsEnabled = async (): Promise<MigrationResult> =>
           result.alreadyHasGps++;
           console.log(`[GPS Migration] Task "${template.title}" already has GPS enabled`);
         } else {
-          // Update task with GPS activation
+          // Update task with GPS activation, preserving existing activation methods
+          const existingTypes = template.activationTypes || [];
           const updatedTemplate: TaskTemplate = {
             ...template,
-            activationTypes: ['radius'] // GPS (radius) enabled by default
+            activationTypes: ['radius', ...existingTypes.filter(t => t !== 'radius')] // Add GPS while preserving QR, NFC, iBeacon, TAP
           };
 
           await db.saveTemplate(updatedTemplate);
           result.updated++;
-          console.log(`[GPS Migration] ✓ Updated "${template.title}" with GPS activation`);
+          console.log(`[GPS Migration] ✓ Updated "${template.title}" with GPS activation (preserved existing: ${existingTypes.join(', ') || 'none'})`);
         }
       } catch (error) {
         result.failed++;
