@@ -137,6 +137,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   const [hoveredTaskType, setHoveredTaskType] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState(false);
+  const [qrCodeDuplicateWarning, setQrCodeDuplicateWarning] = useState(false);
   
   // Image states
   const [isUploading, setIsUploading] = useState(false);
