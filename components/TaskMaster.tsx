@@ -878,15 +878,15 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 </th>
                             )}
                             {selectionMode && <th className="px-4 py-3 text-left w-10"></th>}
-                            <th className="px-4 py-3 text-left w-10">Icon</th>
-                            <th className="px-4 py-3 text-left flex-1">Task Title</th>
-                            <th className="px-4 py-3 text-left flex-1">Question</th>
-                            <th className="px-4 py-3 text-left">Language</th>
-                            <th className="px-4 py-3 text-center">Activation</th>
-                            <th className="px-4 py-3 text-center w-16">Used</th>
-                            <th className="px-4 py-3 text-left">Tags</th>
-                            <th className="px-4 py-3 text-center w-20">Used On List</th>
-                            <th className="px-4 py-3 text-center w-24">Action</th>
+                            <th className="px-4 py-3 text-left w-10 text-xs font-bold uppercase tracking-widest">Icon</th>
+                            <th className="px-4 py-3 text-left flex-1 text-xs font-bold uppercase tracking-widest">Task Title</th>
+                            <th className="px-4 py-3 text-left flex-1 text-xs font-bold uppercase tracking-widest">Question</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest">Language</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-widest">Activation</th>
+                            <th className="px-4 py-3 text-center w-16 text-xs font-bold uppercase tracking-widest">Used In Games</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest">Tags</th>
+                            <th className="px-4 py-3 text-center w-20 text-xs font-bold uppercase tracking-widest">Used On List</th>
+                            <th className="px-4 py-3 text-center w-24 text-xs font-bold uppercase tracking-widest">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-700">
