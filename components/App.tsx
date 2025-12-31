@@ -1497,6 +1497,8 @@ const GameApp: React.FC = () => {
             </div>
         )}
 
+        {/* GAME MAP - Hidden for Playzone Games */}
+        {activeGame?.gameMode !== 'playzone' && (
         <div className="absolute inset-0 z-0">
             <GameMap
                 ref={mapRef}
@@ -1547,6 +1549,7 @@ const GameApp: React.FC = () => {
                 showUserLocation={currentGameObj?.showPlayerLocations ?? true}
             />
         </div>
+        )}
 
         {/* MEASURE MODE BANNER */}
         {isMeasuring && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
