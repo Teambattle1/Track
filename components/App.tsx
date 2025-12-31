@@ -1672,6 +1672,8 @@ const GameApp: React.FC = () => {
             activeGame={activeGame}
             onUpdateGame={(game) => updateActiveGame(game, "Updated Toolbar Positions")}
             onStartSimulation={() => activeGame && handleStartSimulation(activeGame)}
+            onToggleSnapToRoad={() => { /* Snap to road toggle handler */ }}
+            snapToRoadMode={false}
         />
 
         {(mode === GameMode.EDIT || playgroundTemplateToEdit) && (
