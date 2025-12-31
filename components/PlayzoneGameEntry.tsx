@@ -14,31 +14,88 @@ const PlayzoneGameEntry: React.FC<PlayzoneGameEntryProps> = ({ isOpen, onClose, 
   const [entryMethod, setEntryMethod] = useState<'qr' | 'name' | null>(null);
   const [isScanningQR, setIsScanningQR] = useState(false);
   const [qrInput, setQrInput] = useState('');
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [qrScanned, setQrScanned] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clean up camera on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (scanIntervalRef.current) {
+        clearInterval(scanIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleQRScan = async () => {
     setIsScanningQR(true);
+    setCameraError(null);
+    setQrScanned(null);
+
     try {
-      // Try to use native QR code scanner if available
-      // For now, we'll use a simple input field as fallback
-      if ('BarcodeDetector' in window) {
-        // Use native Barcode API if available
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
-          
-          // Note: Full QR scanning implementation would require BarcodeDetector API
-          // For now, we show input field as fallback
-          setEntryMethod('qr');
+      // Request camera access
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }
-      } else {
-        // Fallback to manual QR input
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+
+        // Start QR code scanning
+        scanIntervalRef.current = setInterval(() => {
+          if (videoRef.current && canvasRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+
+            if (ctx) {
+              canvas.width = videoRef.current.videoWidth;
+              canvas.height = videoRef.current.videoHeight;
+              ctx.drawImage(videoRef.current, 0, 0);
+
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+              if (code) {
+                // QR code detected!
+                setQrScanned(code.data);
+                setQrInput(code.data);
+
+                // Stop scanning
+                if (streamRef.current) {
+                  streamRef.current.getTracks().forEach(track => track.stop());
+                }
+                if (scanIntervalRef.current) {
+                  clearInterval(scanIntervalRef.current);
+                }
+                setIsScanningQR(false);
+              }
+            }
+          }
+        }, 100);
+
         setEntryMethod('qr');
       }
-    } catch (error) {
-      console.error('Failed to access camera:', error);
-      alert('Could not access camera. Please try entering the team name instead.');
+    } catch (error: any) {
+      console.error('Camera access failed:', error);
+      const errorMsg = error.name === 'NotAllowedError'
+        ? 'Camera permission denied. Please enter team name instead.'
+        : 'Could not access camera. Using text input instead.';
+
+      setCameraError(errorMsg);
+      setEntryMethod('qr'); // Fall back to text input
       setIsScanningQR(false);
     }
   };
