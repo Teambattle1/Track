@@ -154,17 +154,39 @@ const GameApp: React.FC = () => {
       if (user) {
         setAuthUser(user);
       }
-      const loadedGames = await db.fetchGames();
-      setGames(loadedGames);
-      const loadedLists = await db.fetchTaskLists();
-      setTaskLists(loadedLists);
-      const loadedLib = await db.fetchLibrary();
-      setTaskLibrary(loadedLib);
 
-      // Restore last selected game from localStorage
-      const savedGameId = localStorage.getItem('activeGameId');
-      if (savedGameId && loadedGames.some(g => g.id === savedGameId)) {
-        setActiveGameId(savedGameId);
+      try {
+        // Test database connection first
+        const connectionTest = await db.testDatabaseConnection();
+        if (!connectionTest.success) {
+          console.error('[App] Database connection test failed on startup');
+          setShowSupabaseDiagnostic(true);
+          // Use demo data if connection fails
+          setGames([]);
+          setTaskLists([]);
+          setTaskLibrary([]);
+          return;
+        }
+
+        const loadedGames = await db.fetchGames();
+        setGames(loadedGames);
+        const loadedLists = await db.fetchTaskLists();
+        setTaskLists(loadedLists);
+        const loadedLib = await db.fetchLibrary();
+        setTaskLibrary(loadedLib);
+
+        // Restore last selected game from localStorage
+        const savedGameId = localStorage.getItem('activeGameId');
+        if (savedGameId && loadedGames.some(g => g.id === savedGameId)) {
+          setActiveGameId(savedGameId);
+        }
+      } catch (error: any) {
+        console.error('[App] Initialization error:', error);
+        // Show diagnostic modal on initialization failure
+        setShowSupabaseDiagnostic(true);
+        setGames([]);
+        setTaskLists([]);
+        setTaskLibrary([]);
       }
     };
     init();
