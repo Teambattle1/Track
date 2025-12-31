@@ -385,7 +385,10 @@ export interface Game {
   defaultMapStyle?: MapStyleId;
   googleMapStyleJson?: string; // New: Custom Google Maps Style
   toolbarPositions?: ToolbarPositions; // Per-game toolbar positions
-  
+
+  // Game Mode Configuration
+  gameMode?: 'standard' | 'playzone'; // 'standard' = GPS-based, 'playzone' = playground-only indoor
+
   // Team & Permission Settings
   showOtherTeams?: boolean;
   showTaskDetailsToPlayers?: boolean; 
