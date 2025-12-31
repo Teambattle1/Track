@@ -563,6 +563,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     showScores,
     showTaskId,
     showTaskTitle,
+    showTaskActions,
     measuredDistance = 0,
     onZoneClick,
     onZoneMove,
