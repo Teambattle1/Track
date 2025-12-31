@@ -665,13 +665,53 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                 if (!route.isVisible) return null;
                 const isHighlighted = highlightedRouteId === route.id;
                 return (
-                    <Polyline 
+                    <Polyline
                         key={route.id}
                         positions={route.points.map(p => [p.lat, p.lng])}
                         pathOptions={{ color: isHighlighted ? '#f97316' : route.color, weight: isHighlighted ? 8 : 4, opacity: isHighlighted ? 1 : 0.7, interactive: true }}
                         eventHandlers={{ click: (e) => { L.DomEvent.stopPropagation(e); setHighlightedRouteId(isHighlighted ? null : route.id); }}}
                     />
                 );
+            })}
+
+            {/* Task Action Connection Lines */}
+            {showTaskActions && mapPoints.map(point => {
+                if (!point.logic || !point.location) return null;
+
+                const actionLines: JSX.Element[] = [];
+
+                // Collect all actions from different triggers
+                const allActions = [
+                    ...(point.logic.onOpen || []),
+                    ...(point.logic.onCorrect || []),
+                    ...(point.logic.onIncorrect || [])
+                ];
+
+                allActions.forEach((action, idx) => {
+                    if (action.targetId) {
+                        const targetPoint = points.find(p => p.id === action.targetId);
+                        if (targetPoint && targetPoint.location && isValidCoordinate(point.location!) && isValidCoordinate(targetPoint.location)) {
+                            actionLines.push(
+                                <Polyline
+                                    key={`action-${point.id}-${action.id}-${idx}`}
+                                    positions={[
+                                        [point.location.lat, point.location.lng],
+                                        [targetPoint.location.lat, targetPoint.location.lng]
+                                    ]}
+                                    pathOptions={{
+                                        color: '#a855f7',
+                                        weight: 2,
+                                        opacity: 0.6,
+                                        dashArray: '8, 8',
+                                        interactive: false
+                                    }}
+                                />
+                            );
+                        }
+                    }
+                });
+
+                return actionLines;
             })}
 
             {/* LIVE USER MARKER (Internal Context Consumer) */}
