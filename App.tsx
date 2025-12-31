@@ -1649,6 +1649,9 @@ const GameApp: React.FC = () => {
             authUser={authUser}
             activeGame={activeGame}
             onUpdateGame={updateActiveGame}
+            onStartSimulation={handleStartSimulation}
+            onToggleSnapToRoad={handleToggleSnapToRoad}
+            snapToRoadMode={snapToRoadMode}
         />
 
         {(mode === GameMode.EDIT || playgroundTemplateToEdit) && (
