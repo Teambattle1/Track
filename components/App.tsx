@@ -1197,7 +1197,19 @@ const GameApp: React.FC = () => {
                   chatHistory={chatHistory}
               />
           )}
-          {showTeamLobby && currentTeam && (
+          {showTeamLobby && currentTeam && activeGame?.gameMode === 'playzone' && (
+              <PlayzoneGameEntry
+                  isOpen={showTeamLobby}
+                  onClose={() => setShowTeamLobby(false)}
+                  onTeamJoin={(name) => {
+                      // For playzone games, set team name and start game
+                      setCurrentTeam({...currentTeam, name});
+                      setShowTeamLobby(false);
+                  }}
+                  gameName={activeGame?.name}
+              />
+          )}
+          {showTeamLobby && currentTeam && activeGame?.gameMode !== 'playzone' && (
               <TeamLobbyPanel
                   isOpen={showTeamLobby}
                   onClose={() => setShowTeamLobby(false)}
