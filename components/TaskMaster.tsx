@@ -425,6 +425,28 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         return count;
     };
 
+    const getActivationBadges = (task: TaskTemplate): string[] => {
+        const badges: string[] = [];
+
+        if (task.activationTypes?.includes('qr') || task.qrCodeString) {
+            badges.push('QR');
+        }
+        if (task.activationTypes?.includes('nfc') || task.nfcTagId) {
+            badges.push('NFC');
+        }
+        if (task.activationTypes?.includes('ibeacon') || task.ibeaconUUID) {
+            badges.push('iBeacon');
+        }
+        if (task.activationTypes?.includes('radius')) {
+            badges.push('GPS');
+        }
+        if (task.activationTypes?.includes('click')) {
+            badges.push('TAP');
+        }
+
+        return badges;
+    };
+
     const handleSort = (column: 'title' | 'question' | 'language' | 'used' | 'tags') => {
         if (sortColumn === column) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
