@@ -712,6 +712,28 @@ const GameApp: React.FC = () => {
       return () => clearTimeout(timeout);
   };
 
+  const handleStartSimulation = () => {
+      // TODO: Implement simulation mode
+      console.log('[Simulation] Starting simulation mode');
+      // For now, just switch to PLAY mode to simulate
+      setMode(GameMode.PLAY);
+  };
+
+  const handleToggleSnapToRoad = async () => {
+      if (snapToRoadMode) {
+          // Deactivating - perform the snap
+          console.log('[Snap to Road] Deactivating - performing snap');
+          // TODO: Get selected tasks from rectangle selection
+          // TODO: Call snapPointsToRoad utility
+          // TODO: Update the tasks with snapped coordinates
+          setSnapToRoadMode(false);
+      } else {
+          // Activating - enter selection mode
+          console.log('[Snap to Road] Activating - draw rectangle to select tasks');
+          setSnapToRoadMode(true);
+      }
+  };
+
   const handleAddDangerZone = () => {
       if (!activeGame || !mapRef.current) return;
       const center = mapRef.current.getCenter();
