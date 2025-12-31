@@ -833,11 +833,29 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 >
                                     <Crosshair className="w-4 h-4" />
                                 </button>
+
+                                {/* SNAP TASKS TO ROAD Button */}
+                                {mode === GameMode.EDIT && onToggleSnapToRoad && (
+                                    <button
+                                        onClick={onToggleSnapToRoad}
+                                        className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${
+                                            snapToRoadMode
+                                                ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50'
+                                                : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'
+                                        }`}
+                                        title={snapToRoadMode ? 'ACTIVE: Draw rectangle around tasks to select them' : 'Click to activate snap mode: draw rectangle to select tasks, then deactivate to snap to roads'}
+                                    >
+                                        <Navigation className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                             <div className="flex gap-1 text-center">
                                 <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">DANGER</div>
                                 <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">MEASURE</div>
                                 <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">RELOCATE</div>
+                                {mode === GameMode.EDIT && onToggleSnapToRoad && (
+                                    <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">SNAP</div>
+                                )}
                             </div>
                         </div>
                     </div>
