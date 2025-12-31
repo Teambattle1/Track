@@ -187,6 +187,17 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
       }
   }, [activeTab, editedPoint.activationTypes, editedPoint.id, editedPoint.isHiddenBeforeScan]);
 
+  // Generate QR Code for ACTIVATION tab when qrCodeString changes
+  useEffect(() => {
+      if (activeTab === 'ACTIVATION' && editedPoint.qrCodeString) {
+          const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
+          if (canvas) {
+              QRCode.toCanvas(canvas, editedPoint.qrCodeString, { width: 150, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+                  .catch(err => console.error('QR Code generation error:', err));
+          }
+      }
+  }, [activeTab, editedPoint.qrCodeString]);
+
   const handleGenerateImage = async () => {
       const prompt = editedPoint.task.question.replace(/<[^>]*>?/gm, '') + " " + editedPoint.title;
       if (!prompt.trim()) return;
