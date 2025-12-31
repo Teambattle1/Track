@@ -58,7 +58,9 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [useLogoForTasks, setUseLogoForTasks] = useState(false);
 
   const [batchFinished, setBatchFinished] = useState(false);
-  
+  const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
+  const [pendingGenerationParams, setPendingGenerationParams] = useState<{topic: string; taskCount: number; language: string; autoTag: string} | null>(null);
+
   // Destination State
   const [destinationType, setDestinationType] = useState<'MAP' | 'PLAYGROUND'>(initialPlaygroundId ? 'PLAYGROUND' : 'MAP');
   const [selectedPlaygroundId, setSelectedPlaygroundId] = useState<string | null>(initialPlaygroundId || (playgrounds.length > 0 ? playgrounds[0].id : null));
