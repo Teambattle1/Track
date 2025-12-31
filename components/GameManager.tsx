@@ -164,7 +164,7 @@ const GameSummaryCard: React.FC<{
             })()}
           </div>
           <p className="text-xs text-gray-500 truncate">
-            {sessionDate.toLocaleDateString()} • {(game.points?.length || 0)} Tasks • {mapTaskCount} On map • {zoneCount} Zones
+            {sessionDate.toLocaleDateString()} • {(game.points?.length || 0)} Tasks{game.gameMode !== 'playzone' ? ` • ${mapTaskCount} On map` : ''} • {zoneCount} Zones
           </p>
         </div>
       </button>
