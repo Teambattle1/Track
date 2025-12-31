@@ -602,9 +602,9 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                               </label>
                                <div className="flex flex-wrap gap-2 mb-2">
                                    {editedPoint.tags?.map((tag, index) => (
-                                       <span key={`${tag}-${index}`} className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                                       <span key={`${tag}-${index}`} onClick={() => setActiveTab('TAGS')} className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors">
                                            {tag}
-                                           <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:text-blue-900 dark:hover:text-white"><X className="w-3 h-3" /></button>
+                                           <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveTag(tag); }} className="hover:text-blue-900 dark:hover:text-white"><X className="w-3 h-3" /></button>
                                        </span>
                                    ))}
                                </div>
