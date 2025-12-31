@@ -426,6 +426,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     };
 
+    const handleApiKeySaved = () => {
+        // Retry the background generation with the pending keywords
+        if (pendingBackgroundKeywords) {
+            handleGenerateAiBackground(pendingBackgroundKeywords);
+            setPendingBackgroundKeywords(null);
+        }
+    };
+
     const selectedTask = game.points.find(p => p.id === selectedTaskId && p.playgroundId === activePlayground?.id);
 
     const updateTask = (updates: Partial<GamePoint>) => {
