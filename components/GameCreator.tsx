@@ -105,6 +105,7 @@ const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onCha
 const TABS = [
     { id: 'GAME', label: 'Game', icon: Gamepad2 },
     { id: 'TEAMS', label: 'Teams', icon: Users },
+    { id: 'VOTE', label: 'Vote', icon: Users },
     { id: 'MAP', label: 'Mapstyle', icon: MapIcon },
     { id: 'TIMING', label: 'Timing', icon: Clock }, // New Timing Tab
     { id: 'PLAY', label: 'Play', icon: PlayCircle },
