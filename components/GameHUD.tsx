@@ -686,6 +686,21 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                     </button>
                                 )}
 
+                                {/* SNAP TASKS TO ROAD Button - Only in Editor Mode for GPS-based games */}
+                                {mode === GameMode.EDIT && activeGame?.gameMode !== 'playzone' && onToggleSnapToRoad && (
+                                    <button
+                                        onClick={onToggleSnapToRoad}
+                                        className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${
+                                            snapToRoadMode
+                                                ? 'bg-cyan-800 border-cyan-600 text-cyan-300 hover:bg-cyan-700 hover:text-white shadow-lg shadow-cyan-600/30'
+                                                : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        title={snapToRoadMode ? 'Snap enabled: select and drag tasks on map' : 'Click to enable snap tasks to roads'}
+                                    >
+                                        <Navigation className="w-4 h-4" />
+                                    </button>
+                                )}
+
                                 {/* MAPSTYLE Button */}
                                 <div className="relative">
                                     <button
