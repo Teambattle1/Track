@@ -1422,7 +1422,14 @@ const GameApp: React.FC = () => {
                   onOpenLibrary={() => setShowTaskMaster(true)}
                   showScores={showScores}
                   onToggleScores={() => setShowScores(!showScores)}
-                  onHome={() => setViewingPlaygroundId(null)}
+                  onHome={() => {
+                      setViewingPlaygroundId(null);
+                      // For PLAYZONE games, return to landing page instead of map view
+                      if (activeGame?.gameMode === 'playzone') {
+                          setShowLanding(true);
+                          setActiveGameId(null);
+                      }
+                  }}
                   isTemplateMode={false}
                   onAddZoneFromLibrary={() => setShowTaskMaster(true)}
                   isAdmin={authUser?.role === 'Owner' || authUser?.role === 'Admin'}
