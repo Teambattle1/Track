@@ -269,11 +269,17 @@ export interface TaskTemplate {
   feedback?: TaskFeedback;
   settings?: TaskSettings;
   logic?: TaskLogic;
-  
+
+  // Activation Types (for template defaults)
+  activationTypes?: PointActivationType[];
+  qrCodeString?: string;
+  nfcTagId?: string;
+  ibeaconUUID?: string;
+
   // Client Submission Fields
   submissionStatus?: 'pending' | 'approved' | 'rejected';
   submitterName?: string;
-  isNew?: boolean; 
+  isNew?: boolean;
 }
 
 export interface TaskList {
