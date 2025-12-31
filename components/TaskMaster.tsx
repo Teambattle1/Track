@@ -115,6 +115,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'warning' | 'error' } | null>(null);
     const [migrationResults, setMigrationResults] = useState<{totalUpdated: number; totalErrors: number} | null>(null);
 
+    // Tag Colors State
+    const [tagColors, setTagColors] = useState<Record<string, string>>({});
+
     const handleRunMigration = async () => {
         setMigrationRunning(true);
         setMigrationLog(['Starting language migration...']);
