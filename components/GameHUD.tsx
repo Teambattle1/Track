@@ -87,9 +87,6 @@ interface GameHUDProps {
     onUpdateGame?: (game: Game) => Promise<void>;
     // Simulation Props
     onStartSimulation?: () => void;
-    // Snap to Road Props
-    onToggleSnapToRoad?: () => void;
-    snapToRoadMode?: boolean;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
