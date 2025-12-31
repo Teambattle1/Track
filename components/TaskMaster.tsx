@@ -497,6 +497,16 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 }
             }
 
+            // Apply activation type filters (if any selected, task must match at least one)
+            const selectedActivationTypes = Object.keys(activationFilters).filter(type => activationFilters[type]);
+            if (selectedActivationTypes.length > 0) {
+                const taskActivations = getActivationBadges(task);
+                const hasMatchingActivation = selectedActivationTypes.some(type => taskActivations.includes(type));
+                if (!hasMatchingActivation) {
+                    return false;
+                }
+            }
+
             // Apply column filters
             if (columnFilters['title'] && !task.title.toLowerCase().includes(columnFilters['title'].toLowerCase())) {
                 return false;
