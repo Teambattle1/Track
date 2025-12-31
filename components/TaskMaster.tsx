@@ -1156,8 +1156,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-[#0f172a] border border-slate-800 w-full max-w-6xl h-[90vh] rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative">
+        <div className="fixed inset-0 z-[6000] bg-[#0a0f1d] flex animate-in fade-in">
+            <div className="bg-[#0f172a] border-0 w-full h-full flex flex-col overflow-hidden relative">
                 
                 {/* HEADER */}
                 <div className="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center shrink-0">
