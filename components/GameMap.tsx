@@ -389,6 +389,22 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                 />
             )}
 
+            {/* Snap to Road Selection Glow - Cyan pulsing circle around selected tasks */}
+            {isSnapSelected && snapToRoadMode && (
+                <Circle
+                    center={[point.location.lat, point.location.lng]}
+                    radius={30}
+                    pathOptions={{
+                        color: '#06b6d4',
+                        fillColor: '#06b6d4',
+                        fillOpacity: 0.3,
+                        weight: 3,
+                        className: 'animate-pulse'
+                    }}
+                    interactive={false}
+                />
+            )}
+
             {/* Radius Circle - Enhanced when hovered from list */}
             {(mode === GameMode.EDIT || isUnlocked) && (
                 <Circle
