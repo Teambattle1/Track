@@ -1415,7 +1415,11 @@ const GameApp: React.FC = () => {
                 <GameStatsModal
                     onClose={() => setShowGameStats(false)}
                     game={activeGame}
-                    teams={[]} // In real implementation, get teams from game state
+                    teams={gameStatsTeams.map(team => ({
+                        team,
+                        location: undefined, // Teams don't store location in DB
+                        memberCount: team.members?.length || 1
+                    }))}
                 />
             )}
 
