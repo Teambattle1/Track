@@ -212,9 +212,15 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
     } catch (err: any) {
         clearInterval(interval);
         if (isActiveRef.current) {
-            setError(err.message || "Failed to generate tasks.");
+            const errorMessage = err.message || "Failed to generate tasks.";
+            if (errorMessage.includes('AI API Key missing')) {
+                setPendingGenerationParams({topic, taskCount, language, autoTag});
+                setShowGeminiKeyModal(true);
+                setProgress(0);
+            } else {
+                setError(errorMessage);
+            }
             setIsGenerating(false);
-            setProgress(0);
         }
     }
   };
