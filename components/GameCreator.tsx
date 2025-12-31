@@ -272,7 +272,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [secondaryColor, setSecondaryColor] = useState<string>(baseGame?.designConfig?.secondaryColor || '#ef4444');
   const [useDefaultSecondary, setUseDefaultSecondary] = useState(!baseGame?.designConfig?.secondaryColor);
   
-  const [enableCodeScanner, setEnableCodeScanner] = useState(baseGame?.designConfig?.enableCodeScanner || false);
+  const [enableCodeScanner, setEnableCodeScanner] = useState(baseGame?.designConfig?.enableCodeScanner ?? true);
   const [enableGameTime, setEnableGameTime] = useState(baseGame?.designConfig?.enableGameTime ?? true);
   const [hideScore, setHideScore] = useState(baseGame?.designConfig?.hideScore || false);
   
