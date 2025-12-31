@@ -14,6 +14,7 @@ import {
   Plus,
   LayoutTemplate
 } from 'lucide-react';
+import { getGameModeIcon } from '../utils/gameModeIcons';
 
 interface GameManagerProps {
   games: Game[];
