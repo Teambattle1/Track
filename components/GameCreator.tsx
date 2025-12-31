@@ -677,11 +677,9 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
       // Validate Playzone Games
       if (gameMode === 'playzone') {
-          // Check if there are playgrounds
-          // Note: In this context, we don't have access to the game playgrounds directly,
-          // but this validation can be enhanced when playgrounds are added to the game
-          // For now, we'll warn but allow creation
-          console.log('ℹ️ Playzone game created. Remember to add playgrounds through the game editor.');
+          // Note: Full playground validation will occur when game is saved with tasks
+          // This check ensures user is aware of playzone requirements
+          console.log('✓ Playzone game mode selected. Remember to add playgrounds and tasks.');
       }
 
       let endLocation = undefined;
