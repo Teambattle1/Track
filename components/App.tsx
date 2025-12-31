@@ -33,6 +33,7 @@ import MessagePopup from './MessagePopup';
 import Dashboard from './Dashboard';
 import DangerZoneModal from './DangerZoneModal';
 import TeamLobbyPanel from './TeamLobbyPanel';
+import PlayzoneGameEntry from './PlayzoneGameEntry';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineIndicator from './OfflineIndicator';
 import ConnectionStatus from './ConnectionStatus';
