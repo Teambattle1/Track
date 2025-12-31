@@ -1947,8 +1947,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
             {/* Sidebar Tabs */}
             <div className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto custom-scrollbar">
                 <div className="p-4 space-y-1">
-                    {TABS.map(tab => (
-                        <button 
+                    {TABS.filter(tab => {
+                        // Hide MAP tab for playzone and elimination modes
+                        if ((gameMode === 'playzone' || gameMode === 'elimination') && tab.id === 'MAP') {
+                            return false;
+                        }
+                        return true;
+                    }).map(tab => (
+                        <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-wide text-left group ${activeTab === tab.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
