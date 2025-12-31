@@ -355,6 +355,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         setActivePlaygroundId(newZone.id);
     };
 
+    const handleResetBackground = () => {
+        // Reset background to default centered state
+        // This ensures the background image is properly centered and scaled
+        updatePlayground({
+            backgroundScale: 1,
+            backgroundOffset: { x: 0, y: 0 }
+        });
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
