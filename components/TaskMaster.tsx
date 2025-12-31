@@ -1224,6 +1224,37 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     </div>
                                 </div>
 
+                                {/* Activation Type Filter */}
+                                <div className="w-full sm:w-auto">
+                                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">Filter by Activation:</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['QR', 'NFC', 'iBeacon', 'GPS', 'TAP'].map(activation => (
+                                                <label key={activation} className="flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={activationFilters[activation] || false}
+                                                        onChange={(e) => setActivationFilters(prev => ({
+                                                            ...prev,
+                                                            [activation]: e.target.checked
+                                                        }))}
+                                                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
+                                                    />
+                                                    <span>{activation}</span>
+                                                </label>
+                                            ))}
+                                            {Object.keys(activationFilters).some(type => activationFilters[type]) && (
+                                                <button
+                                                    onClick={() => setActivationFilters({})}
+                                                    className="text-[9px] font-bold text-purple-400 hover:text-purple-300 uppercase ml-2"
+                                                >
+                                                    Clear Filters
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Settings Button with Dropdown */}
                                 <div className="relative">
                                     <button
