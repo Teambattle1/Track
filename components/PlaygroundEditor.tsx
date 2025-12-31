@@ -2898,6 +2898,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     initialTab={taskMasterTab}
                 />
             )}
+
+            {/* Gemini API Key Modal */}
+            <GeminiApiKeyModal
+                isOpen={showGeminiKeyModal}
+                onClose={() => setShowGeminiKeyModal(false)}
+                onSave={handleApiKeySaved}
+            />
         </div>
     );
 };
