@@ -22,6 +22,9 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose, initialShowSql = false
   const [geminiSaved, setGeminiSaved] = useState(false);
   const [hasStoredGeminiKey, setHasStoredGeminiKey] = useState(false);
 
+  const [isMigratingGps, setIsMigratingGps] = useState(false);
+  const [gpsMigrationResult, setGpsMigrationResult] = useState<any | null>(null);
+
   useEffect(() => {
       try {
           const existing = localStorage.getItem('GEMINI_API_KEY');
