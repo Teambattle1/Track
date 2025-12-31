@@ -75,7 +75,8 @@ const GameApp: React.FC = () => {
   const [showGameCreator, setShowGameCreator] = useState(false);
   const [showTeamLobby, setShowTeamLobby] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
-  
+  const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | null>(null);
+
   // --- DASHBOARD STATE ---
   const [showDashboard, setShowDashboard] = useState(false);
   const [dashboardTab, setDashboardTab] = useState<'dashboard' | 'games' | 'templates' | 'tasks' | 'users' | 'tags' | 'client'>('dashboard');
