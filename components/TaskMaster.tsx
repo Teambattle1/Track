@@ -1352,7 +1352,47 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                         </button>
                                     </div>
                                     <button onClick={() => setShowAiGen(true)} className="flex-1 sm:flex-none px-4 py-2 bg-purple-900/20 text-purple-400 border border-purple-500/30 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-purple-900/40 transition-all flex items-center justify-center gap-2">
-                                        <RefreshCw className="w-3 h-3" /> AI
+                                        <RefreshCw className="w-3 h-3" /> CREATE WITH AI
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const newTask: TaskTemplate = {
+                                                id: `task-${Date.now()}`,
+                                                title: 'New Task',
+                                                task: {
+                                                    type: 'text',
+                                                    question: 'Enter your question here',
+                                                    options: [],
+                                                    correctAnswers: [],
+                                                    range: { min: 0, max: 100, step: 1, correctValue: 50 },
+                                                    placeholder: '',
+                                                    timelineItems: []
+                                                },
+                                                tags: ['New'],
+                                                iconId: 'default',
+                                                createdAt: Date.now(),
+                                                points: 10,
+                                                feedback: {
+                                                    correctMessage: 'Correct!',
+                                                    showCorrectMessage: true,
+                                                    incorrectMessage: 'Incorrect, try again.',
+                                                    showIncorrectMessage: true,
+                                                    hint: '',
+                                                    hintCost: 10
+                                                },
+                                                settings: {
+                                                    timeLimitSeconds: undefined,
+                                                    scoreDependsOnSpeed: false,
+                                                    showAnswerStatus: true,
+                                                    showCorrectAnswerOnMiss: false,
+                                                    language: 'English'
+                                                }
+                                            };
+                                            setEditingTemplate(newTask);
+                                        }}
+                                        className="flex-1 sm:flex-none px-4 py-2 bg-green-900/20 text-green-400 border border-green-500/30 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-green-900/40 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Plus className="w-3 h-3" /> CREATE NEW
                                     </button>
                                     <button
                                         onClick={() => {
