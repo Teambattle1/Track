@@ -225,6 +225,21 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
     }
   };
 
+  const handleApiKeySaved = () => {
+    // Retry with the pending generation parameters
+    if (pendingGenerationParams) {
+      setTopic(pendingGenerationParams.topic);
+      setTaskCount(pendingGenerationParams.taskCount);
+      setLanguage(pendingGenerationParams.language);
+      setAutoTag(pendingGenerationParams.autoTag);
+      setPendingGenerationParams(null);
+      // Retry the generation
+      setTimeout(() => {
+        handleGenerate();
+      }, 100);
+    }
+  };
+
   const handleApproveTask = (task: TaskTemplate) => {
       setApprovedTasks(prev => [...prev, task]);
       setGeneratedBuffer(prev => prev.filter(t => t.id !== task.id));
