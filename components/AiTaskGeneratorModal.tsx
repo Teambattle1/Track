@@ -20,6 +20,8 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
     const [generatedTasks, setGeneratedTasks] = useState<TaskTemplate[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+    const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
+    const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
     const handleGenerate = async () => {
         if (!prompt.trim()) {
