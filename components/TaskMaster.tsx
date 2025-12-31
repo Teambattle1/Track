@@ -861,7 +861,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     return (
                                         <span
                                             key={`${tag}-${index}`}
-                                            onClick={(e) => { e.stopPropagation(); setEditingTemplate(task); }}
+                                            onClick={(e) => { e.stopPropagation(); setRequestedTab('TAGS'); setEditingTemplate(task); }}
                                             style={{ backgroundColor: tagColor, color: textColor }}
                                             className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider cursor-pointer hover:opacity-80 transition-opacity"
                                         >
