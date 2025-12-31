@@ -1901,8 +1901,9 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                         setLibrary(updatedLibrary);
                         setEditingTemplate(null);
                     }}
-                    onClose={() => setEditingTemplate(null)}
+                    onClose={() => { setEditingTemplate(null); setRequestedTab(null); }}
                     isTemplateMode={true}
+                    requestedTab={requestedTab}
                 />
             )}
 
