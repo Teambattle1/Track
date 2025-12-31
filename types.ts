@@ -214,7 +214,8 @@ export interface GamePoint {
   location: Coordinate | null; // null for playground-only points without map location
   radiusMeters: number;
   activationTypes: PointActivationType[];
-  manualUnlockCode?: string; 
+  manualUnlockCode?: string;
+  isLocationLocked?: boolean; // If true, task can only be completed at this specific location 
   
   // Playground Specific
   playgroundId?: string; 
