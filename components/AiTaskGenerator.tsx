@@ -3,6 +3,7 @@ import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkl
 import { TaskTemplate, Playground, TaskList, IconId } from '../types';
 import { generateAiTasks, generateAiImage, searchLogoUrl, generateMoodAudio } from '../services/ai';
 import { ICON_COMPONENTS } from '../utils/icons';
+import GeminiApiKeyModal from './GeminiApiKeyModal';
 
 interface AiTaskGeneratorProps {
   onClose: () => void;
