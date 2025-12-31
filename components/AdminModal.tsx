@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Game } from '../types';
-import { X, Database, Terminal, Copy, Check, ExternalLink, CheckCircle, KeyRound, Eye, EyeOff, Trash2, Download, Book } from 'lucide-react';
+import { X, Database, Terminal, Copy, Check, ExternalLink, CheckCircle, KeyRound, Eye, EyeOff, Trash2, Download, Book, Zap, Loader2 } from 'lucide-react';
 import { generateFeatureCatalogPDF } from '../utils/pdfGenerator';
+import { migrateAllTasksToGpsEnabled } from '../services/migrationGpsActivation';
 
 interface AdminModalProps {
   games: Game[]; 
