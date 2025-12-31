@@ -1067,6 +1067,132 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    </div>
                                </div>
                            </div>
+
+                           {/* NFC Configuration */}
+                           <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-2xl border-2 border-green-200 dark:border-green-800">
+                               <div className="flex items-start gap-4">
+                                   <div className="w-12 h-12 bg-green-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                       <Smartphone className="w-6 h-6" />
+                                   </div>
+                                   <div className="flex-1">
+                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1">NFC Tag Activation</h3>
+                                       <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">Enable this task to be unlocked by scanning an NFC tag. Perfect for physical locations like house doors, information boards, etc.</p>
+
+                                       <div className="space-y-3">
+                                           <div>
+                                               <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">🏷️ NFC TAG ID</label>
+                                               <input
+                                                   type="text"
+                                                   value={editedPoint.nfcTagId || ''}
+                                                   onChange={(e) => setEditedPoint({...editedPoint, nfcTagId: e.target.value})}
+                                                   placeholder="e.g., NFC_HOUSE_A, BEACON_LOCATION_1"
+                                                   className="w-full px-4 py-3 border-2 border-green-200 dark:border-green-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm focus:border-green-500 outline-none transition-all"
+                                               />
+                                               <p className="text-[10px] text-gray-500 mt-2">Unique identifier for this NFC tag.</p>
+                                           </div>
+
+                                           <div>
+                                               <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">📝 NFC TAG DATA (Optional)</label>
+                                               <textarea
+                                                   value={editedPoint.nfcTagData || ''}
+                                                   onChange={(e) => setEditedPoint({...editedPoint, nfcTagData: e.target.value})}
+                                                   placeholder="Additional data to store (JSON format recommended)"
+                                                   className="w-full px-4 py-3 border-2 border-green-200 dark:border-green-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-green-500 outline-none transition-all"
+                                                   rows={2}
+                                               />
+                                               <p className="text-[10px] text-gray-500 mt-2">Store extra data like location coordinates, timestamps, etc.</p>
+                                           </div>
+
+                                           {editedPoint.nfcTagId && (
+                                               <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-3">
+                                                   <p className="text-xs text-green-900 dark:text-green-200 font-bold">
+                                                       ✓ This task can be unlocked by scanning an NFC tag with ID: <strong>{editedPoint.nfcTagId}</strong>
+                                                   </p>
+                                               </div>
+                                           )}
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
+
+                           {/* iBeacon Configuration */}
+                           <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 p-6 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800">
+                               <div className="flex items-start gap-4">
+                                   <div className="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                       <Wifi className="w-6 h-6" />
+                                   </div>
+                                   <div className="flex-1">
+                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1">iBeacon Activation</h3>
+                                       <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">Enable this task to be unlocked when a player enters proximity of a specific iBeacon. Works with Bluetooth LE beacons.</p>
+
+                                       <div className="space-y-3">
+                                           <div className="grid grid-cols-1 gap-3">
+                                               <div>
+                                                   <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">📡 iBeacon UUID</label>
+                                                   <input
+                                                       type="text"
+                                                       value={editedPoint.ibeaconUUID || ''}
+                                                       onChange={(e) => setEditedPoint({...editedPoint, ibeaconUUID: e.target.value})}
+                                                       placeholder="e.g., 550e8400-e29b-41d4-a716-446655440000"
+                                                       className="w-full px-4 py-3 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-xs focus:border-indigo-500 outline-none transition-all"
+                                                   />
+                                               </div>
+
+                                               <div className="grid grid-cols-2 gap-3">
+                                                   <div>
+                                                       <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">MAJOR</label>
+                                                       <input
+                                                           type="number"
+                                                           value={editedPoint.ibeaconMajor || ''}
+                                                           onChange={(e) => setEditedPoint({...editedPoint, ibeaconMajor: parseInt(e.target.value) || undefined})}
+                                                           placeholder="0-65535"
+                                                           className="w-full px-4 py-3 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm focus:border-indigo-500 outline-none transition-all"
+                                                       />
+                                                   </div>
+
+                                                   <div>
+                                                       <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">MINOR</label>
+                                                       <input
+                                                           type="number"
+                                                           value={editedPoint.ibeaconMinor || ''}
+                                                           onChange={(e) => setEditedPoint({...editedPoint, ibeaconMinor: parseInt(e.target.value) || undefined})}
+                                                           placeholder="0-65535"
+                                                           className="w-full px-4 py-3 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm focus:border-indigo-500 outline-none transition-all"
+                                                       />
+                                                   </div>
+                                               </div>
+
+                                               <div>
+                                                   <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">⚡ PROXIMITY TO TRIGGER</label>
+                                                   <select
+                                                       value={editedPoint.ibeaconProximity || 'near'}
+                                                       onChange={(e) => setEditedPoint({...editedPoint, ibeaconProximity: e.target.value as any})}
+                                                       className="w-full px-4 py-3 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-indigo-500 outline-none transition-all"
+                                                   >
+                                                       <option value="immediate">🟢 Immediate (0-1 meter)</option>
+                                                       <option value="near">🟡 Near (1-3 meters)</option>
+                                                       <option value="far">🔴 Far (3+ meters)</option>
+                                                   </select>
+                                               </div>
+                                           </div>
+
+                                           {editedPoint.ibeaconUUID && (
+                                               <div className="bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700 rounded-lg p-3">
+                                                   <p className="text-xs text-indigo-900 dark:text-indigo-200 font-bold mb-1">
+                                                       ✓ iBeacon configured
+                                                   </p>
+                                                   <p className="text-[10px] text-indigo-800 dark:text-indigo-300">
+                                                       UUID: <code className="text-[9px]">{editedPoint.ibeaconUUID}</code>
+                                                       {editedPoint.ibeaconMajor !== undefined && ` | Major: ${editedPoint.ibeaconMajor}`}
+                                                       {editedPoint.ibeaconMinor !== undefined && ` | Minor: ${editedPoint.ibeaconMinor}`}
+                                                       {editedPoint.ibeaconProximity && ` | Proximity: ${editedPoint.ibeaconProximity}`}
+                                                   </p>
+                                               </div>
+                                           )}
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
                        </div>
                    )}
 
