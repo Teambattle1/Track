@@ -612,19 +612,10 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-green-200 opacity-0 group-hover:opacity-100 transition-opacity bg-green-800 rounded-full px-2 border border-green-600 pointer-events-none">
                             <GripHorizontal className="w-3 h-3" />
                         </div>
-                        <div className="flex flex-col gap-1 min-w-[240px]">
+                        <div className="flex flex-col gap-1">
                             <div className="text-center">
                                 <h3 className="text-[9px] font-black uppercase tracking-widest text-green-100">LOCATION</h3>
                             </div>
-
-                            {/* First Line: Search Bar */}
-                            <LocationSearch
-                                onSelectLocation={onSearchLocation}
-                                hideSearch={false}
-                                locateFeedback={locateFeedback}
-                                compact={true}
-                                showLabels={false}
-                            />
 
                             {/* Second Line: LOCATE, FIT, MAP Buttons */}
                             <div className="flex gap-1 items-center justify-center">
