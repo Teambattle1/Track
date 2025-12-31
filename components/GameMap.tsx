@@ -840,9 +840,11 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                     label={getLabel(point)}
                     showScore={showScores}
                     isRelocateSelected={relocateAllTaskIds.includes(point.id)}
+                    isSnapSelected={selectedSnapTaskIds.includes(point.id)}
                     isHovered={hoveredPointId === point.id}
                     isMeasuring={isMeasuring}
                     isRelocating={isRelocating}
+                    snapToRoadMode={snapToRoadMode}
                     onClick={onPointClick}
                     onMove={onPointMove}
                     onDelete={onDeletePoint}
