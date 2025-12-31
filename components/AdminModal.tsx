@@ -12,7 +12,7 @@ interface AdminModalProps {
   onLibraryUpdated?: () => void;
 }
 
-const AdminModal: React.FC<AdminModalProps> = ({ onClose, initialShowSql = false }) => {
+const AdminModal: React.FC<AdminModalProps> = ({ onClose, initialShowSql = false, onLibraryUpdated }) => {
   const [showSql, setShowSql] = useState(initialShowSql);
   const [copied, setCopied] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
