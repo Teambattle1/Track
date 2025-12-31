@@ -389,6 +389,25 @@ export interface Game {
   // Game Mode Configuration
   gameMode?: 'standard' | 'playzone' | 'elimination'; // 'standard' = GPS-based, 'playzone' = playground-only indoor, 'elimination' = GPS-based CTF
 
+  // Elimination Mode Specific Fields
+  teamColors?: Record<string, string>; // Team ID -> Hex color code mapping (e.g., '#FF0000' for red)
+  capturedTasks?: Record<string, string>; // Task ID -> Team ID who captured it
+  failedAttempts?: Array<{
+    taskId: string;
+    teamId: string;
+    timestamp: number;
+    cooldownUntil: number; // Unix timestamp when cooldown expires (timestamp + 2 minutes)
+  }>;
+  bombs?: Array<{
+    id: string;
+    teamId: string;
+    location: Coordinate;
+    duration: 30 | 60 | 120; // Duration in seconds
+    createdAt: number;
+    detonatesAt: number; // createdAt + duration
+  }>;
+  teamCaptureCount?: Record<string, number>; // Team ID -> Number of captured tasks
+
   // Team & Permission Settings
   showOtherTeams?: boolean;
   showTaskDetailsToPlayers?: boolean; 
