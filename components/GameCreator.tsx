@@ -816,8 +816,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   );
 
   const renderContent = () => {
-      // Prevent MAP tab for playzone and elimination modes
-      const effectiveTab = (gameMode === 'playzone' || gameMode === 'elimination') && activeTab === 'MAP' ? 'GAME' : activeTab;
+      // Prevent MAP tab for playzone mode only (elimination is GPS-based and needs map style selection)
+      const effectiveTab = gameMode === 'playzone' && activeTab === 'MAP' ? 'GAME' : activeTab;
 
       switch (effectiveTab) {
           // ... (Existing Cases) ...
