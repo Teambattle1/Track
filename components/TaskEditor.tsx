@@ -255,11 +255,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   };
 
   const handleAddTag = () => {
-      if (tagInput.trim() && !editedPoint.tags?.includes(tagInput.trim())) {
-          setEditedPoint(prev => ({ ...prev, tags: [...(prev.tags || []), tagInput.trim()] }));
-          setTagInput('');
-          setTagError(false);
+      const trimmedInput = tagInput.trim();
+      if (!trimmedInput || editedPoint.tags?.includes(trimmedInput)) {
+          setTagError(true);
+          return;
       }
+      setEditedPoint(prev => ({ ...prev, tags: [...(prev.tags || []), trimmedInput] }));
+      setTagInput('');
+      setTagError(false);
   };
 
   const handleRemoveTag = (tag: string) => {
