@@ -323,6 +323,23 @@ const GameApp: React.FC = () => {
       return () => clearInterval(interval);
   }, [userLocation, activeGame, mode]);
 
+  // --- GAME STATS DATA FETCHING ---
+  useEffect(() => {
+      if (!showGameStats || !activeGameId) return;
+
+      const loadTeams = async () => {
+          try {
+              const teams = await db.fetchTeams(activeGameId);
+              setGameStatsTeams(teams);
+          } catch (error) {
+              console.error('Error loading teams for stats:', error);
+              setGameStatsTeams([]);
+          }
+      };
+
+      loadTeams();
+  }, [showGameStats, activeGameId]);
+
   // --- MEMOIZED DATA ---
   
   // Calculate Logic Links for Map Visualization (Edit/Instructor Mode)
