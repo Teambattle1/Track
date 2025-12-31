@@ -1261,46 +1261,77 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 </div>
 
                                 {/* Activation Type Filter */}
-                                {getUsedActivationsInLibrary().length > 0 && (
-                                    <div className="w-full sm:w-auto">
-                                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">🔧 Filter by Activation:</p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {getUsedActivationsInLibrary().map(activation => {
-                                                    const badgeColors: Record<string, string> = {
-                                                        'QR': 'text-purple-400',
-                                                        'NFC': 'text-green-400',
-                                                        'iBeacon': 'text-indigo-400',
-                                                        'GPS': 'text-blue-400',
-                                                        'TAP': 'text-orange-400'
-                                                    };
-                                                    return (
-                                                        <label key={activation} className={`flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400 ${activationFilters[activation] ? badgeColors[activation] : ''}`}>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={activationFilters[activation] || false}
-                                                                onChange={(e) => setActivationFilters(prev => ({
-                                                                    ...prev,
-                                                                    [activation]: e.target.checked
-                                                                }))}
-                                                                className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
-                                                            />
-                                                            <span>{activation}</span>
-                                                        </label>
-                                                    );
-                                                })}
-                                                {Object.keys(activationFilters).some(type => activationFilters[type]) && (
-                                                    <button
-                                                        onClick={() => setActivationFilters({})}
-                                                        className="text-[9px] font-bold text-purple-400 hover:text-purple-300 uppercase ml-2"
-                                                    >
-                                                        Clear
-                                                    </button>
-                                                )}
-                                            </div>
+                                <div className="w-full sm:w-auto">
+                                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase">🔧 Activation Filters</p>
+                                            <span className="text-[8px] font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded">
+                                                {getFilteredAndSortedLibrary().length} / {library.length}
+                                            </span>
                                         </div>
+
+                                        {/* Show Only With Activations Toggle */}
+                                        <label className="flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400 mb-2 p-2 bg-slate-800/50 rounded border border-slate-700">
+                                            <input
+                                                type="checkbox"
+                                                checked={showOnlyWithActivations}
+                                                onChange={(e) => setShowOnlyWithActivations(e.target.checked)}
+                                                className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
+                                            />
+                                            <span>Only With Activations</span>
+                                        </label>
+
+                                        {getUsedActivationsInLibrary().length > 0 && (
+                                            <>
+                                                <p className="text-[8px] font-bold text-slate-500 uppercase mb-2">Filter by Type:</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {getUsedActivationsInLibrary().map(activation => {
+                                                        const badgeColors: Record<string, string> = {
+                                                            'QR': 'text-purple-400 border-purple-500/50',
+                                                            'NFC': 'text-green-400 border-green-500/50',
+                                                            'iBeacon': 'text-indigo-400 border-indigo-500/50',
+                                                            'GPS': 'text-blue-400 border-blue-500/50',
+                                                            'TAP': 'text-orange-400 border-orange-500/50'
+                                                        };
+                                                        const bgColors: Record<string, string> = {
+                                                            'QR': 'hover:bg-purple-900/30',
+                                                            'NFC': 'hover:bg-green-900/30',
+                                                            'iBeacon': 'hover:bg-indigo-900/30',
+                                                            'GPS': 'hover:bg-blue-900/30',
+                                                            'TAP': 'hover:bg-orange-900/30'
+                                                        };
+                                                        return (
+                                                            <label key={activation} className={`flex items-center gap-2 text-[10px] font-bold cursor-pointer transition-all px-2 py-1 rounded border ${activationFilters[activation] ? badgeColors[activation] + ' bg-slate-700/50' : 'text-slate-400 border-slate-600 ' + bgColors[activation]}`}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={activationFilters[activation] || false}
+                                                                    onChange={(e) => setActivationFilters(prev => ({
+                                                                        ...prev,
+                                                                        [activation]: e.target.checked
+                                                                    }))}
+                                                                    className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
+                                                                />
+                                                                <span>{activation}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {(Object.keys(activationFilters).some(type => activationFilters[type]) || showOnlyWithActivations) && (
+                                            <button
+                                                onClick={() => {
+                                                    setActivationFilters({});
+                                                    setShowOnlyWithActivations(false);
+                                                }}
+                                                className="mt-2 w-full text-[9px] font-bold text-purple-400 hover:text-purple-300 uppercase py-1.5 bg-slate-800/50 rounded border border-purple-500/30 hover:border-purple-500/60 transition-all"
+                                            >
+                                                ✕ CLEAR ALL FILTERS
+                                            </button>
+                                        )}
                                     </div>
-                                )}
+                                </div>
 
                                 {/* Settings Button with Dropdown */}
                                 <div className="relative">
