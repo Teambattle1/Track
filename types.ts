@@ -217,7 +217,13 @@ export interface GamePoint {
   manualUnlockCode?: string;
   isLocationLocked?: boolean; // If true, task can only be completed at this specific location
   qrCodeString?: string; // QR code string value (e.g., house ID, location code)
-  qrCodeUsageCount?: number; // Track how many times this QR code is used (prevent duplicates) 
+  qrCodeUsageCount?: number; // Track how many times this QR code is used (prevent duplicates)
+  nfcTagId?: string; // NFC tag identifier for NFC-based activation
+  nfcTagData?: string; // Additional NFC tag data (task info, location, etc.)
+  ibeaconUUID?: string; // iBeacon UUID for beacon-based activation
+  ibeaconMajor?: number; // iBeacon major ID
+  ibeaconMinor?: number; // iBeacon minor ID
+  ibeaconProximity?: 'immediate' | 'near' | 'far'; // Required proximity to trigger task 
   
   // Playground Specific
   playgroundId?: string; 
