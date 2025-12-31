@@ -201,16 +201,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="GAME"
                   icon={Gamepad2}
                   gradient="bg-gradient-to-br from-orange-500 to-red-500"
-                  onClick={() => onAction('CREATE_GAME')}
+                  onClick={() => setView('CREATE_GAME_SUBMENU')}
                   delay={0}
-                  scale={0.75}
-              />
-              <MapPinButton
-                  title="PLAYZONE GAME"
-                  icon={Smartphone}
-                  gradient="bg-gradient-to-br from-teal-500 to-emerald-500"
-                  onClick={() => onAction('CREATE_PLAYZONE_GAME')}
-                  delay={50}
                   scale={0.75}
               />
               <MapPinButton
@@ -218,7 +210,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   icon={FilePlus}
                   gradient="bg-gradient-to-br from-blue-500 to-cyan-500"
                   onClick={() => onAction('TASKS')}
-                  delay={100}
+                  delay={50}
                   scale={0.75}
               />
               <MapPinButton
@@ -226,7 +218,38 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   icon={Globe}
                   gradient="bg-gradient-to-br from-emerald-500 to-green-500"
                   onClick={() => onAction('PLAYGROUNDS')}
-                  delay={150}
+                  delay={100}
+                  scale={0.75}
+              />
+          </div>
+      </div>
+  );
+
+  const renderGameTypeSubmenu = () => (
+      <div className="flex flex-col items-center w-full">
+          <div className="flex flex-col md:flex-row gap-12 md:gap-16 lg:gap-20 items-center justify-center w-full px-4 pb-10">
+              <MapPinButton
+                  title="MAP"
+                  icon={MapPin}
+                  gradient="bg-gradient-to-br from-orange-500 to-red-500"
+                  onClick={() => onAction('CREATE_MAP_GAME')}
+                  delay={0}
+                  scale={0.75}
+              />
+              <MapPinButton
+                  title="PLAYZONE"
+                  icon={Smartphone}
+                  gradient="bg-gradient-to-br from-teal-500 to-emerald-500"
+                  onClick={() => onAction('CREATE_PLAYZONE_GAME')}
+                  delay={50}
+                  scale={0.75}
+              />
+              <MapPinButton
+                  title="ELIMINATION"
+                  icon={Bomb}
+                  gradient="bg-gradient-to-br from-red-500 to-pink-500"
+                  onClick={() => onAction('CREATE_ELIMINATION_GAME')}
+                  delay={100}
                   scale={0.75}
               />
           </div>
