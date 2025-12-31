@@ -322,9 +322,15 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                         
                                         {/* Top Row: Icon + Flag */}
                                         <div className="flex justify-between items-start mb-3">
-                                            <div className="w-10 h-10 bg-slate-800/80 backdrop-blur rounded-xl flex items-center justify-center border border-slate-700/50 group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 transition-colors">
-                                                <Gamepad2 className="w-5 h-5 text-slate-400 group-hover:text-indigo-400" />
-                                            </div>
+                                            {(() => {
+                                                const { Icon, label, color, bgColor, borderColor } = getGameModeIcon(game.gameMode);
+                                                return (
+                                                    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${color} ${bgColor} ${borderColor}`}>
+                                                        <Icon className="w-4 h-4" />
+                                                        <span className="text-[9px] font-black uppercase">{label}</span>
+                                                    </div>
+                                                );
+                                            })()}
                                             {/* Large Flag */}
                                             <div className="text-3xl filter drop-shadow-md" title={`Language: ${game.language}`}>
                                                 {getFlag(game.language)}
