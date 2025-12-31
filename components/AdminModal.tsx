@@ -410,6 +410,71 @@ NOTIFY pgrst, 'reload config';`;
                   )}
               </button>
           </div>
+
+          {/* GPS Activation Migration */}
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+                          <Zap className="w-5 h-5 text-yellow-400" />
+                      </div>
+                      <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-white">GPS ACTIVATION MIGRATION</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">
+                              Enable GPS for all tasks
+                          </p>
+                          <p className="text-[10px] text-slate-600 font-bold mt-2 leading-snug">
+                              Ensures all tasks in the database have GPS (radius) activation enabled by default.
+                          </p>
+                      </div>
+                  </div>
+              </div>
+
+              {gpsMigrationResult ? (
+                  <div className="bg-slate-900 rounded-xl p-3 border border-slate-700 space-y-2">
+                      {gpsMigrationResult.error ? (
+                          <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-2">
+                              <p className="text-[10px] text-red-300 font-bold">❌ Migration Error:</p>
+                              <p className="text-[9px] text-red-400 mt-1">{gpsMigrationResult.error}</p>
+                          </div>
+                      ) : (
+                          <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-2 space-y-1">
+                              <p className="text-[10px] text-green-300 font-bold">✓ Migration Completed!</p>
+                              <p className="text-[9px] text-green-400">Total Tasks: {gpsMigrationResult.total}</p>
+                              <p className="text-[9px] text-green-400">Updated: {gpsMigrationResult.updated}</p>
+                              <p className="text-[9px] text-green-400">Already Had GPS: {gpsMigrationResult.alreadyHasGps}</p>
+                              {gpsMigrationResult.failed > 0 && (
+                                  <p className="text-[9px] text-yellow-400">Failed: {gpsMigrationResult.failed}</p>
+                              )}
+                          </div>
+                      )}
+                      <button
+                          onClick={() => setGpsMigrationResult(null)}
+                          className="w-full mt-2 text-[9px] font-bold text-slate-400 hover:text-white uppercase py-1.5 bg-slate-800/50 rounded hover:bg-slate-700/50 transition-colors"
+                      >
+                          CLEAR RESULTS
+                      </button>
+                  </div>
+              ) : (
+                  <button
+                      onClick={handleMigrateGpsActivation}
+                      disabled={isMigratingGps}
+                      className="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-600/50 disabled:cursor-not-allowed text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2"
+                  >
+                      {isMigratingGps ? (
+                          <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              MIGRATING...
+                          </>
+                      ) : (
+                          <>
+                              <Zap className="w-4 h-4" />
+                              RUN GPS MIGRATION
+                          </>
+                      )}
+                  </button>
+              )}
+          </div>
         </div>
 
         {/* Footer */}
