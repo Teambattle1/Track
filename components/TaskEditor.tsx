@@ -8,15 +8,15 @@ import Cropper from 'react-easy-crop';
 import { generateAiImage } from '../services/ai';
 import { uploadImage } from '../services/storage'; // IMPORTED
 import QRCode from 'qrcode';
-import { 
-  X, Save, Trash2, Upload, Link, Loader2, CheckCircle, 
-  AlignLeft, CheckSquare, ListChecks, ToggleLeft, SlidersHorizontal, 
-  Plus, AlertCircle, ZoomIn, Scissors, Image as ImageIcon, Tag, 
-  Copy, KeyRound, ChevronDown, ChevronsUpDown, RotateCw, Type, 
-  Palette, Bold, Italic, Underline, MonitorPlay, Speaker, MapPin, 
+import {
+  X, Save, Trash2, Upload, Link, Loader2, CheckCircle,
+  AlignLeft, CheckSquare, ListChecks, ToggleLeft, SlidersHorizontal,
+  Plus, AlertCircle, ZoomIn, Scissors, Image as ImageIcon, Tag,
+  Copy, KeyRound, ChevronDown, ChevronsUpDown, RotateCw, Type,
+  Palette, Bold, Italic, Underline, MonitorPlay, Speaker, MapPin,
   Settings, Zap, MessageSquare, Clock, Globe, Lock, Check, Wand2, Hash,
   Edit2, MousePointerClick, EyeOff, Eye, Maximize, Smartphone, Monitor, QrCode, Download, Map as MapIcon, Info,
-  ListOrdered
+  ListOrdered, Wifi
 } from 'lucide-react';
 
 interface TaskEditorProps {
