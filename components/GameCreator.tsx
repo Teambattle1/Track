@@ -1592,36 +1592,38 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                           )}
                       </div>
 
-                      {/* Hints */}
-                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                          <label className="block text-[10px] font-bold text-white uppercase mb-4">Hints</label>
-                          
-                          <div className="flex items-center gap-3 mb-4">
-                              <input 
-                                  type="checkbox" 
-                                  checked={limitHints} 
-                                  onChange={(e) => setLimitHints(e.target.checked)}
-                                  className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-blue-600"
-                              />
-                              <span className="text-xs text-slate-300">Limit hints (when available)</span>
-                          </div>
+                      {/* Hints - Only for GPS-based games */}
+                      {gameMode !== 'playzone' && (
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                              <label className="block text-[10px] font-bold text-white uppercase mb-4">Disable Hints</label>
 
-                          {limitHints && (
-                              <div className="animate-in fade-in">
-                                  <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Hint number limit</label>
+                              <div className="flex items-center gap-3 mb-4">
                                   <input
-                                      type="number"
-                                      value={hintLimit}
-                                      onChange={(e) => {
-                                          const v = parseInt(e.target.value, 10);
-                                          setHintLimit(Number.isFinite(v) ? v : 0);
-                                      }}
-                                      placeholder="HINT NUMBER LIMIT..."
-                                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm font-bold outline-none focus:border-orange-500 placeholder:text-slate-600 uppercase"
+                                      type="checkbox"
+                                      checked={limitHints}
+                                      onChange={(e) => setLimitHints(e.target.checked)}
+                                      className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-blue-600"
                                   />
+                                  <span className="text-xs text-slate-300">Disable hints in game if available</span>
                               </div>
-                          )}
-                      </div>
+
+                              {limitHints && (
+                                  <div className="animate-in fade-in">
+                                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Hint number limit</label>
+                                      <input
+                                          type="number"
+                                          value={hintLimit}
+                                          onChange={(e) => {
+                                              const v = parseInt(e.target.value, 10);
+                                              setHintLimit(Number.isFinite(v) ? v : 0);
+                                          }}
+                                          placeholder="HINT NUMBER LIMIT..."
+                                          className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm font-bold outline-none focus:border-orange-500 placeholder:text-slate-600 uppercase"
+                                      />
+                                  </div>
+                              )}
+                          </div>
+                      )}
 
                       {/* Incorrect Answer Penalty */}
                       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
