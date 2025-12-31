@@ -1414,7 +1414,16 @@ const GameApp: React.FC = () => {
                     ensureSession(() => {
                         switch (action) {
                             case 'GAMES': setShowGameChooser(true); break;
-                            case 'CREATE_GAME': setGameToEdit(null); setShowGameCreator(true); break;
+                            case 'CREATE_GAME':
+                                setGameToEdit(null);
+                                setInitialGameMode('standard');
+                                setShowGameCreator(true);
+                                break;
+                            case 'CREATE_PLAYZONE_GAME':
+                                setGameToEdit(null);
+                                setInitialGameMode('playzone');
+                                setShowGameCreator(true);
+                                break;
                             case 'EDIT_GAME': 
                                 if (activeGameId && activeGame) {
                                     setGameToEdit(activeGame);
