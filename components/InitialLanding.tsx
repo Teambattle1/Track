@@ -130,6 +130,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const getHeaderContent = () => {
       switch (view) {
           case 'CREATE': return { title: 'CREATE CENTER', subtitle: 'NEW RESOURCE SETUP', showBranding: false };
+          case 'CREATE_GAME_SUBMENU': return { title: 'GAME TYPE SELECTOR', subtitle: 'CHOOSE GAME MODE', showBranding: false };
           case 'EDIT_MENU': return { title: 'EDIT CENTER', subtitle: 'MODIFY RESOURCES', showBranding: false };
           case 'PLAY_MENU': return { title: 'PLAY CENTER', subtitle: 'GAME OPERATIONS', showBranding: false };
           case 'PLAY_TEAMS_MENU': return { title: 'TEAM OPERATIONS', subtitle: 'SQUAD MANAGEMENT', showBranding: false };
