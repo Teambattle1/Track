@@ -150,8 +150,19 @@ const GameSummaryCard: React.FC<{
           )}
         </div>
 
-        <div className="min-w-0">
-          <h3 className="font-bold text-gray-800 dark:text-white uppercase truncate">{game.name || 'Unnamed Game'}</h3>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-bold text-gray-800 dark:text-white uppercase truncate">{game.name || 'Unnamed Game'}</h3>
+            {(() => {
+              const { Icon, label, color, bgColor, borderColor } = getGameModeIcon(game.gameMode);
+              return (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${color} ${bgColor} border ${borderColor} whitespace-nowrap`}>
+                  <Icon className="w-3 h-3" />
+                  {label}
+                </span>
+              );
+            })()}
+          </div>
           <p className="text-xs text-gray-500 truncate">
             {sessionDate.toLocaleDateString()} • {(game.points?.length || 0)} Tasks • {mapTaskCount} On map • {zoneCount} Zones
           </p>
