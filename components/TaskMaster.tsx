@@ -166,6 +166,18 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         };
     }, []);
 
+    // Load tag colors from localStorage
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem('geohunt_tag_colors');
+            if (stored) {
+                setTagColors(JSON.parse(stored));
+            }
+        } catch (e) {
+            console.error('[TaskMaster] Error loading tag colors:', e);
+        }
+    }, []);
+
     const loadLibrary = async (forceRefresh = false) => {
         if (!forceRefresh && cachedLibrary && Array.isArray(cachedLibrary) && cachedLibrary.length > 0) {
             // Use cache if available
