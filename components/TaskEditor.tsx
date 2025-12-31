@@ -966,7 +966,13 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        <h3 className="font-black text-sm uppercase tracking-wide mb-1">Open At Click On Task</h3>
                                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">Allow this task to be opened immediately without any activation requirement. Players can solve it anywhere.</p>
 
-                                       <label className="flex items-center gap-3 cursor-pointer">
+                                       <label className="flex items-center gap-3 cursor-pointer" onClick={() => {
+                                           const hasClick = editedPoint.activationTypes.includes('click');
+                                           const newTypes = hasClick
+                                               ? editedPoint.activationTypes.filter(t => t !== 'click')
+                                               : [...editedPoint.activationTypes, 'click'];
+                                           setEditedPoint({...editedPoint, activationTypes: newTypes});
+                                       }}>
                                            <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.activationTypes.includes('click') ? 'bg-orange-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
                                                <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.activationTypes.includes('click') ? 'translate-x-6' : 'translate-x-0'}`} />
                                            </div>
