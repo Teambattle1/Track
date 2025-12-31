@@ -675,6 +675,15 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           }
       }
 
+      // Validate Playzone Games
+      if (gameMode === 'playzone') {
+          // Check if there are playgrounds
+          // Note: In this context, we don't have access to the game playgrounds directly,
+          // but this validation can be enhanced when playgrounds are added to the game
+          // For now, we'll warn but allow creation
+          console.log('ℹ️ Playzone game created. Remember to add playgrounds through the game editor.');
+      }
+
       let endLocation = undefined;
       if (endLat && endLng) {
           const lat = parseFloat(endLat);
