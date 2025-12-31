@@ -131,7 +131,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       )}
 
       {!hideSearch && (
-        <div className={`relative ${compact ? 'w-[140px]' : 'w-full min-w-[180px] sm:w-[260px]'} ${compact ? 'h-10' : 'h-12'}`}>
+        <div className={`relative ${compact ? 'w-full' : 'w-full min-w-[180px] sm:w-[260px]'} ${compact ? 'h-10' : 'h-12'}`}>
           <form onSubmit={handleSearch} className="group relative flex items-center h-full">
             <div className={`absolute text-gray-400 group-focus-within:text-orange-500 transition-colors z-10 ${compact ? 'left-2.5' : 'left-3.5'}`}>
               {isSearching ? <Loader2 className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} animate-spin`} /> : <Search className={compact ? 'w-3 h-3' : 'w-4 h-4'} />}
