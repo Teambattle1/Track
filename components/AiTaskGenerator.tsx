@@ -234,10 +234,14 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
       if (approvedTasks.length === 0) return;
 
       // Apply batch settings
+      // Determine if GPS should be enabled (always true for MAP, configurable for PLAYGROUND/LIBRARY)
+      const shouldEnableGps = destinationType === 'MAP' || enableGpsForTasks;
+
       const finalTasks = approvedTasks.map(t => ({
           ...t,
           iconId: batchIcon !== 'auto' ? batchIcon : t.iconId,
           points: batchPoints,
+          activationTypes: shouldEnableGps ? ['radius'] : [], // GPS (radius) by default
           // We attach these as custom properties that onAddTasks in App.tsx will look for
           // Using casting to bypass strict TaskTemplate check for these transient props
           radiusMeters: batchRadius,
