@@ -188,6 +188,11 @@ NOTIFY pgrst, 'reload config';`;
           const result = await migrateAllTasksToGpsEnabled();
           setGpsMigrationResult(result);
           console.log('GPS Migration Result:', result);
+
+          // Notify parent to reload the library
+          if (onLibraryUpdated) {
+              onLibraryUpdated();
+          }
       } catch (error) {
           console.error('Migration failed:', error);
           setGpsMigrationResult({
