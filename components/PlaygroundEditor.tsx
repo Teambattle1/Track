@@ -1369,20 +1369,18 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
             {/* RIGHT MAIN CANVAS */}
             <div className="flex-1 relative flex flex-col bg-[#050505]">
-                {/* Drawer Toggle Button */}
-                {!isDrawerOpen && (
-                    <button
-                        onClick={() => setIsDrawerOpen(true)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-30 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-r-2xl shadow-2xl transition-all active:scale-95"
-                        title="Open Settings"
-                    >
-                        <ChevronRight className="w-6 h-6" />
-                    </button>
-                )}
+                {/* Drawer Toggle Button - Always Visible */}
+                <button
+                    onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-30 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-r-2xl shadow-2xl transition-all active:scale-95"
+                    title={isDrawerOpen ? "Close Settings" : "Open Settings"}
+                >
+                    {isDrawerOpen ? <ChevronLeft className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </button>
 
-                {/* Top Overlay Bar - Title and Home */}
+                {/* Top Overlay Bar - Title, Zone Tabs, and Home */}
                 <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
-                    <div className="p-4 flex justify-between items-center">
+                    <div className="p-4 flex justify-between items-center gap-4">
                         <div className="flex items-center gap-3 bg-slate-900/80 backdrop-blur-sm border border-orange-500/30 rounded-xl px-4 py-2 shadow-xl pointer-events-auto">
                             <LayoutGrid className="w-5 h-5 text-orange-500" />
                             <div>
@@ -1395,40 +1393,38 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             </div>
                         </div>
 
+                        {/* Zone Tabs - Inline in Title Bar */}
+                        <div className="flex gap-2 overflow-x-auto pointer-events-auto hide-scrollbar flex-1">
+                            {game.playgrounds?.map((pg, index) => (
+                                <button
+                                    key={pg.id}
+                                    onClick={() => setActivePlaygroundId(pg.id)}
+                                    className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 flex items-center gap-2 shadow-lg border-2 ${
+                                        activePlaygroundId === pg.id
+                                            ? 'bg-orange-600 text-white border-orange-500 shadow-orange-500/50'
+                                            : 'bg-slate-800/80 backdrop-blur-sm text-slate-300 border-slate-700 hover:text-white hover:bg-slate-700 hover:border-slate-600'
+                                    }`}
+                                    title={`Switch to ${pg.title}`}
+                                >
+                                    <span className="text-[10px] font-black opacity-70">{String(index + 1).padStart(2, '0')}</span>
+                                    {pg.title}
+                                </button>
+                            ))}
+                            <button
+                                onClick={addNewZone}
+                                className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
+                                title="Add a new zone to the game"
+                            >
+                                <Plus className="w-4 h-4" /> ADD NEW
+                            </button>
+                        </div>
+
                         <button
                             onClick={onHome}
-                            className="p-3 bg-slate-900/80 backdrop-blur-sm hover:bg-slate-800 text-slate-400 hover:text-white rounded-full shadow-xl border border-slate-700 transition-all pointer-events-auto"
+                            className="p-3 bg-slate-900/80 backdrop-blur-sm hover:bg-slate-800 text-slate-400 hover:text-white rounded-full shadow-xl border border-slate-700 transition-all pointer-events-auto flex-shrink-0"
                             title="Return Home"
                         >
                             <ArrowLeft className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Zone Tabs - Top Center */}
-                <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none flex justify-center pt-20">
-                    <div className="flex gap-2 overflow-x-auto pointer-events-auto hide-scrollbar max-w-[calc(100vw-200px)]">
-                        {game.playgrounds?.map((pg, index) => (
-                            <button
-                                key={pg.id}
-                                onClick={() => setActivePlaygroundId(pg.id)}
-                                className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 flex items-center gap-2 shadow-lg border-2 ${
-                                    activePlaygroundId === pg.id
-                                        ? 'bg-orange-600 text-white border-orange-500 shadow-orange-500/50'
-                                        : 'bg-slate-800/80 backdrop-blur-sm text-slate-300 border-slate-700 hover:text-white hover:bg-slate-700 hover:border-slate-600'
-                                }`}
-                                title={`Switch to ${pg.title}`}
-                            >
-                                <span className="text-[10px] font-black opacity-70">{String(index + 1).padStart(2, '0')}</span>
-                                {pg.title}
-                            </button>
-                        ))}
-                        <button
-                            onClick={addNewZone}
-                            className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
-                            title="Add a new zone to the game"
-                        >
-                            <Plus className="w-4 h-4" /> ADD NEW
                         </button>
                     </div>
                 </div>
@@ -2032,16 +2028,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     />
                 )}
 
-                {/* Right Tasks Drawer Toggle Button */}
-                {!isTasksDrawerOpen && (
-                    <button
-                        onClick={() => setIsTasksDrawerOpen(true)}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-l-2xl shadow-2xl transition-all active:scale-95"
-                        title="Open Tasks"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
-                )}
+                {/* Right Tasks Drawer Toggle Button - Always Visible */}
+                <button
+                    onClick={() => setIsTasksDrawerOpen(!isTasksDrawerOpen)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-l-2xl shadow-2xl transition-all active:scale-95"
+                    title={isTasksDrawerOpen ? "Close Tasks" : "Open Tasks"}
+                >
+                    {isTasksDrawerOpen ? <ChevronRight className="w-6 h-6" /> : <ChevronLeft className="w-6 h-6" />}
+                </button>
             </div>
 
             {/* RIGHT SIDE TASKS DRAWER - COLLAPSIBLE */}
