@@ -224,6 +224,15 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <h3 className="text-sm font-black text-white uppercase tracking-wide truncate group-hover:text-indigo-400">{game.name}</h3>
+                                                {(() => {
+                                                    const { Icon, label, color, bgColor, borderColor } = getGameModeIcon(game.gameMode);
+                                                    return (
+                                                        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded border ${color} ${bgColor} ${borderColor}`}>
+                                                            <Icon className="w-3 h-3" />
+                                                            <span className="text-[9px] font-bold uppercase">{label}</span>
+                                                        </div>
+                                                    );
+                                                })()}
                                                 <div className="hidden sm:flex items-center gap-2 px-2 py-0.5 bg-slate-950 rounded border border-slate-700">
                                                     <Layers className="w-3 h-3 text-indigo-400" />
                                                     <span className="text-[9px] font-bold text-slate-400 uppercase">{MAP_LABELS[game.defaultMapStyle || 'osm'] || 'Standard'}</span>
