@@ -449,6 +449,19 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         return count;
     };
 
+    const getTaskListsContainingTask = (taskId: string): TaskList[] => {
+        if (!taskLists || !Array.isArray(taskLists)) return [];
+
+        const sourceTask = library.find(t => t.id === taskId);
+        if (!sourceTask) return [];
+
+        return taskLists.filter(list =>
+            list.tasks.some(t =>
+                t.id === taskId || (t.title === sourceTask.title && t.task?.question === sourceTask.task?.question)
+            )
+        );
+    };
+
     const getActivationBadges = (task: TaskTemplate): string[] => {
         const badges: string[] = [];
 
