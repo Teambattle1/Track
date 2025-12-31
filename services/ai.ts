@@ -19,7 +19,7 @@ const getApiKey = (): string => {
 const ensureApiKey = () => {
     const key = getApiKey();
     if (!key) {
-        throw new Error("AI API Key missing. Please set GEMINI_API_KEY in Local Storage or Settings.");
+        throw new Error("AI API Key missing. Please set GEMINI_API_KEY in Local Storage or Settings. Get a free API key at https://aistudio.google.com/app/apikey");
     }
     return key;
 };
