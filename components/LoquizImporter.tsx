@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Search, Globe, Key, Gamepad2, Loader2, AlertCircle, ArrowRight, Download, RefreshCw, Library, Check, FileText } from 'lucide-react';
 import { loquizApi, LoquizGame } from '../services/loquiz';
@@ -84,7 +83,12 @@ const LoquizImporter: React.FC<LoquizImporterProps> = ({ onClose, onImportTasks 
 
   const handleImport = () => {
     const selected = tasks.filter(t => selectedTaskIds.includes(t.id));
-    onImportTasks(selected);
+    // Ensure GPS (radius) is enabled by default for all imported tasks
+    const tasksWithGps = selected.map(t => ({
+      ...t,
+      activationTypes: t.activationTypes && t.activationTypes.length > 0 ? t.activationTypes : ['radius']
+    }));
+    onImportTasks(tasksWithGps);
   };
 
   const filteredGames = games.filter(g => 
