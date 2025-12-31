@@ -215,7 +215,9 @@ export interface GamePoint {
   radiusMeters: number;
   activationTypes: PointActivationType[];
   manualUnlockCode?: string;
-  isLocationLocked?: boolean; // If true, task can only be completed at this specific location 
+  isLocationLocked?: boolean; // If true, task can only be completed at this specific location
+  qrCodeString?: string; // QR code string value (e.g., house ID, location code)
+  qrCodeUsageCount?: number; // Track how many times this QR code is used (prevent duplicates) 
   
   // Playground Specific
   playgroundId?: string; 
