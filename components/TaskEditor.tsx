@@ -1014,11 +1014,21 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                                <input
                                                    type="text"
                                                    value={editedPoint.qrCodeString || ''}
-                                                   onChange={(e) => setEditedPoint({...editedPoint, qrCodeString: e.target.value})}
+                                                   onChange={(e) => {
+                                                       setEditedPoint({...editedPoint, qrCodeString: e.target.value});
+                                                       setQrCodeDuplicateWarning(false); // Clear warning on input change
+                                                   }}
                                                    placeholder="e.g., HOUSE_001, LOCATION_ALPHA, or any unique identifier"
-                                                   className="w-full px-4 py-3 border-2 border-purple-200 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm focus:border-purple-500 outline-none transition-all"
+                                                   className={`w-full px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm focus:border-purple-500 outline-none transition-all ${qrCodeDuplicateWarning ? 'border-red-500' : 'border-purple-200 dark:border-purple-700'}`}
                                                />
                                                <p className="text-[10px] text-gray-500 mt-2">This is the value that will be encoded in the QR code.</p>
+                                               {qrCodeDuplicateWarning && (
+                                                   <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-2 mt-2">
+                                                       <p className="text-[10px] text-red-700 dark:text-red-300 font-bold">
+                                                           ⚠️ This QR code string is already used by another task in this game. Each QR code must be unique.
+                                                       </p>
+                                                   </div>
+                                               )}
                                            </div>
 
                                            {editedPoint.qrCodeString && (
