@@ -617,6 +617,17 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 <h3 className="text-[9px] font-black uppercase tracking-widest text-green-100">LOCATION</h3>
                             </div>
 
+                            {/* First Line: Search Bar - Width matches 3 buttons below (3x40px + 2x4px gaps = 128px) */}
+                            <div className="w-[128px]">
+                                <LocationSearch
+                                    onSelectLocation={onSearchLocation}
+                                    hideSearch={false}
+                                    locateFeedback={locateFeedback}
+                                    compact={true}
+                                    showLabels={false}
+                                />
+                            </div>
+
                             {/* Second Line: LOCATE, FIT, MAP Buttons */}
                             <div className="flex gap-1 items-center justify-center">
                                 {/* LOCATE Button */}
