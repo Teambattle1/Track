@@ -276,6 +276,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     if (pos.viewSwitcherPos) setViewSwitcherPos(pos.viewSwitcherPos);
                     if (pos.pinsToolboxPos) setPinsToolboxPos(pos.pinsToolboxPos);
                     if (pos.showToolboxPos) setShowToolboxPos(pos.showToolboxPos);
+                    if (pos.qrScannerPos) setQRScannerPos(pos.qrScannerPos);
                 }
             };
             loadPositions();
