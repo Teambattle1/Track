@@ -2044,7 +2044,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
             {/* RIGHT SIDE TASKS DRAWER - COLLAPSIBLE */}
             <div className={`flex flex-col border-l border-slate-800 bg-[#0f172a] shadow-2xl z-20 transition-all duration-300 ease-in-out ${
-                isTasksDrawerOpen ? 'w-[360px]' : 'w-0'
+                isTasksDrawerOpen ? 'w-[280px]' : 'w-0'
             } overflow-hidden`}>
                 {/* Header */}
                 <div className="p-5 border-b border-slate-800 bg-[#0f172a] relative">
