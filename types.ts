@@ -178,10 +178,32 @@ export interface DangerZone {
   id: string;
   location: Coordinate;
   radius: number;
-  penalty: number; 
+  penalty: number;
   duration: number; // Escape time (seconds)
   title?: string;
   penaltyType?: 'fixed' | 'time_based'; // Fixed = Escape timer, Time Based = Per second
+}
+
+// Shrinking Zone (Battle Royale Mechanic)
+export interface ShrinkingZone {
+  id: string;
+  currentCenter: Coordinate; // Current center of the safe zone
+  currentRadius: number; // Current radius in meters
+  targetCenter?: Coordinate; // Next center (for zone movement)
+  targetRadius?: number; // Next radius (for shrinking)
+  shrinkStartTime?: number; // When the shrink phase started
+  shrinkDuration?: number; // How long the shrink takes (seconds)
+  damagePerSecond: number; // Damage/penalty applied per second outside zone
+  phases: ShrinkingZonePhase[]; // Predefined shrink phases
+  currentPhase: number; // Index of current phase
+}
+
+export interface ShrinkingZonePhase {
+  radius: number; // Target radius for this phase
+  center?: Coordinate; // Optional new center
+  shrinkDuration: number; // How long to shrink to this radius (seconds)
+  waitDuration: number; // How long to wait before next phase (seconds)
+  damagePerSecond: number; // Damage rate during this phase
 }
 
 // NEW: Routes for Map Overlays (GPX)
