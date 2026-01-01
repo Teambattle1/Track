@@ -946,28 +946,26 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           className="w-full pl-10 p-4 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none uppercase"
                                       />
                                   </div>
-                                  <div className="flex flex-col gap-2">
-                                      <div className="flex gap-2">
-                                          <button
-                                              onClick={handleLogoSearch}
-                                              disabled={!clientName || isSearchingLogo}
-                                              className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-[10px] font-bold uppercase text-slate-300 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                          >
-                                              {isSearchingLogo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-                                              AUTO-SEARCH LOGO
-                                          </button>
-                                          <button
-                                              onClick={() => logoInputRef.current?.click()}
-                                              className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-[10px] font-bold uppercase text-slate-300 hover:text-white transition-colors flex items-center justify-center gap-2"
-                                          >
-                                              <Upload className="w-3 h-3" /> UPLOAD LOGO
-                                          </button>
-                                      </div>
+                                  <div className="flex gap-2">
+                                      <button
+                                          onClick={handleLogoSearch}
+                                          disabled={!clientName || isSearchingLogo}
+                                          className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-[10px] font-bold uppercase text-slate-300 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      >
+                                          {isSearchingLogo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+                                          AUTO-SEARCH LOGO
+                                      </button>
+                                      <button
+                                          onClick={() => logoInputRef.current?.click()}
+                                          className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-[10px] font-bold uppercase text-slate-300 hover:text-white transition-colors flex items-center justify-center gap-2"
+                                      >
+                                          <Upload className="w-3 h-3" /> UPLOAD LOGO
+                                      </button>
                                       {!clientLogo && (
                                           <button
                                               onClick={handleGenerateAiLogo}
                                               disabled={!clientName || isGeneratingAiLogo}
-                                              className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 border border-purple-500 rounded-xl text-[10px] font-bold uppercase text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                              className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 border border-purple-500 rounded-xl text-[10px] font-bold uppercase text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                           >
                                               {isGeneratingAiLogo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
                                               AI GENERATE LOGO
