@@ -2820,12 +2820,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             <button
                               onClick={() => {
                                 // Add the pending tasks to the MAP (no playgroundId)
-                                const mapPoints = game.points.filter(p => !p.playgroundId);
-                                const baseOrder = mapPoints.length;
+                                const mapPoints = game.points?.filter(p => !p.playgroundId);
+                                const baseOrder = mapPoints?.length || 0;
 
                                 // Filter out duplicates (by title match)
                                 const newTasksToAdd = pendingTasksToAdd.filter(t =>
-                                  !game.points.some(p => p.title === t.title)
+                                  !game.points?.some(p => p.title === t.title)
                                 );
 
                                 if (newTasksToAdd.length === 0) {
