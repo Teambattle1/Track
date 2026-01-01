@@ -261,10 +261,11 @@ export const generateAiLogo = async (companyName: string, style: string = 'profe
         const key = ensureApiKey();
         const ai = new GoogleGenAI({ apiKey: key });
 
-        const prompt = `Create a professional company logo for "${companyName}". Style: ${style}. Generate a simple, memorable vector-style logo suitable for business use. Logo should be centered and work well as a square icon.`;
+        const prompt = `Generate an image of a professional company logo for "${companyName}". Style: ${style}. Create a simple, memorable vector-style logo suitable for business use. The logo should be centered and work well as a square icon. Make sure to actually generate an image, not just text.`;
 
         console.log('[AI Logo] Generating logo for:', companyName);
         console.log('[AI Logo] Using model: gemini-2.5-flash-image');
+        console.log('[AI Logo] Prompt:', prompt);
 
         const response = await makeRequestWithRetry<GenerateContentResponse>(
             () => ai.models.generateContent({
@@ -275,24 +276,37 @@ export const generateAiLogo = async (companyName: string, style: string = 'profe
 
         console.log('[AI Logo] Response received:', {
             hasCandidates: !!response.candidates,
+            candidateCount: response.candidates?.length,
             finishReason: response.candidates?.[0]?.finishReason,
-            hasInlineData: !!response.candidates?.[0]?.content?.parts?.[0]?.inlineData
+            contentParts: response.candidates?.[0]?.content?.parts?.length,
+            parts: response.candidates?.[0]?.content?.parts?.map((p: any) => ({
+                hasText: !!p.text,
+                hasInlineData: !!p.inlineData
+            }))
         });
 
-        if (response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-            const imageData = response.candidates[0].content.parts[0].inlineData;
-            const logoUrl = `data:${imageData.mimeType};base64,${imageData.data}`;
-            console.log('[AI Logo] Successfully generated logo');
-            return logoUrl;
+        const candidate = response.candidates?.[0];
+        if (candidate?.content?.parts) {
+            for (const part of candidate.content.parts) {
+                if ((part as any).inlineData) {
+                    const imageData = (part as any).inlineData;
+                    const logoUrl = `data:${imageData.mimeType};base64,${imageData.data}`;
+                    console.log('[AI Logo] Successfully generated logo');
+                    return logoUrl;
+                }
+            }
         }
 
-        console.warn('[AI Logo] No image data in response. Candidates:', response.candidates);
+        console.warn('[AI Logo] No image data in response');
+        console.warn('[AI Logo] Full response:', JSON.stringify(response, null, 2));
         return null;
     } catch (error: any) {
         console.error('[AI Logo] Error generating logo:', error);
+        console.error('[AI Logo] Error message:', error?.message);
         console.error('[AI Logo] Error details:', {
             message: error?.message,
             status: error?.status,
+            code: error?.code,
             errorDetails: error?.errorDetails
         });
 
