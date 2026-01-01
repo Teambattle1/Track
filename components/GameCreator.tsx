@@ -882,20 +882,26 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       <span className="text-[10px] text-slate-400">Indoor, touch-based on playground</span>
                                   </div>
                               </label>
-                              <label className="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all" style={{ borderColor: gameMode === 'elimination' ? '#ef4444' : '#475569', backgroundColor: gameMode === 'elimination' ? '#7f1d1d' : '#1e293b' }}>
-                                  <input
-                                      type="radio"
-                                      name="gameMode"
-                                      value="elimination"
-                                      checked={gameMode === 'elimination'}
-                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination')}
-                                      className="w-4 h-4"
-                                  />
-                                  <div>
-                                      <span className="font-bold text-white block">ELIMINATION GAME</span>
-                                      <span className="text-[10px] text-slate-400">GPS-based competitive CTF with bombs</span>
+                              <div className="relative">
+                                  <label className="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all" style={{ borderColor: gameMode === 'elimination' ? '#ef4444' : '#475569', backgroundColor: gameMode === 'elimination' ? '#7f1d1d' : '#1e293b' }}>
+                                      <input
+                                          type="radio"
+                                          name="gameMode"
+                                          value="elimination"
+                                          checked={gameMode === 'elimination'}
+                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination')}
+                                          className="w-4 h-4"
+                                      />
+                                      <div>
+                                          <span className="font-bold text-white block">ELIMINATION GAME</span>
+                                          <span className="text-[10px] text-slate-400">GPS-based competitive CTF with bombs</span>
+                                      </div>
+                                  </label>
+                                  {/* Beta Badge */}
+                                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-amber-400">
+                                      BETA
                                   </div>
-                              </label>
+                              </div>
                           </div>
                       </div>
 
