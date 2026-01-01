@@ -89,10 +89,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [isQRScannerActive, setIsQRScannerActive] = useState(false);
     const [qrScannerError, setQRScannerError] = useState<string | null>(null);
     const [qrScannedValue, setQRScannedValue] = useState<string | null>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const streamRef = useRef<MediaStream | null>(null);
-    const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const qrVideoRef = useRef<HTMLVideoElement>(null);
+    const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+    const qrStreamRef = useRef<MediaStream | null>(null);
+    const qrScanIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Toolbar positions (draggable)
     const [orientationToolbarPos, setOrientationToolbarPos] = useState({ x: 240, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
