@@ -204,66 +204,42 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     }
 };
 
-// Smart domain extraction from company name
-const guessDomain = (query: string): string => {
-    const normalized = query.toLowerCase().trim();
-
-    // Remove common suffixes and legal terms
-    const cleaned = normalized
-        .replace(/\s+(a\/s|aps|as|inc|llc|ltd|limited|corp|corporation|gmbh|ab)\s*$/i, '')
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '');
-
-    // Special cases for known Danish/Nordic companies
-    const specialCases: { [key: string]: string } = {
-        'tv2': 'tv2.dk',
-        'dr': 'dr.dk',
-        'berlingske': 'berlingske.dk',
-        'politiken': 'politiken.dk',
-        'bt': 'bt.dk',
-        'ekstrabl': 'ekstrabladet.dk',
-        'ekstrabladet': 'ekstrabladet.dk',
-        'jyllandsposten': 'jyllandsposten.dk',
-        'jp': 'jyllandsposten.dk'
-    };
-
-    if (specialCases[cleaned]) {
-        return specialCases[cleaned];
-    }
-
-    // For multi-word names, try first word if it makes sense
-    if (normalized.includes(' ')) {
-        const words = normalized.split(/\s+/);
-        const firstWord = words[0].replace(/[^a-z0-9]/g, '');
-
-        // If first word is substantial (4+ chars), use it
-        if (firstWord.length >= 4) {
-            return `${firstWord}.com`;
-        }
-    }
-
-    // Default: cleaned name + .com
-    return `${cleaned}.com`;
-};
-
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
     console.log('[Logo Search] Starting search for:', query);
 
     try {
-        // Try multiple approaches in order
+        // Use Clearbit's free public logo API
+        // This searches their database of company logos without requiring authentication
+        // It handles company name matching, domain inference, and returns proper logos
+        const cleanQuery = encodeURIComponent(query.trim());
 
-        // 1. Try using the company name with an API that searches for logos
-        // Use Google Favicon service as primary (most reliable)
-        const domain = guessDomain(query);
+        // Clearbit.com API endpoint for logo search
+        // Returns: { logo: "https://..." } or empty if not found
+        const response = await fetch(
+            `https://clearbit.com/api/company/suggest?query=${cleanQuery}`,
+            { mode: 'cors' }
+        );
 
-        // Use Google Favicon API (public, no auth needed)
-        // Returns actual favicons from websites
-        const logoUrl = `https://www.google.com/s2/favicons?sz=256&domain=${domain}`;
+        if (!response.ok) {
+            console.log('[Logo Search] Clearbit API returned:', response.status);
+            return null;
+        }
 
-        console.log('[Logo Search] Using Google Favicon for domain:', domain);
-        console.log('[Logo Search] Logo URL:', logoUrl);
+        const companies = await response.json();
 
-        return logoUrl;
+        if (Array.isArray(companies) && companies.length > 0) {
+            // Get the first (most relevant) match
+            const company = companies[0];
+
+            if (company.logo) {
+                console.log('[Logo Search] Found logo for:', company.name || query);
+                console.log('[Logo Search] Logo URL:', company.logo);
+                return company.logo;
+            }
+        }
+
+        console.log('[Logo Search] No logo found for:', query);
+        return null;
     } catch (error) {
         console.error('[Logo Search] Error:', error);
         return null;
