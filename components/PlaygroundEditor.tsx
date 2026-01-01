@@ -1892,7 +1892,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     onPointerCancel={handleTaskPointerUp}
                                 >
                                     <div className={`rounded-full flex items-center justify-center border-4 shadow-xl transition-all relative ${
-                                        isMarked
+                                        hoveredTaskId === point.id
+                                            ? 'border-orange-400 shadow-orange-400/70 scale-125'
+                                            : isMarked
                                             ? 'border-orange-400 shadow-orange-400/70 scale-120 animate-pulse'
                                             : isSelected
                                             ? 'border-orange-500 shadow-orange-500/50 scale-125'
