@@ -1777,6 +1777,13 @@ const GameApp: React.FC = () => {
                 onPointHover={(point) => setMapHoveredPointId(point?.id || null)}
                 teamHistory={demoTeamHistory}
                 showTeamPaths={showTeamPaths}
+                fogOfWarEnabled={fogOfWarEnabled}
+                selectedTeamId={selectedTeamForFogOfWar}
+                selectedTeamCompletedPointIds={
+                    fogOfWarEnabled && selectedTeamForFogOfWar
+                        ? teamsForFogOfWar.find(t => t.id === selectedTeamForFogOfWar)?.completedPointIds || []
+                        : []
+                }
             />
             </div>
         )}
