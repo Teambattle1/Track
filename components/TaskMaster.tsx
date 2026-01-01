@@ -1246,20 +1246,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     {editingList.tasks.length === 0 && (
                                         <div className="text-center py-10 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-400">
                                             <p className="text-sm font-bold uppercase mb-4">List is empty</p>
-                                            <div className="flex gap-3 justify-center">
-                                                <button
-                                                    onClick={() => setIsSelectingForCurrentList(true)}
-                                                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wide flex items-center gap-2 transition-all shadow-lg"
-                                                >
-                                                    <Library className="w-4 h-4" /> Browse Library
-                                                </button>
-                                                <button
-                                                    onClick={() => setShowAiGenForList(true)}
-                                                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl text-xs font-bold uppercase tracking-wide flex items-center gap-2 transition-all shadow-lg"
-                                                >
-                                                    <Sparkles className="w-4 h-4" /> Generate with AI
-                                                </button>
-                                            </div>
+                                            <p className="text-xs text-gray-500">Use the buttons above to add tasks from library or generate with AI</p>
                                         </div>
                                     )}
                                 </div>
