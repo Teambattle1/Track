@@ -462,35 +462,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
             
             {/* Top Left Status / Home Button */}
             <div className="absolute top-0 left-0 flex items-center gap-4 z-30">
-                {view === 'HOME' ? (
-                    authUser ? (
-                        <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
-                                <div className="flex flex-col">
-                                    <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR ONLINE</p>
-                                    <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-1">{authUser.name}</p>
-                                </div>
-                            </div>
-                            <div className="h-6 w-px bg-white/10 mx-1"></div>
-                            <button 
-                                onClick={onLogout} 
-                                title="Logout" 
-                                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
-                            >
-                                <LogOut className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <p className="text-[9px] font-black text-slate-500 tracking-[0.4em] uppercase">
-                              SYSTEM ONLINE &bull; v{version}
-                            </p>
-                        </div>
-                    )
-                ) : (
-                    <button 
+                {view !== 'HOME' && (
+                    <button
                         onClick={handleBack}
                         className="p-3 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-xl uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:scale-105 active:scale-95 border border-slate-700"
                         title="Go Back"
@@ -503,13 +476,43 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
             {/* Right Controls */}
             <div className="absolute top-0 right-0 flex items-center gap-4 z-30">
                 {/* Settings Button */}
-                <button 
+                <button
                     onClick={() => setView(view === 'SETTINGS' ? 'HOME' : 'SETTINGS')}
                     className={`p-3 rounded-xl transition-all hover:scale-105 active:scale-95 border ${view === 'SETTINGS' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}`}
                     title="System Settings & Tools"
                 >
                     <Settings className="w-5 h-5" />
                 </button>
+
+                {/* User Selector / Operator Status */}
+                {authUser && (
+                    <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                            <div className="flex flex-col">
+                                <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR ONLINE</p>
+                                <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-1">{authUser.name}</p>
+                            </div>
+                        </div>
+                        <div className="h-6 w-px bg-white/10 mx-1"></div>
+                        <button
+                            onClick={onLogout}
+                            title="Logout"
+                            className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+                        >
+                            <LogOut className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
+
+                {!authUser && view === 'HOME' && (
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <p className="text-[9px] font-black text-slate-500 tracking-[0.4em] uppercase">
+                          SYSTEM ONLINE &bull; v{version}
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Centered Title & Session Selector Block */}
