@@ -26,7 +26,55 @@ const ACTIVATION_BADGES: ActivationBadge[] = [
   { id: 'radius', label: 'GPS', icon: MapPin, color: 'bg-slate-500' }
 ];
 
+type GameStatusTab = 'TODAY' | 'PLANNED' | 'COMPLETED';
+
 const safeFileName = (input: string) => input.replace(/[^a-z0-9\-_.]+/gi, '_').slice(0, 80);
+
+const isSameLocalDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+const parsePlayingDate = (value: string): Date | null => {
+  const trimmed = value.trim();
+  // Common UI date input stores YYYY-MM-DD (treat as local day, not UTC)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [y, m, d] = trimmed.split('-').map(Number);
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d);
+  }
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+};
+
+const getGameSessionDate = (game: Game) => {
+  const maybe = game?.client?.playingDate ? parsePlayingDate(game.client.playingDate) : null;
+  if (maybe) return maybe;
+  return new Date(game.createdAt || Date.now());
+};
+
+const isGameCompleted = (game: Game) => {
+  if (game.state === 'ended') return true;
+  const points = game.points || [];
+  const playable = points.filter(p => !p.isSectionHeader);
+  if (playable.length === 0) return false;
+  return playable.every(p => !!p.isCompleted);
+};
+
+const getGameStatusTab = (game: Game, now: Date): GameStatusTab => {
+  if (isGameCompleted(game)) return 'COMPLETED';
+
+  const date = getGameSessionDate(game);
+
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+  if (date.getTime() < startOfToday.getTime()) return 'COMPLETED';
+  if (date.getTime() >= startOfTomorrow.getTime()) return 'PLANNED';
+  return 'TODAY';
+};
 
 const getPointHasNonGpsActivation = (p: GamePoint) => (p.activationTypes || []).some(t => t !== 'radius');
 
