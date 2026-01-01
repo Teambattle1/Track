@@ -161,10 +161,13 @@ const fetchInChunks = async <T>(
 
     while (hasMore) {
         try {
+            // Use fewer retries for library to fail faster and trigger fallback
+            const retries = context.includes('fetchLibrary') ? 1 : 2;
+
             const { data, error } = await retryWithBackoff(
                 () => query(offset, chunkSize),
                 `${context}[offset=${offset}]`,
-                2, // Reduced retries for tag fetches with short timeout
+                retries,
                 timeoutMs
             );
 
@@ -179,6 +182,9 @@ const fetchInChunks = async <T>(
                 hasMore = false;
             } else {
                 results.push(...data);
+                if (context.includes('fetchLibrary')) {
+                    console.debug(`[DB Service] Fetched ${data.length} items for ${context} at offset ${offset}`);
+                }
                 if (data.length < chunkSize) {
                     hasMore = false;
                 } else {
