@@ -292,15 +292,32 @@ export interface TaskList {
   name: string;
   description: string;
   tasks: TaskTemplate[];
-  color: string; 
+  color: string;
   iconId?: IconId;
-  imageUrl?: string; 
-  usageCount?: number; 
+  imageUrl?: string;
+  usageCount?: number;
   createdAt: number;
-  
+
   // Client Task List Fields
   isClientList?: boolean;
   shareToken?: string;
+}
+
+// Media Submission (Photo/Video) for Live Approval
+export interface MediaSubmission {
+  id: string;
+  gameId: string;
+  teamId: string;
+  teamName: string;
+  pointId: string; // Which task this submission is for
+  pointTitle: string;
+  mediaUrl: string; // URL of the uploaded photo/video
+  mediaType: 'photo' | 'video';
+  submittedAt: number; // Timestamp
+  status: 'pending' | 'approved' | 'rejected';
+  reviewedBy?: string; // Name of GM/Instructor who reviewed
+  reviewedAt?: number; // Timestamp of review
+  reviewComment?: string; // Optional comment from GM
 }
 
 // --- NEW CONFIG TYPES ---
