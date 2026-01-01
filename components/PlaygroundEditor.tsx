@@ -16,7 +16,6 @@ import TaskActionModal from './TaskActionModal';
 import AiTaskGenerator from './AiTaskGenerator';
 import TaskMaster from './TaskMaster';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
-import jsQR from 'jsqr';
 
 interface PlaygroundEditorProps {
   game: Game;
