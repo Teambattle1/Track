@@ -353,28 +353,36 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const renderPlayMenu = () => (
       <div className="flex flex-col items-center w-full">
           <div className="flex flex-col md:flex-row gap-12 md:gap-16 lg:gap-20 items-center justify-center w-full px-4 pb-10">
-              <MapPinButton 
-                  title="PLAY GAME" 
-                  icon={Play} 
-                  gradient="bg-gradient-to-br from-emerald-600 to-green-600" 
-                  onClick={() => onAction('PLAY')} 
+              <MapPinButton
+                  title="PLAY GAME"
+                  icon={Play}
+                  gradient="bg-gradient-to-br from-emerald-600 to-green-600"
+                  onClick={() => onAction('PLAY')}
                   delay={0}
                   scale={0.85}
               />
-              <MapPinButton 
-                  title="TEAMS" 
-                  icon={Users} 
-                  gradient="bg-gradient-to-br from-purple-600 to-indigo-600" 
-                  onClick={() => setView('PLAY_TEAMS_MENU')} 
+              <MapPinButton
+                  title="CLIENT"
+                  icon={Users}
+                  gradient="bg-gradient-to-br from-purple-600 to-fuchsia-600"
+                  onClick={() => onAction('CLIENT')}
                   delay={100}
                   scale={0.85}
               />
-              <MapPinButton 
-                  title="CHAT" 
-                  icon={MessageSquare} 
-                  gradient="bg-gradient-to-br from-blue-600 to-cyan-600" 
-                  onClick={() => onAction('CHAT')} 
+              <MapPinButton
+                  title="TEAMS"
+                  icon={Users}
+                  gradient="bg-gradient-to-br from-indigo-600 to-blue-600"
+                  onClick={() => setView('PLAY_TEAMS_MENU')}
                   delay={200}
+                  scale={0.85}
+              />
+              <MapPinButton
+                  title="CHAT"
+                  icon={MessageSquare}
+                  gradient="bg-gradient-to-br from-blue-600 to-cyan-600"
+                  onClick={() => onAction('CHAT')}
+                  delay={300}
                   scale={0.85}
               />
           </div>
