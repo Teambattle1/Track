@@ -199,7 +199,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 ...game.toolbarPositions,
                 editorOrientationPos: orientationToolbarPos,
                 editorShowPos: showToolbarPos,
-                editorToolsPos: toolsToolbarPos
+                editorToolsPos: toolsToolbarPos,
+                editorQRScannerPos: qrScannerPos
             }
         };
         onUpdateGame(updatedGame);
