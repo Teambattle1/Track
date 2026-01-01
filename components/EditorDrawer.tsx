@@ -439,9 +439,9 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
         {isExpanded ? <ChevronLeft className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
       </button>
 
-      <button 
+      <button
           onClick={onOpenGameChooser}
-          disabled={isGameTemplateMode} 
+          disabled={isGameTemplateMode}
           className={`p-4 text-white text-left flex-shrink-0 relative z-[100] transition-all active:scale-[0.98] ${isGameTemplateMode ? 'bg-purple-600 cursor-default' : (activeGame ? 'bg-orange-600 hover:bg-orange-700' : 'bg-slate-700 hover:bg-slate-800')}`}
       >
           <div className="flex justify-between items-center mb-1">
@@ -450,7 +450,18 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
               </span>
               {!isGameTemplateMode && <ChevronDown className="w-4 h-4 opacity-50" />}
           </div>
-          <h2 className="font-black text-sm uppercase truncate pr-6">{activeGame ? activeGameName : 'SELECT A GAME'}</h2>
+          <div className="flex items-center gap-2">
+              {activeGame?.client?.logoUrl && (
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 border border-white/20 flex-shrink-0">
+                      <img
+                          src={activeGame.client.logoUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                      />
+                  </div>
+              )}
+              <h2 className="font-black text-sm uppercase truncate pr-6">{activeGame ? activeGameName : 'SELECT A GAME'}</h2>
+          </div>
       </button>
 
       {!activeGame ? (
