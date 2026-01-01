@@ -46,6 +46,8 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
     // Preview editing state
     const [editingPreviewId, setEditingPreviewId] = useState<string | null>(null);
     const [previewUrlInput, setPreviewUrlInput] = useState('');
+    const [previewFile, setPreviewFile] = useState<File | null>(null);
+    const [uploadingPreview, setUploadingPreview] = useState(false);
 
     // Form state for adding new map style
     const [newStyleName, setNewStyleName] = useState('');
