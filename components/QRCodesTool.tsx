@@ -180,6 +180,8 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
 
   const setGame = (id: string) => {
     setSelectedGameId(id);
+    const g = games.find(x => x.id === id);
+    if (g) setGameTab(getGameStatusTab(g, new Date()));
     onSelectGame(id);
   };
 
