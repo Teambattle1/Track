@@ -2898,12 +2898,22 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     key={playzone.id}
                                     onClick={() => {
                                       // Add the pending tasks to the selected playzone
+                                      // Filter out duplicates (by title match)
+                                      const newTasksToAdd = pendingTasksToAdd.filter(t =>
+                                        !game.points.some(p => p.title === t.title)
+                                      );
+
+                                      if (newTasksToAdd.length === 0) {
+                                        alert('All tasks already exist in this game. No duplicates were added.');
+                                        return;
+                                      }
+
                                       const baseOrder = uniquePlaygroundPoints.filter(p => p.playgroundId === playzone.id).length;
                                       const COLS = 3;
                                       const PADDING = 10;
                                       const ROW_HEIGHT = 18;
 
-                                      const newPoints: GamePoint[] = pendingTasksToAdd.map((t, i) => {
+                                      const newPoints: GamePoint[] = newTasksToAdd.map((t, i) => {
                                         const row = Math.floor((baseOrder + i) / COLS);
                                         const col = (baseOrder + i) % COLS;
                                         const colWidth = (100 - PADDING * 2) / COLS;
