@@ -230,6 +230,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
         setViewSwitcherPos(DEFAULT_POSITIONS.mapmode);
         setPinsToolboxPos(DEFAULT_POSITIONS.pins);
         setShowToolboxPos(DEFAULT_POSITIONS.show);
+        setQRScannerPos(DEFAULT_POSITIONS.qr);
 
         // Then load positions - prioritize game-specific positions, then user settings
         if (isAdmin && authUser?.id) {
