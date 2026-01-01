@@ -1094,9 +1094,100 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    </div>
                                )}
                            </div>
-                           )}
+                          )}
 
-                           {/* OTHER ACTIVATION METHODS */}
+                          {/* PROXIMITY TRIGGER - DISCOVERY MECHANIC */}
+                          {gameMode !== 'playzone' && (
+                          <div className="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 p-6 rounded-2xl border-2 border-cyan-200 dark:border-cyan-800">
+                              <button
+                                  type="button"
+                                  onClick={() => setExpandedActivations({...expandedActivations, proximity: !expandedActivations.proximity})}
+                                  className="w-full flex items-start gap-4 text-left hover:opacity-80 transition-opacity"
+                              >
+                                  <div className="w-12 h-12 bg-cyan-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                      <Eye className="w-6 h-6" />
+                                  </div>
+                                  <div className="flex-1">
+                                      <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                              <h3 className="font-black text-sm uppercase tracking-wide">Proximity Trigger</h3>
+                                              <span className="bg-cyan-600 text-white text-[8px] px-2 py-1 rounded font-bold">DISCOVERY</span>
+                                          </div>
+                                          <ChevronDown className={`w-5 h-5 text-cyan-600 transition-transform ${expandedActivations.proximity ? 'rotate-180' : ''}`} />
+                                      </div>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Hide this task until players get close enough to discover it.</p>
+                                  </div>
+                              </button>
+
+                              {expandedActivations.proximity && (
+                                  <div className="mt-4 pt-4 border-t border-cyan-200 dark:border-cyan-700">
+                                      <div className="space-y-3">
+                                          <div className="flex items-center gap-3 mb-4 p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
+                                              <div className="flex-1">
+                                                  <label className="block text-[10px] font-bold text-cyan-700 dark:text-cyan-300 uppercase mb-2">PROXIMITY TRIGGER</label>
+                                                  <p className="text-[9px] text-cyan-600 dark:text-cyan-400">When enabled, this task stays invisible until players enter the discovery radius.</p>
+                                              </div>
+                                              <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                                  setEditedPoint({...editedPoint, proximityTriggerEnabled: !editedPoint.proximityTriggerEnabled});
+                                              }}>
+                                                  <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.proximityTriggerEnabled ? 'bg-cyan-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                                      <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.proximityTriggerEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                                  </div>
+                                              </label>
+                                          </div>
+
+                                          {editedPoint.proximityTriggerEnabled && (
+                                              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-cyan-200 dark:border-cyan-700 space-y-4">
+                                                  <div>
+                                                      <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-3">
+                                                          👁️ REVEAL RADIUS: {editedPoint.proximityRevealRadius || 100}m
+                                                      </label>
+                                                      <p className="text-[9px] text-gray-500 dark:text-gray-400 mb-2">
+                                                          Distance at which the task becomes visible to players
+                                                      </p>
+                                                      <input
+                                                          type="range"
+                                                          min="20"
+                                                          max="500"
+                                                          step="10"
+                                                          value={editedPoint.proximityRevealRadius || 100}
+                                                          onChange={(e) => setEditedPoint({...editedPoint, proximityRevealRadius: parseInt(e.target.value)})}
+                                                          className="w-full h-2 bg-cyan-200 dark:bg-cyan-800 rounded-lg appearance-none cursor-pointer accent-cyan-600"
+                                                      />
+                                                      <div className="flex justify-between text-[9px] text-gray-500 mt-1">
+                                                          <span>20m</span>
+                                                          <span>500m</span>
+                                                      </div>
+                                                  </div>
+
+                                                  <div className="flex items-center gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
+                                                      <div className="flex-1">
+                                                          <label className="block text-[10px] font-bold text-cyan-700 dark:text-cyan-300 uppercase mb-1">STAYS VISIBLE</label>
+                                                          <p className="text-[9px] text-cyan-600 dark:text-cyan-400">Once discovered, task remains visible even if player leaves the area</p>
+                                                      </div>
+                                                      <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                                          setEditedPoint({...editedPoint, proximityStaysVisible: editedPoint.proximityStaysVisible !== false ? false : true});
+                                                      }}>
+                                                          <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.proximityStaysVisible !== false ? 'bg-cyan-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                                              <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.proximityStaysVisible !== false ? 'translate-x-6' : 'translate-x-0'}`} />
+                                                          </div>
+                                                      </label>
+                                                  </div>
+
+                                                  <div className="bg-cyan-100 dark:bg-cyan-900/30 border border-cyan-300 dark:border-cyan-700 rounded-lg p-3">
+                                                      <p className="text-xs text-cyan-900 dark:text-cyan-200 font-bold">
+                                                          💡 <strong>Discovery Mechanic:</strong> This creates an exploration element where players must physically move around to discover hidden tasks. Perfect for treasure hunts and adventure games!
+                                                      </p>
+                                                  </div>
+                                              </div>
+                                          )}
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
+                          )}
+
+                          {/* OTHER ACTIVATION METHODS */}
 
                            {/* QR Code Configuration */}
                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
