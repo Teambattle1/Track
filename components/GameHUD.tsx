@@ -135,7 +135,10 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true, locateFeedback,
     authUser, activeGame, onUpdateGame, onStartSimulation, onToggleSnapToRoad, snapToRoadMode,
     showTeamPaths, onToggleTeamPaths,
-    fogOfWarEnabled, selectedTeamForFogOfWar, onToggleFogOfWar, onSelectTeamForFogOfWar, teams
+    fogOfWarEnabled, selectedTeamForFogOfWar, onToggleFogOfWar, onSelectTeamForFogOfWar, teams,
+    onOpenRemoteOverride,
+    showMapLayer, showZoneLayer, showTaskLayer, showLiveLayer,
+    onToggleMapLayer, onToggleZoneLayer, onToggleTaskLayer, onToggleLiveLayer
 }, ref) => {
     const [timeLeft, setTimeLeft] = useState<string>('');
     const [timerAlert, setTimerAlert] = useState(false);
