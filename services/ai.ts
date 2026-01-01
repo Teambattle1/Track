@@ -222,83 +222,46 @@ export const searchLogoUrl = async (query: string): Promise<string | null> => {
 
     console.log('[Logo Search] Guessed domain:', domainGuess);
 
-    // Strategy 1: Try Clearbit via CORS proxy
-    try {
-        console.log('[Logo Search] Trying Clearbit via proxy...');
-        const clearbitUrl = `https://logo.clearbit.com/${domainGuess}`;
-
-        // Use CORS proxy to fetch the image
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(clearbitUrl)}`;
-
-        const response = await fetch(proxyUrl, {
-            method: 'GET',
-            headers: { 'Accept': 'image/*' }
-        });
-
-        if (response.ok) {
-            // Convert to blob and create local data URL
-            const blob = await response.blob();
-            if (blob.size > 0 && blob.type.startsWith('image/')) {
-                const dataUrl = await blobToDataUrl(blob);
-                console.log('[Logo Search] ✅ Found REAL logo via Clearbit');
-                return dataUrl;
-            }
-        }
-    } catch (e) {
-        console.log('[Logo Search] Clearbit proxy failed:', e);
+    // Strategy 1: Try Clearbit Logo API (direct image load, no fetch)
+    const clearbitUrl = `https://logo.clearbit.com/${domainGuess}`;
+    console.log('[Logo Search] Trying Clearbit:', clearbitUrl);
+    const clearbitResult = await testImageUrl(clearbitUrl);
+    if (clearbitResult) {
+        console.log('[Logo Search] ✅ Found REAL logo via Clearbit');
+        return clearbitUrl;
     }
 
-    // Strategy 2: Try Google's S2 Favicon service (CORS-friendly)
-    try {
-        console.log('[Logo Search] Trying Google Favicon service...');
-        const googleUrl = `https://www.google.com/s2/favicons?domain=${domainGuess}&sz=256`;
-
-        const response = await fetch(googleUrl);
-        if (response.ok) {
-            const blob = await response.blob();
-            if (blob.size > 100) { // Ensure it's not a tiny default icon
-                const dataUrl = await blobToDataUrl(blob);
-                console.log('[Logo Search] ✅ Found logo via Google Favicon');
-                return dataUrl;
-            }
-        }
-    } catch (e) {
-        console.log('[Logo Search] Google Favicon failed:', e);
+    // Strategy 2: Try Google Favicon service (high resolution)
+    const googleUrl = `https://www.google.com/s2/favicons?domain=${domainGuess}&sz=256`;
+    console.log('[Logo Search] Trying Google Favicon:', googleUrl);
+    const googleResult = await testImageUrl(googleUrl);
+    if (googleResult) {
+        console.log('[Logo Search] ✅ Found logo via Google (256px)');
+        return googleUrl;
     }
 
-    // Strategy 3: Try DuckDuckGo favicon service (no CORS issues)
-    try {
-        console.log('[Logo Search] Trying DuckDuckGo icon service...');
-        const duckUrl = `https://icons.duckduckgo.com/ip3/${domainGuess}.ico`;
-
-        const response = await fetch(duckUrl);
-        if (response.ok) {
-            const blob = await response.blob();
-            if (blob.size > 100) {
-                const dataUrl = await blobToDataUrl(blob);
-                console.log('[Logo Search] ✅ Found logo via DuckDuckGo');
-                return dataUrl;
-            }
-        }
-    } catch (e) {
-        console.log('[Logo Search] DuckDuckGo failed:', e);
+    // Strategy 3: Try Logo.dev API
+    const logoDevUrl = `https://img.logo.dev/${domainGuess}?token=pk_X-cat2mFSGWUhXZee1f8rQ`;
+    console.log('[Logo Search] Trying Logo.dev:', logoDevUrl);
+    const logoDevResult = await testImageUrl(logoDevUrl);
+    if (logoDevResult) {
+        console.log('[Logo Search] ✅ Found logo via Logo.dev');
+        return logoDevUrl;
     }
 
-    // Strategy 4: Direct Clearbit without proxy (might work for some sites)
-    try {
-        console.log('[Logo Search] Trying direct Clearbit...');
-        const clearbitDirect = `https://logo.clearbit.com/${domainGuess}`;
-        const testResult = await testImageUrl(clearbitDirect);
-        if (testResult) {
-            console.log('[Logo Search] ✅ Found REAL logo via direct Clearbit');
-            return clearbitDirect;
-        }
-    } catch (e) {
-        console.log('[Logo Search] Direct Clearbit failed:', e);
+    // Strategy 4: DuckDuckGo Icons
+    const duckUrl = `https://icons.duckduckgo.com/ip3/${domainGuess}.ico`;
+    console.log('[Logo Search] Trying DuckDuckGo:', duckUrl);
+    const duckResult = await testImageUrl(duckUrl);
+    if (duckResult) {
+        console.log('[Logo Search] ✅ Found logo via DuckDuckGo');
+        return duckUrl;
     }
 
-    console.log('[Logo Search] ❌ No logo found on internet for:', query);
-    return null;
+    // Strategy 5: Smaller Google Favicon as absolute fallback
+    const googleFallback = `https://www.google.com/s2/favicons?domain=${domainGuess}&sz=128`;
+    console.log('[Logo Search] Using Google Favicon fallback');
+    return googleFallback;
 };
 
 // Helper: Guess domain from company name
