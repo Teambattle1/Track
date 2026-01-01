@@ -280,55 +280,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         saveToolbarPositions();
     };
 
-    // CRITICAL NULL CHECK: Prevent crash if no playground exists
+    // Get active playground
     const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId) || game.playgrounds?.[0];
-    if (!activePlayground) {
-        return (
-            <div style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 9999
-            }}>
-                <div style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    padding: '2rem',
-                    maxWidth: '400px',
-                    textAlign: 'center',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
-                }}>
-                    <h2 style={{ color: '#1f2937', marginBottom: '1rem' }}>No Playground Available</h2>
-                    <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-                        This game doesn't have any playgrounds yet. Please create one first.
-                    </p>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: '#667eea',
-                            color: 'white',
-                            padding: '0.625rem 1.5rem',
-                            borderRadius: '8px',
-                            border: 'none',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Go Back
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    const isOrientationLocked = !!activePlayground.orientationLock && activePlayground.orientationLock !== 'none';
-
-    const playgroundPoints = game.points.filter(p => p.playgroundId === activePlayground.id);
+    const isOrientationLocked = !!activePlayground?.orientationLock && activePlayground.orientationLock !== 'none';
+    const playgroundPoints = activePlayground ? game.points.filter(p => p.playgroundId === activePlayground.id) : [];
 
     useEffect(() => {
+        if (!activePlayground) return;
         if (activePlayground.orientationLock && activePlayground.orientationLock !== 'none') {
             setEditorOrientation(activePlayground.orientationLock);
         } else {
