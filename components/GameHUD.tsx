@@ -4,7 +4,7 @@ import {
     Map as MapIcon, Layers, Crosshair, ChevronLeft, Ruler, Settings,
     MessageSquare, Shield, Globe, Skull, Clock,
     Route as RouteIcon, Eye, EyeOff, Snowflake, GripHorizontal, Mountain, Sun, Navigation, Upload, Users,
-    MapPin, Play, LogOut, Navigation as NavigationIcon, ExternalLink, Trophy, Hash, Type, QrCode, Target, Maximize, GitBranch, ScrollText, ChevronDown
+    MapPin, Play, LogOut, Navigation as NavigationIcon, ExternalLink, Trophy, Hash, Type, QrCode, Target, Maximize, GitBranch, ScrollText, ChevronDown, Zap, Filter
 } from 'lucide-react';
 import LocationSearch from './LocationSearch';
 import AdjustGameTimeModal from './AdjustGameTimeModal';
