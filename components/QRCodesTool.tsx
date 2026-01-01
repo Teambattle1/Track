@@ -101,7 +101,11 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
 
   useEffect(() => {
     setSelectedGameId(activeGameId);
-  }, [activeGameId]);
+    if (activeGameId) {
+      const g = games.find(x => x.id === activeGameId);
+      if (g) setGameTab(getGameStatusTab(g, new Date()));
+    }
+  }, [activeGameId, games]);
 
   useEffect(() => {
     setSelectedTaskIds(new Set());
