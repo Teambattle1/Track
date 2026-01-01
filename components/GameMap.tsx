@@ -818,8 +818,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                 <Polyline positions={measurePath} pathOptions={{ color: '#f97316', dashArray: '10, 10', weight: 4 }} />
             )}
 
-            {/* Danger Zones */}
-            {dangerZones.map(zone => (
+            {/* Danger Zones - Toggle with Layer Control */}
+            {showZoneLayer && dangerZones.map(zone => (
                 <DangerZoneMarker
                     key={zone.id}
                     zone={zone}
