@@ -103,6 +103,9 @@ interface GameHUDProps {
     teams?: any[]; // Available teams for fog of war selection
     // Remote Override Props
     onOpenRemoteOverride?: () => void;
+    // Live Approval Props
+    onOpenLiveApproval?: () => void;
+    pendingApprovalsCount?: number;
     // Layer Toggle Props
     showMapLayer?: boolean;
     showZoneLayer?: boolean;
@@ -137,6 +140,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     showTeamPaths, onToggleTeamPaths,
     fogOfWarEnabled, selectedTeamForFogOfWar, onToggleFogOfWar, onSelectTeamForFogOfWar, teams,
     onOpenRemoteOverride,
+    onOpenLiveApproval, pendingApprovalsCount = 0,
     showMapLayer, showZoneLayer, showTaskLayer, showLiveLayer,
     onToggleMapLayer, onToggleZoneLayer, onToggleTaskLayer, onToggleLiveLayer
 }, ref) => {
@@ -814,6 +818,25 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                             <Zap className="w-4 h-4" />
                                         </button>
                                         <div className="text-[8px] font-black text-orange-400 uppercase tracking-widest leading-tight whitespace-nowrap">OVERRIDE</div>
+                                    </div>
+                                )}
+
+                                {/* Live Approval Button - INSTRUCTOR mode only */}
+                                {mode === GameMode.INSTRUCTOR && onOpenLiveApproval && (
+                                    <div className="flex flex-col items-center gap-0.5">
+                                        <button
+                                            onClick={onOpenLiveApproval}
+                                            className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-purple-800 border-purple-600 text-purple-300 hover:bg-purple-700 hover:text-white"
+                                            title="Live Approval Feed (Photo/Video Reviews)"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                            {pendingApprovalsCount > 0 && (
+                                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center animate-pulse">
+                                                    {pendingApprovalsCount}
+                                                </div>
+                                            )}
+                                        </button>
+                                        <div className="text-[8px] font-black text-purple-400 uppercase tracking-widest leading-tight whitespace-nowrap">REVIEW</div>
                                     </div>
                                 )}
                             </div>
