@@ -88,12 +88,21 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [orientationToolbarPos, setOrientationToolbarPos] = useState({ x: 240, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
     const [showToolbarPos, setShowToolbarPos] = useState({ x: 520, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
     const [toolsToolbarPos, setToolsToolbarPos] = useState({ x: 820, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
+    const [qrScannerPos, setQRScannerPos] = useState({ x: typeof window !== 'undefined' ? window.innerWidth - 80 : 100, y: typeof window !== 'undefined' ? window.innerHeight - 100 : 500 });
     const [isDraggingOrientation, setIsDraggingOrientation] = useState(false);
     const [isDraggingShow, setIsDraggingShow] = useState(false);
     const [isDraggingTools, setIsDraggingTools] = useState(false);
+    const [isDraggingQRScanner, setIsDraggingQRScanner] = useState(false);
+    const [isQRScannerActive, setIsQRScannerActive] = useState(false);
+    const [qrScannedValue, setQRScannedValue] = useState<string | null>(null);
     const orientationDragOffset = useRef({ x: 0, y: 0 });
     const showDragOffset = useRef({ x: 0, y: 0 });
     const toolsDragOffset = useRef({ x: 0, y: 0 });
+    const qrScannerDragOffset = useRef({ x: 0, y: 0 });
+    const qrVideoRef = useRef<HTMLVideoElement>(null);
+    const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+    const qrStreamRef = useRef<MediaStream | null>(null);
+    const qrScanIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const [editorOrientation, setEditorOrientation] = useState<'portrait' | 'landscape'>('landscape');
     const [showAiIconPrompt, setShowAiIconPrompt] = useState(false);
