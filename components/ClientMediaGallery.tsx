@@ -9,6 +9,124 @@ interface ClientMediaGalleryProps {
   teams: Team[];
 }
 
+interface RankingSlideProps {
+  teams: Team[];
+  revealedTop3: number;
+}
+
+const RankingSlide: React.FC<RankingSlideProps> = ({ teams, revealedTop3 }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Sort teams by score
+  const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+
+  // Auto-scroll to bottom on first render
+  React.useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, []);
+
+  // Get podium teams
+  const gold = sortedTeams[0];
+  const silver = sortedTeams[1];
+  const bronze = sortedTeams[2];
+  const rest = sortedTeams.slice(3);
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden p-8">
+      {/* Podium - Top 3 (Hidden until revealed) */}
+      <div className="mb-8">
+        <h2 className="text-6xl font-black text-white uppercase text-center mb-12 tracking-wider">
+          🏆 CHAMPIONS 🏆
+        </h2>
+        <div className="flex items-end justify-center gap-8 max-w-5xl mx-auto">
+          {/* Silver - 2nd Place */}
+          <div className={`flex flex-col items-center transition-all duration-700 ${
+            revealedTop3 >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+          }`}>
+            <div className="w-48 h-48 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center mb-4 border-8 border-white shadow-2xl">
+              <Medal className="w-24 h-24 text-white" />
+            </div>
+            <div className="bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl p-6 min-w-[280px] text-center shadow-2xl">
+              <div className="text-7xl font-black text-white mb-2">2</div>
+              <h3 className="text-3xl font-black text-white uppercase mb-3">{silver?.name}</h3>
+              <p className="text-5xl font-black text-white">{silver?.score} pts</p>
+            </div>
+          </div>
+
+          {/* Gold - 1st Place */}
+          <div className={`flex flex-col items-center transition-all duration-700 ${
+            revealedTop3 >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+          }`}>
+            <div className="w-64 h-64 bg-gradient-to-br from-amber-300 to-amber-500 rounded-full flex items-center justify-center mb-4 border-8 border-white shadow-2xl animate-pulse">
+              <Crown className="w-32 h-32 text-white" />
+            </div>
+            <div className="bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl p-8 min-w-[320px] text-center shadow-2xl">
+              <div className="text-8xl font-black text-white mb-3">1</div>
+              <h3 className="text-4xl font-black text-white uppercase mb-4">{gold?.name}</h3>
+              <p className="text-6xl font-black text-white">{gold?.score} pts</p>
+            </div>
+          </div>
+
+          {/* Bronze - 3rd Place */}
+          <div className={`flex flex-col items-center transition-all duration-700 ${
+            revealedTop3 >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+          }`}>
+            <div className="w-40 h-40 bg-gradient-to-br from-amber-600 to-amber-800 rounded-full flex items-center justify-center mb-4 border-8 border-white shadow-2xl">
+              <Award className="w-20 h-20 text-white" />
+            </div>
+            <div className="bg-gradient-to-br from-amber-600 to-amber-800 rounded-2xl p-5 min-w-[260px] text-center shadow-2xl">
+              <div className="text-6xl font-black text-white mb-2">3</div>
+              <h3 className="text-2xl font-black text-white uppercase mb-2">{bronze?.name}</h3>
+              <p className="text-4xl font-black text-white">{bronze?.score} pts</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rest of Rankings - Scrollable */}
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto custom-scrollbar bg-black/30 rounded-2xl p-6"
+      >
+        <h3 className="text-3xl font-black text-white uppercase text-center mb-6">Full Leaderboard</h3>
+        <div className="space-y-3 max-w-4xl mx-auto">
+          {sortedTeams.map((team, index) => (
+            <div
+              key={team.id}
+              className={`flex items-center justify-between p-5 rounded-xl transition-all ${
+                index === 0 ? 'bg-gradient-to-r from-amber-600 to-amber-700 scale-105' :
+                index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
+                index === 2 ? 'bg-gradient-to-r from-amber-700 to-amber-800' :
+                'bg-slate-800/50'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`text-4xl font-black ${
+                  index < 3 ? 'text-white' : 'text-gray-400'
+                } min-w-[60px] text-center`}>
+                  #{index + 1}
+                </div>
+                <h4 className={`text-2xl font-black uppercase ${
+                  index < 3 ? 'text-white' : 'text-gray-300'
+                }`}>
+                  {team.name}
+                </h4>
+              </div>
+              <div className={`text-4xl font-black ${
+                index < 3 ? 'text-white' : 'text-gray-400'
+              }`}>
+                {team.score} pts
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ClientMediaGallery: React.FC<ClientMediaGalleryProps> = ({ gameId, game, teams }) => {
   const [media, setMedia] = useState<MediaSubmission[]>([]);
   const [loading, setLoading] = useState(true);
