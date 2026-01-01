@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Eye, Map as MapIcon, Globe, Layers, Snowflake, Mountain, ScrollText, Settings, Check, AlertTriangle, Edit2 } from 'lucide-react';
+import { X, Plus, Trash2, Eye, Map as MapIcon, Globe, Layers, Snowflake, Mountain, ScrollText, Settings, Check, AlertTriangle, Edit2, Upload, Image as ImageIcon } from 'lucide-react';
 import { MapStyleId } from '../types';
 import * as db from '../services/db';
 
@@ -40,6 +40,11 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [customLabels, setCustomLabels] = useState<Record<string, string>>({});
     const [customDescriptions, setCustomDescriptions] = useState<Record<string, string>>({});
+    const [customPreviews, setCustomPreviews] = useState<Record<string, string>>({});
+
+    // Preview editing state
+    const [editingPreviewId, setEditingPreviewId] = useState<string | null>(null);
+    const [previewUrlInput, setPreviewUrlInput] = useState('');
 
     // Form state for adding new map style
     const [newStyleName, setNewStyleName] = useState('');
@@ -70,6 +75,12 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
             const descriptions = localStorage.getItem('mapStyleDescriptions');
             if (descriptions) {
                 setCustomDescriptions(JSON.parse(descriptions));
+            }
+
+            // Load custom preview URLs
+            const previews = localStorage.getItem('mapStylePreviews');
+            if (previews) {
+                setCustomPreviews(JSON.parse(previews));
             }
         } catch (error) {
             console.error('Error loading custom map styles:', error);
@@ -156,6 +167,23 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
         return customDescriptions[style.id] || style.description;
     };
 
+    const getStylePreview = (style: typeof BUILTIN_MAP_STYLES[0]) => {
+        return customPreviews[style.id] || style.preview;
+    };
+
+    const handleUpdatePreview = (id: string, newPreviewUrl: string) => {
+        const updatedPreviews = { ...customPreviews, [id]: newPreviewUrl };
+        setCustomPreviews(updatedPreviews);
+        localStorage.setItem('mapStylePreviews', JSON.stringify(updatedPreviews));
+        setEditingPreviewId(null);
+        setPreviewUrlInput('');
+    };
+
+    const handleStartEditPreview = (id: string, currentPreview: string) => {
+        setEditingPreviewId(id);
+        setPreviewUrlInput(currentPreview);
+    };
+
     const visibleBuiltinStyles = BUILTIN_MAP_STYLES.filter(s => !deletedBuiltinIds.has(s.id));
     const hiddenBuiltinStyles = BUILTIN_MAP_STYLES.filter(s => deletedBuiltinIds.has(s.id));
 
@@ -209,20 +237,35 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                             className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-purple-500 transition-all group relative"
                                             title={getStyleDescription(style)}
                                         >
-                                            <div className="relative">
-                                                <img
-                                                    src={style.preview}
-                                                    alt={getStyleLabel(style)}
-                                                    className={`w-full h-32 object-cover ${style.className || ''}`}
-                                                />
+                                            <div className="relative group/preview">
+                                                {getStylePreview(style) ? (
+                                                    <img
+                                                        src={getStylePreview(style)}
+                                                        alt={getStyleLabel(style)}
+                                                        className={`w-full h-32 object-cover ${style.className || ''}`}
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-32 bg-slate-800 flex items-center justify-center">
+                                                        <MapIcon className="w-12 h-12 text-slate-600" />
+                                                    </div>
+                                                )}
                                                 <div className="absolute top-2 right-2 flex gap-1">
                                                     <button
-                                                        onClick={() => setPreviewStyle(style.preview)}
-                                                        className="p-1.5 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
-                                                        title="Preview"
+                                                        onClick={() => handleStartEditPreview(style.id, getStylePreview(style))}
+                                                        className="p-1.5 bg-black/60 hover:bg-purple-600 rounded-lg text-white transition-colors"
+                                                        title="Change preview image"
                                                     >
-                                                        <Eye className="w-4 h-4" />
+                                                        <Upload className="w-4 h-4" />
                                                     </button>
+                                                    {getStylePreview(style) && (
+                                                        <button
+                                                            onClick={() => setPreviewStyle(getStylePreview(style))}
+                                                            className="p-1.5 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+                                                            title="Preview"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </button>
+                                                    )}
                                                     {style.deletable && (
                                                         <button
                                                             onClick={() => handleDeleteBuiltin(style.id)}
@@ -380,6 +423,80 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                     )}
                 </div>
             </div>
+
+            {/* Edit Preview URL Modal */}
+            {editingPreviewId && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-10">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-lg w-full">
+                        <h3 className="text-xl font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <ImageIcon className="w-6 h-6 text-purple-500" />
+                            Update Preview Image
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">
+                                    Preview Tile URL
+                                </label>
+                                <input
+                                    type="text"
+                                    value={previewUrlInput}
+                                    onChange={(e) => setPreviewUrlInput(e.target.value)}
+                                    placeholder="https://example.com/tile/13/4285/2722.png"
+                                    className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                    autoFocus
+                                />
+                                <p className="text-[10px] text-slate-500 mt-2">
+                                    Enter a tile server URL for zoom level 13. Example formats:
+                                </p>
+                                <ul className="text-[10px] text-slate-400 mt-1 space-y-0.5 list-disc list-inside">
+                                    <li>OpenStreetMap: https://a.tile.openstreetmap.org/13/4285/2722.png</li>
+                                    <li>CartoDB Dark: https://a.basemaps.cartocdn.com/dark_all/13/4285/2722.png</li>
+                                    <li>Satellite: https://server.arcgisonline.com/.../tile/13/2722/4285</li>
+                                </ul>
+                            </div>
+
+                            {previewUrlInput && (
+                                <div>
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">
+                                        Preview
+                                    </label>
+                                    <div className="w-full h-32 bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
+                                        <img
+                                            src={previewUrlInput}
+                                            alt="Preview"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center"><p class="text-red-400 text-xs">Invalid image URL</p></div>';
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => handleUpdatePreview(editingPreviewId, previewUrlInput)}
+                                disabled={!previewUrlInput.trim()}
+                                className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-lg text-white font-bold uppercase tracking-wide transition-colors"
+                            >
+                                Update Preview
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setEditingPreviewId(null);
+                                    setPreviewUrlInput('');
+                                }}
+                                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg text-white font-bold uppercase tracking-wide transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Add New Modal */}
             {showAddModal && (
