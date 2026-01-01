@@ -97,11 +97,11 @@ export const testDatabaseConnection = async (): Promise<{ success: boolean; erro
 
 // Configuration for large table fetches
 const CHUNK_SIZE = 50; // Fetch 50 rows at a time (reduced to prevent timeouts)
-const LIBRARY_CHUNK_SIZE = 25; // Even smaller for library (data objects are large)
+const LIBRARY_CHUNK_SIZE = 12; // Smaller chunks for library - large data objects cause timeouts
 const TAGS_CHUNK_SIZE = 20; // Smaller chunks for tag fetching (large data objects)
 const FETCH_TIMEOUT_MS = 20000; // 20 second timeout per chunk (reduced)
 const TAGS_FETCH_TIMEOUT_MS = 5000; // 5 second timeout for tag fetches (fail fast)
-const LIBRARY_FETCH_TIMEOUT_MS = 15000; // 15 second timeout for library fetches
+const LIBRARY_FETCH_TIMEOUT_MS = 25000; // 25 second timeout for library fetches (increased from 15s)
 
 // Retry helper for timeout and network errors with exponential backoff
 const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 3, timeoutMs?: number): Promise<T> => {
