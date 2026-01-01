@@ -210,32 +210,45 @@ export const fetchImpossibleTravelWarnings = async (
   }>
 > => {
   try {
-    const { data, error } = await supabase
+    // First fetch impossible travel locations
+    const { data: locations, error: locError } = await supabase
       .from('team_locations')
-      .select(
-        `
-        id,
-        team_id,
-        latitude,
-        longitude,
-        timestamp,
-        speed,
-        teams!inner(name)
-      `
-      )
+      .select('id, team_id, latitude, longitude, timestamp, speed')
       .eq('game_id', gameId)
       .eq('is_impossible_travel', true)
       .order('timestamp', { ascending: false })
       .limit(50);
 
-    if (error) {
-      console.error('[TeamTracking] Error fetching impossible travel warnings:', error.message || JSON.stringify(error));
+    if (locError) {
+      console.error('[TeamTracking] Error fetching impossible travel locations:', locError.message || JSON.stringify(locError));
       return [];
     }
 
-    return (data || []).map((record: any) => ({
+    if (!locations || locations.length === 0) {
+      return [];
+    }
+
+    // Fetch teams to map team names
+    const { data: teams, error: teamsError } = await supabase
+      .from('teams')
+      .select('id, name')
+      .eq('game_id', gameId);
+
+    if (teamsError) {
+      console.warn('[TeamTracking] Error fetching teams for mapping:', teamsError.message || JSON.stringify(teamsError));
+      // Continue without team names if fetch fails
+    }
+
+    // Create a map of team_id to team_name for quick lookup
+    const teamMap = new Map<string, string>();
+    (teams || []).forEach((team: any) => {
+      teamMap.set(team.id, team.name);
+    });
+
+    // Combine location and team data
+    return locations.map((record: any) => ({
       teamId: record.team_id,
-      teamName: record.teams?.name || 'Unknown Team',
+      teamName: teamMap.get(record.team_id) || 'Unknown Team',
       location: {
         lat: parseFloat(record.latitude),
         lng: parseFloat(record.longitude),
