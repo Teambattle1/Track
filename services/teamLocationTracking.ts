@@ -221,7 +221,7 @@ export const fetchImpossibleTravelWarnings = async (
       .limit(50);
 
     if (error) {
-      console.error('[TeamTracking] Error fetching impossible travel warnings:', error);
+      console.error('[TeamTracking] Error fetching impossible travel warnings:', error.message || JSON.stringify(error));
       return [];
     }
 
