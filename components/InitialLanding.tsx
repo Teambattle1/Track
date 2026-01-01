@@ -519,7 +519,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               <path d="M 300 -100 C 300 300, 100 600, 200 1200" fill="none" stroke="#333333" strokeWidth="40" strokeLinecap="round" />
               <path d="M 1400 -100 C 1400 400, 1200 800, 1500 1200" fill="none" stroke="#2e2e2e" strokeWidth="30" strokeLinecap="round" />
           </svg>
-          <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '100px 100px' }} />
+          <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(#fff_1px,transparent_1px),linear-gradient(90deg,#fff_1px,transparent_1px)] bg-[length:100px_100px]" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
       </div>
 
