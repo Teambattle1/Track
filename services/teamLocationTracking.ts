@@ -235,8 +235,8 @@ export const fetchImpossibleTravelWarnings = async (
       timestamp: new Date(record.timestamp),
       speed: parseFloat(record.speed || 0),
     }));
-  } catch (error) {
-    console.error('[TeamTracking] Exception fetching impossible travel warnings:', error);
+  } catch (error: any) {
+    console.error('[TeamTracking] Exception fetching impossible travel warnings:', error?.message || JSON.stringify(error));
     return [];
   }
 };
