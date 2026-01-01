@@ -56,8 +56,9 @@ export const recordTeamLocation = async (
       .single();
 
     if (error) {
-      console.error('[TeamTracking] Error recording location:', error);
-      return { success: false, error: error.message };
+      const errorMessage = error.message || JSON.stringify(error);
+      console.error('[TeamTracking] Error recording location:', errorMessage);
+      return { success: false, error: errorMessage };
     }
 
     return {
