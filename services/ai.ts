@@ -265,8 +265,7 @@ export const generateAiLogo = async (companyName: string, style: string = 'profe
             () => ai.models.generateContent({
                 model: 'gemini-2.5-flash-image',
                 contents: prompt,
-            }),
-            'generateAiLogo'
+            })
         );
 
         if (response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
