@@ -272,6 +272,30 @@ const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
           </>
       )}
 
+      {/* Treasure Filter CSS Injection */}
+      {mapStyle === 'treasure' && (
+          <>
+            <style>{`
+                .map-filter-treasure {
+                    filter: sepia(0.9) contrast(1.1) brightness(0.95) hue-rotate(30deg) !important;
+                }
+            `}</style>
+            {/* Parchment Texture Overlay */}
+            <div className="absolute inset-0 z-[5] pointer-events-none opacity-25 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/old-map.png')]"></div>
+          </>
+      )}
+
+      {/* Desert Filter CSS Injection */}
+      {mapStyle === 'desert' && (
+          <>
+            <style>{`
+                .map-filter-desert {
+                    filter: saturate(1.5) hue-rotate(15deg) brightness(1.1) contrast(1.05) !important;
+                }
+            `}</style>
+          </>
+      )}
+
       {/* Winter Filter CSS Injection */}
       {mapStyle === 'winter' && (
           <style>{`
