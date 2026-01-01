@@ -1712,21 +1712,23 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <span className="text-xs font-black uppercase tracking-wider">SNAP ROAD</span>
                                         </button>
                                     </div>
-                                    <div className="flex flex-col items-center gap-0.5">
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                onStartSimulation();
-                                            }}
-                                            className="px-3 py-2 rounded transition-all cursor-pointer pointer-events-auto bg-purple-600 text-white shadow-lg hover:bg-purple-700 hover:shadow-xl active:scale-95 flex items-center gap-2"
-                                            title="Start Simulation Mode - Play the game with all tasks and rules enabled"
-                                            type="button"
-                                        >
-                                            <PlayCircle className="w-4 h-4" />
-                                            <span className="text-xs font-black uppercase tracking-wider">SIMULATOR</span>
-                                        </button>
-                                    </div>
+                                    {onStartSimulation && (
+                                        <div className="flex flex-col items-center gap-0.5">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    onStartSimulation();
+                                                }}
+                                                className="px-3 py-2 rounded transition-all cursor-pointer pointer-events-auto bg-purple-600 text-white shadow-lg hover:bg-purple-700 hover:shadow-xl active:scale-95 flex items-center gap-2"
+                                                title="Start Simulation Mode - Play the game with all tasks and rules enabled"
+                                                type="button"
+                                            >
+                                                <PlayCircle className="w-4 h-4" />
+                                                <span className="text-xs font-black uppercase tracking-wider">SIMULATOR</span>
+                                            </button>
+                                        </div>
+                                    )}
                                     <div className="flex flex-col items-center gap-0.5">
                                         <button
                                             onClick={(e) => {
