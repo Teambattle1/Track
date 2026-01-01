@@ -270,6 +270,9 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [instructorNotes, setInstructorNotes] = useState(baseGame?.instructorNotes || '');
   const [templateImages, setTemplateImages] = useState<string[]>(baseGame?.templateImageUrls || []);
 
+  // Client Lobby Link
+  const [clientLinkCopied, setClientLinkCopied] = useState(false);
+
   // End Location
   const [endLat, setEndLat] = useState<string>(baseGame?.endLocation?.lat?.toString?.() ?? '');
   const [endLng, setEndLng] = useState<string>(baseGame?.endLocation?.lng?.toString?.() ?? '');
