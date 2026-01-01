@@ -247,6 +247,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [playingDate, setPlayingDate] = useState(baseGame?.client?.playingDate || getTodayDate());
   const [clientLogo, setClientLogo] = useState(baseGame?.client?.logoUrl || '');
   const [isSearchingLogo, setIsSearchingLogo] = useState(false);
+  const [isGeneratingAiLogo, setIsGeneratingAiLogo] = useState(false);
+  const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
   
   // Teams Config
   const [showOtherTeams, setShowOtherTeams] = useState(baseGame?.showOtherTeams || false);
