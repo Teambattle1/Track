@@ -1,0 +1,9 @@
+.landing-pin-delay-0 { animation-delay: 0ms; }
+.landing-pin-delay-100 { animation-delay: 100ms; }
+.landing-pin-delay-200 { animation-delay: 200ms; }
+.landing-pin-delay-300 { animation-delay: 300ms; }
+
+.landing-scale-100 { transform: scale(1); }
+.landing-scale-085 { transform: scale(0.85); }
+.landing-scale-090 { transform: scale(0.9); }
+.landing-scale-095 { transform: scale(0.95); }
