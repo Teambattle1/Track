@@ -877,7 +877,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         const endY = (selectionBox.current.y - rect.top) / zoom + pan.y;
 
         // Find tasks within the selection box
-        const tasksToSnap = game.points.filter(point => {
+        const tasksToSnap = game.points?.filter(point => {
             const pos = point.playgroundPosition;
             if (!pos) return false;
 
