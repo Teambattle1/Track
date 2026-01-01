@@ -248,7 +248,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [playingDate, setPlayingDate] = useState(baseGame?.client?.playingDate || getTodayDate());
   const [clientLogo, setClientLogo] = useState(baseGame?.client?.logoUrl || '');
   const [isSearchingLogo, setIsSearchingLogo] = useState(false);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isGeneratingAiLogo, setIsGeneratingAiLogo] = useState(false);
   const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
   
