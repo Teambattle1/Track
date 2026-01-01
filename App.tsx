@@ -1904,6 +1904,15 @@ const GameApp: React.FC = () => {
             onToggleFogOfWar={() => setFogOfWarEnabled(!fogOfWarEnabled)}
             onSelectTeamForFogOfWar={setSelectedTeamForFogOfWar}
             teams={teamsForFogOfWar}
+            onOpenRemoteOverride={() => setShowRemoteOverride(true)}
+            showMapLayer={showMapLayer}
+            showZoneLayer={showZoneLayer}
+            showTaskLayer={showTaskLayer}
+            showLiveLayer={showLiveLayer}
+            onToggleMapLayer={() => setShowMapLayer(!showMapLayer)}
+            onToggleZoneLayer={() => setShowZoneLayer(!showZoneLayer)}
+            onToggleTaskLayer={() => setShowTaskLayer(!showTaskLayer)}
+            onToggleLiveLayer={() => setShowLiveLayer(!showLiveLayer)}
         />
 
         {/* Impossible Travel Warnings - EDIT and INSTRUCTOR modes only */}
