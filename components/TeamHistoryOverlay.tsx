@@ -5,6 +5,7 @@ import { TeamHistory } from '../types/teamHistory';
 interface TeamHistoryOverlayProps {
   teams: TeamHistory[];
   visible: boolean;
+  gameStartTime?: number; // Timestamp when game/team started
 }
 
 /**
@@ -14,7 +15,7 @@ interface TeamHistoryOverlayProps {
  * - Polylines for team paths (colored per team)
  * - CircleMarkers for task attempts (traffic light colors)
  */
-const TeamHistoryOverlay: React.FC<TeamHistoryOverlayProps> = ({ teams, visible }) => {
+const TeamHistoryOverlay: React.FC<TeamHistoryOverlayProps> = ({ teams, visible, gameStartTime }) => {
   if (!visible || !teams || teams.length === 0) {
     return null;
   }
@@ -43,6 +44,20 @@ const TeamHistoryOverlay: React.FC<TeamHistoryOverlayProps> = ({ teams, visible 
       default:
         return 'UNKNOWN';
     }
+  };
+
+  // Format time as MM:SS from game start
+  const formatTimeFromStart = (timestamp: number): string => {
+    if (!gameStartTime) {
+      return new Date(timestamp).toLocaleTimeString();
+    }
+
+    const elapsedMs = timestamp - gameStartTime;
+    const totalSeconds = Math.floor(elapsedMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
   return (
@@ -99,8 +114,13 @@ const TeamHistoryOverlay: React.FC<TeamHistoryOverlayProps> = ({ teams, visible 
                       <div className="text-[10px] text-gray-600 mt-1">{task.taskTitle}</div>
                     )}
                     <div className="text-[9px] text-gray-500 mt-1">
-                      {new Date(task.timestamp).toLocaleString()}
+                      Time: {formatTimeFromStart(task.timestamp)}
                     </div>
+                    {gameStartTime && (
+                      <div className="text-[8px] text-gray-400">
+                        {new Date(task.timestamp).toLocaleString()}
+                      </div>
+                    )}
                   </div>
                 </Tooltip>
               </CircleMarker>
