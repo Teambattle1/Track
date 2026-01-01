@@ -107,11 +107,48 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
     setSelectedTaskIds(new Set());
   }, [selectedGameId]);
 
-  const filteredGames = useMemo(() => {
+  const gamesBySearch = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return games;
     return games.filter(g => (g.title || g.name || '').toLowerCase().includes(q));
   }, [games, search]);
+
+  const tabCounts = useMemo(() => {
+    const now = new Date();
+    return gamesBySearch.reduce(
+      (acc, g) => {
+        const tab = getGameStatusTab(g, now);
+        acc[tab] += 1;
+        return acc;
+      },
+      { TODAY: 0, PLANNED: 0, COMPLETED: 0 } as Record<GameStatusTab, number>
+    );
+  }, [gamesBySearch]);
+
+  const filteredGames = useMemo(() => {
+    const now = new Date();
+
+    const inTab = gamesBySearch.filter(g => getGameStatusTab(g, now) === gameTab);
+
+    const sorted = inTab
+      .slice()
+      .sort((a, b) => {
+        const da = getGameSessionDate(a).getTime();
+        const db = getGameSessionDate(b).getTime();
+
+        if (gameTab === 'PLANNED') return da - db; // soonest first
+        if (gameTab === 'COMPLETED') return db - da; // newest completed first
+
+        // TODAY
+        const nowTs = now.getTime();
+        const aSame = isSameLocalDay(getGameSessionDate(a), now);
+        const bSame = isSameLocalDay(getGameSessionDate(b), now);
+        if (aSame !== bSame) return aSame ? -1 : 1;
+        return Math.abs(da - nowTs) - Math.abs(db - nowTs);
+      });
+
+    return sorted;
+  }, [gamesBySearch, gameTab]);
 
   const nonGpsTasks = useMemo(() => {
     if (!selectedGame) return [];
