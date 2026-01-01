@@ -1962,6 +1962,10 @@ const GameApp: React.FC = () => {
             snapToRoadMode={snapToRoadMode}
             showTeamPaths={showTeamPaths}
             onToggleTeamPaths={() => setShowTeamPaths(!showTeamPaths)}
+            showTeamPathSelector={showTeamPathSelector}
+            selectedTeamPaths={selectedTeamPaths}
+            onToggleTeamPathSelector={handleToggleTeamPathSelector}
+            onSelectTeamPath={handleSelectTeamPath}
             fogOfWarEnabled={fogOfWarEnabled}
             selectedTeamForFogOfWar={selectedTeamForFogOfWar}
             onToggleFogOfWar={() => setFogOfWarEnabled(!fogOfWarEnabled)}
