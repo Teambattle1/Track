@@ -83,16 +83,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showTaskStatus, setShowTaskStatus] = useState(true);
     const [showTaskNames, setShowTaskNames] = useState(true);
     const [showBackground, setShowBackground] = useState(true);
-    const [showQRScanner, setShowQRScanner] = useState(true);
-
-    // QR Scanner state
-    const [isQRScannerActive, setIsQRScannerActive] = useState(false);
-    const [qrScannerError, setQRScannerError] = useState<string | null>(null);
-    const [qrScannedValue, setQRScannedValue] = useState<string | null>(null);
-    const qrVideoRef = useRef<HTMLVideoElement>(null);
-    const qrCanvasRef = useRef<HTMLCanvasElement>(null);
-    const qrStreamRef = useRef<MediaStream | null>(null);
-    const qrScanIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Toolbar positions (draggable)
     const [orientationToolbarPos, setOrientationToolbarPos] = useState({ x: 240, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
