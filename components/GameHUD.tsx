@@ -215,7 +215,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
         pins: { x: window.innerWidth - 180, y: 75 },
         tools: { x: window.innerWidth - 180, y: 140 },
         mapmode: { x: window.innerWidth - 180, y: 205 },
-        location: { x: window.innerWidth - 180, y: 270 }
+        location: { x: window.innerWidth - 180, y: 270 },
+        qr: { x: window.innerWidth - 80, y: window.innerHeight - 100 }
     };
 
     // Load toolbar positions on mount and reset on new game (admin users only)
