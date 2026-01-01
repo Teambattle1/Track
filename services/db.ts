@@ -139,7 +139,9 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRet
 
             const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5 second wait
             const errorType = isNetworkError ? 'Network error' : 'Timeout';
-            console.warn(`[DB Service] ${errorType} in ${context}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+            const errorMsg = e?.message || String(e);
+            console.warn(`[DB Service] ${errorType} in ${context}: ${errorMsg}`);
+            console.warn(`[DB Service] Retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
