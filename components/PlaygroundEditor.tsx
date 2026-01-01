@@ -82,6 +82,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showTaskStatus, setShowTaskStatus] = useState(true);
     const [showTaskNames, setShowTaskNames] = useState(true);
     const [showBackground, setShowBackground] = useState(true);
+    const [isBackgroundLocked, setIsBackgroundLocked] = useState(false);
 
     // Toolbar positions (draggable)
     const [orientationToolbarPos, setOrientationToolbarPos] = useState({ x: 240, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 });
