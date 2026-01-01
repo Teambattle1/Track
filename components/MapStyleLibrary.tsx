@@ -460,7 +460,7 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                 </div>
             </div>
 
-            {/* Edit Preview URL Modal */}
+            {/* Edit Preview Image Modal */}
             {editingPreviewId && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-10">
                     <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-lg w-full">
@@ -469,29 +469,70 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                             Update Preview Image
                         </h3>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">
-                                    Preview Tile URL
-                                </label>
-                                <input
-                                    type="text"
-                                    value={previewUrlInput}
-                                    onChange={(e) => setPreviewUrlInput(e.target.value)}
-                                    placeholder="https://example.com/tile/13/4285/2722.png"
-                                    className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 outline-none"
-                                    autoFocus
-                                />
-                                <p className="text-[10px] text-slate-500 mt-2">
-                                    Enter a tile server URL for zoom level 13. Example formats:
-                                </p>
-                                <ul className="text-[10px] text-slate-400 mt-1 space-y-0.5 list-disc list-inside">
-                                    <li>OpenStreetMap: https://a.tile.openstreetmap.org/13/4285/2722.png</li>
-                                    <li>CartoDB Dark: https://a.basemaps.cartocdn.com/dark_all/13/4285/2722.png</li>
-                                    <li>Satellite: https://server.arcgisonline.com/.../tile/13/2722/4285</li>
-                                </ul>
+                        <div className="space-y-6">
+                            {/* Tab 1: Upload File */}
+                            <div className="border-t border-slate-700 pt-4">
+                                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wide mb-3">Upload Image File</h4>
+                                <div className="border-2 border-dashed border-slate-700 rounded-lg p-4 text-center hover:border-purple-500 transition-colors">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                setPreviewFile(file);
+                                                // Show preview
+                                                const reader = new FileReader();
+                                                reader.onload = () => {
+                                                    setPreviewUrlInput(reader.result as string);
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                        className="hidden"
+                                        id={`file-input-${editingPreviewId}`}
+                                    />
+                                    <label htmlFor={`file-input-${editingPreviewId}`} className="cursor-pointer block">
+                                        <Upload className="w-8 h-8 text-slate-500 mx-auto mb-2" />
+                                        <p className="text-sm text-white font-bold">Click to upload or drag & drop</p>
+                                        <p className="text-xs text-slate-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                                    </label>
+                                </div>
+                                {previewFile && (
+                                    <p className="text-xs text-slate-400 mt-2">Selected: {previewFile.name}</p>
+                                )}
                             </div>
 
+                            {/* Divider */}
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-slate-700"></div>
+                                </div>
+                                <div className="relative flex justify-center text-xs">
+                                    <span className="px-2 bg-slate-900 text-slate-400">OR</span>
+                                </div>
+                            </div>
+
+                            {/* Tab 2: URL Input */}
+                            <div>
+                                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wide mb-3">Use Image URL</h4>
+                                <input
+                                    type="text"
+                                    value={previewFile ? '' : previewUrlInput}
+                                    onChange={(e) => {
+                                        setPreviewUrlInput(e.target.value);
+                                        setPreviewFile(null);
+                                    }}
+                                    placeholder="https://example.com/preview.png"
+                                    className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 outline-none disabled:opacity-50"
+                                    disabled={!!previewFile}
+                                />
+                                <p className="text-[10px] text-slate-500 mt-2">
+                                    Enter a direct image URL or tile server URL
+                                </p>
+                            </div>
+
+                            {/* Preview */}
                             {previewUrlInput && (
                                 <div>
                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">
@@ -514,18 +555,30 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
 
                         <div className="flex gap-3 mt-6">
                             <button
-                                onClick={() => handleUpdatePreview(editingPreviewId, previewUrlInput)}
-                                disabled={!previewUrlInput.trim()}
-                                className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-lg text-white font-bold uppercase tracking-wide transition-colors"
+                                onClick={() => handleUpdatePreview(editingPreviewId, previewFile ? '' : previewUrlInput, previewFile)}
+                                disabled={!previewUrlInput.trim() && !previewFile || uploadingPreview}
+                                className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-lg text-white font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
                             >
-                                Update Preview
+                                {uploadingPreview ? (
+                                    <>
+                                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                        Uploading...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="w-4 h-4" />
+                                        Update Preview
+                                    </>
+                                )}
                             </button>
                             <button
                                 onClick={() => {
                                     setEditingPreviewId(null);
                                     setPreviewUrlInput('');
+                                    setPreviewFile(null);
                                 }}
-                                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg text-white font-bold uppercase tracking-wide transition-colors"
+                                disabled={uploadingPreview}
+                                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg text-white font-bold uppercase tracking-wide transition-colors disabled:opacity-50"
                             >
                                 Cancel
                             </button>
