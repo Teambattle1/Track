@@ -95,6 +95,12 @@ interface GameHUDProps {
     // Team History Props
     showTeamPaths?: boolean;
     onToggleTeamPaths?: () => void;
+    // Fog of War Props
+    fogOfWarEnabled?: boolean;
+    selectedTeamForFogOfWar?: string | null;
+    onToggleFogOfWar?: () => void;
+    onSelectTeamForFogOfWar?: (teamId: string | null) => void;
+    teams?: any[]; // Available teams for fog of war selection
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
