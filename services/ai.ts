@@ -212,13 +212,12 @@ export const searchLogoUrl = async (query: string): Promise<string | null> => {
     }
 
     try {
-        // Get Supabase project URL from localStorage (set by the app during init)
-        const supabaseUrl = typeof window !== 'undefined' ? localStorage.getItem('SUPABASE_URL') : null;
+        // Get Supabase URL from localStorage, env, or use default
+        const supabaseUrl = typeof window !== 'undefined'
+            ? (localStorage.getItem('SUPABASE_URL') || 'https://yktaxljydisfjyqhbnja.supabase.co')
+            : 'https://yktaxljydisfjyqhbnja.supabase.co';
 
-        if (!supabaseUrl) {
-            console.warn('[Logo Search] Supabase URL not available, using fallback');
-            return null;
-        }
+        console.log('[Logo Search] Using Supabase URL:', supabaseUrl);
 
         // Call the Edge Function for server-side logo search (no CORS issues)
         const response = await fetch(
