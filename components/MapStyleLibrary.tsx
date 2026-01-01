@@ -130,25 +130,43 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
         }
 
         try {
+            setAddingStyle(true);
+            let previewUrl = newStylePreview;
+
+            // If a preview file was selected, upload it
+            if (newStylePreviewFile) {
+                const uploadedUrl = await uploadImage(newStylePreviewFile, 'map-style-previews');
+                if (uploadedUrl) {
+                    previewUrl = uploadedUrl;
+                } else {
+                    alert('Failed to upload preview image');
+                    setAddingStyle(false);
+                    return;
+                }
+            }
+
             const newStyle: CustomMapStyle = {
-                id: `custom-${Date.now()}`,
+                id: `custom-${Date.now()}-${Math.random().toString(36).substring(7)}`,
                 name: newStyleName,
                 json: newStyleJson,
-                previewUrl: newStylePreview || undefined,
+                previewUrl: previewUrl || undefined,
                 createdAt: Date.now()
             };
 
             await db.saveCustomMapStyle(newStyle);
             setCustomStyles([...customStyles, newStyle]);
-            
+
             // Reset form
             setNewStyleName('');
             setNewStyleJson('');
             setNewStylePreview('');
+            setNewStylePreviewFile(null);
             setShowAddModal(false);
         } catch (error) {
             console.error('Error saving map style:', error);
             alert('Failed to save map style');
+        } finally {
+            setAddingStyle(false);
         }
     };
 
