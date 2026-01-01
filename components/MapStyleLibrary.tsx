@@ -17,16 +17,16 @@ interface CustomMapStyle {
 }
 
 // Hardcoded map styles that ship with the app
-const BUILTIN_MAP_STYLES: { id: MapStyleId; label: string; icon: any; preview: string; className?: string; deletable: boolean }[] = [
-    { id: 'osm', label: 'Standard', icon: Globe, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', deletable: false },
-    { id: 'satellite', label: 'Satellite', icon: Layers, preview: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/2722/4285', deletable: false },
-    { id: 'dark', label: 'Dark Mode', icon: MapIcon, preview: 'https://a.basemaps.cartocdn.com/dark_all/13/4285/2722.png', deletable: true },
-    { id: 'historic', label: 'Historic', icon: ScrollText, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'sepia-[.7] contrast-125 brightness-90', deletable: true },
-    { id: 'winter', label: 'Winter', icon: Mountain, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'brightness-125 hue-rotate-180 saturate-50', deletable: true },
-    { id: 'ski', label: 'Ski Map', icon: Snowflake, preview: 'https://tiles.openskimap.org/map/13/4285/2722.png', deletable: true },
-    { id: 'treasure', label: 'Treasure', icon: ScrollText, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'sepia-[.9] contrast-110 brightness-95 hue-rotate-30', deletable: true },
-    { id: 'desert', label: 'Desert', icon: Mountain, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'saturate-150 hue-rotate-15 brightness-110 contrast-105', deletable: true },
-    { id: 'clean', label: 'Clean', icon: Globe, preview: 'https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4285/2722.png', deletable: true },
+const BUILTIN_MAP_STYLES: { id: MapStyleId; label: string; icon: any; preview: string; className?: string; deletable: boolean; description: string }[] = [
+    { id: 'osm', label: 'Standard', icon: Globe, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', deletable: false, description: 'Classic OpenStreetMap style with clear roads and labels' },
+    { id: 'satellite', label: 'Satellite', icon: Layers, preview: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/2722/4285', deletable: false, description: 'High-resolution satellite imagery from Esri' },
+    { id: 'dark', label: 'Dark Mode', icon: MapIcon, preview: 'https://a.basemaps.cartocdn.com/dark_all/13/4285/2722.png', deletable: true, description: 'Dark theme perfect for night games and reduced eye strain' },
+    { id: 'historic', label: 'Historic', icon: ScrollText, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'sepia-[.7] contrast-125 brightness-90', deletable: true, description: 'Vintage sepia-toned map with aged paper texture' },
+    { id: 'winter', label: 'Winter', icon: Mountain, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'brightness-125 hue-rotate-180 saturate-50', deletable: true, description: 'Cold winter theme with icy blue tones' },
+    { id: 'ski', label: 'Ski Map', icon: Snowflake, preview: 'https://tiles.openskimap.org/map/13/4285/2722.png', deletable: true, description: 'Specialized ski resort and trail map' },
+    { id: 'treasure', label: 'Treasure', icon: ScrollText, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'sepia-[.9] contrast-110 brightness-95 hue-rotate-30', deletable: true, description: 'Ancient treasure map style with parchment overlay' },
+    { id: 'desert', label: 'Desert', icon: Mountain, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', className: 'saturate-150 hue-rotate-15 brightness-110 contrast-105', deletable: true, description: 'Warm sandy desert tones with enhanced contrast' },
+    { id: 'clean', label: 'Clean', icon: Globe, preview: 'https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4285/2722.png', deletable: true, description: 'Minimal clean design for professional presentations' },
 ];
 
 const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
@@ -35,6 +35,11 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [previewStyle, setPreviewStyle] = useState<string | null>(null);
+
+    // Rename state
+    const [renamingId, setRenamingId] = useState<string | null>(null);
+    const [customLabels, setCustomLabels] = useState<Record<string, string>>({});
+    const [customDescriptions, setCustomDescriptions] = useState<Record<string, string>>({});
 
     // Form state for adding new map style
     const [newStyleName, setNewStyleName] = useState('');
@@ -49,11 +54,22 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
         try {
             const styles = await db.fetchCustomMapStyles();
             setCustomStyles(styles);
-            
+
             // Load deleted builtin IDs from localStorage
             const deleted = localStorage.getItem('deletedMapStyles');
             if (deleted) {
                 setDeletedBuiltinIds(new Set(JSON.parse(deleted)));
+            }
+
+            // Load custom labels and descriptions
+            const labels = localStorage.getItem('mapStyleLabels');
+            if (labels) {
+                setCustomLabels(JSON.parse(labels));
+            }
+
+            const descriptions = localStorage.getItem('mapStyleDescriptions');
+            if (descriptions) {
+                setCustomDescriptions(JSON.parse(descriptions));
             }
         } catch (error) {
             console.error('Error loading custom map styles:', error);
@@ -117,6 +133,27 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
         newDeleted.delete(id);
         setDeletedBuiltinIds(newDeleted);
         localStorage.setItem('deletedMapStyles', JSON.stringify([...newDeleted]));
+    };
+
+    const handleRenameBuiltin = (id: string, newLabel: string) => {
+        const updatedLabels = { ...customLabels, [id]: newLabel };
+        setCustomLabels(updatedLabels);
+        localStorage.setItem('mapStyleLabels', JSON.stringify(updatedLabels));
+        setRenamingId(null);
+    };
+
+    const handleUpdateDescription = (id: string, newDescription: string) => {
+        const updatedDescriptions = { ...customDescriptions, [id]: newDescription };
+        setCustomDescriptions(updatedDescriptions);
+        localStorage.setItem('mapStyleDescriptions', JSON.stringify(updatedDescriptions));
+    };
+
+    const getStyleLabel = (style: typeof BUILTIN_MAP_STYLES[0]) => {
+        return customLabels[style.id] || style.label;
+    };
+
+    const getStyleDescription = (style: typeof BUILTIN_MAP_STYLES[0]) => {
+        return customDescriptions[style.id] || style.description;
     };
 
     const visibleBuiltinStyles = BUILTIN_MAP_STYLES.filter(s => !deletedBuiltinIds.has(s.id));
