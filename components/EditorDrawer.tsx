@@ -495,7 +495,12 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                             <Icon className="w-4 h-4" />
                                         </div>
                                     </div>
-                                    <h3 className="text-xs font-bold text-gray-800 dark:text-gray-100 mb-1 truncate">{playground.title}</h3>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-4 h-4 bg-orange-500 rounded-md flex items-center justify-center flex-shrink-0">
+                                            <MapPin className="w-2.5 h-2.5 text-white" />
+                                        </div>
+                                        <h3 className="text-xs font-bold text-gray-800 dark:text-gray-100 truncate">{playground.title}</h3>
+                                    </div>
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400">{playgroundPoints.length} task{playgroundPoints.length !== 1 ? 's' : ''}</p>
                                 </button>
                             );
