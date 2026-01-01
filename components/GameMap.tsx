@@ -6,6 +6,7 @@ import { getLeafletIcon } from '../utils/icons';
 import { Trash2, Crosshair, EyeOff, Image as ImageIcon, CheckCircle, HelpCircle, Zap, AlertTriangle, Lock, Users, Trophy, MessageSquare, MapPin } from 'lucide-react';
 import { useLocation } from '../contexts/LocationContext';
 import { isValidCoordinate } from '../utils/geo';
+import TeamHistoryOverlay from './TeamHistoryOverlay';
 
 const UserIcon = L.divIcon({
   className: 'custom-user-icon',
