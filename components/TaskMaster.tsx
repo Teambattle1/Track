@@ -83,6 +83,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [activationFilters, setActivationFilters] = useState<Record<string, boolean>>({}); // Filter by activation types
     const [showOnlyWithActivations, setShowOnlyWithActivations] = useState(false); // Show only tasks with activations
     const [taskListViewMode, setTaskListViewMode] = useState<'grid' | 'list'>('list'); // List view as default
+    const [activationFiltersCollapsed, setActivationFiltersCollapsed] = useState(true); // Collapse activation filters by default
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [showGameSelector, setShowGameSelector] = useState(false);
     const [gameForBulkAdd, setGameForBulkAdd] = useState<Game | null>(null);
