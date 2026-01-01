@@ -2051,7 +2051,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 isTasksDrawerOpen ? 'w-[280px]' : 'w-0'
             } overflow-hidden`}>
                 {/* Header */}
-                <div className="p-5 border-b border-slate-800 bg-[#0f172a] relative">
+                <div className="p-3 border-b border-slate-800 bg-[#0f172a] relative">
                     <button
                         onClick={() => setIsTasksDrawerOpen(false)}
                         className="absolute left-5 top-1/2 -translate-y-1/2 text-orange-500 hover:text-orange-400 transition-colors p-2"
