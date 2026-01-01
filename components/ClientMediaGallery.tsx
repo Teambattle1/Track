@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Game, Team, MediaSubmission } from '../types';
 import * as db from '../services/db';
-import { Image as ImageIcon, Video, Play, Grid3x3, Filter, X, ChevronLeft, ChevronRight, Maximize2, Download } from 'lucide-react';
+import { Image as ImageIcon, Video, Play, Grid3x3, Filter, X, ChevronLeft, ChevronRight, Maximize2, Download, Trophy, Award, Medal, Crown } from 'lucide-react';
 
 interface ClientMediaGalleryProps {
   gameId: string;
@@ -15,6 +15,8 @@ const ClientMediaGallery: React.FC<ClientMediaGalleryProps> = ({ gameId, game, t
   const [selectedMedia, setSelectedMedia] = useState<MediaSubmission[]>([]);
   const [presentationMode, setPresentationMode] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showRankingSlide, setShowRankingSlide] = useState(false);
+  const [revealedTop3, setRevealedTop3] = useState<number>(0); // 0 = none, 1 = bronze, 2 = silver, 3 = gold
   
   // Filters
   const [filterTask, setFilterTask] = useState<string>('all');
