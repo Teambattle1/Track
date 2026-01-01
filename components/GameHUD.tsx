@@ -101,6 +101,17 @@ interface GameHUDProps {
     onToggleFogOfWar?: () => void;
     onSelectTeamForFogOfWar?: (teamId: string | null) => void;
     teams?: any[]; // Available teams for fog of war selection
+    // Remote Override Props
+    onOpenRemoteOverride?: () => void;
+    // Layer Toggle Props
+    showMapLayer?: boolean;
+    showZoneLayer?: boolean;
+    showTaskLayer?: boolean;
+    showLiveLayer?: boolean;
+    onToggleMapLayer?: () => void;
+    onToggleZoneLayer?: () => void;
+    onToggleTaskLayer?: () => void;
+    onToggleLiveLayer?: () => void;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
