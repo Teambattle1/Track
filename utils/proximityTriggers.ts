@@ -1,5 +1,5 @@
 import { GamePoint, Coordinate, Team } from '../types';
-import { calculateDistance } from './geo';
+import { haversineMeters } from './geo';
 
 /**
  * Checks if a task should be visible based on proximity triggers
@@ -39,7 +39,7 @@ export function isTaskVisibleByProximity(
   const revealRadius = point.proximityRevealRadius || 100;
 
   // Calculate distance between user and task
-  const distance = calculateDistance(userLocation, point.location);
+  const distance = haversineMeters(userLocation, point.location);
 
   // Check if task is within reveal radius
   const isInRange = distance <= revealRadius;
@@ -92,7 +92,7 @@ export function checkTaskDiscovery(
   }
 
   const revealRadius = point.proximityRevealRadius || 100;
-  const currentDistance = calculateDistance(userLocation, point.location);
+  const currentDistance = haversineMeters(userLocation, point.location);
   
   // Currently in range
   const isInRange = currentDistance <= revealRadius;
@@ -103,7 +103,7 @@ export function checkTaskDiscovery(
 
   // If we have previous location, check if we just entered the range
   if (previousLocation) {
-    const previousDistance = calculateDistance(previousLocation, point.location);
+    const previousDistance = haversineMeters(previousLocation, point.location);
     const wasOutOfRange = previousDistance > revealRadius;
     
     // Just entered the range!
