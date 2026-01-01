@@ -204,86 +204,58 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     }
 };
 
-// Generate a branded SVG logo with company initials
-const generateSvgLogo = (companyName: string): string => {
-    const initials = companyName
-        .split(/\s+/)
-        .map(word => word[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
-
-    // Color hash based on company name for consistent colors
-    const colors = [
-        '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-        '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B88B', '#52C9A8'
-    ];
-    const colorIndex = companyName.charCodeAt(0) % colors.length;
-    const bgColor = colors[colorIndex];
-
-    // SVG with rounded background
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-        <defs>
-            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:${bgColor};stop-opacity:1" />
-                <stop offset="100%" style="stop-color:${adjustBrightness(bgColor, -20)};stop-opacity:1" />
-            </linearGradient>
-        </defs>
-        <rect width="200" height="200" rx="40" fill="url(#grad)"/>
-        <text x="100" y="115" font-size="80" font-weight="bold" font-family="Arial, sans-serif" fill="white" text-anchor="middle" dominant-baseline="middle">${initials}</text>
-    </svg>`;
-
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
-};
-
-// Helper to adjust color brightness
-const adjustBrightness = (color: string, percent: number): string => {
-    const num = parseInt(color.replace("#", ""), 16);
-    const amt = Math.round(2.55 * percent);
-    const R = Math.max(0, Math.min(255, (num >> 16) + amt));
-    const G = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amt));
-    const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
-    return "#" + (0x1000000 + (R < 16 ? 0 : 0) * 0x100000 + R * 0x10000 + (G < 16 ? 0 : 0) * 0x1000 + G * 0x100 + (B < 16 ? 0 : 0) * 0x10 + B).toString(16).slice(1);
-};
-
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
-    console.log('[Logo Search] Starting search for:', query);
+    console.log('[Logo Search] Searching internet for REAL logo:', query);
 
     if (!query || !query.trim()) {
+        console.log('[Logo Search] Empty query');
         return null;
     }
 
     try {
-        // Try Clearbit API as primary source
-        const cleanQuery = encodeURIComponent(query.trim());
-        try {
-            const clearbitResponse = await fetch(
-                `https://clearbit.com/api/company/suggest?query=${cleanQuery}`,
-                { headers: { 'Accept': 'application/json' } }
-            );
+        // Get Supabase URL and anon key from localStorage, env, or use defaults
+        const supabaseUrl = typeof window !== 'undefined'
+            ? (localStorage.getItem('SUPABASE_URL') || 'https://yktaxljydisfjyqhbnja.supabase.co')
+            : 'https://yktaxljydisfjyqhbnja.supabase.co';
 
-            if (clearbitResponse.ok) {
-                const companies = await clearbitResponse.json();
-                if (Array.isArray(companies) && companies.length > 0) {
-                    const company = companies[0];
-                    if (company.logo) {
-                        console.log('[Logo Search] Found real logo via Clearbit:', company.name);
-                        return company.logo;
-                    }
-                }
+        const supabaseAnonKey = typeof window !== 'undefined'
+            ? (localStorage.getItem('SUPABASE_ANON_KEY') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrdGF4bGp5ZGlzZmp5cWhibmphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxMzQ2ODYsImV4cCI6MjA4MTcxMDY4Nn0.XeTW4vHGbEm6C7U94zMLsZiDB80cyvuqYbSRNX8oyQI')
+            : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrdGF4bGp5ZGlzZmp5cWhibmphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxMzQ2ODYsImV4cCI6MjA4MTcxMDY4Nn0.XeTW4vHGbEm6C7U94zMLsZiDB80cyvuqYbSRNX8oyQI';
+
+        console.log('[Logo Search] Calling Supabase Edge Function...');
+
+        // Call the Edge Function for server-side logo search
+        const response = await fetch(
+            `${supabaseUrl}/functions/v1/search-logo`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${supabaseAnonKey}`
+                },
+                body: JSON.stringify({ query: query.trim() })
             }
-        } catch (e) {
-            console.log('[Logo Search] Clearbit failed, using fallback');
+        );
+
+        if (!response.ok) {
+            console.error('[Logo Search] Edge Function error:', response.status);
+            console.log('[Logo Search] No logo found on internet');
+            return null;
         }
 
-        // Fallback: Generate a nice SVG logo with initials
-        const svgLogo = generateSvgLogo(query);
-        console.log('[Logo Search] Generated SVG logo as fallback');
-        return svgLogo;
+        const data = await response.json();
+
+        if (data.logoUrl) {
+            console.log('[Logo Search] ✅ Found REAL logo from internet via', data.source);
+            return data.logoUrl;
+        }
+
+        console.log('[Logo Search] ❌ No logo found on internet for:', query);
+        return null;
     } catch (error) {
-        console.error('[Logo Search] Error:', error);
-        // Last resort: still return a generated logo
-        return generateSvgLogo(query);
+        console.error('[Logo Search] Error calling Edge Function:', error);
+        console.log('[Logo Search] ❌ Failed to search internet for logo');
+        return null;
     }
 };
 
