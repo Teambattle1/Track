@@ -1199,17 +1199,25 @@ const GameApp: React.FC = () => {
                           } as Game;
 
                           await db.saveGame(newGame);
-                          setGames([...games, newGame]);
-                          setActiveGameId(newGame.id);
+                        setGames([...games, newGame]);
+                        setActiveGameId(newGame.id);
 
-                          // PLAYZONE: Open playground editor directly, skip GameChooser
-                          if (isPlayzone) {
-                              setMode(GameMode.EDIT);
-                              setViewingPlaygroundId(playgroundId);
-                              setShowLanding(false);
-                          } else {
-                              setShowGameChooser(true);
-                          }
+                        // PLAYZONE: Open playground editor directly, skip GameChooser
+                        if (isPlayzone) {
+                            setMode(GameMode.EDIT);
+                            setViewingPlaygroundId(playgroundId);
+                            setShowLanding(false);
+                        } else if (gameData.gameMode === 'elimination') {
+                            // ELIMINATION: Navigate directly to elimination game view
+                            setMode(GameMode.EDIT);
+                            setShowLanding(false);
+                            setShowGameChooser(false);
+                        } else {
+                            // STANDARD: Navigate directly to game edit view
+                            setMode(GameMode.EDIT);
+                            setShowLanding(false);
+                            setShowGameChooser(false);
+                        }
                       }
                       setShowGameCreator(false);
                       setGameToEdit(null);
