@@ -204,37 +204,96 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     }
 };
 
+// Try to find a company's website by searching common domains and patterns
+const findCompanyDomain = (query: string): string[] => {
+    const normalized = query.toLowerCase().trim();
+
+    // Remove common legal suffixes
+    const cleaned = normalized
+        .replace(/\s+(a\/s|aps|as|inc|llc|ltd|limited|corp|corporation|gmbh|ab|og|da)\s*$/i, '')
+        .trim();
+
+    // Build list of domain candidates to try
+    const candidates: string[] = [];
+
+    // Exact match variations
+    const words = cleaned.split(/\s+/);
+
+    if (words.length === 1) {
+        // Single word: try different TLDs
+        candidates.push(`${words[0]}.com`, `${words[0]}.io`, `${words[0]}.org`, `${words[0]}.net`);
+    } else {
+        // Multi-word: try hyphenated, without spaces, first word, etc.
+        candidates.push(
+            words.join('-') + '.com',  // coca-cola.com
+            words.join('') + '.com',   // cocacola.com
+            words[0] + '.com',         // coca.com (less reliable)
+            words.join('-') + '.io',
+            words.join('-') + '.org'
+        );
+    }
+
+    // Add country TLDs for Nordic companies
+    if (cleaned.length < 20) {
+        candidates.push(
+            `${cleaned.replace(/\s/g, '')}.dk`,
+            `${cleaned.replace(/\s/g, '')}.se`,
+            `${cleaned.replace(/\s/g, '')}.no`,
+            `${cleaned.replace(/\s/g, '')}.co.uk`
+        );
+    }
+
+    return candidates;
+};
+
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
     console.log('[Logo Search] Starting search for:', query);
 
     try {
-        // Use Clearbit's free public logo API
-        // This searches their database of company logos without requiring authentication
-        // It handles company name matching, domain inference, and returns proper logos
-        const cleanQuery = encodeURIComponent(query.trim());
+        // Approach 1: Try Clearbit's public company search API
+        try {
+            const cleanQuery = encodeURIComponent(query.trim());
+            const response = await fetch(
+                `https://clearbit.com/api/company/suggest?query=${cleanQuery}`,
+                {
+                    mode: 'cors',
+                    headers: { 'Accept': 'application/json' }
+                }
+            );
 
-        // Clearbit.com API endpoint for logo search
-        // Returns: { logo: "https://..." } or empty if not found
-        const response = await fetch(
-            `https://clearbit.com/api/company/suggest?query=${cleanQuery}`,
-            { mode: 'cors' }
-        );
+            if (response.ok) {
+                const companies = await response.json();
 
-        if (!response.ok) {
-            console.log('[Logo Search] Clearbit API returned:', response.status);
-            return null;
+                if (Array.isArray(companies) && companies.length > 0) {
+                    const company = companies[0];
+
+                    if (company.logo) {
+                        console.log('[Logo Search] Found via Clearbit:', company.name || query);
+                        return company.logo;
+                    }
+                }
+            }
+        } catch (clearbitError) {
+            console.log('[Logo Search] Clearbit unavailable, trying fallback', clearbitError);
         }
 
-        const companies = await response.json();
+        // Approach 2: Try domain guessing with Google Favicon API
+        const domains = findCompanyDomain(query);
 
-        if (Array.isArray(companies) && companies.length > 0) {
-            // Get the first (most relevant) match
-            const company = companies[0];
+        for (const domain of domains) {
+            const faviconUrl = `https://www.google.com/s2/favicons?sz=256&domain=${encodeURIComponent(domain)}`;
 
-            if (company.logo) {
-                console.log('[Logo Search] Found logo for:', company.name || query);
-                console.log('[Logo Search] Logo URL:', company.logo);
-                return company.logo;
+            console.log('[Logo Search] Trying domain:', domain);
+
+            // Test if the favicon actually exists by checking if it's not the default
+            try {
+                const response = await fetch(faviconUrl, { mode: 'cors' });
+                if (response.ok) {
+                    console.log('[Logo Search] Found favicon for:', domain);
+                    return faviconUrl;
+                }
+            } catch (e) {
+                // Continue to next domain
             }
         }
 
