@@ -1033,9 +1033,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 <div
                     className="fixed pointer-events-none z-[9999] animate-in fade-in zoom-in-95 duration-200"
                     style={{
-                        left: '50%',
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)'
+                        right: '200px',
+                        top: '10px'
                     }}
                 >
                     <div className="bg-slate-950/95 backdrop-blur-md border-4 border-slate-700 rounded-2xl shadow-2xl p-3">
