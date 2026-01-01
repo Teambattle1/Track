@@ -1882,6 +1882,11 @@ const GameApp: React.FC = () => {
             snapToRoadMode={snapToRoadMode}
             showTeamPaths={showTeamPaths}
             onToggleTeamPaths={() => setShowTeamPaths(!showTeamPaths)}
+            fogOfWarEnabled={fogOfWarEnabled}
+            selectedTeamForFogOfWar={selectedTeamForFogOfWar}
+            onToggleFogOfWar={() => setFogOfWarEnabled(!fogOfWarEnabled)}
+            onSelectTeamForFogOfWar={setSelectedTeamForFogOfWar}
+            teams={teamsForFogOfWar}
         />
 
         {(mode === GameMode.EDIT || playgroundTemplateToEdit) && (
