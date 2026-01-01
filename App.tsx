@@ -40,6 +40,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/OfflineIndicator';
 import MeasureBox from './components/MeasureBox';
 import SupabaseDiagnostic from './components/SupabaseDiagnostic';
+import SupabaseToolsModal from './components/SupabaseToolsModal';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
@@ -1618,7 +1619,6 @@ const GameApp: React.FC = () => {
                     games={games}
                     onClose={() => setShowDatabaseTools(false)}
                     onDeleteGame={handleDeleteGame}
-                    initialShowSql={true}
                     onLibraryUpdated={async () => {
                         const updatedLib = await db.fetchLibrary();
                         setTaskLibrary(updatedLib);
@@ -1649,7 +1649,7 @@ const GameApp: React.FC = () => {
             )}
 
             {showSupabaseDiagnostic && (
-                <SupabaseDiagnostic
+                <SupabaseToolsModal
                     onClose={() => setShowSupabaseDiagnostic(false)}
                 />
             )}
