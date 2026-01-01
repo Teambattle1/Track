@@ -1515,6 +1515,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     }`}
                                     title={`Switch to ${pg.title}`}
                                 >
+                                    <MapPin className="w-3 h-3 flex-shrink-0" />
                                     <span className="text-[10px] font-black opacity-70">{String(index + 1).padStart(2, '0')}</span>
                                     {pg.title}
                                 </button>
