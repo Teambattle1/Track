@@ -309,6 +309,33 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                 Add Custom Map Style
                             </button>
 
+                            {/* External Map Sources Section */}
+                            <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                                <h3 className="text-sm font-black text-cyan-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <ExternalLink className="w-4 h-4" />
+                                    Design Maps From External Sources
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {EXTERNAL_MAP_SOURCES.map((source) => (
+                                        <a
+                                            key={source.url}
+                                            href={source.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500 rounded-lg transition-all group"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-bold text-white group-hover:text-cyan-400 transition-colors truncate">{source.name}</p>
+                                                    <p className="text-[10px] text-slate-400 truncate">{source.description}</p>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors flex-shrink-0 ml-2" />
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Built-in Styles */}
                             <div>
                                 <h3 className="text-sm font-black text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2">
