@@ -1762,6 +1762,125 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
                   </div>
               );
+          case 'CLIENT':
+              const clientLink = baseGame?.id ? `${window.location.origin}/#/client/${baseGame.id}` : '';
+              const handleCopyClientLink = () => {
+                  if (clientLink) {
+                      navigator.clipboard.writeText(clientLink);
+                      setClientLinkCopied(true);
+                      setTimeout(() => setClientLinkCopied(false), 2000);
+                  }
+              };
+
+              return (
+                  <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
+                      {!baseGame?.id ? (
+                          <div className="bg-amber-900/20 border border-amber-600/30 rounded-xl p-6">
+                              <div className="flex gap-3">
+                                  <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                      <h3 className="font-bold text-amber-200 mb-1">Game Not Saved Yet</h3>
+                                      <p className="text-sm text-amber-300/80">
+                                          Save the game first to generate a client access link.
+                                      </p>
+                                  </div>
+                              </div>
+                          </div>
+                      ) : (
+                          <>
+                              <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-500/30 rounded-xl p-6">
+                                  <div className="flex items-start gap-4 mb-4">
+                                      <div className="p-3 bg-purple-600 rounded-xl">
+                                          <Monitor className="w-6 h-6 text-white" />
+                                      </div>
+                                      <div className="flex-1">
+                                          <h3 className="text-lg font-black text-white uppercase tracking-wide mb-1">
+                                              Client Lobby Access
+                                          </h3>
+                                          <p className="text-sm text-purple-200">
+                                              Share this link with clients to view live rankings, stats, and media gallery
+                                          </p>
+                                      </div>
+                                  </div>
+
+                                  {/* Copyable Link */}
+                                  <div className="bg-black/30 rounded-xl p-4 border border-purple-500/20">
+                                      <label className="block text-xs font-bold text-purple-300 uppercase mb-2">
+                                          Shareable Link
+                                      </label>
+                                      <div className="flex gap-2">
+                                          <input
+                                              type="text"
+                                              readOnly
+                                              value={clientLink}
+                                              className="flex-1 px-4 py-2 bg-slate-900 border border-purple-500/50 rounded-lg text-white font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                          />
+                                          <button
+                                              onClick={handleCopyClientLink}
+                                              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold transition-colors flex items-center gap-2 min-w-[100px] justify-center"
+                                          >
+                                              {clientLinkCopied ? (
+                                                  <>
+                                                      <Check className="w-4 h-4" />
+                                                      Copied!
+                                                  </>
+                                              ) : (
+                                                  <>
+                                                      <Copy className="w-4 h-4" />
+                                                      Copy
+                                                  </>
+                                              )}
+                                          </button>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              {/* Quick Actions */}
+                              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                                  <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4">
+                                      Quick Actions
+                                  </h3>
+                                  <div className="space-y-3">
+                                      <a
+                                          href={clientLink}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-lg font-bold transition-all text-center"
+                                      >
+                                          <div className="flex items-center justify-center gap-2">
+                                              <ExternalLink className="w-5 h-5" />
+                                              Open Client Lobby in New Tab
+                                          </div>
+                                      </a>
+
+                                      <p className="text-xs text-gray-400 text-center">
+                                          Use this to present rankings and media on stage or projectors
+                                      </p>
+                                  </div>
+                              </div>
+
+                              {/* Usage Info */}
+                              <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-5">
+                                  <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Client Lobby Features</h4>
+                                  <ul className="space-y-2 text-sm text-slate-300">
+                                      <li className="flex items-start gap-2">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 flex-shrink-0"></div>
+                                          <span><strong className="text-white">Live Rankings:</strong> Real-time team scores and podium</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 flex-shrink-0"></div>
+                                          <span><strong className="text-white">Task Stats:</strong> Color-coded task completion status</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 flex-shrink-0"></div>
+                                          <span><strong className="text-white">Media Gallery:</strong> All submitted photos and videos with presentation mode</span>
+                                      </li>
+                                  </ul>
+                              </div>
+                          </>
+                      )}
+                  </div>
+              );
           case 'SETTINGS':
               return (
                   <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
