@@ -992,6 +992,98 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    </div>
                                )}
                            </div>
+
+                           {/* MULTI-TEAM COLLABORATION CONFIGURATION */}
+                           <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-6 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
+                               <div className="flex items-start gap-4 mb-4">
+                                   <div className="w-12 h-12 bg-purple-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                       <Users className="w-6 h-6" />
+                                   </div>
+                                   <div className="flex-1">
+                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1">Multi-Team Challenge</h3>
+                                       <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Require multiple teams to be in proximity to activate or complete this task together.</p>
+
+                                       <label className="flex items-center gap-3 cursor-pointer" onClick={() => {
+                                           setEditedPoint({...editedPoint, multiTeamEnabled: !editedPoint.multiTeamEnabled});
+                                       }}>
+                                           <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.multiTeamEnabled ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                               <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.multiTeamEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                           </div>
+                                           <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                               {editedPoint.multiTeamEnabled ? 'ENABLED' : 'DISABLED'}
+                                           </span>
+                                       </label>
+                                   </div>
+                               </div>
+
+                               {editedPoint.multiTeamEnabled && (
+                                   <div className="space-y-4 pt-4 border-t border-purple-200 dark:border-purple-700">
+                                       {/* Required Team Count */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Required Teams
+                                           </label>
+                                           <input
+                                               type="number"
+                                               min="2"
+                                               max="10"
+                                               value={editedPoint.multiTeamRequiredCount || 2}
+                                               onChange={(e) => setEditedPoint({...editedPoint, multiTeamRequiredCount: parseInt(e.target.value) || 2})}
+                                               className="w-full px-4 py-3 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           />
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               Number of teams that must be present (minimum 2)
+                                           </p>
+                                       </div>
+
+                                       {/* Proximity Radius */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Proximity Radius (meters)
+                                           </label>
+                                           <input
+                                               type="number"
+                                               min="10"
+                                               max="200"
+                                               step="5"
+                                               value={editedPoint.multiTeamRadius || 50}
+                                               onChange={(e) => setEditedPoint({...editedPoint, multiTeamRadius: parseInt(e.target.value) || 50})}
+                                               className="w-full px-4 py-3 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           />
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               All teams must be within this distance of the task
+                                           </p>
+                                       </div>
+
+                                       {/* Completion Mode */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Completion Mode
+                                           </label>
+                                           <select
+                                               value={editedPoint.multiTeamCompletionMode || 'all'}
+                                               onChange={(e) => setEditedPoint({...editedPoint, multiTeamCompletionMode: e.target.value as any})}
+                                               className="w-full px-4 py-3 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           >
+                                               <option value="all">All Teams Complete Together</option>
+                                               <option value="first">First Team Triggers for All</option>
+                                           </select>
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               {editedPoint.multiTeamCompletionMode === 'all'
+                                                 ? 'Teams must solve together and share points'
+                                                 : 'First team to solve triggers completion for all nearby teams'}
+                                           </p>
+                                       </div>
+
+                                       {/* Preview */}
+                                       <div className="bg-purple-600/10 border border-purple-600/30 rounded-lg p-3">
+                                           <p className="text-xs text-purple-900 dark:text-purple-200 font-bold">
+                                               🤝 <strong>Preview:</strong> This task requires {editedPoint.multiTeamRequiredCount || 2} teams within {editedPoint.multiTeamRadius || 50}m to {editedPoint.multiTeamCompletionMode === 'all' ? 'collaborate and complete together' : 'trigger activation'}.
+                                           </p>
+                                       </div>
+                                   </div>
+                               )}
+                           </div>
                        </div>
                    )}
 
