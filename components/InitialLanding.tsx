@@ -118,59 +118,70 @@ const MapPinButton = ({
     delay: number;
     scale?: number;
     badge?: string;
-}) => (
-    <div 
-        className="flex flex-col items-center gap-6 group cursor-pointer perspective-1000" 
-        onClick={onClick}
-        style={{ transform: `scale(${scale})` }}
-    >
-        <div className="relative">
-            {/* Pin Shape */}
-            <div
-                className={`
-                    relative w-36 h-36 md:w-48 md:h-48
-                    ${gradient}
-                    rounded-full rounded-br-none
-                    rotate-45
-                    shadow-[0_10px_40px_rgba(0,0,0,0.5)]
-                    border-4 border-white/20
-                    flex items-center justify-center
-                    transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
-                    group-hover:-translate-y-6 group-hover:scale-110 group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)] group-hover:border-white/40
-                    animate-in zoom-in fade-in fill-mode-backwards
-                `}
-                style={{ animationDelay: `${delay}ms` }}
-            >
-                {/* Inner Content (Counter-rotated to stay upright) */}
-                <div className="-rotate-45 flex items-center justify-center">
-                    <Icon className="w-12 h-12 md:w-20 md:h-20 text-white drop-shadow-md" strokeWidth={2} />
+}) => {
+    const scaleClass = scale === 0.85 ? 'landing-scale-085'
+        : scale === 0.9 ? 'landing-scale-090'
+        : scale === 0.95 ? 'landing-scale-095'
+        : 'landing-scale-100';
+
+    const delayClass = delay === 100 ? 'landing-pin-delay-100'
+        : delay === 200 ? 'landing-pin-delay-200'
+        : delay === 300 ? 'landing-pin-delay-300'
+        : 'landing-pin-delay-0';
+
+    return (
+        <div
+            className={`flex flex-col items-center gap-6 group cursor-pointer perspective-1000 ${scaleClass}`}
+            onClick={onClick}
+        >
+            <div className="relative">
+                {/* Pin Shape */}
+                <div
+                    className={`
+                        relative w-36 h-36 md:w-48 md:h-48
+                        ${gradient}
+                        rounded-full rounded-br-none
+                        rotate-45
+                        shadow-[0_10px_40px_rgba(0,0,0,0.5)]
+                        border-4 border-white/20
+                        flex items-center justify-center
+                        transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
+                        group-hover:-translate-y-6 group-hover:scale-110 group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)] group-hover:border-white/40
+                        animate-in zoom-in fade-in fill-mode-backwards
+                        ${delayClass}
+                    `}
+                >
+                    {/* Inner Content (Counter-rotated to stay upright) */}
+                    <div className="-rotate-45 flex items-center justify-center">
+                        <Icon className="w-12 h-12 md:w-20 md:h-20 text-white drop-shadow-md" strokeWidth={2} />
+                    </div>
+
+                    {/* Glass/Shine Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rounded-full rounded-br-none pointer-events-none" />
+
+                    {/* Badge (if provided) */}
+                    {badge && (
+                        <div className="absolute -top-3 -right-3 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-amber-400">
+                            {badge}
+                        </div>
+                    )}
                 </div>
 
-                {/* Glass/Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rounded-full rounded-br-none pointer-events-none" />
-
-                {/* Badge (if provided) */}
-                {badge && (
-                    <div className="absolute -top-3 -right-3 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-amber-400">
-                        {badge}
-                    </div>
-                )}
+                {/* Pulse Ring (behind) */}
+                <div className={`absolute inset-0 rounded-full rounded-br-none rotate-45 ${gradient} opacity-20 blur-xl group-hover:blur-2xl transition-all duration-500 -z-10`} />
             </div>
 
-            {/* Pulse Ring (behind) */}
-            <div className={`absolute inset-0 rounded-full rounded-br-none rotate-45 ${gradient} opacity-20 blur-xl group-hover:blur-2xl transition-all duration-500 -z-10`} />
-        </div>
+            {/* Shadow Spot */}
+            <div className="w-24 h-6 bg-black/60 blur-xl rounded-[100%] transition-all duration-500 group-hover:w-16 group-hover:blur-md group-hover:opacity-40 group-hover:translate-y-2" />
 
-        {/* Shadow Spot */}
-        <div className="w-24 h-6 bg-black/60 blur-xl rounded-[100%] transition-all duration-500 group-hover:w-16 group-hover:blur-md group-hover:opacity-40 group-hover:translate-y-2" />
-
-        {/* Title Label */}
-        <div className="text-center -mt-4 transform transition-all duration-300 group-hover:-translate-y-2">
-            <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-[0.2em] drop-shadow-2xl whitespace-nowrap bg-black/30 backdrop-blur-sm px-4 py-1 rounded-full">{title}</h2>
-            <div className="h-1 w-12 bg-current mx-auto mt-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {/* Title Label */}
+            <div className="text-center -mt-4 transform transition-all duration-300 group-hover:-translate-y-2">
+                <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-[0.2em] drop-shadow-2xl whitespace-nowrap bg-black/30 backdrop-blur-sm px-4 py-1 rounded-full">{title}</h2>
+                <div className="h-1 w-12 bg-current mx-auto mt-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, games, activeGameId, onSelectGame, authUser, onLogout }) => {
   const [view, setView] = useState<CategoryView>('HOME');
