@@ -542,7 +542,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 const selectedList = taskLists.find(list => list.id === taskListFilter);
                 if (selectedList) {
                     // Check if this task is in the selected list
-                    const taskInList = selectedList.tasks.some(listTask =>
+                    const taskInList = (selectedList.tasks || []).some(listTask =>
                         listTask.task.question === task.task.question && listTask.title === task.title
                     );
                     if (!taskInList) {
@@ -744,16 +744,16 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         } else if (addToDestinationType === 'TASKLIST' && 'tasks' in destination) {
             // Add to tasklist
             const destinationList = destination as TaskList;
-            const existingTaskIds = new Set(destinationList.tasks.map(t => t.id));
+            const existingTaskIds = new Set((destinationList.tasks || []).map(t => t.id));
 
             // Separate duplicates from new tasks (by ID or by title+question match)
             const duplicateTasks = addToTasksSelection.filter(task =>
                 existingTaskIds.has(task.id) ||
-                destinationList.tasks.some(t => t.title === task.title && t.task?.question === task.task?.question)
+                (destinationList.tasks || []).some(t => t.title === task.title && t.task?.question === task.task?.question)
             );
             const newTasks = addToTasksSelection.filter(task =>
                 !existingTaskIds.has(task.id) &&
-                !destinationList.tasks.some(t => t.title === task.title && t.task?.question === task.task?.question)
+                !(destinationList.tasks || []).some(t => t.title === task.title && t.task?.question === task.task?.question)
             );
 
             // Show warning if there are duplicates
