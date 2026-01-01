@@ -1740,6 +1740,8 @@ const GameApp: React.FC = () => {
                 hoveredPointId={hoveredPointId}
                 hoveredDangerZoneId={hoveredDangerZoneId}
                 onPointHover={(point) => setMapHoveredPointId(point?.id || null)}
+                teamHistory={[]} // TODO: Fetch real team history data from database
+                showTeamPaths={showTeamPaths}
             />
             </div>
         )}
