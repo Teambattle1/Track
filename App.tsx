@@ -30,6 +30,7 @@ import GameCreator from './components/GameCreator';
 import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
 import GameStatsModal from './components/GameStatsModal';
+import MapStyleLibrary from './components/MapStyleLibrary';
 import MessagePopup from './components/MessagePopup';
 import Dashboard from './components/Dashboard';
 import DangerZoneModal from './components/DangerZoneModal';
@@ -76,6 +77,7 @@ const GameApp: React.FC = () => {
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
   const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | null>(null);
   const [showGameStats, setShowGameStats] = useState(false);
+  const [showMapStyleLibrary, setShowMapStyleLibrary] = useState(false);
   const [gameStatsTeams, setGameStatsTeams] = useState<Team[]>([]);
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
@@ -1593,6 +1595,9 @@ const GameApp: React.FC = () => {
                             case 'DIAGNOSTICS': setShowSupabaseDiagnostic(true); break;
                             case 'GAMESTATS':
                                 setShowGameStats(true);
+                                break;
+                            case 'MAP_STYLES':
+                                setShowMapStyleLibrary(true);
                                 break;
                             case 'CLIENT_PORTAL':
                                 setDashboardTab('client');
