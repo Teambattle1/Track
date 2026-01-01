@@ -133,24 +133,24 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     const [measureBoxPos, setMeasureBoxPos] = useState({ x: window.innerWidth / 2 - 80, y: 120 });
     const [isDraggingMeasure, setIsDraggingMeasure] = useState(false);
     const measureDragOffset = useRef({ x: 0, y: 0 });
-    // LOCATION toolbar - top center-right (to the right of TOOLS)
-    const [locationToolboxPos, setLocationToolboxPos] = useState({ x: 470, y: 10 });
+    // LOCATION toolbar - right side, bottom
+    const [locationToolboxPos, setLocationToolboxPos] = useState({ x: window.innerWidth - 180, y: 270 });
     const [isDraggingLocationBox, setIsDraggingLocationBox] = useState(false);
     const locationDragOffset = useRef({ x: 0, y: 0 });
-    // TOOLS toolbar - top left
-    const [topToolbarPos, setTopToolbarPos] = useState({ x: 330, y: 10 });
+    // TOOLS toolbar - right side, middle
+    const [topToolbarPos, setTopToolbarPos] = useState({ x: window.innerWidth - 180, y: 140 });
     const [isDraggingTopToolbar, setIsDraggingTopToolbar] = useState(false);
     const topToolbarDragOffset = useRef({ x: 0, y: 0 });
-    // MAPMODE toolbar - top center-right
-    const [viewSwitcherPos, setViewSwitcherPos] = useState({ x: window.innerWidth - 220, y: 10 });
+    // MAPMODE toolbar - right side, below tools
+    const [viewSwitcherPos, setViewSwitcherPos] = useState({ x: window.innerWidth - 180, y: 205 });
     const [isDraggingViewSwitcher, setIsDraggingViewSwitcher] = useState(false);
     const viewSwitcherDragOffset = useRef({ x: 0, y: 0 });
-    // PINS toolbar - right side, upper (below MAPMODE)
+    // PINS toolbar - right side, second from top
     const [pinsToolboxPos, setPinsToolboxPos] = useState({ x: window.innerWidth - 180, y: 75 });
     const [isDraggingPinsBox, setIsDraggingPinsBox] = useState(false);
     const pinsDragOffset = useRef({ x: 0, y: 0 });
-    // SHOW toolbar - right side, middle (below PINS)
-    const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 180, y: 140 });
+    // SHOW toolbar - right side, top
+    const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 180, y: 10 });
     const [isDraggingShowBox, setIsDraggingShowBox] = useState(false);
     const showDragOffset = useRef({ x: 0, y: 0 });
 
