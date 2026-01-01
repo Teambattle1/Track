@@ -316,6 +316,61 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500"
             />
 
+            {/* Tabs */}
+            <div className="mt-4 bg-slate-950 border border-slate-800 rounded-2xl p-1 flex gap-1">
+              <button
+                onClick={() => {
+                  setGameTab('TODAY');
+                  if (selectedGameId) {
+                    const g = games.find(x => x.id === selectedGameId);
+                    if (g && getGameStatusTab(g, new Date()) !== 'TODAY') setSelectedGameId(null);
+                  }
+                }}
+                className={`flex-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                  gameTab === 'TODAY' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'
+                }`}
+                title="Games scheduled for today"
+              >
+                <Clock3 className="w-4 h-4" />
+                Today
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${gameTab === 'TODAY' ? 'bg-white/15' : 'bg-white/5 text-slate-400'}`}>{tabCounts.TODAY}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setGameTab('PLANNED');
+                  if (selectedGameId) {
+                    const g = games.find(x => x.id === selectedGameId);
+                    if (g && getGameStatusTab(g, new Date()) !== 'PLANNED') setSelectedGameId(null);
+                  }
+                }}
+                className={`flex-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                  gameTab === 'PLANNED' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'
+                }`}
+                title="Future planned games"
+              >
+                <CalendarDays className="w-4 h-4" />
+                Planned
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${gameTab === 'PLANNED' ? 'bg-white/15' : 'bg-white/5 text-slate-400'}`}>{tabCounts.PLANNED}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setGameTab('COMPLETED');
+                  if (selectedGameId) {
+                    const g = games.find(x => x.id === selectedGameId);
+                    if (g && getGameStatusTab(g, new Date()) !== 'COMPLETED') setSelectedGameId(null);
+                  }
+                }}
+                className={`flex-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                  gameTab === 'COMPLETED' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'
+                }`}
+                title="Completed games"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Done
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${gameTab === 'COMPLETED' ? 'bg-white/15' : 'bg-white/5 text-slate-400'}`}>{tabCounts.COMPLETED}</span>
+              </button>
+            </div>
+
             <div className="mt-4 space-y-2 max-h-[52vh] overflow-y-auto custom-scrollbar">
               {filteredGames.map((g) => {
                 const isActive = selectedGameId === g.id;
