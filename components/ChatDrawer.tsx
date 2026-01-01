@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage, GameMode, Team } from '../types';
 import { X, Send, MessageSquare, User, Shield, Radio, Siren, CheckCircle2, ChevronDown, Globe, Check } from 'lucide-react';
 import { teamSync } from '../services/teamSync';
+import { vibrateChatNotification } from '../utils/vibration';
 
 interface ChatDrawerProps {
   isOpen: boolean;
