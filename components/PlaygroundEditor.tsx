@@ -2823,7 +2823,17 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 const mapPoints = game.points.filter(p => !p.playgroundId);
                                 const baseOrder = mapPoints.length;
 
-                                const newPoints: GamePoint[] = pendingTasksToAdd.map((t, i) => {
+                                // Filter out duplicates (by title match)
+                                const newTasksToAdd = pendingTasksToAdd.filter(t =>
+                                  !game.points.some(p => p.title === t.title)
+                                );
+
+                                if (newTasksToAdd.length === 0) {
+                                  alert('All tasks already exist in this game. No duplicates were added.');
+                                  return;
+                                }
+
+                                const newPoints: GamePoint[] = newTasksToAdd.map((t, i) => {
                                   const templateAny = t as any;
                                   const radiusMeters = typeof templateAny.radiusMeters === 'number' ? templateAny.radiusMeters : 30;
                                   const areaColor = typeof templateAny.areaColor === 'string' ? templateAny.areaColor : undefined;
