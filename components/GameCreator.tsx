@@ -961,16 +961,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       >
                                           <Upload className="w-3 h-3" /> UPLOAD LOGO
                                       </button>
-                                      {!clientLogo && (
-                                          <button
-                                              onClick={handleGenerateAiLogo}
-                                              disabled={!clientName || isGeneratingAiLogo}
-                                              className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 border border-purple-500 rounded-xl text-[10px] font-bold uppercase text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                          >
-                                              {isGeneratingAiLogo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-                                              AI GENERATE LOGO
-                                          </button>
-                                      )}
+                                      <button
+                                          onClick={handleGenerateAiLogo}
+                                          disabled={!clientName || isGeneratingAiLogo}
+                                          className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 border border-purple-500 rounded-xl text-[10px] font-bold uppercase text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      >
+                                          {isGeneratingAiLogo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                                          AI GENERATE LOGO
+                                      </button>
                                   </div>
                               </div>
 
