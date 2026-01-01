@@ -205,63 +205,53 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
 };
 
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
-    console.log('[Logo Search] Searching internet for REAL logo:', query);
+    console.log('[Logo Search] 🔍 Searching for REAL company logo:', query);
 
     if (!query || !query.trim()) {
-        console.log('[Logo Search] Empty query');
+        console.log('[Logo Search] ❌ Empty query');
         return null;
     }
 
     const normalizedQuery = query.trim();
-    const domainGuess = guessDomain(normalizedQuery);
 
-    if (!domainGuess) {
-        console.log('[Logo Search] Could not guess domain for:', query);
+    try {
+        // Use Supabase Edge Function to bypass CORS restrictions
+        const supabaseUrl = typeof window !== 'undefined'
+            ? (localStorage.getItem('SUPABASE_URL') || 'https://yktaxljydisfjyqhbnja.supabase.co')
+            : 'https://yktaxljydisfjyqhbnja.supabase.co';
+
+        const edgeFunctionUrl = `${supabaseUrl}/functions/v1/logo-search`;
+
+        console.log('[Logo Search] 📡 Calling Edge Function:', edgeFunctionUrl);
+
+        const response = await fetch(edgeFunctionUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: normalizedQuery })
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.log('[Logo Search] ❌ Edge Function error:', error);
+            return null;
+        }
+
+        const data = await response.json();
+
+        if (data.logoUrl) {
+            console.log('[Logo Search] ✅ Found REAL logo via', data.source);
+            return data.logoUrl;
+        }
+
+        console.log('[Logo Search] ❌ No logo found for:', query);
+        return null;
+
+    } catch (error) {
+        console.error('[Logo Search] ❌ Error:', error);
         return null;
     }
-
-    console.log('[Logo Search] Guessed domain:', domainGuess);
-
-    // Strategy 1: Try Clearbit Logo API (direct image load, no fetch)
-    const clearbitUrl = `https://logo.clearbit.com/${domainGuess}`;
-    console.log('[Logo Search] Trying Clearbit:', clearbitUrl);
-    const clearbitResult = await testImageUrl(clearbitUrl);
-    if (clearbitResult) {
-        console.log('[Logo Search] ✅ Found REAL logo via Clearbit');
-        return clearbitUrl;
-    }
-
-    // Strategy 2: Try Google Favicon service (high resolution)
-    const googleUrl = `https://www.google.com/s2/favicons?domain=${domainGuess}&sz=256`;
-    console.log('[Logo Search] Trying Google Favicon:', googleUrl);
-    const googleResult = await testImageUrl(googleUrl);
-    if (googleResult) {
-        console.log('[Logo Search] ✅ Found logo via Google (256px)');
-        return googleUrl;
-    }
-
-    // Strategy 3: Try Logo.dev API
-    const logoDevUrl = `https://img.logo.dev/${domainGuess}?token=pk_X-cat2mFSGWUhXZee1f8rQ`;
-    console.log('[Logo Search] Trying Logo.dev:', logoDevUrl);
-    const logoDevResult = await testImageUrl(logoDevUrl);
-    if (logoDevResult) {
-        console.log('[Logo Search] ✅ Found logo via Logo.dev');
-        return logoDevUrl;
-    }
-
-    // Strategy 4: DuckDuckGo Icons
-    const duckUrl = `https://icons.duckduckgo.com/ip3/${domainGuess}.ico`;
-    console.log('[Logo Search] Trying DuckDuckGo:', duckUrl);
-    const duckResult = await testImageUrl(duckUrl);
-    if (duckResult) {
-        console.log('[Logo Search] ✅ Found logo via DuckDuckGo');
-        return duckUrl;
-    }
-
-    // Strategy 5: Smaller Google Favicon as absolute fallback
-    const googleFallback = `https://www.google.com/s2/favicons?domain=${domainGuess}&sz=128`;
-    console.log('[Logo Search] Using Google Favicon fallback');
-    return googleFallback;
 };
 
 // Helper: Guess domain from company name
