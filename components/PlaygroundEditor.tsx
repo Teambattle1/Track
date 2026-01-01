@@ -398,7 +398,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     };
 
-    const selectedTask = game.points.find(p => p.id === selectedTaskId && p.playgroundId === activePlayground?.id);
+    const selectedTask = game.points?.find(p => p.id === selectedTaskId && p.playgroundId === activePlayground?.id);
 
     const updateTask = (updates: Partial<GamePoint>) => {
         if (!selectedTask) return;
