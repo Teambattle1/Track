@@ -487,12 +487,21 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
 
     const renderGameNameButton = () => (
         activeGameName && (
-            <button 
+            <button
                 onClick={onOpenGameChooser}
-                className="bg-black/80 backdrop-blur-md h-12 px-5 rounded-2xl border border-white/10 shadow-xl flex items-center gap-3 cursor-pointer hover:bg-black/90 transition-colors group pointer-events-auto"
+                className="bg-black/80 backdrop-blur-md h-12 px-3 rounded-2xl border border-white/10 shadow-xl flex items-center gap-2 cursor-pointer hover:bg-black/90 transition-colors group pointer-events-auto"
                 title="Switch Game Session"
             >
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                {activeGame?.client?.logoUrl && (
+                    <div className="w-7 h-7 rounded-lg overflow-hidden bg-white/10 border border-white/20 flex-shrink-0">
+                        <img
+                            src={activeGame.client.logoUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                )}
                 <p className="text-[10px] text-white font-black uppercase tracking-widest leading-none max-w-[200px] truncate group-hover:text-orange-400 transition-colors">{activeGameName}</p>
             </button>
         )
