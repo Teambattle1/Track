@@ -2813,92 +2813,166 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             )}
 
             {/* Playzone Selector Modal - For choosing which playzone to add tasks to */}
-            {showPlayzoneSelector && game.playgrounds && game.playgrounds.length > 0 && (
+            {showPlayzoneSelector && (
                 <div className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-orange-500">
+                    <div className="w-full max-w-2xl bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-orange-500">
                         {/* Header */}
                         <div className="bg-orange-600 px-6 py-4">
-                            <h2 className="text-lg font-black text-white uppercase tracking-widest">ADD TO PLAYZONE</h2>
-                            <p className="text-[10px] text-orange-100 font-bold uppercase tracking-wider mt-1">Choose destination</p>
+                            <h2 className="text-lg font-black text-white uppercase tracking-widest">SELECT DESTINATION</h2>
+                            <p className="text-[10px] text-orange-100 font-bold uppercase tracking-wider mt-1">{pendingTasksToAdd.length} task{pendingTasksToAdd.length !== 1 ? 's' : ''} ready to add</p>
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 space-y-3">
-                            {game.playgrounds.map((playzone) => (
-                                <button
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* MAP Section */}
+                          <div>
+                            <h3 className="text-xs font-black text-slate-300 uppercase tracking-widest mb-3 pb-2 border-b border-slate-700">MAP</h3>
+                            <button
+                              onClick={() => {
+                                // Add the pending tasks to the MAP (no playgroundId)
+                                const mapPoints = game.points.filter(p => !p.playgroundId);
+                                const baseOrder = mapPoints.length;
+
+                                const newPoints: GamePoint[] = pendingTasksToAdd.map((t, i) => {
+                                  const templateAny = t as any;
+                                  const radiusMeters = typeof templateAny.radiusMeters === 'number' ? templateAny.radiusMeters : 30;
+                                  const areaColor = typeof templateAny.areaColor === 'string' ? templateAny.areaColor : undefined;
+                                  const openingAudioUrl = typeof templateAny.openingAudioUrl === 'string' ? templateAny.openingAudioUrl : undefined;
+
+                                  return {
+                                    id: `m-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+                                    title: t.title,
+                                    shortIntro: (t as any).intro,
+                                    task: t.task,
+                                    location: { lat: 0, lng: 0 },
+                                    radiusMeters,
+                                    activationTypes: ['radius'],
+                                    manualUnlockCode: undefined,
+                                    iconId: t.iconId || 'default',
+                                    iconUrl: (t as any).iconUrl,
+                                    areaColor,
+                                    openingAudioUrl,
+                                    points: t.points || 100,
+                                    isUnlocked: true,
+                                    isCompleted: false,
+                                    order: baseOrder + i,
+                                    tags: t.tags,
+                                    feedback: t.feedback,
+                                    settings: t.settings,
+                                    logic: t.logic,
+                                    completionLogic: (t as any).completionLogic
+                                  } as GamePoint;
+                                });
+
+                                onUpdateGame({
+                                  ...game,
+                                  points: [...game.points, ...newPoints]
+                                });
+
+                                // Reset state
+                                setShowPlayzoneSelector(false);
+                                setPendingTasksToAdd([]);
+                                setIsAddingAITasks(false);
+                                if (isAddingAITasks) {
+                                  setShowAiTaskGenerator(false);
+                                } else {
+                                  setShowTaskMaster(false);
+                                }
+                              }}
+                              className="w-full p-4 bg-blue-900/40 hover:bg-blue-800/60 border-2 border-blue-500/50 hover:border-blue-500 rounded-lg transition-colors text-left"
+                            >
+                              <div className="font-bold text-white uppercase tracking-widest text-sm">MAP TASKS</div>
+                              <div className="text-[10px] text-slate-400 mt-1">
+                                {game.points.filter(p => !p.playgroundId).length} tasks on map
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* PLAYZONES Section */}
+                          <div>
+                            <h3 className="text-xs font-black text-slate-300 uppercase tracking-widest mb-3 pb-2 border-b border-slate-700">PLAYZONES</h3>
+                            <div className="space-y-3">
+                              {game.playgrounds && game.playgrounds.length > 0 ? (
+                                game.playgrounds.map((playzone) => (
+                                  <button
                                     key={playzone.id}
                                     onClick={() => {
-                                        // Add the pending tasks to the selected playzone
-                                        const baseOrder = uniquePlaygroundPoints.filter(p => p.playgroundId === playzone.id).length;
-                                        const COLS = 3;
-                                        const PADDING = 10;
-                                        const ROW_HEIGHT = 18;
+                                      // Add the pending tasks to the selected playzone
+                                      const baseOrder = uniquePlaygroundPoints.filter(p => p.playgroundId === playzone.id).length;
+                                      const COLS = 3;
+                                      const PADDING = 10;
+                                      const ROW_HEIGHT = 18;
 
-                                        const newPoints: GamePoint[] = pendingTasksToAdd.map((t, i) => {
-                                            const row = Math.floor((baseOrder + i) / COLS);
-                                            const col = (baseOrder + i) % COLS;
-                                            const colWidth = (100 - PADDING * 2) / COLS;
+                                      const newPoints: GamePoint[] = pendingTasksToAdd.map((t, i) => {
+                                        const row = Math.floor((baseOrder + i) / COLS);
+                                        const col = (baseOrder + i) % COLS;
+                                        const colWidth = (100 - PADDING * 2) / COLS;
 
-                                            const x = PADDING + col * colWidth + colWidth / 2;
-                                            const y = PADDING + row * ROW_HEIGHT + ROW_HEIGHT / 2;
+                                        const x = PADDING + col * colWidth + colWidth / 2;
+                                        const y = PADDING + row * ROW_HEIGHT + ROW_HEIGHT / 2;
 
-                                            const templateAny = t as any;
-                                            const radiusMeters = typeof templateAny.radiusMeters === 'number' ? templateAny.radiusMeters : 30;
-                                            const areaColor = typeof templateAny.areaColor === 'string' ? templateAny.areaColor : undefined;
-                                            const openingAudioUrl = typeof templateAny.openingAudioUrl === 'string' ? templateAny.openingAudioUrl : undefined;
+                                        const templateAny = t as any;
+                                        const radiusMeters = typeof templateAny.radiusMeters === 'number' ? templateAny.radiusMeters : 30;
+                                        const areaColor = typeof templateAny.areaColor === 'string' ? templateAny.areaColor : undefined;
+                                        const openingAudioUrl = typeof templateAny.openingAudioUrl === 'string' ? templateAny.openingAudioUrl : undefined;
 
-                                            return {
-                                                id: `p-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
-                                                title: t.title,
-                                                shortIntro: (t as any).intro,
-                                                task: t.task,
-                                                location: { lat: 0, lng: 0 },
-                                                radiusMeters,
-                                                activationTypes: ['radius'],
-                                                manualUnlockCode: undefined,
-                                                playgroundId: playzone.id,
-                                                playgroundPosition: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 },
-                                                playgroundScale: 1,
-                                                isHiddenBeforeScan: false,
-                                                iconId: t.iconId || 'default',
-                                                iconUrl: (t as any).iconUrl,
-                                                areaColor,
-                                                openingAudioUrl,
-                                                points: t.points || 100,
-                                                isUnlocked: true,
-                                                isCompleted: false,
-                                                order: baseOrder + i,
-                                                tags: t.tags,
-                                                feedback: t.feedback,
-                                                settings: t.settings,
-                                                logic: t.logic,
-                                                completionLogic: (t as any).completionLogic
-                                            } as GamePoint;
-                                        });
+                                        return {
+                                          id: `p-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+                                          title: t.title,
+                                          shortIntro: (t as any).intro,
+                                          task: t.task,
+                                          location: { lat: 0, lng: 0 },
+                                          radiusMeters,
+                                          activationTypes: ['radius'],
+                                          manualUnlockCode: undefined,
+                                          playgroundId: playzone.id,
+                                          playgroundPosition: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 },
+                                          playgroundScale: 1,
+                                          isHiddenBeforeScan: false,
+                                          iconId: t.iconId || 'default',
+                                          iconUrl: (t as any).iconUrl,
+                                          areaColor,
+                                          openingAudioUrl,
+                                          points: t.points || 100,
+                                          isUnlocked: true,
+                                          isCompleted: false,
+                                          order: baseOrder + i,
+                                          tags: t.tags,
+                                          feedback: t.feedback,
+                                          settings: t.settings,
+                                          logic: t.logic,
+                                          completionLogic: (t as any).completionLogic
+                                        } as GamePoint;
+                                      });
 
-                                        onUpdateGame({
-                                            ...game,
-                                            points: [...game.points, ...newPoints]
-                                        });
+                                      onUpdateGame({
+                                        ...game,
+                                        points: [...game.points, ...newPoints]
+                                      });
 
-                                        // Reset state
-                                        setShowPlayzoneSelector(false);
-                                        setPendingTasksToAdd([]);
-                                        setIsAddingAITasks(false);
-                                        if (isAddingAITasks) {
-                                            setShowAiTaskGenerator(false);
-                                        } else {
-                                            setShowTaskMaster(false);
-                                        }
+                                      // Reset state
+                                      setShowPlayzoneSelector(false);
+                                      setPendingTasksToAdd([]);
+                                      setIsAddingAITasks(false);
+                                      if (isAddingAITasks) {
+                                        setShowAiTaskGenerator(false);
+                                      } else {
+                                        setShowTaskMaster(false);
+                                      }
                                     }}
-                                    className="w-full p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-orange-500 rounded-lg transition-colors text-left"
-                                >
+                                    className="w-full p-3 bg-orange-900/40 hover:bg-orange-800/60 border-2 border-orange-500/50 hover:border-orange-500 rounded-lg transition-colors text-left"
+                                  >
                                     <div className="font-bold text-white uppercase tracking-widest text-sm">{playzone.title || `Playzone ${game.playgrounds.indexOf(playzone) + 1}`}</div>
                                     <div className="text-[10px] text-slate-400 mt-1">
-                                        {uniquePlaygroundPoints.filter(p => p.playgroundId === playzone.id).length} tasks
+                                      {uniquePlaygroundPoints.filter(p => p.playgroundId === playzone.id).length} tasks
                                     </div>
-                                </button>
-                            ))}
+                                  </button>
+                                ))
+                              ) : (
+                                <p className="text-slate-400 text-xs italic">No playzones available</p>
+                              )}
+                            </div>
+                          </div>
                         </div>
 
                         {/* Footer */}
