@@ -1897,6 +1897,14 @@ const GameApp: React.FC = () => {
             teams={teamsForFogOfWar}
         />
 
+        {/* Impossible Travel Warnings - EDIT and INSTRUCTOR modes only */}
+        {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && activeGame && (
+            <ImpossibleTravelWarnings
+                gameId={activeGame.id}
+                onJumpToLocation={(loc) => mapRef.current?.jumpTo(loc)}
+            />
+        )}
+
         {(mode === GameMode.EDIT || playgroundTemplateToEdit) && (
             <EditorDrawer 
                 onClose={() => setMode(GameMode.PLAY)}
