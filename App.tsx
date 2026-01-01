@@ -420,6 +420,17 @@ const GameApp: React.FC = () => {
       return activeGame?.points?.find(p => p.id === activeTaskModalId) || null;
   }, [activeTaskModalId, activeGame]);
 
+  // Generate demo team history data (for testing/demo purposes)
+  // TODO: Replace with actual team history from database
+  const demoTeamHistory = useMemo(() => {
+      if (!activeGame || !showTeamPaths) return [];
+
+      // Use first point as center, or default to Copenhagen
+      const gameCenter = activeGame.points?.[0]?.location || { lat: 55.6761, lng: 12.5683 };
+
+      return generateDemoTeamHistory(gameCenter, 3);
+  }, [activeGame, showTeamPaths]);
+
 
   const ensureSession = (callback: () => void) => {
       if (!authUser) {
