@@ -299,7 +299,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 topToolbarPos,
                 viewSwitcherPos,
                 pinsToolboxPos,
-                showToolboxPos
+                showToolboxPos,
+                qrScannerPos
             };
 
             // Save to activeGame if available, otherwise save to user settings
