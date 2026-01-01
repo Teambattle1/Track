@@ -168,23 +168,30 @@ const ClientMediaGallery: React.FC<ClientMediaGalleryProps> = ({ gameId, game, t
           </div>
         </div>
 
-        {/* Media Content */}
-        <div className="flex-1 flex items-center justify-center p-4 pb-32">
-          {currentMedia.mediaType === 'photo' ? (
-            <img
-              src={currentMedia.mediaUrl}
-              alt={currentMedia.pointTitle}
-              className="max-w-full max-h-full object-contain"
-            />
-          ) : (
-            <video
-              src={currentMedia.mediaUrl}
-              controls
-              autoPlay
-              className="max-w-full max-h-full"
-            />
-          )}
-        </div>
+        {/* Content: Media or Ranking */}
+        {!showRankingSlide ? (
+          <div className="flex-1 flex items-center justify-center p-4 pb-32">
+            {currentMedia.mediaType === 'photo' ? (
+              <img
+                src={currentMedia.mediaUrl}
+                alt={currentMedia.pointTitle}
+                className="max-w-full max-h-full object-contain"
+              />
+            ) : (
+              <video
+                src={currentMedia.mediaUrl}
+                controls
+                autoPlay
+                className="max-w-full max-h-full"
+              />
+            )}
+          </div>
+        ) : (
+          <RankingSlide
+            teams={teams}
+            revealedTop3={revealedTop3}
+          />
+        )}
 
         {/* Large Task Text for Projector (Bottom Overlay) */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/95 to-transparent pt-20 pb-6 px-8">
