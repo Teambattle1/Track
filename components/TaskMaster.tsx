@@ -978,9 +978,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                         {task.title}
                                     </td>
                                     <td
-                                        className="px-4 py-3 text-slate-400 truncate max-w-sm"
-                                        onMouseEnter={() => handleTaskMouseEnter(task)}
-                                        onMouseLeave={handleTaskMouseLeave}
+                                        className="px-4 py-3 text-slate-400 truncate max-w-sm cursor-pointer hover:text-slate-300 transition-colors"
+                                        onClick={() => handleTaskQuestionClick(task)}
                                     >
                                         {task.task.question}
                                     </td>
