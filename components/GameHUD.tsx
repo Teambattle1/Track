@@ -95,6 +95,10 @@ interface GameHUDProps {
     // Team History Props
     showTeamPaths?: boolean;
     onToggleTeamPaths?: () => void;
+    showTeamPathSelector?: boolean;
+    selectedTeamPaths?: string[];
+    onToggleTeamPathSelector?: () => void;
+    onSelectTeamPath?: (teamId: string) => void;
     // Fog of War Props
     fogOfWarEnabled?: boolean;
     selectedTeamForFogOfWar?: string | null;
