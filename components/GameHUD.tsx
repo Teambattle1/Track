@@ -1096,14 +1096,50 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                     </button>
 
                                     {/* Team Paths Button - EDIT MODE ONLY */}
-                                    {mode === GameMode.EDIT && onToggleTeamPaths && (
-                                        <button
-                                            onClick={onToggleTeamPaths}
-                                            className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/toolbar relative ${showTeamPaths ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-purple-700 text-purple-100 border-purple-600 hover:bg-purple-800 hover:text-white'}`}
-                                            title="Toggle Team Movement Paths"
-                                        >
-                                            <RouteIcon className="w-4 h-4" />
-                                        </button>
+                                    {mode === GameMode.EDIT && onToggleTeamPathSelector && (
+                                        <div className="relative">
+                                            <button
+                                                onClick={onToggleTeamPathSelector}
+                                                className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/toolbar relative ${showTeamPathSelector || selectedTeamPaths.length > 0 ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-purple-700 text-purple-100 border-purple-600 hover:bg-purple-800 hover:text-white'}`}
+                                                title="Select Teams to Show Paths"
+                                            >
+                                                <RouteIcon className="w-4 h-4" />
+                                                {selectedTeamPaths.length > 0 && (
+                                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full text-[8px] font-black flex items-center justify-center text-white">
+                                                        {selectedTeamPaths.length}
+                                                    </span>
+                                                )}
+                                            </button>
+
+                                            {/* Team Selection Popup */}
+                                            {showTeamPathSelector && teams && teams.length > 0 && (
+                                                <div className="absolute top-full left-0 mt-2 bg-slate-900 border-2 border-purple-500 rounded-xl shadow-2xl p-3 min-w-[200px] z-[2000]">
+                                                    <div className="text-[9px] font-black text-purple-300 uppercase tracking-widest mb-2">
+                                                        Select Teams
+                                                    </div>
+                                                    <div className="space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
+                                                        {teams.map(team => (
+                                                            <button
+                                                                key={team.id}
+                                                                onClick={() => onSelectTeamPath?.(team.id)}
+                                                                className={`w-full px-3 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                                                                    selectedTeamPaths.includes(team.id)
+                                                                        ? 'bg-purple-600 text-white'
+                                                                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className={`w-3 h-3 rounded-full ${
+                                                                        selectedTeamPaths.includes(team.id) ? 'bg-white' : 'bg-slate-600'
+                                                                    }`} />
+                                                                    {team.name}
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                                 <div className="flex gap-1 text-center">
