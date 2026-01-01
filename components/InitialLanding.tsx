@@ -84,15 +84,15 @@ const MapPinButton = ({
     >
         <div className="relative">
             {/* Pin Shape */}
-            <div 
+            <div
                 className={`
-                    relative w-36 h-36 md:w-48 md:h-48 
+                    relative w-36 h-36 md:w-48 md:h-48
                     ${gradient}
-                    rounded-full rounded-br-none 
-                    rotate-45 
-                    shadow-[0_10px_40px_rgba(0,0,0,0.5)] 
-                    border-4 border-white/20 
-                    flex items-center justify-center 
+                    rounded-full rounded-br-none
+                    rotate-45
+                    shadow-[0_10px_40px_rgba(0,0,0,0.5)]
+                    border-4 border-white/20
+                    flex items-center justify-center
                     transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
                     group-hover:-translate-y-6 group-hover:scale-110 group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)] group-hover:border-white/40
                     animate-in zoom-in fade-in fill-mode-backwards
@@ -103,11 +103,18 @@ const MapPinButton = ({
                 <div className="-rotate-45 flex items-center justify-center">
                     <Icon className="w-12 h-12 md:w-20 md:h-20 text-white drop-shadow-md" strokeWidth={2} />
                 </div>
-                
+
                 {/* Glass/Shine Effect */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rounded-full rounded-br-none pointer-events-none" />
+
+                {/* Badge (if provided) */}
+                {badge && (
+                    <div className="absolute -top-3 -right-3 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-amber-400">
+                        {badge}
+                    </div>
+                )}
             </div>
-            
+
             {/* Pulse Ring (behind) */}
             <div className={`absolute inset-0 rounded-full rounded-br-none rotate-45 ${gradient} opacity-20 blur-xl group-hover:blur-2xl transition-all duration-500 -z-10`} />
         </div>
