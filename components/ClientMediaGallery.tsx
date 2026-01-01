@@ -30,9 +30,8 @@ const ClientMediaGallery: React.FC<ClientMediaGalleryProps> = ({ gameId, game, t
     setLoading(true);
     try {
       const submissions = await db.getMediaSubmissions(gameId);
-      // Only show approved media in client view
-      const approvedMedia = submissions.filter(s => s.status === 'approved');
-      setMedia(approvedMedia);
+      // Show all media (approved or not)
+      setMedia(submissions);
     } catch (error) {
       console.error('Failed to load media:', error);
     } finally {
@@ -120,7 +119,7 @@ const ClientMediaGallery: React.FC<ClientMediaGalleryProps> = ({ gameId, game, t
         </div>
 
         {/* Media Content */}
-        <div className="flex-1 flex items-center justify-center p-4">
+        <div className="flex-1 flex items-center justify-center p-4 pb-32">
           {currentMedia.mediaType === 'photo' ? (
             <img
               src={currentMedia.mediaUrl}
@@ -135,6 +134,25 @@ const ClientMediaGallery: React.FC<ClientMediaGalleryProps> = ({ gameId, game, t
               className="max-w-full max-h-full"
             />
           )}
+        </div>
+
+        {/* Large Task Text for Projector (Bottom Overlay) */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/95 to-transparent pt-20 pb-6 px-8">
+          <div className="max-w-5xl mx-auto text-center">
+            <p className="text-5xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-wide leading-tight drop-shadow-2xl">
+              {currentMedia.pointTitle}
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-6 text-xl md:text-2xl font-bold text-gray-300">
+              <span className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
+                {currentMedia.teamName}
+              </span>
+              <span className="text-gray-500">•</span>
+              <span className="text-gray-400">
+                {currentSlideIndex + 1} / {selectedMedia.length}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -155,28 +173,6 @@ const ClientMediaGallery: React.FC<ClientMediaGalleryProps> = ({ gameId, game, t
           </button>
         </div>
 
-        {/* Footer - Thumbnails */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-          <div className="flex gap-2 overflow-x-auto">
-            {selectedMedia.map((m, idx) => (
-              <button
-                key={m.id}
-                onClick={() => setCurrentSlideIndex(idx)}
-                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                  idx === currentSlideIndex ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-100'
-                }`}
-              >
-                {m.mediaType === 'photo' ? (
-                  <img src={m.mediaUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-purple-600 flex items-center justify-center">
-                    <Video className="w-6 h-6 text-white" />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     );
   }
