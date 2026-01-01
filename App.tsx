@@ -42,6 +42,7 @@ import OfflineIndicator from './components/OfflineIndicator';
 import MeasureBox from './components/MeasureBox';
 import SupabaseDiagnostic from './components/SupabaseDiagnostic';
 import SupabaseToolsModal from './components/SupabaseToolsModal';
+import ImpossibleTravelWarnings from './components/ImpossibleTravelWarnings';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
