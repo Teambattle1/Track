@@ -2423,7 +2423,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         <p className="text-[9px] text-slate-600 mt-2">Use the buttons above to add your first task</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-1">
                                         {uniquePlaygroundPoints.map((point, index) => {
                                             const hasActions = point.logic && (point.logic.onOpen?.length || point.logic.onCorrect?.length || point.logic.onIncorrect?.length);
                                             const isMarked = markedTaskIds.has(point.id);
@@ -2431,7 +2431,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             return (
                                                 <div
                                                     key={point.id}
-                                                    className={`p-2 border rounded-lg transition-colors group ${
+                                                    className={`px-3 py-2 border rounded transition-colors group flex items-center gap-2 ${
                                                         bulkIconMode
                                                             ? bulkIconSourceId === point.id
                                                                 ? 'bg-blue-500/20 border-blue-500 cursor-pointer'
@@ -2458,95 +2458,95 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                         }
                                                     }}
                                                 >
-                                                    <div className="flex items-start justify-between gap-3">
-                                                        {bulkIconMode ? (
-                                                            <>
-                                                                {bulkIconSourceId === null ? (
-                                                                    <div className="w-8 h-8 bg-blue-900/50 border-2 border-blue-400 rounded flex items-center justify-center flex-shrink-0 text-[9px] font-bold text-blue-300 cursor-pointer hover:bg-blue-800/50">
-                                                                        📌
-                                                                    </div>
-                                                                ) : bulkIconSourceId === point.id ? (
-                                                                    <div className="w-8 h-8 bg-blue-600 border-2 border-blue-400 rounded flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/50">
-                                                                        {point.iconUrl ? (
-                                                                            <img src={point.iconUrl} alt="" className="w-5 h-5 object-contain" />
-                                                                        ) : (
-                                                                            (() => {
-                                                                                const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
-                                                                                return <Icon className="w-5 h-5 text-white" />;
-                                                                            })()
-                                                                        )}
-                                                                    </div>
-                                                                ) : (
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={bulkIconTargets.has(point.id)}
-                                                                        onChange={(e) => {
-                                                                            e.stopPropagation();
-                                                                            toggleBulkIconTarget(point.id);
-                                                                        }}
-                                                                        onClick={(e) => e.stopPropagation()}
-                                                                        className="mt-1 w-4 h-4 rounded border-2 border-orange-500 bg-slate-900 cursor-pointer accent-orange-500 flex-shrink-0"
-                                                                        title="Click checkbox or task to select target"
-                                                                    />
-                                                                )}
-                                                            </>
-                                                        ) : isMarkMode && (
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={isMarked}
-                                                                onChange={(e) => {
-                                                                    e.stopPropagation();
-                                                                    toggleMarkTask(point.id);
-                                                                }}
-                                                                className="mt-1 w-4 h-4 rounded border-2 border-orange-400 bg-slate-900 cursor-pointer accent-orange-500 flex-shrink-0"
-                                                                title="Mark for snapping"
-                                                            />
-                                                        )}
-                                                        <div className="flex-1 min-w-0">
-                                                            {showTaskOrder && (
-                                                                <div className="flex items-center gap-2 mb-1">
-                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">TASK {String(index + 1).padStart(2, '0')}</p>
-                                                                    {bulkIconMode && (
-                                                                        <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                                                                            bulkIconSourceId === point.id
-                                                                                ? 'bg-blue-600 text-white'
-                                                                                : bulkIconSourceId && bulkIconTargets.has(point.id)
-                                                                                    ? 'bg-orange-600 text-white'
-                                                                                    : 'bg-slate-700 text-slate-400'
-                                                                        }`}>
-                                                                            {bulkIconSourceId === null ? 'SELECT SOURCE' : bulkIconSourceId === point.id ? 'SOURCE ✓' : 'TARGET'}
-                                                                        </span>
+                                                    {/* Checkbox for bulk/mark mode */}
+                                                    {bulkIconMode ? (
+                                                        <>
+                                                            {bulkIconSourceId === null ? (
+                                                                <div className="w-6 h-6 bg-blue-900/50 border-2 border-blue-400 rounded flex items-center justify-center flex-shrink-0 text-[8px] font-bold text-blue-300 cursor-pointer hover:bg-blue-800/50">
+                                                                    📌
+                                                                </div>
+                                                            ) : bulkIconSourceId === point.id ? (
+                                                                <div className="w-6 h-6 bg-blue-600 border-2 border-blue-400 rounded flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/50">
+                                                                    {point.iconUrl ? (
+                                                                        <img src={point.iconUrl} alt="" className="w-4 h-4 object-contain" />
+                                                                    ) : (
+                                                                        (() => {
+                                                                            const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
+                                                                            return <Icon className="w-4 h-4 text-white" />;
+                                                                        })()
                                                                     )}
                                                                 </div>
-                                                            )}
-                                                            {editingTitleId === point.id ? (
+                                                            ) : (
                                                                 <input
-                                                                    type="text"
-                                                                    value={editingTitleValue}
-                                                                    onChange={(e) => setEditingTitleValue(e.target.value)}
-                                                                    onBlur={() => {
+                                                                    type="checkbox"
+                                                                    checked={bulkIconTargets.has(point.id)}
+                                                                    onChange={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleBulkIconTarget(point.id);
+                                                                    }}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="w-4 h-4 rounded border-2 border-orange-500 bg-slate-900 cursor-pointer accent-orange-500 flex-shrink-0"
+                                                                    title="Click checkbox or task to select target"
+                                                                />
+                                                            )}
+                                                        </>
+                                                    ) : isMarkMode && (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isMarked}
+                                                            onChange={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleMarkTask(point.id);
+                                                            }}
+                                                            className="w-4 h-4 rounded border-2 border-orange-400 bg-slate-900 cursor-pointer accent-orange-500 flex-shrink-0"
+                                                            title="Mark for snapping"
+                                                        />
+                                                    )}
+
+                                                    {/* Icon */}
+                                                    <div className="w-5 h-5 bg-slate-700 rounded flex items-center justify-center flex-shrink-0 border border-slate-600">
+                                                        {point.iconUrl ? (
+                                                            <img src={point.iconUrl} alt="" className="w-3 h-3 object-contain" />
+                                                        ) : (
+                                                            (() => {
+                                                                const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
+                                                                return <Icon className="w-3 h-3 text-slate-400" />;
+                                                            })()
+                                                        )}
+                                                    </div>
+
+                                                    {/* Task number and title on one line */}
+                                                    <div className="flex-1 min-w-0">
+                                                        {editingTitleId === point.id ? (
+                                                            <input
+                                                                type="text"
+                                                                value={editingTitleValue}
+                                                                onChange={(e) => setEditingTitleValue(e.target.value)}
+                                                                onBlur={() => {
+                                                                    if (editingTitleValue.trim()) {
+                                                                        updatePointDirectly(point.id, { title: editingTitleValue });
+                                                                    }
+                                                                    setEditingTitleId(null);
+                                                                }}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') {
                                                                         if (editingTitleValue.trim()) {
                                                                             updatePointDirectly(point.id, { title: editingTitleValue });
                                                                         }
                                                                         setEditingTitleId(null);
-                                                                    }}
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter') {
-                                                                            if (editingTitleValue.trim()) {
-                                                                                updatePointDirectly(point.id, { title: editingTitleValue });
-                                                                            }
-                                                                            setEditingTitleId(null);
-                                                                        } else if (e.key === 'Escape') {
-                                                                            setEditingTitleId(null);
-                                                                        }
-                                                                    }}
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                    className="w-full bg-slate-700 border border-orange-500 rounded px-2 py-1 text-xs font-bold text-white outline-none focus:border-orange-400"
-                                                                    autoFocus
-                                                                />
-                                                            ) : (
+                                                                    } else if (e.key === 'Escape') {
+                                                                        setEditingTitleId(null);
+                                                                    }
+                                                                }}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                className="w-full bg-slate-700 border border-orange-500 rounded px-1.5 py-0.5 text-[11px] font-bold text-white outline-none focus:border-orange-400"
+                                                                autoFocus
+                                                            />
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 min-w-0">
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase flex-shrink-0">TASK {String(index + 1).padStart(2, '0')}</p>
                                                                 <p
-                                                                    className="text-xs font-bold text-white truncate group-hover:text-orange-300 transition-colors cursor-text"
+                                                                    className="text-[11px] font-bold text-white truncate group-hover:text-orange-300 transition-colors cursor-text flex-1"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         setEditingTitleId(point.id);
@@ -2556,38 +2556,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                                 >
                                                                     {point.title}
                                                                 </p>
-                                                            )}
-                                                            {showTaskScores && (
-                                                                <p className="text-[9px] font-bold text-orange-400 uppercase mt-1 flex items-center gap-1">
-                                                                    <span>$</span>
-                                                                    <span>{point.points}</span>
-                                                                </p>
-                                                            )}
-
-                                                            {/* Icon Thumbnail */}
-                                                            <div className="mt-2 flex items-center gap-2">
-                                                                <div className="w-6 h-6 bg-slate-700 rounded flex items-center justify-center flex-shrink-0 border border-slate-600">
-                                                                    {point.iconUrl ? (
-                                                                        <img src={point.iconUrl} alt="" className="w-4 h-4 object-contain" />
-                                                                    ) : (
-                                                                        (() => {
-                                                                            const Icon = ICON_COMPONENTS[point.iconId] || ICON_COMPONENTS.default;
-                                                                            return <Icon className="w-4 h-4 text-slate-400" />;
-                                                                        })()
-                                                                    )}
-                                                                </div>
-                                                                <span className="text-[8px] text-slate-500 uppercase font-bold">Icon</span>
                                                             </div>
-
-                                                            {showTaskActions && hasActions && (
-                                                                <p className="text-[9px] font-bold text-purple-400 uppercase mt-2 flex items-center gap-1">
-                                                                    <Zap className="w-2.5 h-2.5" />
-                                                                    <span>HAS ACTIONS</span>
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                        <Edit2 className="w-4 h-4 text-slate-500 group-hover:text-orange-500 transition-colors flex-shrink-0" />
+                                                        )}
                                                     </div>
+
+                                                    {/* Score */}
+                                                    {showTaskScores && (
+                                                        <p className="text-[10px] font-bold text-orange-400 uppercase flex-shrink-0">
+                                                            ${point.points}
+                                                        </p>
+                                                    )}
+
+                                                    {/* Actions indicator */}
+                                                    {showTaskActions && hasActions && (
+                                                        <Zap className="w-3 h-3 text-purple-400 flex-shrink-0" title="Has actions" />
+                                                    )}
+
+                                                    {/* Edit button */}
+                                                    <Edit2 className="w-3.5 h-3.5 text-slate-500 group-hover:text-orange-500 transition-colors flex-shrink-0" />
                                                 </div>
                                             );
                                         })}
