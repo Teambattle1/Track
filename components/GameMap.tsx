@@ -7,6 +7,7 @@ import { Trash2, Crosshair, EyeOff, Image as ImageIcon, CheckCircle, HelpCircle,
 import { useLocation } from '../contexts/LocationContext';
 import { isValidCoordinate } from '../utils/geo';
 import TeamHistoryOverlay from './TeamHistoryOverlay';
+import { isTaskVisibleByProximity } from '../utils/proximityTriggers';
 
 const UserIcon = L.divIcon({
   className: 'custom-user-icon',
@@ -71,6 +72,7 @@ export interface GameMapHandle {
 interface GameMapProps {
   userLocation?: Coordinate | null; // Keep optional prop for manual overrides (Editor)
   points: GamePoint[];
+  currentTeam?: Team | null; // Current team for proximity filtering
   teams?: { team: Team, location: Coordinate, status?: TeamStatus, stats?: any }[];
   teamTrails?: Record<string, Coordinate[]>;
   pointLabels?: Record<string, string>;
