@@ -900,8 +900,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                 </>
             )}
 
-            {/* Tasks */}
-            {mapPoints.map(point => (
+            {/* Tasks - Toggle with Layer Control */}
+            {showTaskLayer && mapPoints.map(point => (
                 <MapTaskMarker
                     key={point.id}
                     point={point}
