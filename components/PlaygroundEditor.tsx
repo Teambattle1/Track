@@ -3151,6 +3151,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     setShowPlayzoneSelector(false);
                                     setPendingTasksToAdd([]);
                                     setIsAddingAITasks(false);
+                                    setIsAddingTaskList(false);
                                 }}
                                 className="px-4 py-2 text-slate-300 hover:text-white font-bold uppercase text-xs transition-colors"
                             >
