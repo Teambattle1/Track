@@ -117,6 +117,8 @@ const GameApp: React.FC = () => {
   const [showTaskTitle, setShowTaskTitle] = useState(true);
   const [showTaskActions, setShowTaskActions] = useState(true);
   const [showTeamPaths, setShowTeamPaths] = useState(false);
+  const [showTeamPathSelector, setShowTeamPathSelector] = useState(false);
+  const [selectedTeamPaths, setSelectedTeamPaths] = useState<string[]>([]); // Array of team IDs to show paths for
   const [fogOfWarEnabled, setFogOfWarEnabled] = useState(false);
   const [selectedTeamForFogOfWar, setSelectedTeamForFogOfWar] = useState<string | null>(null);
   const [teamsForFogOfWar, setTeamsForFogOfWar] = useState<Team[]>([]);
