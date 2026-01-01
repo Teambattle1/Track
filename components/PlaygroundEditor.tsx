@@ -2385,18 +2385,23 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         {uniquePlaygroundPoints.map((point, index) => {
                                             const hasActions = point.logic && (point.logic.onOpen?.length || point.logic.onCorrect?.length || point.logic.onIncorrect?.length);
                                             const isMarked = markedTaskIds.has(point.id);
+                                            const isHovered = hoveredTaskId === point.id;
                                             return (
                                                 <div
                                                     key={point.id}
-                                                    className={`p-3 border rounded-lg transition-colors group ${
+                                                    className={`p-2 border rounded-lg transition-colors group ${
                                                         bulkIconMode
                                                             ? bulkIconSourceId === point.id
                                                                 ? 'bg-blue-500/20 border-blue-500 cursor-pointer'
                                                                 : 'bg-slate-800/50 border-slate-700 cursor-pointer'
-                                                            : (isMarked
+                                                            : (isHovered
+                                                                ? 'bg-orange-500/20 border-orange-500'
+                                                                : isMarked
                                                                 ? 'bg-orange-500/20 border-orange-500'
                                                                 : 'bg-slate-800/50 border-slate-700 hover:border-orange-500 hover:bg-slate-800')
                                                     }`}
+                                                    onMouseEnter={() => setHoveredTaskId(point.id)}
+                                                    onMouseLeave={() => setHoveredTaskId(null)}
                                                     onClick={() => {
                                                         if (bulkIconMode) {
                                                             if (bulkIconSourceId === null) {
