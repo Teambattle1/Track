@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Eye, Map as MapIcon, Globe, Layers, Snowflake, Mountain, ScrollText, Settings, Check, AlertTriangle } from 'lucide-react';
+import { X, Plus, Trash2, Eye, Map as MapIcon, Globe, Layers, Snowflake, Mountain, ScrollText, Settings, Check, AlertTriangle, Edit2 } from 'lucide-react';
 import { MapStyleId } from '../types';
 import * as db from '../services/db';
 
@@ -204,11 +204,15 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                 </h3>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {visibleBuiltinStyles.map((style) => (
-                                        <div key={style.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-purple-500 transition-all group">
+                                        <div
+                                            key={style.id}
+                                            className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-purple-500 transition-all group relative"
+                                            title={getStyleDescription(style)}
+                                        >
                                             <div className="relative">
                                                 <img
                                                     src={style.preview}
-                                                    alt={style.label}
+                                                    alt={getStyleLabel(style)}
                                                     className={`w-full h-32 object-cover ${style.className || ''}`}
                                                 />
                                                 <div className="absolute top-2 right-2 flex gap-1">
@@ -231,13 +235,44 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                                 </div>
                                             </div>
                                             <div className="p-3">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <style.icon className="w-4 h-4 text-purple-400" />
-                                                    <h4 className="font-bold text-white text-sm">{style.label}</h4>
-                                                </div>
-                                                <p className="text-[10px] text-slate-500 uppercase tracking-wide">
-                                                    {style.deletable ? 'DELETABLE' : 'PROTECTED'}
+                                                {renamingId === style.id ? (
+                                                    <input
+                                                        type="text"
+                                                        defaultValue={getStyleLabel(style)}
+                                                        autoFocus
+                                                        onBlur={(e) => handleRenameBuiltin(style.id, e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handleRenameBuiltin(style.id, e.currentTarget.value);
+                                                            } else if (e.key === 'Escape') {
+                                                                setRenamingId(null);
+                                                            }
+                                                        }}
+                                                        className="w-full px-2 py-1 bg-slate-800 border border-purple-500 rounded text-white text-sm font-bold outline-none"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                ) : (
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <style.icon className="w-4 h-4 text-purple-400" />
+                                                        <h4
+                                                            className="font-bold text-white text-sm flex-1 cursor-pointer hover:text-purple-400 transition-colors"
+                                                            onClick={() => setRenamingId(style.id)}
+                                                            title="Click to rename"
+                                                        >
+                                                            {getStyleLabel(style)}
+                                                        </h4>
+                                                    </div>
+                                                )}
+                                                <p className="text-[10px] text-slate-500 uppercase tracking-wide truncate" title={getStyleDescription(style)}>
+                                                    {getStyleDescription(style)}
                                                 </p>
+                                            </div>
+                                            {/* Hover Tooltip */}
+                                            <div className="absolute bottom-full left-0 right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                                <div className="bg-slate-950 border border-purple-500 rounded-lg p-3 shadow-xl">
+                                                    <p className="text-xs text-white font-bold mb-1">{getStyleLabel(style)}</p>
+                                                    <p className="text-[10px] text-slate-400">{getStyleDescription(style)}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
