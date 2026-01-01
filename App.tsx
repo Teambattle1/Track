@@ -374,6 +374,26 @@ const GameApp: React.FC = () => {
       return () => clearInterval(interval);
   }, [userLocation, activeGame, mode]);
 
+  // --- FOG OF WAR TEAMS DATA FETCHING ---
+  useEffect(() => {
+      if (!fogOfWarEnabled || !activeGameId) {
+          setTeamsForFogOfWar([]);
+          return;
+      }
+
+      const loadTeams = async () => {
+          try {
+              const teams = await db.fetchTeams(activeGameId);
+              setTeamsForFogOfWar(teams);
+          } catch (error) {
+              console.error('Error loading teams for fog of war:', error);
+              setTeamsForFogOfWar([]);
+          }
+      };
+
+      loadTeams();
+  }, [fogOfWarEnabled, activeGameId]);
+
   // --- GAME STATS DATA FETCHING ---
   useEffect(() => {
       if (!showGameStats || !activeGameId) return;
