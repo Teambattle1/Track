@@ -263,9 +263,20 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                                         </h4>
                                                     </div>
                                                 )}
-                                                <p className="text-[10px] text-slate-500 uppercase tracking-wide truncate" title={getStyleDescription(style)}>
-                                                    {getStyleDescription(style)}
-                                                </p>
+                                                <input
+                                                    type="text"
+                                                    defaultValue={getStyleDescription(style)}
+                                                    onBlur={(e) => handleUpdateDescription(style.id, e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleUpdateDescription(style.id, e.currentTarget.value);
+                                                            e.currentTarget.blur();
+                                                        }
+                                                    }}
+                                                    placeholder="Add description..."
+                                                    className="w-full text-[10px] text-slate-400 bg-transparent border-b border-transparent hover:border-slate-700 focus:border-purple-500 outline-none px-1 py-0.5 transition-colors"
+                                                    title="Click to edit description"
+                                                />
                                             </div>
                                             {/* Hover Tooltip */}
                                             <div className="absolute bottom-full left-0 right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
