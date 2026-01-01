@@ -123,7 +123,8 @@ export const fetchTeamHistory = async (gameId: string): Promise<TeamHistory[]> =
       .eq('game_id', gameId);
 
     if (teamsError) {
-      console.error('[TeamTracking] Error fetching teams:', teamsError);
+      const errorMessage = teamsError.message || JSON.stringify(teamsError);
+      console.error('[TeamTracking] Error fetching teams:', errorMessage);
       return [];
     }
 
