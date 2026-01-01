@@ -20,8 +20,15 @@ const logError = (context: string, error: any) => {
     };
 
     console.error(`[DB Service] Error in ${context}:`, errorMsg);
-    if (Object.values(errorDetails).some(v => v !== undefined)) {
-        console.error(`[DB Service] Error details:`, errorDetails);
+
+    // Format error details as a readable string
+    const detailsArray = Object.entries(errorDetails)
+        .filter(([_, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ');
+
+    if (detailsArray) {
+        console.error(`[DB Service] Error details: ${detailsArray}`);
     }
 
     // Special handling for network errors
