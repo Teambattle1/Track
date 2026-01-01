@@ -17,6 +17,35 @@ interface CustomMapStyle {
     createdAt?: number;
 }
 
+// External map design sources
+const EXTERNAL_MAP_SOURCES = [
+    {
+        name: 'Snazzy Maps',
+        url: 'https://snazzymaps.com',
+        description: 'Browse and create custom map styles'
+    },
+    {
+        name: 'Google Maps Platform',
+        url: 'https://cloud.google.com/maps-platform',
+        description: 'Official Google Maps styling tools'
+    },
+    {
+        name: 'Mapbox Styles',
+        url: 'https://www.mapbox.com/maps',
+        description: 'Create and customize maps with Mapbox'
+    },
+    {
+        name: 'CartoDB',
+        url: 'https://carto.com',
+        description: 'Styling tools for location intelligence'
+    },
+    {
+        name: 'OpenStreetMap',
+        url: 'https://www.openstreetmap.org',
+        description: 'Open source mapping community'
+    }
+];
+
 // Hardcoded map styles that ship with the app
 const BUILTIN_MAP_STYLES: { id: MapStyleId; label: string; icon: any; preview: string; className?: string; deletable: boolean; description: string }[] = [
     { id: 'osm', label: 'Standard', icon: Globe, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png', deletable: false, description: 'Classic OpenStreetMap style with clear roads and labels' },
