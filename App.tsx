@@ -31,6 +31,7 @@ import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
 import GameStatsModal from './components/GameStatsModal';
 import MapStyleLibrary from './components/MapStyleLibrary';
+import QRCodesTool from './components/QRCodesTool';
 import MessagePopup from './components/MessagePopup';
 import Dashboard from './components/Dashboard';
 import DangerZoneModal from './components/DangerZoneModal';
@@ -78,6 +79,7 @@ const GameApp: React.FC = () => {
   const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | null>(null);
   const [showGameStats, setShowGameStats] = useState(false);
   const [showMapStyleLibrary, setShowMapStyleLibrary] = useState(false);
+  const [showQRCodesTool, setShowQRCodesTool] = useState(false);
   const [gameStatsTeams, setGameStatsTeams] = useState<Team[]>([]);
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
@@ -1599,6 +1601,9 @@ const GameApp: React.FC = () => {
                             case 'MAP_STYLES':
                                 setShowMapStyleLibrary(true);
                                 break;
+                            case 'QR_CODES':
+                                setShowQRCodesTool(true);
+                                break;
                             case 'CLIENT_PORTAL':
                                 setDashboardTab('client');
                                 setShowDashboard(true);
@@ -1633,6 +1638,15 @@ const GameApp: React.FC = () => {
             {showMapStyleLibrary && (
                 <MapStyleLibrary
                     onClose={() => setShowMapStyleLibrary(false)}
+                />
+            )}
+
+            {showQRCodesTool && (
+                <QRCodesTool
+                    games={playableGames}
+                    activeGameId={activeGameId}
+                    onSelectGame={setActiveGameId}
+                    onClose={() => setShowQRCodesTool(false)}
                 />
             )}
 
