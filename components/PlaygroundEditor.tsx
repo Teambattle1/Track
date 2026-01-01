@@ -3237,9 +3237,19 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             {/* TaskMaster Modal for LIBRARY and TASKLIST */}
             {showTaskMaster && (
                 <TaskMaster
-                    onClose={() => setShowTaskMaster(false)}
+                    onClose={() => {
+                        setShowTaskMaster(false);
+                        setIsAddingTaskList(false);
+                    }}
                     onImportTasks={(tasks) => {
-                        // Show selector to choose between MAP and PLAYZONES
+                        // If adding tasklist from TOOLS menu, show selector
+                        if (isAddingTaskList) {
+                            setPendingTasksToAdd(tasks);
+                            setIsAddingAITasks(false);
+                            setShowPlayzoneSelector(true);
+                            return;
+                        }
+                        // Otherwise original behavior
                         setPendingTasksToAdd(tasks);
                         setIsAddingAITasks(false);
                         setShowPlayzoneSelector(true);
