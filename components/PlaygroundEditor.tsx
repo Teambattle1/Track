@@ -918,6 +918,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             y: Math.max(0, Math.min(100, Math.round(y * 10) / 10))
         };
 
+        // Update visual position immediately for smooth dragging
+        setDragVisualPosition(clamped);
+
+        // Batch game state updates with throttle
         updatePointPlaygroundPosition(id, clamped);
 
         // Check if dragging over delete zone
