@@ -526,7 +526,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
             onUpdateGame({
                 ...game,
-                points: game.points.map(p => {
+                points: game.points?.map(p => {
                     if (updates[p.id]) {
                         return { ...p, playgroundPosition: updates[p.id] };
                     }
