@@ -174,12 +174,45 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
         return customPreviews[style.id] || style.preview;
     };
 
-    const handleUpdatePreview = (id: string, newPreviewUrl: string) => {
-        const updatedPreviews = { ...customPreviews, [id]: newPreviewUrl };
-        setCustomPreviews(updatedPreviews);
-        localStorage.setItem('mapStylePreviews', JSON.stringify(updatedPreviews));
-        setEditingPreviewId(null);
-        setPreviewUrlInput('');
+    const handleUpdatePreview = async (id: string, newPreviewUrl: string, file?: File | null) => {
+        try {
+            setUploadingPreview(true);
+            let finalUrl = newPreviewUrl;
+
+            // If a file was provided, upload it to Supabase Storage
+            if (file) {
+                const uploadedUrl = await uploadImage(file, 'map-style-previews');
+                if (uploadedUrl) {
+                    finalUrl = uploadedUrl;
+                } else {
+                    alert('Failed to upload image');
+                    setUploadingPreview(false);
+                    return;
+                }
+            }
+
+            const updatedPreviews = { ...customPreviews, [id]: finalUrl };
+            setCustomPreviews(updatedPreviews);
+            localStorage.setItem('mapStylePreviews', JSON.stringify(updatedPreviews));
+
+            // If this is a custom style, also update in database
+            const customStyle = customStyles.find(s => s.id === id);
+            if (customStyle) {
+                await db.saveCustomMapStyle({
+                    ...customStyle,
+                    previewUrl: finalUrl
+                });
+            }
+
+            setEditingPreviewId(null);
+            setPreviewUrlInput('');
+            setPreviewFile(null);
+        } catch (error) {
+            console.error('Error updating preview:', error);
+            alert('Failed to update preview image');
+        } finally {
+            setUploadingPreview(false);
+        }
     };
 
     const handleStartEditPreview = (id: string, currentPreview: string) => {
