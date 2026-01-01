@@ -52,6 +52,23 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
     }
   }, [messages, isOpen]);
 
+  // Vibrate on new messages (for team players, not for instructors who sent the message)
+  const prevMessageCountRef = useRef(messages.length);
+  useEffect(() => {
+    // Only vibrate if:
+    // 1. Drawer is open
+    // 2. We're not in instructor mode (players should feel vibration)
+    // 3. A new message arrived (count increased)
+    if (isOpen && !isInstructorMode && messages.length > prevMessageCountRef.current) {
+      const latestMessage = messages[messages.length - 1];
+
+      // Vibrate with different intensity for urgent messages
+      vibrateChatNotification(latestMessage?.isUrgent || false);
+    }
+
+    prevMessageCountRef.current = messages.length;
+  }, [messages, isOpen, isInstructorMode]);
+
   const handleSend = () => {
     if (!newMessage.trim()) return;
     setIsSending(true);
