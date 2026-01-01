@@ -2926,6 +2926,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     initialPlaygroundId={activePlayground?.id || null}
                     targetMode="GAME"
                     onAddTasks={(tasks, targetPlaygroundId) => {
+                        // If no specific playzone selected, show playzone selector
+                        if (!targetPlaygroundId && game.playgrounds && game.playgrounds.length > 1) {
+                            setPendingTasksToAdd(tasks);
+                            setIsAddingAITasks(true);
+                            setShowPlayzoneSelector(true);
+                            return;
+                        }
+
+                        // Otherwise, add directly to the specified or active playzone
                         const baseOrder = uniquePlaygroundPoints.length;
                         const COLS = 3;
                         const PADDING = 10;
