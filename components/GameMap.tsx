@@ -983,12 +983,20 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
 
             {/* Team Trails */}
             {Object.keys(teamTrails).map(teamId => (
-                <Polyline 
-                    key={teamId} 
-                    positions={teamTrails[teamId]} 
-                    pathOptions={{ color: getTeamColor(teamId), weight: 3, opacity: 0.5, dashArray: '2, 8' }} 
+                <Polyline
+                    key={teamId}
+                    positions={teamTrails[teamId]}
+                    pathOptions={{ color: getTeamColor(teamId), weight: 3, opacity: 0.5, dashArray: '2, 8' }}
                 />
             ))}
+
+            {/* Team History Overlay - Historical movement paths and task attempts */}
+            {teamHistory && teamHistory.length > 0 && (
+                <TeamHistoryOverlay
+                    teams={teamHistory}
+                    visible={showTeamPaths || false}
+                />
+            )}
 
         </MapContainer>
 
