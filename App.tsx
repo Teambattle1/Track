@@ -786,6 +786,28 @@ const GameApp: React.FC = () => {
       }
   };
 
+  const handleToggleTeamPathSelector = () => {
+      setShowTeamPathSelector(!showTeamPathSelector);
+  };
+
+  const handleSelectTeamPath = (teamId: string) => {
+      setSelectedTeamPaths(prev => {
+          if (prev.includes(teamId)) {
+              // Deselect team
+              const newPaths = prev.filter(id => id !== teamId);
+              // Hide paths if no teams selected
+              if (newPaths.length === 0) {
+                  setShowTeamPaths(false);
+              }
+              return newPaths;
+          } else {
+              // Select team and show paths
+              setShowTeamPaths(true);
+              return [...prev, teamId];
+          }
+      });
+  };
+
   const handleUpdateGameTime = async (newEndTime: number) => {
       if (!activeGame) return;
 
