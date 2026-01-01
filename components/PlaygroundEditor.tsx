@@ -290,6 +290,112 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         saveToolbarPositions();
     };
 
+    // Drag handlers for QR Scanner
+    const handleQRScannerPointerDown = (e: React.PointerEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+        e.stopPropagation();
+        e.preventDefault();
+        setIsDraggingQRScanner(true);
+        qrScannerDragOffset.current = { x: e.clientX - qrScannerPos.x, y: e.clientY - qrScannerPos.y };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+    const handleQRScannerPointerMove = (e: React.PointerEvent) => {
+        if (!isDraggingQRScanner) return;
+        e.stopPropagation();
+        e.preventDefault();
+        setQRScannerPos({ x: e.clientX - qrScannerDragOffset.current.x, y: e.clientY - qrScannerDragOffset.current.y });
+    };
+    const handleQRScannerPointerUp = (e: React.PointerEvent) => {
+        if (!isDraggingQRScanner) return;
+        setIsDraggingQRScanner(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveToolbarPositions();
+    };
+
+    // QR Scanner function
+    const handleQRScanClick = async () => {
+        if (isQRScannerActive) {
+            // Stop scanning
+            if (qrStreamRef.current) {
+                qrStreamRef.current.getTracks().forEach(track => track.stop());
+            }
+            if (qrScanIntervalRef.current) {
+                clearInterval(qrScanIntervalRef.current);
+            }
+            setIsQRScannerActive(false);
+            setQRScannedValue(null);
+            return;
+        }
+
+        // Start scanning
+        setIsQRScannerActive(true);
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
+
+            qrStreamRef.current = stream;
+
+            if (qrVideoRef.current) {
+                qrVideoRef.current.srcObject = stream;
+                qrVideoRef.current.play();
+
+                qrScanIntervalRef.current = setInterval(() => {
+                    if (qrVideoRef.current && qrCanvasRef.current && qrVideoRef.current.readyState === qrVideoRef.current.HAVE_ENOUGH_DATA) {
+                        const canvas = qrCanvasRef.current;
+                        const ctx = canvas.getContext('2d');
+
+                        if (ctx) {
+                            canvas.width = qrVideoRef.current.videoWidth;
+                            canvas.height = qrVideoRef.current.videoHeight;
+                            ctx.drawImage(qrVideoRef.current, 0, 0);
+
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                            if (code) {
+                                setQRScannedValue(code.data);
+                                if (qrStreamRef.current) {
+                                    qrStreamRef.current.getTracks().forEach(track => track.stop());
+                                }
+                                if (qrScanIntervalRef.current) {
+                                    clearInterval(qrScanIntervalRef.current);
+                                }
+                                setIsQRScannerActive(false);
+                            }
+                        }
+                    }
+                }, 100);
+            }
+        } catch (error: any) {
+            console.error('QR Scanner: Camera access failed:', error);
+            setIsQRScannerActive(false);
+        }
+    };
+
+    // Cleanup QR scanner on unmount
+    useEffect(() => {
+        return () => {
+            if (qrStreamRef.current) {
+                qrStreamRef.current.getTracks().forEach(track => track.stop());
+            }
+            if (qrScanIntervalRef.current) {
+                clearInterval(qrScanIntervalRef.current);
+            }
+        };
+    }, []);
+
     // Get active playground
     const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId) || game.playgrounds?.[0];
     const isOrientationLocked = !!activePlayground?.orientationLock && activePlayground.orientationLock !== 'none';
