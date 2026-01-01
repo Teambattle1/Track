@@ -1997,6 +1997,19 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 </div>
                             );
                         })}
+
+                        {/* QR Scanner Preview Button - Shows when enabled in SHOW toolbar */}
+                        {showQRScanner && (
+                            <div className="absolute bottom-6 right-6 z-50 pointer-events-auto">
+                                <button
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold uppercase text-xs shadow-xl transition-all"
+                                    title="QR Scanner (will appear in PLAY mode)"
+                                >
+                                    <QrCode className="w-4 h-4" />
+                                    SCAN QR
+                                </button>
+                            </div>
+                        )}
                     </div>
                     </div>
                 </div>
