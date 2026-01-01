@@ -111,6 +111,8 @@ interface GameMapProps {
   gameEnded?: boolean; // New prop
   returnPath?: Coordinate[]; // New prop for return line
   showUserLocation?: boolean; // New prop for user location visibility
+  teamHistory?: import('../types/teamHistory').TeamHistory[]; // NEW: Team movement history
+  showTeamPaths?: boolean; // NEW: Toggle for team path visibility
 }
 
 // Internal component to handle user location updates without re-rendering the whole map
