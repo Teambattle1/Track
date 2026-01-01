@@ -32,6 +32,7 @@ import PlaygroundEditor from './components/PlaygroundEditor';
 import GameStatsModal from './components/GameStatsModal';
 import MapStyleLibrary from './components/MapStyleLibrary';
 import QRCodesTool from './components/QRCodesTool';
+import GameStatsTool from './components/GameStatsTool';
 import MessagePopup from './components/MessagePopup';
 import Dashboard from './components/Dashboard';
 import DangerZoneModal from './components/DangerZoneModal';
@@ -1625,14 +1626,11 @@ const GameApp: React.FC = () => {
                 />
             )}
             {showGameStats && (
-                <GameStatsModal
+                <GameStatsTool
+                    games={playableGames}
+                    activeGameId={activeGameId}
+                    onSelectGame={setActiveGameId}
                     onClose={() => setShowGameStats(false)}
-                    game={activeGame}
-                    teams={gameStatsTeams.map(team => ({
-                        team,
-                        location: undefined, // Teams don't store location in DB
-                        memberCount: team.members?.length || 1
-                    }))}
                 />
             )}
             {showMapStyleLibrary && (
