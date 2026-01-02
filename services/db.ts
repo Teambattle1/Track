@@ -987,6 +987,39 @@ export const sendAccountUserMessage = async (targetUserId: string, messageText: 
 };
 
 // --- USER SETTINGS ---
+const SYSTEM_SETTINGS_USER_ID = '00000000-0000-0000-0000-000000000000';
+
+type TagColorsMap = Record<string, string>;
+
+export const fetchSystemSettings = async (): Promise<any | null> => {
+    return fetchUserSettings(SYSTEM_SETTINGS_USER_ID);
+};
+
+export const saveSystemSettings = async (patch: any): Promise<boolean> => {
+    const current = (await fetchSystemSettings()) || {};
+    return saveUserSettings(SYSTEM_SETTINGS_USER_ID, { ...current, ...patch });
+};
+
+export const fetchTagColors = async (): Promise<TagColorsMap> => {
+    try {
+        const settings = await fetchSystemSettings();
+        const fromDb = settings?.tagColors;
+        if (fromDb && typeof fromDb === 'object') return fromDb as TagColorsMap;
+        return {};
+    } catch (e) {
+        logError('fetchTagColors', e);
+        return {};
+    }
+};
+
+export const saveTagColors = async (tagColors: TagColorsMap): Promise<boolean> => {
+    try {
+        return await saveSystemSettings({ tagColors });
+    } catch (e) {
+        logError('saveTagColors', e);
+        return false;
+    }
+};
 export const fetchUserSettings = async (userId: string): Promise<any | null> => {
     try {
         const { data, error } = await supabase
