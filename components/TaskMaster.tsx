@@ -665,8 +665,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                     bVal = countTaskUsage(b.id);
                     break;
                 case 'tags':
-                    aVal = a.tags.join(',').toLowerCase();
-                    bVal = b.tags.join(',').toLowerCase();
+                    aVal = (Array.isArray(a.tags) ? a.tags : []).join(',').toLowerCase();
+                    bVal = (Array.isArray(b.tags) ? b.tags : []).join(',').toLowerCase();
                     break;
             }
 
