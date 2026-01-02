@@ -1838,7 +1838,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[8px] font-black uppercase">ORDER</span>
                                 </button>
                                 <button
-                                    onClick={() => setShowTaskActions(!showTaskActions)}
+                                    onClick={() => {
+                                        const newValue = !showTaskActions;
+                                        setShowTaskActions(newValue);
+                                        updatePlayground({ showTaskActions: newValue });
+                                    }}
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskActions ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
@@ -1847,7 +1851,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[8px] font-black uppercase">ACTIONS</span>
                                 </button>
                                 <button
-                                    onClick={() => setShowTaskNames(!showTaskNames)}
+                                    onClick={() => {
+                                        const newValue = !showTaskNames;
+                                        setShowTaskNames(newValue);
+                                        updatePlayground({ showTaskNames: newValue });
+                                    }}
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskNames ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
@@ -1856,7 +1864,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[8px] font-black uppercase">NAME</span>
                                 </button>
                                 <button
-                                    onClick={() => setShowTaskStatus(!showTaskStatus)}
+                                    onClick={() => {
+                                        const newValue = !showTaskStatus;
+                                        setShowTaskStatus(newValue);
+                                        updatePlayground({ showTaskStatus: newValue });
+                                    }}
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskStatus ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
@@ -1865,7 +1877,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[8px] font-black uppercase">ANSWERS</span>
                                 </button>
                                 <button
-                                    onClick={() => setShowBackground(!showBackground)}
+                                    onClick={() => {
+                                        const newValue = !showBackground;
+                                        setShowBackground(newValue);
+                                        updatePlayground({ showBackground: newValue });
+                                    }}
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showBackground ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
@@ -1874,7 +1890,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[8px] font-black uppercase">BG</span>
                                 </button>
                                 <button
-                                    onClick={() => setShowQRScanner(!showQRScanner)}
+                                    onClick={() => {
+                                        const newValue = !showQRScanner;
+                                        setShowQRScanner(newValue);
+                                        updatePlayground({ showQRScanner: newValue });
+                                    }}
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showQRScanner ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
