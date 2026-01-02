@@ -74,6 +74,50 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
       }
   };
 
+  const handleAddToGame = async (template: PlaygroundTemplate, e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      setSelectedTemplateForGame(template);
+      setGamesLoading(true);
+
+      try {
+          const gamesList = await db.fetchGames();
+          setGames(gamesList.filter(g => !g.isGameTemplate));
+          setShowGameSelector(true);
+      } catch (error) {
+          console.error('Error loading games:', error);
+          alert('Failed to load games');
+      } finally {
+          setGamesLoading(false);
+      }
+  };
+
+  const confirmAddToGame = async (game: Game) => {
+      if (!selectedTemplateForGame) return;
+
+      try {
+          const newPlayground = {
+              id: `pg-${Date.now()}`,
+              ...selectedTemplateForGame.playgroundData,
+              title: selectedTemplateForGame.title,
+              buttonVisible: true
+          };
+
+          await db.updateGame(game.id, {
+              ...game,
+              playgrounds: [...(game.playgrounds || []), newPlayground]
+          });
+
+          setShowGameSelector(false);
+          setSelectedTemplateForGame(null);
+          alert(`Playzone "${selectedTemplateForGame.title}" added to "${game.name}"!`);
+      } catch (error) {
+          console.error('Error adding playzone to game:', error);
+          alert('Failed to add playzone to game');
+      }
+  };
+
   return (
     <div className="fixed inset-0 z-[4500] bg-slate-950 text-white flex flex-col font-sans overflow-hidden animate-in fade-in">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#1e293b,transparent)] opacity-40 pointer-events-none" />
