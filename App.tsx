@@ -2069,6 +2069,8 @@ const GameApp: React.FC = () => {
             measurePointsCount={measurePointsCount}
             playgrounds={activeGame?.playgrounds}
             onOpenPlayground={(id) => setViewingPlaygroundId(id)}
+            hoveredPlaygroundId={hoveredPlaygroundId}
+            onHoverPlayground={setHoveredPlaygroundId}
             onOpenTeamDashboard={() => setShowTeamDashboard(true)}
             onRelocateGame={handleRelocateGame}
             isRelocating={isRelocating}
