@@ -1172,7 +1172,16 @@ const GameApp: React.FC = () => {
                   }}
                   onDeleteGame={handleDeleteGame}
                   onClose={() => setShowGameChooser(false)}
-                  onEditGame={(id) => { 
+                  onEditGame={(id) => {
+                      const game = games.find(g => g.id === id);
+                      if (game) {
+                          setGameToEdit(game);
+                          setActiveGameId(id);
+                          setShowGameCreator(true);
+                          setShowGameChooser(false);
+                      }
+                  }}
+                  onEditGameSetup={(id) => {
                       const game = games.find(g => g.id === id);
                       if (game) {
                           setGameToEdit(game);
