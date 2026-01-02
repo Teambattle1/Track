@@ -2334,6 +2334,32 @@ const GameApp: React.FC = () => {
             </div>
         )}
 
+        {showPlayzoneSelector && (
+            <PlayzoneSelector
+                onClose={() => setShowPlayzoneSelector(false)}
+                onBack={() => {
+                    setShowPlayzoneSelector(false);
+                    setShowPlayzoneChoiceModal(true);
+                }}
+                onAddToGame={async (templates) => {
+                    if (!activeGame) return;
+
+                    // Copy playzones from templates into the active game
+                    const newPlaygrounds = templates.map(tpl => ({
+                        id: `pg-${Date.now()}-${Math.random()}`,
+                        ...tpl.playgroundData,
+                        title: tpl.title,
+                        buttonVisible: true
+                    }));
+
+                    await updateActiveGame({
+                        ...activeGame,
+                        playgrounds: [...(activeGame.playgrounds || []), ...newPlaygrounds]
+                    });
+                }}
+            />
+        )}
+
         {showAccess && (
             <Access
                 onGameSelected={(gameId) => {
