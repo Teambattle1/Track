@@ -5272,14 +5272,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     <TaskModal
                         point={task}
                         onClose={() => setActiveSimulationTaskId(null)}
-                        onTaskComplete={(pointId, isCorrect, scoreDelta) => {
+                        onComplete={(pointId, customScore) => {
                             // Update simulation score
+                            const scoreDelta = customScore !== undefined ? customScore : (task.score || 0);
                             setSimulationScore(prev => prev + scoreDelta);
 
                             // Update task status
                             const updatedPoints = game.points.map(p =>
                                 p.id === pointId
-                                    ? { ...p, isCompleted: true, isCorrect }
+                                    ? { ...p, isCompleted: true, isCorrect: true }
                                     : p
                             );
                             onUpdateGame({ ...game, points: updatedPoints });
@@ -5287,9 +5288,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             // Close modal
                             setActiveSimulationTaskId(null);
                         }}
-                        mode="SIMULATION"
-                        teamId={simulationTeam?.id}
-                        showCorrectAnswer={true}
+                        onPenalty={(amount) => {
+                            // Handle penalties in simulation mode
+                            setSimulationScore(prev => Math.max(0, prev - amount));
+                        }}
+                        distance={0}
+                        mode={GameMode.SIMULATION}
                         game={game}
                     />
                 );
