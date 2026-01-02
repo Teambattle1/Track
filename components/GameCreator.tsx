@@ -1852,6 +1852,142 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                       </div>
                   </div>
               );
+          case 'SOUNDS':
+              const currentCorrectSound = soundSettings?.correctAnswerSound || getGlobalCorrectSound();
+              const currentIncorrectSound = soundSettings?.incorrectAnswerSound || getGlobalIncorrectSound();
+              const currentVolume = soundSettings?.volume ?? getGlobalVolume();
+
+              return (
+                  <div className="space-y-6 max-w-3xl animate-in fade-in slide-in-from-bottom-2">
+                      {/* Header */}
+                      <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-700/50 p-6 rounded-2xl">
+                          <div className="flex items-center gap-3 mb-2">
+                              <Volume2 className="w-6 h-6 text-purple-400" />
+                              <h3 className="text-xl font-black text-white uppercase">Sound Settings</h3>
+                          </div>
+                          <p className="text-sm text-slate-300">
+                              Configure answer sounds for this game. Leave empty to use global defaults from System Tools.
+                          </p>
+                      </div>
+
+                      {/* Using Global Sounds Notice */}
+                      {!soundSettings?.correctAnswerSound && !soundSettings?.incorrectAnswerSound && (
+                          <div className="bg-blue-900/20 border border-blue-700/50 rounded-xl p-4">
+                              <div className="flex items-start gap-3">
+                                  <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+                                  <div className="text-xs text-blue-300 leading-relaxed">
+                                      <p><strong>📢 Using Global Defaults</strong></p>
+                                      <p className="mt-1">This game is currently using the global sound settings configured in System Tools (Admin panel).</p>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
+
+                      {/* Sound Configuration */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-6">
+                          {/* Volume Slider */}
+                          <div>
+                              <div className="flex justify-between items-center mb-3">
+                                  <label className="text-sm font-bold text-white uppercase">Volume</label>
+                                  <span className="text-lg font-black text-purple-400">{currentVolume}%</span>
+                              </div>
+                              <input
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  step="10"
+                                  value={currentVolume}
+                                  onChange={(e) => setSoundSettings({
+                                      ...soundSettings,
+                                      volume: parseInt(e.target.value)
+                                  })}
+                                  className="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                              />
+                              <p className="text-xs text-slate-500 mt-2">
+                                  Adjust playback volume for this game's answer sounds
+                              </p>
+                          </div>
+
+                          {/* Correct Answer Sound */}
+                          <div>
+                              <label className="block text-sm font-bold text-green-400 uppercase mb-2">
+                                  ✓ Correct Answer Sound
+                              </label>
+                              <select
+                                  value={currentCorrectSound}
+                                  onChange={(e) => setSoundSettings({
+                                      ...soundSettings,
+                                      correctAnswerSound: e.target.value
+                                  })}
+                                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-medium outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+                              >
+                                  {CORRECT_SOUNDS.map(sound => (
+                                      <option key={sound.id} value={sound.url}>
+                                          {sound.name} - {sound.description}
+                                      </option>
+                                  ))}
+                              </select>
+                              <button
+                                  onClick={() => playSound(currentCorrectSound, currentVolume)}
+                                  className="mt-3 w-full px-4 py-3 bg-green-600/20 hover:bg-green-600/30 border border-green-600/50 text-green-400 rounded-xl text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                              >
+                                  <Play className="w-4 h-4" /> Preview Sound
+                              </button>
+                          </div>
+
+                          {/* Incorrect Answer Sound */}
+                          <div>
+                              <label className="block text-sm font-bold text-red-400 uppercase mb-2">
+                                  ✗ Incorrect Answer Sound
+                              </label>
+                              <select
+                                  value={currentIncorrectSound}
+                                  onChange={(e) => setSoundSettings({
+                                      ...soundSettings,
+                                      incorrectAnswerSound: e.target.value
+                                  })}
+                                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-medium outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                              >
+                                  {INCORRECT_SOUNDS.map(sound => (
+                                      <option key={sound.id} value={sound.url}>
+                                          {sound.name} - {sound.description}
+                                      </option>
+                                  ))}
+                              </select>
+                              <button
+                                  onClick={() => playSound(currentIncorrectSound, currentVolume)}
+                                  className="mt-3 w-full px-4 py-3 bg-red-600/20 hover:bg-red-600/30 border border-red-600/50 text-red-400 rounded-xl text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                              >
+                                  <Play className="w-4 h-4" /> Preview Sound
+                              </button>
+                          </div>
+
+                          {/* Reset to Global Defaults */}
+                          {(soundSettings?.correctAnswerSound || soundSettings?.incorrectAnswerSound || soundSettings?.volume !== undefined) && (
+                              <div className="pt-4 border-t border-slate-700">
+                                  <button
+                                      onClick={() => setSoundSettings(undefined)}
+                                      className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded-xl font-bold text-xs uppercase transition-all flex items-center justify-center gap-2"
+                                  >
+                                      <Trash2 className="w-4 h-4" />
+                                      Reset to Global Defaults
+                                  </button>
+                              </div>
+                          )}
+                      </div>
+
+                      {/* Info Card */}
+                      <div className="bg-purple-900/20 border border-purple-700/50 rounded-xl p-4">
+                          <div className="text-xs text-purple-300 leading-relaxed space-y-1">
+                              <p><strong>💡 How it works:</strong></p>
+                              <p>• <strong>Global Defaults:</strong> Set in System Tools (Admin) → applies to all games</p>
+                              <p>• <strong>Game Override:</strong> Configure game-specific sounds here to override defaults</p>
+                              <p>• <strong>Auto-Play:</strong> Sounds play automatically when players answer tasks</p>
+                              <p>• <strong>Volume Control:</strong> Set volume to 80% on game load (recommended)</p>
+                          </div>
+                      </div>
+                  </div>
+              );
           case 'CLIENT':
               const clientLink = baseGame?.id ? `${window.location.origin}/#/client/${baseGame.id}` : '';
               const handleCopyClientLink = () => {
