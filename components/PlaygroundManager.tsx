@@ -15,6 +15,10 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
   const [loading, setLoading] = useState(true);
   const [deleteWarningTemplate, setDeleteWarningTemplate] = useState<PlaygroundTemplate | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [games, setGames] = useState<Game[]>([]);
+  const [showGameSelector, setShowGameSelector] = useState(false);
+  const [selectedTemplateForGame, setSelectedTemplateForGame] = useState<PlaygroundTemplate | null>(null);
+  const [gamesLoading, setGamesLoading] = useState(false);
 
   useEffect(() => {
     loadTemplates();
