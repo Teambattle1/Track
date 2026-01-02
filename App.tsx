@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Ruler, Crosshair, Navigation } from 'lucide-react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, PlaygroundTemplate } from './types';
+import { APP_VERSION } from './utils/version';
 import * as db from './services/db';
 import { supabase } from './lib/supabase';
 import { authService } from './services/auth';
