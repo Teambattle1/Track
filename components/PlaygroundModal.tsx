@@ -44,6 +44,14 @@ const PlaygroundModal: React.FC<PlaygroundModalProps> = ({ playground, points, o
   const dragStartRef = useRef<{ x: number, y: number } | null>(null);
   const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
 
+  // Force re-render every second to update cooldown timers
+  const [, setTick] = useState(0);
+  useEffect(() => {
+      if (taskCooldowns.size === 0) return;
+      const interval = setInterval(() => setTick(t => t + 1), 1000);
+      return () => clearInterval(interval);
+  }, [taskCooldowns]);
+
   // Audio Playback Logic
   useEffect(() => {
       if (playground.audioUrl && mode === GameMode.PLAY) {
