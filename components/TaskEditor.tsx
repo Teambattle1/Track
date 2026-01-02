@@ -7,6 +7,7 @@ import { getCroppedImg } from '../utils/image';
 import Cropper from 'react-easy-crop';
 import { generateAiImage } from '../services/ai';
 import { uploadImage } from '../services/storage'; // IMPORTED
+import { fetchUniqueTags } from '../services/db';
 import QRCode from 'qrcode';
 import MeetingPointMapPicker from './MeetingPointMapPicker';
 import {
