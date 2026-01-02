@@ -1120,6 +1120,12 @@ export const fetchUserSettings = async (userId: string): Promise<any | null> => 
             return null;
         }
 
+        // RLS policy violation (42501) - user doesn't have permission to read this row
+        if (e?.code === '42501' || `${e?.message || ''}`.includes('row-level security policy')) {
+            console.debug(`[DB Service] fetchUserSettings blocked by RLS policy (user_id: ${userId})`);
+            return null;
+        }
+
         logError('fetchUserSettings', e);
         return null;
     }
