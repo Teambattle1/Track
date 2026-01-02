@@ -4780,6 +4780,108 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 onClose={() => setShowGeminiKeyModal(false)}
                 onSave={handleApiKeySaved}
             />
+
+            {/* QR Scanner Color Picker Modal */}
+            {showQRColorPicker && (
+                <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+                    <div className="w-full max-w-sm bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-yellow-500">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 px-6 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <QrCode className="w-5 h-5 text-white" />
+                                <h3 className="text-lg font-black text-white uppercase tracking-widest">Button Color</h3>
+                            </div>
+                            <button
+                                onClick={() => setShowQRColorPicker(false)}
+                                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                                title="Close"
+                                type="button"
+                            >
+                                <X className="w-5 h-5 text-white" />
+                            </button>
+                        </div>
+
+                        {/* Color Picker Content */}
+                        <div className="p-6 space-y-4">
+                            <p className="text-sm text-slate-300 font-bold uppercase tracking-wider">Choose QR Scanner Button Color</p>
+
+                            {/* Current Color Preview */}
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-16 h-16 rounded-xl border-2 border-slate-700 shadow-lg"
+                                    style={{ backgroundColor: qrScannerColor }}
+                                />
+                                <div className="flex-1">
+                                    <p className="text-xs text-slate-400 font-bold uppercase mb-1">Current Color</p>
+                                    <p className="text-sm text-white font-mono bg-slate-800 px-3 py-1.5 rounded-lg">{qrScannerColor}</p>
+                                </div>
+                            </div>
+
+                            {/* Color Input */}
+                            <div className="space-y-2">
+                                <label className="text-xs text-slate-400 font-bold uppercase">Select Color</label>
+                                <input
+                                    type="color"
+                                    value={qrScannerColor}
+                                    onChange={(e) => setQRScannerColor(e.target.value)}
+                                    className="w-full h-16 bg-slate-800 border-2 border-slate-700 rounded-xl cursor-pointer hover:border-yellow-500 transition-colors"
+                                />
+                            </div>
+
+                            {/* Preset Colors */}
+                            <div className="space-y-2">
+                                <label className="text-xs text-slate-400 font-bold uppercase">Quick Presets</label>
+                                <div className="grid grid-cols-6 gap-2">
+                                    {[
+                                        { name: 'Orange', color: '#f97316' },
+                                        { name: 'Red', color: '#ef4444' },
+                                        { name: 'Pink', color: '#ec4899' },
+                                        { name: 'Purple', color: '#a855f7' },
+                                        { name: 'Blue', color: '#3b82f6' },
+                                        { name: 'Cyan', color: '#06b6d4' },
+                                        { name: 'Teal', color: '#14b8a6' },
+                                        { name: 'Green', color: '#10b981' },
+                                        { name: 'Lime', color: '#84cc16' },
+                                        { name: 'Yellow', color: '#eab308' },
+                                        { name: 'Amber', color: '#f59e0b' },
+                                        { name: 'Gray', color: '#6b7280' }
+                                    ].map((preset) => (
+                                        <button
+                                            key={preset.color}
+                                            onClick={() => setQRScannerColor(preset.color)}
+                                            className="w-10 h-10 rounded-lg border-2 border-slate-700 hover:border-yellow-500 hover:scale-110 transition-all shadow-md"
+                                            style={{ backgroundColor: preset.color }}
+                                            title={preset.name}
+                                            type="button"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => {
+                                        setShowQRColorPicker(false);
+                                        saveQRScannerSettings();
+                                    }}
+                                    className="flex-1 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-black uppercase text-sm rounded-xl transition-all shadow-lg"
+                                    type="button"
+                                >
+                                    Apply
+                                </button>
+                                <button
+                                    onClick={() => setShowQRColorPicker(false)}
+                                    className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold uppercase text-sm rounded-xl transition-colors"
+                                    type="button"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
