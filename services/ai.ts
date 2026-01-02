@@ -396,6 +396,71 @@ export const generateAiLogo = async (companyName: string, style: string = 'profe
     }
 };
 
+// Translate task content to a target language
+export const translateTaskContent = async (
+    content: {
+        question: string;
+        options?: string[];
+        answer?: string;
+        correctAnswers?: string[];
+        placeholder?: string;
+        feedback?: {
+            correctMessage: string;
+            incorrectMessage: string;
+            hint: string;
+        };
+    },
+    targetLanguage: string
+): Promise<{
+    question: string;
+    options?: string[];
+    answer?: string;
+    correctAnswers?: string[];
+    placeholder?: string;
+    feedback?: {
+        correctMessage: string;
+        incorrectMessage: string;
+        hint: string;
+    };
+}> => {
+    const key = ensureApiKey();
+    const ai = new GoogleGenAI({ apiKey: key });
+
+    const normalizedLanguage = normalizeLanguage(targetLanguage);
+
+    try {
+        const prompt = `Translate this task content to ${normalizedLanguage}. Maintain the meaning and context. Return ONLY a JSON object with the same structure.
+
+Task Content:
+${JSON.stringify(content, null, 2)}
+
+IMPORTANT: Return ONLY the translated JSON object. No additional text or explanations.`;
+
+        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                thinkingConfig: { thinkingBudget: 0 }
+            },
+        }));
+
+        const translatedContent = JSON.parse(response.text || "{}");
+
+        return {
+            question: translatedContent.question || content.question,
+            options: translatedContent.options || content.options,
+            answer: translatedContent.answer || content.answer,
+            correctAnswers: translatedContent.correctAnswers || content.correctAnswers,
+            placeholder: translatedContent.placeholder || content.placeholder,
+            feedback: translatedContent.feedback || content.feedback,
+        };
+    } catch (error) {
+        console.error("AI Translation Error", error);
+        throw error;
+    }
+};
+
 // Generate a mood-based audio vignette using Web Audio API
 export const generateMoodAudio = async (topic: string): Promise<string | null> => {
     try {
