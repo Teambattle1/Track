@@ -2968,42 +2968,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 </div>
 
                 {/* Draggable TOOLS Toolbar */}
-                {/* Draggable TOOLS Toolbar */}
-                <div
-                    className="absolute z-[1100] pointer-events-auto touch-none"
-                    style={{ left: toolsToolbarPos.x, top: toolsToolbarPos.y }}
-                    onPointerDown={handleToolsPointerDown}
-                    onPointerMove={handleToolsPointerMove}
-                    onPointerUp={handleToolsPointerUp}
-                >
-                        <div className="bg-black/40 backdrop-blur-sm border border-orange-500/30 rounded-lg shadow-2xl p-2 cursor-move group relative">
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full px-2 border border-orange-500/30 pointer-events-none">
-                                <GripHorizontal className="w-3 h-3" />
-                            </div>
-                            {onOpenGameSettings && (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-1">TOOLS</span>
-                                    <div className="flex gap-3">
-                                        <div className="flex flex-col items-center gap-0.5">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    onOpenGameSettings();
-                                                }}
-                                                className="p-2 rounded transition-all cursor-pointer pointer-events-auto bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white shadow-lg"
-                                                title="Open Game Settings"
-                                                type="button"
-                                            >
-                                                <Settings className="w-4 h-4" />
-                                            </button>
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">SETTINGS</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                </div>
+                {/* TOOLS Toolbar - REMOVED */}
 
                 {/* Canvas Area */}
                 <div
