@@ -678,6 +678,13 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 }
             }
 
+            // Apply "show only invalid answers" filter
+            if (showOnlyInvalidAnswers) {
+                if (hasValidAnswers(task)) {
+                    return false; // Hide tasks with valid answers
+                }
+            }
+
             // Apply activation type filters (if any selected, task must match at least one)
             const selectedActivationTypes = Object.keys(activationFilters).filter(type => activationFilters[type]);
             if (selectedActivationTypes.length > 0) {
