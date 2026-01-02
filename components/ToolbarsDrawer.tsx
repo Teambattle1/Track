@@ -545,10 +545,9 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                                 <button
                                                     key={toolbar.id}
                                                     onClick={() => {
-                                                        setVisibleToolbars(prev => ({
-                                                            ...prev,
-                                                            [toolbar.id]: !prev[toolbar.id]
-                                                        }));
+                                                        if (onToggleToolbarVisibility) {
+                                                            onToggleToolbarVisibility(toolbar.id);
+                                                        }
                                                     }}
                                                     className={`w-full px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${
                                                         visibleToolbars[toolbar.id]
