@@ -87,6 +87,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [taskListFilter, setTaskListFilter] = useState<string>(''); // Filter by task list ID
     const [activationFilters, setActivationFilters] = useState<Record<string, boolean>>({}); // Filter by activation types
     const [showOnlyWithActivations, setShowOnlyWithActivations] = useState(false); // Show only tasks with activations
+    const [showOnlyInvalidAnswers, setShowOnlyInvalidAnswers] = useState(false); // Show only tasks with missing/invalid answers
     const [taskListViewMode, setTaskListViewMode] = useState<'grid' | 'list'>('list'); // List view as default
     const [activationFiltersCollapsed, setActivationFiltersCollapsed] = useState(true); // Collapse activation filters by default
     const [showFiltersMenu, setShowFiltersMenu] = useState(false);
@@ -556,6 +557,42 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 t.id === taskId || (t.title === sourceTask.title && t.task?.question === sourceTask.task?.question)
             )
         );
+    };
+
+    // Validation: Check if task has valid answers based on type
+    const hasValidAnswers = (task: TaskTemplate): boolean => {
+        const { type, answer, options, correctAnswers, range, timelineItems } = task.task;
+
+        switch (type) {
+            case 'text':
+                // Text tasks need an answer string
+                return !!(answer && answer.trim().length > 0);
+
+            case 'boolean':
+                // YES/NO tasks need answer to be 'YES' or 'NO'
+                return answer === 'YES' || answer === 'NO';
+
+            case 'multiple_choice':
+            case 'dropdown':
+                // Need at least 2 options and 1 correct answer
+                return !!(options && options.length >= 2 && answer && options.includes(answer));
+
+            case 'checkbox':
+            case 'multi_select_dropdown':
+                // Need at least 2 options and at least 1 correct answer
+                return !!(options && options.length >= 2 && correctAnswers && correctAnswers.length > 0 && correctAnswers.every(ca => options.includes(ca)));
+
+            case 'slider':
+                // Need valid range with correct value
+                return !!(range && typeof range.correctValue === 'number' && range.correctValue >= range.min && range.correctValue <= range.max);
+
+            case 'timeline':
+                // Need at least 2 timeline items
+                return !!(timelineItems && timelineItems.length >= 2);
+
+            default:
+                return true; // Unknown types are considered valid
+        }
     };
 
     const getActivationBadges = (task: TaskTemplate): string[] => {
