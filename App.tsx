@@ -613,7 +613,7 @@ const GameApp: React.FC = () => {
               task: point.task,
               feedback: point.feedback,
               points: point.points,
-              tags: point.tags,
+              tags: Array.isArray(point.tags) ? point.tags : [],
               iconId: point.iconId,
               iconUrl: point.iconUrl,
               completedIconId: (point as any).completedIconId,
