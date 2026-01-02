@@ -1196,7 +1196,14 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                         onClick={() => !selectionMode && setEditingTemplate(task)}
                                         title="Click to edit"
                                     >
-                                        {task.title}
+                                        <div className="flex items-center gap-2">
+                                            {!hasValidAnswers(task) && (
+                                                <span className="text-red-500 flex-shrink-0" title="Invalid or missing answer">
+                                                    <AlertCircle className="w-4 h-4" />
+                                                </span>
+                                            )}
+                                            <span className="truncate">{task.title}</span>
+                                        </div>
                                     </td>
                                     <td
                                         className="px-4 py-3 text-slate-400 truncate max-w-sm cursor-pointer hover:text-slate-300 transition-colors"
