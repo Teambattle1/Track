@@ -225,7 +225,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     const [showToolbarsDrawer, setShowToolbarsDrawer] = useState(false);
     const [visibleToolbars, setVisibleToolbars] = useState<Record<string, boolean>>({
         mapmode: true,
-        layers: true,
+        layers: false,
         location: true,
         pins: true,
         show: true,
