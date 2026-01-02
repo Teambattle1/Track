@@ -882,7 +882,60 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     }), [locationToolboxPos, topToolbarPos, viewSwitcherPos, pinsToolboxPos, showToolboxPos, qrScannerPos]);
 
     return (
-        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-[1000]">
+        <>
+            {/* TOOLBARS DRAWER */}
+            <ToolbarsDrawer
+                isOpen={showToolbarsDrawer}
+                onToggleOpen={() => setShowToolbarsDrawer(!showToolbarsDrawer)}
+                mode={mode}
+                activeGame={activeGame}
+                onSetMode={onSetMode}
+                showMapLayer={showMapLayer}
+                showZoneLayer={showZoneLayer}
+                showTaskLayer={showTaskLayer}
+                showLiveLayer={showLiveLayer}
+                onToggleMapLayer={onToggleMapLayer || (() => {})}
+                onToggleZoneLayer={onToggleZoneLayer || (() => {})}
+                onToggleTaskLayer={onToggleTaskLayer || (() => {})}
+                onToggleLiveLayer={onToggleLiveLayer || (() => {})}
+                onLocateMe={onLocateMe}
+                onFitBounds={onFitBounds}
+                onSearchLocation={onSearchLocation}
+                onSetMapStyle={onSetMapStyle}
+                locateFeedback={locateFeedback === 'success'}
+                mapStyle={mapStyle}
+                isMeasuring={isMeasuring}
+                isRelocating={isRelocating}
+                snapToRoadMode={snapToRoadMode}
+                onAddDangerZone={onAddDangerZone}
+                onToggleMeasure={onToggleMeasure}
+                onRelocateGame={onRelocateGame}
+                onToggleSnapToRoad={onToggleSnapToRoad}
+                showTaskId={showTaskId}
+                showTaskTitle={showTaskTitle}
+                showScores={showScores}
+                showTaskActions={showTaskActions}
+                onToggleTaskId={onToggleTaskId}
+                onToggleTaskTitle={onToggleTaskTitle}
+                onToggleScores={onToggleScores}
+                onToggleTaskActions={onToggleTaskActions}
+                onToggleTeamPathSelector={onToggleTeamPathSelector}
+                onSelectTeamPath={onSelectTeamPath}
+                showTeamPathSelector={showTeamPathSelector}
+                selectedTeamPaths={selectedTeamPaths}
+                teams={teams}
+                onToggleVisibleToolbars={() => setHideMapToolbars(!hideMapToolbars)}
+                onToggleChat={onToggleChat}
+                onEditGameSettings={onEditGameSettings}
+                timerConfig={timerConfig}
+                showAdjustGameTime={showAdjustGameTime}
+                onAdjustGameTime={() => setShowAdjustGameTime(true)}
+                onStartSimulation={onStartSimulation}
+                onOpenRemoteOverride={onOpenRemoteOverride}
+                onOpenLiveApproval={onOpenLiveApproval}
+                pendingApprovalsCount={pendingApprovalsCount}
+            />
+            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-[1000]">
             {/* COUNTDOWN OVERLAY */}
             {countdownSeconds !== null && countdownSeconds > 0 && (
                 <div className="fixed inset-0 z-[9999] bg-red-600/90 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in zoom-in-95 pointer-events-auto">
@@ -1798,6 +1851,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 </div>
             )}
         </div>
+            </>
     );
 });
 
