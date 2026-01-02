@@ -2678,6 +2678,28 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                     duration={3000}
                 />
             )}
+
+            {/* Confirmation Modal for deleting task lists */}
+            <ConfirmationModal
+                isOpen={deleteListConfirm.isOpen}
+                title="Delete Task List?"
+                message="Are you sure you want to delete this task list? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDangerous={true}
+                icon="warning"
+                onConfirm={() => {
+                    if (deleteListConfirm.listId) {
+                        const updated = taskLists.filter(l => l.id !== deleteListConfirm.listId);
+                        onUpdateTaskLists(updated);
+                        db.deleteTaskList(deleteListConfirm.listId);
+                        setDeleteListConfirm({ isOpen: false });
+                    }
+                }}
+                onCancel={() => {
+                    setDeleteListConfirm({ isOpen: false });
+                }}
+            />
         </div>
     );
 };
