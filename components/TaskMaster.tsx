@@ -354,7 +354,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         const copies = selectedTasks.map((t, i) => cloneTemplateWithCopyTitle(t, i));
 
         try {
-            await Promise.all(copies.map(t => db.saveTemplate(t)));
+            const { ok } = await db.saveTemplates(copies);
+            if (!ok) throw new Error('Database save failed');
 
             const updatedLibrary = [...library, ...copies];
             setLibrary(updatedLibrary);
@@ -1337,7 +1338,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                             setNotification({ message: `✨ New list "${name}" created with ${tasks.length} AI tasks!`, type: 'success' });
                         }}
                         onAddToLibrary={async (tasks) => {
-                            for (const t of tasks) await db.saveTemplate(t);
+                            const { ok } = await db.saveTemplates(tasks);
+                            if (!ok) console.error('[TaskMaster] Failed to save templates to library');
                             await loadLibrary(true);
                         }}
                         taskLists={taskLists}
@@ -2088,7 +2090,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                     onClose={() => setShowAiGen(false)}
                     onAddTasks={(tasks) => {}}
                     onAddToLibrary={async (tasks) => {
-                        for (const t of tasks) await db.saveTemplate(t);
+                        const { ok } = await db.saveTemplates(tasks);
+                        if (!ok) console.error('[TaskMaster] Failed to save templates to library');
                         await loadLibrary(true); // Force refresh cache
                         setShowAiGen(false);
                     }}
@@ -2134,7 +2137,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                     }}
                     onAddToLibrary={async (tasks) => {
                         // Save to library
-                        for (const t of tasks) await db.saveTemplate(t);
+                        const { ok } = await db.saveTemplates(tasks);
+                        if (!ok) console.error('[TaskMaster] Failed to save templates to library');
                         await loadLibrary(true);
                     }}
                     taskLists={taskLists}
@@ -2147,7 +2151,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 <LoquizImporter
                     onClose={() => setShowLoquiz(false)}
                     onImportTasks={async (tasks) => {
-                        for (const t of tasks) await db.saveTemplate(t);
+                        const { ok } = await db.saveTemplates(tasks);
+                        if (!ok) console.error('[TaskMaster] Failed to save templates to library');
                         await loadLibrary(true); // Force refresh cache
                         setShowLoquiz(false);
                     }}
