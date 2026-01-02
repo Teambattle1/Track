@@ -135,13 +135,26 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
                                         <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-white/10 shadow-md">
                                             {tpl.tasks.length} TASKS
                                         </div>
-                                        <button 
-                                            onClick={(e) => handleDelete(tpl.id, e)}
-                                            className="absolute top-3 right-3 p-2 bg-red-600 text-white rounded-lg transition-all border border-white/10 hover:scale-110 hover:bg-red-700 z-50 shadow-lg cursor-pointer flex items-center justify-center"
-                                            title="Delete Template"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                        <div className="absolute top-3 right-3 flex gap-2">
+                                            <button
+                                                onClick={(e) => handleCopy(tpl, e)}
+                                                className={`p-2 rounded-lg transition-all border border-white/10 hover:scale-110 z-50 shadow-lg cursor-pointer flex items-center justify-center ${
+                                                    copiedId === tpl.id
+                                                        ? 'bg-green-600 text-white'
+                                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                }`}
+                                                title="Copy Template"
+                                            >
+                                                {copiedId === tpl.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleDelete(tpl, e)}
+                                                className="p-2 bg-red-600 text-white rounded-lg transition-all border border-white/10 hover:scale-110 hover:bg-red-700 z-50 shadow-lg cursor-pointer flex items-center justify-center"
+                                                title="Delete Template"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="p-5 flex-1 flex flex-col justify-end">
                                         <h3 className="text-lg font-black text-white uppercase tracking-tight leading-tight mb-1 truncate group-hover:text-indigo-400 transition-colors">{tpl.title}</h3>
