@@ -3328,9 +3328,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     style={{ width: displaySize, height: displaySize }}>
                                         {/* Display completed icon if task is completed and has completedIconUrl, otherwise show regular icon */}
                                         {(point.isCompleted && point.completedIconUrl) ? (
-                                            <img src={point.completedIconUrl} alt={`${point.title} (Completed)`} className={`w-2/3 h-2/3 object-contain ${isActionTarget ? 'opacity-50' : ''}`} />
+                                            <img src={point.completedIconUrl} alt={`${point.title} (Completed)`} className={`w-[90%] h-[90%] object-contain ${isActionTarget ? 'opacity-50' : ''}`} />
                                         ) : point.iconUrl ? (
-                                            <img src={point.iconUrl} alt={point.title} className={`w-2/3 h-2/3 object-contain ${isActionTarget ? 'opacity-50' : ''}`} />
+                                            <img src={point.iconUrl} alt={point.title} className={`w-[90%] h-[90%] object-contain ${isActionTarget ? 'opacity-50' : ''}`} />
                                         ) : (
                                             <Icon className={`w-6 h-6 ${point.isCompleted ? 'text-white' : isActionTarget ? 'text-slate-400' : 'text-slate-900'}`} />
                                         )}
