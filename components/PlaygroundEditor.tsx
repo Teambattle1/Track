@@ -2994,7 +2994,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 <div
                                     key={point.id}
                                     className={`absolute transform -translate-x-1/2 -translate-y-1/2 group ${
-                                        isDraggingThis ? 'cursor-grabbing'
+                                        isSimulationActive ? 'cursor-pointer'
+                                        : isDraggingThis ? 'cursor-grabbing'
                                         : isDrawTarget ? 'cursor-pointer'
                                         : isMarkMode ? 'cursor-pointer'
                                         : drawMode.active ? 'cursor-default'
