@@ -158,7 +158,26 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
 
             {/* Header */}
             <div className="px-4 py-3 bg-orange-600 text-white border-b border-orange-700 flex-shrink-0">
-                <h2 className="font-black text-sm uppercase tracking-widest">Toolbars</h2>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                    <h2 className="font-black text-sm uppercase tracking-widest">Toolbars</h2>
+                    <button
+                        onClick={() => {
+                            const allCollapsed = Object.values(collapsedSections).every(v => v);
+                            setCollapsedSections({
+                                mapmode: !allCollapsed,
+                                layers: !allCollapsed,
+                                location: !allCollapsed,
+                                pins: !allCollapsed,
+                                show: !allCollapsed,
+                                tools: !allCollapsed,
+                            });
+                        }}
+                        className="p-1 hover:bg-orange-700 rounded-lg transition-colors flex-shrink-0"
+                        title="Collapse all sections"
+                    >
+                        <ChevronDown className="w-4 h-4" />
+                    </button>
+                </div>
                 <p className="text-[10px] opacity-80 uppercase tracking-wide">Edit Mode Controls</p>
             </div>
 
