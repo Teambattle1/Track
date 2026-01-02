@@ -30,7 +30,7 @@ interface TaskEditorProps {
   onClose: () => void;
   onClone?: (point: GamePoint) => void;
   isTemplateMode?: boolean;
-  requestedTab?: 'GENERAL' | 'IMAGE' | 'SETTINGS' | 'ANSWER' | 'ACTIVATION' | 'TAGS' | 'LANGUAGES' | null;
+  requestedTab?: 'GENERAL' | 'IMAGE' | 'SETTINGS' | 'ANSWER' | 'ACTIVATION' | 'TAGS' | 'LANGUAGES' | 'MEDIA' | null;
   gameMode?: 'standard' | 'playzone';
 }
 
@@ -152,7 +152,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     tags: point.tags || []
   });
 
-  const [activeTab, setActiveTab] = useState<'GENERAL' | 'IMAGE' | 'SETTINGS' | 'ANSWER' | 'ACTIVATION' | 'TAGS' | 'LANGUAGES'>(requestedTab || 'GENERAL');
+  const [activeTab, setActiveTab] = useState<'GENERAL' | 'IMAGE' | 'SETTINGS' | 'ANSWER' | 'ACTIVATION' | 'TAGS' | 'LANGUAGES' | 'MEDIA'>(requestedTab || 'GENERAL');
   const [showTaskTypeTooltip, setShowTaskTypeTooltip] = useState(false);
   const [hoveredTaskType, setHoveredTaskType] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState('');
