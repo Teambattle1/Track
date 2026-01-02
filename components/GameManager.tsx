@@ -418,7 +418,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                       }
                     }}
                     onDelete={() => {
-                      if (confirm('Delete game?')) onDeleteGame(game.id);
+                      setConfirmModal({ isOpen: true, gameId: game.id, isTemplate: false });
                     }}
                   />
                 ))}
