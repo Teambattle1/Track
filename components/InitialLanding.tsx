@@ -465,7 +465,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="PLAYZONE"
                   icon={Smartphone}
                   gradient="bg-gradient-to-br from-teal-500 to-emerald-500"
-                  onClick={() => onAction('CREATE_PLAYZONE_GAME')}
+                  onClick={() => setShowPlayzoneChoiceModal(true)}
                   delay={50}
                   scale={0.75}
               />
