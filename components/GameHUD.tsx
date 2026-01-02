@@ -1705,8 +1705,16 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                         {playgrounds?.filter(p => !hiddenPlaygroundIds.includes(p.id) && p.buttonVisible).map(pg => {
                             const Icon = ICON_COMPONENTS[pg.iconId || 'default'];
                             const isTarget = targetPlaygroundId === pg.id;
+                            const isHovered = hoveredPlaygroundId === pg.id;
                             return (
-                                <button key={pg.id} onClick={() => onOpenPlayground(pg.id)} style={{ width: pg.buttonSize || 80, height: pg.buttonSize || 80 }} className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden shadow-2xl hover:scale-105 active:scale-95 ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'} ${isTarget ? 'ring-4 ring-orange-500 ring-offset-4 ring-offset-black animate-pulse' : ''}`}>
+                                <button
+                                    key={pg.id}
+                                    onClick={() => onOpenPlayground(pg.id)}
+                                    onMouseEnter={() => onHoverPlayground?.(pg.id)}
+                                    onMouseLeave={() => onHoverPlayground?.(null)}
+                                    style={{ width: pg.buttonSize || 80, height: pg.buttonSize || 80 }}
+                                    className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden shadow-2xl hover:scale-105 active:scale-95 ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'} ${isTarget ? 'ring-4 ring-orange-500 ring-offset-4 ring-offset-black animate-pulse' : ''} ${isHovered ? 'ring-4 ring-orange-500 ring-offset-2 ring-offset-black' : ''}`}
+                                >
                                     {pg.iconUrl ? <img src={pg.iconUrl} className="w-full h-full object-cover" alt={pg.title} /> : <Icon className="w-1/2 h-1/2 text-white" />}
                                 </button>
                             );
