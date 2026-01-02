@@ -3713,6 +3713,173 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 />
             )}
 
+            {/* Task View Modal - Preview Task */}
+            {showTaskViewModal && selectedTask && (
+                <div className="fixed inset-0 z-[6500] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border border-blue-600/50 w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+                        {/* Header */}
+                        <div className="p-5 border-b border-slate-800 bg-gradient-to-r from-blue-600 to-blue-700 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+                                    <Eye className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black text-white uppercase tracking-widest">TASK PREVIEW</h2>
+                                    <p className="text-xs text-blue-100 font-bold uppercase tracking-wider mt-0.5">{selectedTask.title}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowTaskViewModal(false)}
+                                className="p-2 hover:bg-white/10 rounded-full text-white/80 hover:text-white transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            {/* Task Type Badge */}
+                            <div className="flex items-center gap-3">
+                                <span className="px-4 py-2 bg-blue-600/20 border border-blue-600/40 text-blue-300 rounded-lg font-black uppercase text-xs tracking-widest">
+                                    {selectedTask.task.type === 'text' && '✍️ TEXT ANSWER'}
+                                    {selectedTask.task.type === 'multiple_choice' && '☑️ MULTIPLE CHOICE'}
+                                    {selectedTask.task.type === 'boolean' && '✓/✗ TRUE/FALSE'}
+                                    {selectedTask.task.type === 'slider' && '🎚️ SLIDER'}
+                                    {selectedTask.task.type === 'checkbox' && '☑️ CHECKBOXES'}
+                                    {selectedTask.task.type === 'dropdown' && '📋 DROPDOWN'}
+                                </span>
+                                <span className="px-3 py-1.5 bg-orange-600/20 border border-orange-600/40 text-orange-300 rounded-lg font-bold text-xs">
+                                    {selectedTask.points || 100} POINTS
+                                </span>
+                            </div>
+
+                            {/* Question */}
+                            <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">QUESTION</label>
+                                <div
+                                    className="text-base font-bold text-white leading-relaxed"
+                                    dangerouslySetInnerHTML={{ __html: selectedTask.task.question || 'No question set' }}
+                                />
+                            </div>
+
+                            {/* Task Image */}
+                            {selectedTask.task.imageUrl && (
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 block">TASK IMAGE</label>
+                                    <img
+                                        src={selectedTask.task.imageUrl}
+                                        alt="Task illustration"
+                                        className="w-full rounded-lg max-h-64 object-cover"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Answer Options & Correct Answers */}
+                            {(selectedTask.task.type === 'multiple_choice' || selectedTask.task.type === 'checkbox' || selectedTask.task.type === 'dropdown') && selectedTask.task.options && selectedTask.task.options.length > 0 && (
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">ANSWER OPTIONS</label>
+                                    <div className="space-y-2">
+                                        {selectedTask.task.options.map((option, idx) => {
+                                            const isCorrect = selectedTask.task.correctAnswers?.includes(option);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className={`p-3 rounded-lg border-2 flex items-center gap-3 ${
+                                                        isCorrect
+                                                            ? 'bg-green-600/20 border-green-500 text-green-300'
+                                                            : 'bg-slate-700/50 border-slate-600 text-slate-300'
+                                                    }`}
+                                                >
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-black text-xs ${
+                                                        isCorrect ? 'bg-green-500 text-white' : 'bg-slate-600 text-slate-400'
+                                                    }`}>
+                                                        {isCorrect ? '✓' : String.fromCharCode(65 + idx)}
+                                                    </div>
+                                                    <span className="font-bold text-sm flex-1">{option}</span>
+                                                    {isCorrect && (
+                                                        <span className="px-2 py-1 bg-green-600 text-white rounded text-[8px] font-black uppercase tracking-wider">
+                                                            CORRECT
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Text Answer */}
+                            {selectedTask.task.type === 'text' && selectedTask.task.answer && (
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CORRECT ANSWER</label>
+                                    <div className="p-3 bg-green-600/20 border-2 border-green-500 rounded-lg">
+                                        <p className="text-green-300 font-bold">{selectedTask.task.answer}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Boolean Answer */}
+                            {selectedTask.task.type === 'boolean' && selectedTask.task.answer !== undefined && (
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CORRECT ANSWER</label>
+                                    <div className="p-3 bg-green-600/20 border-2 border-green-500 rounded-lg">
+                                        <p className="text-green-300 font-black text-lg uppercase">
+                                            {selectedTask.task.answer === 'true' || selectedTask.task.answer === true ? '✓ TRUE' : '✗ FALSE'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Slider Range */}
+                            {selectedTask.task.type === 'slider' && selectedTask.task.range && (
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">SLIDER SETTINGS</label>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="p-3 bg-slate-700 rounded-lg">
+                                            <p className="text-[9px] text-slate-400 uppercase font-bold mb-1">Minimum</p>
+                                            <p className="text-white font-black text-lg">{selectedTask.task.range.min}</p>
+                                        </div>
+                                        <div className="p-3 bg-green-600/20 border-2 border-green-500 rounded-lg">
+                                            <p className="text-[9px] text-green-400 uppercase font-bold mb-1">Correct</p>
+                                            <p className="text-green-300 font-black text-lg">{selectedTask.task.range.correctValue}</p>
+                                        </div>
+                                        <div className="p-3 bg-slate-700 rounded-lg">
+                                            <p className="text-[9px] text-slate-400 uppercase font-bold mb-1">Maximum</p>
+                                            <p className="text-white font-black text-lg">{selectedTask.task.range.max}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Hint */}
+                            {selectedTask.feedback?.hint && (
+                                <div className="bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-5 space-y-2">
+                                    <label className="text-[10px] font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2">
+                                        💡 HINT
+                                        {selectedTask.feedback.hintCost > 0 && (
+                                            <span className="text-[8px] px-2 py-0.5 bg-yellow-600/30 rounded">
+                                                -{selectedTask.feedback.hintCost} PTS
+                                            </span>
+                                        )}
+                                    </label>
+                                    <p className="text-yellow-200 font-medium text-sm">{selectedTask.feedback.hint}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 bg-slate-950 border-t border-slate-800">
+                            <button
+                                onClick={() => setShowTaskViewModal(false)}
+                                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase text-xs tracking-widest transition-colors"
+                            >
+                                CLOSE PREVIEW
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Playzone Selector Modal - For choosing which playzone to add tasks to */}
             {showPlayzoneSelector && (
                 <div className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
