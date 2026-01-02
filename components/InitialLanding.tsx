@@ -78,8 +78,13 @@ const NavCard = ({
 
     <div className="relative z-10 flex flex-col h-full">
       <div className="flex items-start justify-between gap-4">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:scale-110 group-hover:rotate-3 duration-300 ${color} bg-opacity-20 border border-current`}>
+        <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:scale-110 group-hover:rotate-3 duration-300 ${color} bg-opacity-20 border border-current`}>
           <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
+          {badge && (
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg animate-pulse">
+              {badge}
+            </span>
+          )}
         </div>
 
         <div className="mt-1 flex items-center gap-2">
