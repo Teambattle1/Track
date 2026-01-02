@@ -709,13 +709,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         // Get orientation from device-specific layout if available
         if (activePlayground.deviceLayouts?.[selectedDevice]) {
             const deviceLayout = activePlayground.deviceLayouts[selectedDevice];
+            // Only change orientation if there's a locked orientation set
+            // When unlocked (orientationLock === 'none'), keep the current editorOrientation
             if (deviceLayout.orientationLock && deviceLayout.orientationLock !== 'none') {
                 setEditorOrientation(deviceLayout.orientationLock);
-            } else {
-                // Device-specific default orientations: mobile=portrait, tablet/desktop=landscape
-                const defaultOrientation = selectedDevice === 'mobile' ? 'portrait' : 'landscape';
-                setEditorOrientation(defaultOrientation);
             }
+            // Note: Removed the 'else' block that reset to default orientation
+            // This preserves the current orientation when unlocking
 
             // Load QR scanner settings from device layout
             if (deviceLayout.qrScannerPos) {
@@ -730,11 +730,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         } else if (activePlayground.orientationLock && activePlayground.orientationLock !== 'none') {
             // Fallback to playground-level orientation for backward compatibility
             setEditorOrientation(activePlayground.orientationLock);
-        } else {
-            // Device-specific default orientations: mobile=portrait, tablet/desktop=landscape
-            const defaultOrientation = selectedDevice === 'mobile' ? 'portrait' : 'landscape';
-            setEditorOrientation(defaultOrientation);
         }
+        // Note: Removed the final 'else' block that reset to default orientation
+        // This allows orientation to persist when switching devices
 
         // Initialize visibility states from playground (defaults to true if not set)
         setShowTaskScores(activePlayground.showTaskScores !== false);
