@@ -654,6 +654,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
         setActiveTab('GENERAL');
         return;
     }
+
+    // Validate boolean (YES/NO) tasks have an answer selected
+    if (editedPoint.task.type === 'boolean' && !editedPoint.task.answer) {
+        alert('❌ YES/NO tasks require a correct answer. Please select YES or NO in the GENERAL tab.');
+        setActiveTab('GENERAL');
+        return;
+    }
+
     // Ensure language is normalized before saving
     const pointToSave = {
         ...editedPoint,
