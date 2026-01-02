@@ -185,6 +185,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [isHudAppearanceCollapsed, setIsHudAppearanceCollapsed] = useState(true);
     const [isBackgroundImageCollapsed, setIsBackgroundImageCollapsed] = useState(true);
     const [isBackgroundMusicCollapsed, setIsBackgroundMusicCollapsed] = useState(true);
+    const [isDeviceCollapsed, setIsDeviceCollapsed] = useState(false); // Expanded by default for easy access
+    const [isOrientationCollapsed, setIsOrientationCollapsed] = useState(false); // Expanded by default for easy access
 
     // Snap to Road State
     const [snapToRoadMode, setSnapToRoadMode] = useState(false);
