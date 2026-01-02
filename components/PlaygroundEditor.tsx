@@ -6,7 +6,7 @@ import {
     Image as ImageIcon, Upload, Grid, MousePointer2, Move, ZoomIn, ZoomOut,
     Maximize, Lock, Unlock, Settings, Home, Save, Check, Type, Gamepad2, Library, Users, Shield,
     Smartphone, Tablet, Monitor, MousePointerClick, Music, Repeat, PlayCircle, ChevronLeft, ChevronRight,
-    Wand2, Zap, CheckCircle, XCircle, GripHorizontal, Navigation, AlertTriangle, QrCode, Target, Loader2, MapPin, Copy
+    Wand2, Zap, CheckCircle, XCircle, GripHorizontal, AlertTriangle, QrCode, Target, Loader2, MapPin, Copy
 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { uploadImage } from '../services/storage'; // IMPORTED
@@ -2151,26 +2151,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-1">TOOLS</span>
                                 <div className="flex gap-3">
-                                    <div className="flex flex-col items-center gap-0.5">
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setSnapToRoadMode(!snapToRoadMode);
-                                                setSelectionBox({ start: null, current: null });
-                                            }}
-                                            className={`px-3 py-2 rounded transition-all cursor-pointer pointer-events-auto flex items-center gap-2 ${
-                                                snapToRoadMode
-                                                    ? 'bg-cyan-600 text-white shadow-lg hover:bg-cyan-700'
-                                                    : 'bg-slate-700 text-slate-300 shadow-lg hover:bg-slate-600'
-                                            }`}
-                                            title={snapToRoadMode ? 'Click and drag on map to select tasks' : 'Snap selected tasks to road network'}
-                                            type="button"
-                                        >
-                                            <Navigation className="w-4 h-4" />
-                                            <span className="text-xs font-black uppercase tracking-wider">SNAP ROAD</span>
-                                        </button>
-                                    </div>
                                     {onStartSimulation && (
                                         <div className="flex flex-col items-center gap-0.5">
                                             <button
