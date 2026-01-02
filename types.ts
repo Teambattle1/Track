@@ -457,6 +457,8 @@ export interface MediaSubmission {
   reviewedBy?: string; // Name of GM/Instructor who reviewed
   reviewedAt?: number; // Timestamp of review
   reviewComment?: string; // Optional comment from GM
+  partialScore?: number; // Partial score (0-100) if enabled, undefined = full score
+  downloadedByClient?: boolean; // Track if client has downloaded this media
 }
 
 // --- NEW CONFIG TYPES ---
