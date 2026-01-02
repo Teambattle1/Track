@@ -1862,51 +1862,148 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         )}
                     </div>
 
-                    {/* Grid Controls */}
-                    <div className={`grid gap-3 ${isMarkMode ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                    {/* SHOW Section */}
+                    <div>
                         <button
-                            onClick={() => setShowGrid(!showGrid)}
-                            className={`py-3 border rounded-xl flex items-center justify-center gap-2 transition-colors ${
-                                showGrid
-                                    ? 'bg-blue-600 border-blue-500 text-white'
-                                    : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
-                            }`}
+                            onClick={() => setIsShowCollapsed(!isShowCollapsed)}
+                            className="flex justify-between items-center mb-2 w-full hover:bg-slate-800/50 rounded-lg p-2 -mx-2 transition-colors group"
                         >
-                            <Grid className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">GRID</span>
+                            <span className="text-[10px] font-black text-slate-500 group-hover:text-slate-400 uppercase tracking-widest">SHOW</span>
+                            <ChevronDown className={`w-5 h-5 text-orange-500 group-hover:text-orange-400 transition-transform ${isShowCollapsed ? '-rotate-90' : ''}`} />
                         </button>
-                        <button
-                            onClick={() => {
-                                if (isMarkMode) {
-                                    setIsMarkMode(false);
-                                    setMarkedTaskIds(new Set());
-                                } else {
-                                    setIsMarkMode(true);
-                                }
-                            }}
-                            className={`py-3 border rounded-xl flex items-center justify-center gap-2 transition-all ${
-                                isMarkMode
-                                    ? 'bg-orange-600 border-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse'
-                                    : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
-                            }`}
-                            title={isMarkMode ? 'Exit mark mode' : 'Select tasks to snap to line-based grid'}
-                        >
-                            <MousePointer2 className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">MARK & SNAP</span>
-                        </button>
+
+                        {!isShowCollapsed && (
+                            <div className="grid grid-cols-4 gap-2">
+                                <button
+                                    onClick={() => setShowTaskScores(!showTaskScores)}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                                        showTaskScores ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                    title="Show/Hide Scores"
+                                >
+                                    <span className="text-base font-bold">$</span>
+                                    <span className="text-[8px] font-black uppercase">SCORE</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowTaskOrder(!showTaskOrder)}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                                        showTaskOrder ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                >
+                                    <span className="text-base font-bold">#</span>
+                                    <span className="text-[8px] font-black uppercase">ORDER</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowTaskActions(!showTaskActions)}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                                        showTaskActions ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                >
+                                    <Zap className="w-4 h-4" />
+                                    <span className="text-[8px] font-black uppercase">ACTIONS</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowTaskNames(!showTaskNames)}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                                        showTaskNames ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                >
+                                    <Type className="w-4 h-4" />
+                                    <span className="text-[8px] font-black uppercase">NAME</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowTaskStatus(!showTaskStatus)}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                                        showTaskStatus ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                >
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span className="text-[8px] font-black uppercase">ANSWERS</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowBackground(!showBackground)}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                                        showBackground ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                >
+                                    <ImageIcon className="w-4 h-4" />
+                                    <span className="text-[8px] font-black uppercase">BG</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowQRScanner(!showQRScanner)}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                                        showQRScanner ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                >
+                                    <QrCode className="w-4 h-4" />
+                                    <span className="text-[8px] font-black uppercase">QR</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Snap Selected Button (only shown in mark mode) */}
-                    {isMarkMode && markedTaskIds.size > 0 && (
+                    {/* LAYOUT Section */}
+                    <div>
                         <button
-                            onClick={handleSnapMarkedToGrid}
-                            className="w-full py-3 bg-green-600 hover:bg-green-700 border border-green-500 rounded-xl flex items-center justify-center gap-2 text-white transition-all font-black uppercase tracking-widest text-[10px] shadow-lg"
-                            title={`Snap ${markedTaskIds.size} selected task(s) to grid`}
+                            onClick={() => setIsLayoutCollapsed(!isLayoutCollapsed)}
+                            className="flex justify-between items-center mb-2 w-full hover:bg-slate-800/50 rounded-lg p-2 -mx-2 transition-colors group"
                         >
-                            <Check className="w-4 h-4" />
-                            <span>SNAP SELECTED ({markedTaskIds.size})</span>
+                            <span className="text-[10px] font-black text-slate-500 group-hover:text-slate-400 uppercase tracking-widest">LAYOUT</span>
+                            <ChevronDown className={`w-5 h-5 text-orange-500 group-hover:text-orange-400 transition-transform ${isLayoutCollapsed ? '-rotate-90' : ''}`} />
                         </button>
-                    )}
+
+                        {!isLayoutCollapsed && (
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={() => setShowGrid(!showGrid)}
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all ${
+                                            showGrid ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                        }`}
+                                    >
+                                        <Grid className="w-5 h-5" />
+                                        <span className="text-[10px] font-black uppercase">GRID</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (isMarkMode) {
+                                                setIsMarkMode(false);
+                                                setMarkedTaskIds(new Set());
+                                            } else {
+                                                setIsMarkMode(true);
+                                            }
+                                        }}
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all ${
+                                            isMarkMode ? 'bg-orange-600 text-white shadow-lg animate-pulse' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                        }`}
+                                        title={isMarkMode ? 'Exit mark mode' : 'Select tasks to snap to grid'}
+                                    >
+                                        <MousePointer2 className="w-5 h-5" />
+                                        <span className="text-[10px] font-black uppercase">MARK</span>
+                                    </button>
+                                </div>
+                                {isMarkMode && markedTaskIds.size > 0 && (
+                                    <button
+                                        onClick={handleSnapMarkedToGrid}
+                                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl flex items-center justify-center gap-2 font-black uppercase text-[10px] shadow-lg"
+                                        title={`Snap ${markedTaskIds.size} selected task(s) to grid`}
+                                    >
+                                        <Check className="w-4 h-4" />
+                                        SNAP ({markedTaskIds.size})
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setIsBackgroundImageCollapsed(!isBackgroundImageCollapsed)}
+                                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl transition-all ${
+                                        !isBackgroundImageCollapsed ? 'bg-purple-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
+                                    }`}
+                                >
+                                    <ImageIcon className="w-5 h-5" />
+                                    <span className="text-[10px] font-black uppercase">BACKGROUND</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Background Audio Section - At Bottom */}
                     <div>
