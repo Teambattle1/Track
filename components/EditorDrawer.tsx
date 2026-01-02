@@ -567,7 +567,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                         index={index}
                                         isSelected={point.id === selectedPointId}
                                         isMapHovered={point.id === mapHoveredPointId}
-                                        isDragDisabled={isFiltered}
+                                        isDragDisabled={false}
                                         onEdit={onEditPoint}
                                         onSelect={onSelectPoint}
                                         onDelete={onDeletePoint}
@@ -711,7 +711,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                             index={index}
                                             isSelected={point.id === selectedPointId}
                                             isMapHovered={point.id === mapHoveredPointId}
-                                            isDragDisabled={isFiltered}
+                                            isDragDisabled={false}
                                             onEdit={onEditPoint}
                                             onSelect={onSelectPoint}
                                             onDelete={onDeletePoint}
