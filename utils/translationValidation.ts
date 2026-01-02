@@ -76,6 +76,30 @@ export const isLanguageFullyApprovedForGame = (game: Game, language: Language): 
 };
 
 /**
+ * Get all languages that are configured/used in a game
+ * This includes the game's primary language and any languages that have translations
+ */
+export const getConfiguredLanguagesForGame = (game: Game): Language[] => {
+  const languages = new Set<Language>();
+
+  // Add game's primary language if set
+  if (game.language) {
+    languages.add(game.language as Language);
+  }
+
+  // Add any languages that have translations in the game's tasks
+  game.points?.forEach(point => {
+    if (point.task.translations) {
+      Object.keys(point.task.translations).forEach(lang => {
+        languages.add(lang as Language);
+      });
+    }
+  });
+
+  return Array.from(languages);
+};
+
+/**
  * Get all available languages that are fully approved for a game
  */
 export const getApprovedLanguagesForGame = (game: Game): Language[] => {
