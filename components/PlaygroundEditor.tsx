@@ -3652,74 +3652,91 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         setShowTaskMaster(false);
                         setIsAddingTaskList(false);
                     }}
+                    isPlayzoneEditor={true}
                     onImportTasks={(tasks) => {
-                        // If adding tasklist from TOOLS menu, show selector
-                        if (isAddingTaskList) {
-                            setPendingTasksToAdd(tasks);
-                            setIsAddingAITasks(false);
-                            setShowPlayzoneSelector(true);
-                            return;
-                        }
-                        // Otherwise original behavior
                         setPendingTasksToAdd(tasks);
                         setIsAddingAITasks(false);
+                        setIsAddingTaskList(false);
                         setShowPlayzoneSelector(true);
-                        return;
+                    }}
+                    onImportTaskList={(list, destination) => {
+                        if (destination === '__PLAYZONE__') {
+                            const targetPlaygroundId = activePlayground?.id;
+                            if (!targetPlaygroundId) {
+                                alert('No active playzone selected.');
+                                return;
+                            }
 
-                        // Otherwise, add directly to the active playzone
-                        const baseOrder = uniquePlaygroundPoints.length;
-                        const COLS = 3;
-                        const PADDING = 10;
-                        const ROW_HEIGHT = 18;
+                            const newTasksToAdd = (list.tasks || []).filter(t =>
+                                !game.points?.some(p => p.title === t.title)
+                            );
 
-                        const newPoints: GamePoint[] = tasks.map((t, i) => {
-                            const row = Math.floor((baseOrder + i) / COLS);
-                            const col = (baseOrder + i) % COLS;
-                            const colWidth = (100 - PADDING * 2) / COLS;
+                            if (newTasksToAdd.length === 0) {
+                                alert('All tasks already exist in this game. No duplicates were added.');
+                                return;
+                            }
 
-                            const x = PADDING + col * colWidth + colWidth / 2;
-                            const y = PADDING + row * ROW_HEIGHT + ROW_HEIGHT / 2;
+                            const baseOrder = uniquePlaygroundPoints.filter(p => p.playgroundId === targetPlaygroundId).length;
+                            const COLS = 3;
+                            const PADDING = 10;
+                            const ROW_HEIGHT = 18;
 
-                            const templateAny = t as any;
-                            const radiusMeters = typeof templateAny.radiusMeters === 'number' ? templateAny.radiusMeters : 30;
-                            const areaColor = typeof templateAny.areaColor === 'string' ? templateAny.areaColor : undefined;
-                            const openingAudioUrl = typeof templateAny.openingAudioUrl === 'string' ? templateAny.openingAudioUrl : undefined;
+                            const newPoints: GamePoint[] = newTasksToAdd.map((t, i) => {
+                                const row = Math.floor((baseOrder + i) / COLS);
+                                const col = (baseOrder + i) % COLS;
+                                const colWidth = (100 - PADDING * 2) / COLS;
 
-                            return {
-                                id: `p-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
-                                title: t.title,
-                                shortIntro: (t as any).intro,
-                                task: t.task,
-                                location: { lat: 0, lng: 0 },
-                                radiusMeters,
-                                activationTypes: ['radius'],
-                                manualUnlockCode: undefined,
-                                playgroundId: activePlayground?.id,
-                                playgroundPosition: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 },
-                                playgroundScale: 1,
-                                isHiddenBeforeScan: false,
-                                iconId: t.iconId || 'default',
-                                iconUrl: (t as any).iconUrl,
-                                areaColor,
-                                points: t.points || 100,
-                                isUnlocked: true,
-                                isCompleted: false,
-                                order: baseOrder + i,
-                                tags: t.tags,
-                                feedback: t.feedback,
-                                settings: t.settings,
-                                logic: t.logic,
-                                completionLogic: (t as any).completionLogic,
-                                openingAudioUrl
-                            } as GamePoint;
-                        });
+                                const x = PADDING + col * colWidth + colWidth / 2;
+                                const y = PADDING + row * ROW_HEIGHT + ROW_HEIGHT / 2;
 
-                        onUpdateGame({
-                            ...game,
-                            points: [...game.points, ...newPoints]
-                        });
+                                const templateAny = t as any;
+                                const radiusMeters = typeof templateAny.radiusMeters === 'number' ? templateAny.radiusMeters : 30;
+                                const areaColor = typeof templateAny.areaColor === 'string' ? templateAny.areaColor : undefined;
+                                const openingAudioUrl = typeof templateAny.openingAudioUrl === 'string' ? templateAny.openingAudioUrl : undefined;
 
-                        setShowTaskMaster(false);
+                                return {
+                                    id: `p-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+                                    title: t.title,
+                                    shortIntro: (t as any).intro,
+                                    task: t.task,
+                                    location: { lat: 0, lng: 0 },
+                                    radiusMeters,
+                                    activationTypes: ['radius'],
+                                    manualUnlockCode: undefined,
+                                    playgroundId: targetPlaygroundId,
+                                    playgroundPosition: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 },
+                                    playgroundScale: 1,
+                                    isHiddenBeforeScan: false,
+                                    iconId: t.iconId || 'default',
+                                    iconUrl: (t as any).iconUrl,
+                                    areaColor,
+                                    openingAudioUrl,
+                                    points: t.points || 100,
+                                    isUnlocked: true,
+                                    isCompleted: false,
+                                    order: baseOrder + i,
+                                    tags: t.tags,
+                                    feedback: t.feedback,
+                                    settings: t.settings,
+                                    logic: t.logic,
+                                    completionLogic: (t as any).completionLogic
+                                } as GamePoint;
+                            });
+
+                            onUpdateGame({
+                                ...game,
+                                points: [...game.points, ...newPoints]
+                            });
+
+                            setShowTaskMaster(false);
+                            return;
+                        }
+
+                        // '__GAME__' (or default): open existing destination selector (MAP or PLAYZONES)
+                        setPendingTasksToAdd(list.tasks || []);
+                        setIsAddingAITasks(false);
+                        setIsAddingTaskList(false);
+                        setShowPlayzoneSelector(true);
                     }}
                     taskLists={taskLists}
                     onUpdateTaskLists={onUpdateTaskLists}
