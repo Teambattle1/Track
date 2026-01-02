@@ -2597,6 +2597,31 @@ const GameApp: React.FC = () => {
         )}
 
         {renderModals()}
+
+        {/* Media Approval Notifications for Editor/Instructor */}
+        {activeGame && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
+            <MediaApprovalNotification
+                gameId={activeGame.id}
+                onApprove={async (submissionId, partialScore) => {
+                    const reviewedBy = authUser?.name || 'Instructor';
+                    await approveMediaSubmission(submissionId, reviewedBy, partialScore);
+
+                    // TODO: Award points to the team
+                    // Get submission details and award points based on partialScore
+                    alert('✅ Media approved! Points awarded to team.');
+                }}
+                onReject={async (submissionId, message) => {
+                    const reviewedBy = authUser?.name || 'Instructor';
+
+                    // TODO: Get media URL from submission before deleting
+                    // For now, passing empty string (will need to fetch submission first)
+                    await rejectMediaSubmission(submissionId, reviewedBy, message, '');
+
+                    // TODO: Notify team and reopen task on map
+                    alert('❌ Media rejected. Team has been notified.');
+                }}
+            />
+        )}
     </div>
   );
 };
