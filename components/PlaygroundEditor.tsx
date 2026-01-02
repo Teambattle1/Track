@@ -791,6 +791,34 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         setShowQRScanner(activePlayground.showQRScanner !== false);
     }, [activePlayground?.id, activePlayground?.orientationLock, activePlayground?.deviceLayouts, selectedDevice, activePlayground?.showTaskScores, activePlayground?.showTaskOrder, activePlayground?.showTaskActions, activePlayground?.showTaskNames, activePlayground?.showTaskStatus, activePlayground?.showBackground, activePlayground?.showQRScanner]);
 
+    // Load last used device when switching playgrounds
+    useEffect(() => {
+        if (activePlayground) {
+            const playgroundTasks = game.points?.filter(p => p.playgroundId === activePlayground.id) || [];
+            const isNewPlayground = playgroundTasks.length === 0;
+
+            if (isNewPlayground) {
+                // New playground: use desktop mode
+                setSelectedDevice('desktop');
+            } else {
+                // Existing playground: load last used device from localStorage
+                const storageKey = `playzone_device_${activePlayground.id}`;
+                const savedDevice = localStorage.getItem(storageKey);
+                if (savedDevice) {
+                    setSelectedDevice(savedDevice as DeviceType);
+                }
+            }
+        }
+    }, [activePlayground?.id]);
+
+    // Save selected device to localStorage whenever it changes
+    useEffect(() => {
+        if (activePlayground) {
+            const storageKey = `playzone_device_${activePlayground.id}`;
+            localStorage.setItem(storageKey, selectedDevice);
+        }
+    }, [selectedDevice, activePlayground?.id]);
+
     // Auto-collapse all source tasks on mount when in actions mode
     useEffect(() => {
         if (activePlayground && taskSortMode === 'actions') {
