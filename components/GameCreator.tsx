@@ -1766,6 +1766,90 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
                   </div>
               );
+          case 'TASKDESIGN':
+              return (
+                  <div className="space-y-6 max-w-3xl animate-in fade-in slide-in-from-bottom-2">
+                      {/* Header */}
+                      <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-700/50 p-6 rounded-2xl">
+                          <div className="flex items-center gap-3 mb-2">
+                              <Palette className="w-6 h-6 text-purple-400" />
+                              <h3 className="text-xl font-black text-white uppercase">Task Design System</h3>
+                          </div>
+                          <p className="text-sm text-slate-300">
+                              Configure the default color scheme for all tasks in this game. Individual tasks can override these settings locally.
+                          </p>
+                      </div>
+
+                      {/* Color Scheme Configuration */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <div className="flex items-center justify-between mb-4">
+                              <div>
+                                  <label className="text-sm font-bold text-white uppercase block mb-1">Default Task Color Scheme</label>
+                                  <p className="text-xs text-slate-400">
+                                      This color scheme will be applied to all tasks in this game unless overridden
+                                  </p>
+                              </div>
+                              {defaultTaskColorScheme && (
+                                  <div className="flex items-center gap-2 px-3 py-1.5 bg-green-900/30 border border-green-700/50 rounded-lg">
+                                      <Check className="w-4 h-4 text-green-400" />
+                                      <span className="text-xs font-bold text-green-400 uppercase">Active</span>
+                                  </div>
+                              )}
+                          </div>
+
+                          <button
+                              onClick={() => setShowColorSchemeEditor(true)}
+                              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-4 rounded-xl font-black text-sm uppercase transition-all shadow-lg flex items-center justify-center gap-2"
+                          >
+                              <Palette className="w-5 h-5" />
+                              {defaultTaskColorScheme ? 'Edit Color Scheme' : 'Create Color Scheme'}
+                          </button>
+
+                          {defaultTaskColorScheme && (
+                              <div className="mt-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                                  <div className="text-xs font-bold text-slate-400 uppercase mb-3">Current Colors</div>
+                                  <div className="grid grid-cols-5 gap-2">
+                                      {Object.entries(defaultTaskColorScheme).map(([key, value]) => {
+                                          if (key === 'id' || key === 'name') return null;
+                                          return (
+                                              <div key={key} className="flex flex-col items-center gap-1">
+                                                  <div
+                                                      className="w-12 h-12 rounded-lg border-2 border-slate-600"
+                                                      style={{ backgroundColor: value as string }}
+                                                  />
+                                                  <span className="text-[8px] text-slate-500 uppercase text-center">
+                                                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                                                  </span>
+                                              </div>
+                                          );
+                                      })}
+                                  </div>
+                              </div>
+                          )}
+
+                          {defaultTaskColorScheme && (
+                              <button
+                                  onClick={() => setDefaultTaskColorScheme(undefined)}
+                                  className="w-full mt-3 bg-red-900/30 hover:bg-red-900/50 border border-red-700/50 text-red-400 py-3 rounded-xl font-bold text-xs uppercase transition-all flex items-center justify-center gap-2"
+                              >
+                                  <Trash2 className="w-4 h-4" />
+                                  Remove Color Scheme
+                              </button>
+                          )}
+                      </div>
+
+                      {/* Info Card */}
+                      <div className="bg-blue-900/20 border border-blue-700/50 rounded-xl p-4">
+                          <div className="text-xs text-blue-300 leading-relaxed space-y-1">
+                              <p><strong>💡 How it works:</strong></p>
+                              <p>• <strong>Game-wide:</strong> Set a default color scheme here for all tasks</p>
+                              <p>• <strong>Local Override:</strong> Individual tasks can have their own color schemes</p>
+                              <p>• <strong>Library Lock:</strong> Tasks from the global library can be locked to prevent color changes</p>
+                              <p>• <strong>Priority:</strong> Locked Library &gt; Local Task &gt; Game Default</p>
+                          </div>
+                      </div>
+                  </div>
+              );
           case 'CLIENT':
               const clientLink = baseGame?.id ? `${window.location.origin}/#/client/${baseGame.id}` : '';
               const handleCopyClientLink = () => {
