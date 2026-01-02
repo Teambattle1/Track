@@ -625,6 +625,10 @@ const GameApp: React.FC = () => {
           const { ok } = await db.saveTemplates(taskTemplates);
 
           if (ok) {
+              // Reload the global library to show newly exported tasks
+              const updatedLib = await db.fetchLibrary();
+              setTaskLibrary(updatedLib);
+
               alert(`✅ Exported ${taskTemplates.length} tasks to Global Library and synced to Supabase!`);
               console.log('[Export] Tasks exported to library:', taskTemplates.length);
           } else {
