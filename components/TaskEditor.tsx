@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import DOMPurify from 'dompurify';
-import { GamePoint, IconId, TaskType, PointActivationType, PointCompletionLogic, TimelineItem } from '../types';
+import { GamePoint, IconId, TaskType, PointActivationType, PointCompletionLogic, TimelineItem, TaskColorScheme } from '../types';
 import { detectLanguageFromText, normalizeLanguage } from '../utils/i18n';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { getCroppedImg } from '../utils/image';
@@ -11,6 +11,7 @@ import { fetchUniqueTags } from '../services/db';
 import { useTagColors } from '../contexts/TagColorsContext';
 import QRCode from 'qrcode';
 import MeetingPointMapPicker from './MeetingPointMapPicker';
+import ColorSchemeEditor from './ColorSchemeEditor';
 import {
   X, Save, Trash2, Upload, Link, Loader2, CheckCircle,
   AlignLeft, CheckSquare, ListChecks, ToggleLeft, SlidersHorizontal,
