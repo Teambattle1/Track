@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GamePoint, Playground, GameMode } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
@@ -12,6 +11,7 @@ interface PlaygroundModalProps {
   mode: GameMode;
   onUpdatePlayground?: (updated: Playground) => void;
   onEditPlayground?: () => void;
+  taskCooldowns?: Map<string, number>; // Map of taskId -> cooldown end timestamp
 }
 
 const PlaygroundModal: React.FC<PlaygroundModalProps> = ({ playground, points, onClose, onPointClick, mode, onUpdatePlayground, onEditPlayground }) => {
