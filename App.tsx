@@ -95,6 +95,7 @@ const GameApp: React.FC = () => {
   const [showClientGameChooser, setShowClientGameChooser] = useState(false);
   const [clientGameId, setClientGameId] = useState<string | null>(null);
   const [showAccess, setShowAccess] = useState(false);
+  const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
   const gameTemplates = useMemo(() => games.filter(g => g.isGameTemplate), [games]);
