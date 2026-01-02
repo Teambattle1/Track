@@ -15,7 +15,7 @@ import ColorSchemeEditor from './ColorSchemeEditor';
 import {
   X, Save, Trash2, Upload, Link, Loader2, CheckCircle,
   AlignLeft, CheckSquare, ListChecks, ToggleLeft, SlidersHorizontal,
-  Plus, AlertCircle, ZoomIn, Scissors, Image as ImageIcon, Tag,
+  Plus, AlertCircle, AlertTriangle, ZoomIn, Scissors, Image as ImageIcon, Tag,
   Copy, KeyRound, ChevronDown, ChevronsUpDown, RotateCw, Type,
   Palette, Bold, Italic, Underline, MonitorPlay, Speaker, MapPin,
   Settings, Zap, MessageSquare, Clock, Globe, Lock, Check, Wand2, Hash,
