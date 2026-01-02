@@ -4183,54 +4183,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     });
                                                 }
 
-                                                // Then, render TARGET-only tasks (tasks that are only targets, not sources)
-                                                // Build set of task IDs currently visible under expanded sources
-                                                const visibleTargetIds = new Set<string>();
-                                                sourceTasks.forEach(sourceTask => {
-                                                    if (!collapsedSources.has(sourceTask.id)) {
-                                                        // This source is expanded, collect all its target IDs
-                                                        sourceTask.logic?.onOpen?.forEach((action: any) => {
-                                                            visibleTargetIds.add(action.targetId || action);
-                                                        });
-                                                        sourceTask.logic?.onCorrect?.forEach((action: any) => {
-                                                            visibleTargetIds.add(action.targetId || action);
-                                                        });
-                                                        sourceTask.logic?.onIncorrect?.forEach((action: any) => {
-                                                            visibleTargetIds.add(action.targetId || action);
-                                                        });
-                                                    }
-                                                });
-
-                                                const targetOnlyTasks = uniquePlaygroundPoints.filter(p => {
-                                                    const isSource = p.logic?.onOpen?.length > 0 ||
-                                                                   p.logic?.onCorrect?.length > 0 ||
-                                                                   p.logic?.onIncorrect?.length > 0;
-                                                    const isTarget = uniquePlaygroundPoints.some(other =>
-                                                        other.id !== p.id && (
-                                                            other.logic?.onOpen?.some((a: any) => (a.targetId || a) === p.id) ||
-                                                            other.logic?.onCorrect?.some((a: any) => (a.targetId || a) === p.id) ||
-                                                            other.logic?.onIncorrect?.some((a: any) => (a.targetId || a) === p.id)
-                                                        )
-                                                    );
-                                                    // Only show if it's a target, not a source, AND not currently visible under an expanded source
-                                                    return isTarget && !isSource && !visibleTargetIds.has(p.id);
-                                                });
-
-                                                if (targetOnlyTasks.length > 0) {
-                                                    renderedItems.push(
-                                                        <div key="header-target" className="flex items-center gap-2 py-2 px-2 mt-3 mb-1">
-                                                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
-                                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">
-                                                                🎯 TARGET Tasks
-                                                            </span>
-                                                            <div className="flex-1 h-px bg-gradient-to-r from-slate-600 via-transparent to-transparent" />
-                                                        </div>
-                                                    );
-
-                                                    targetOnlyTasks.forEach(task => {
-                                                        renderedItems.push(renderTaskItem(task));
-                                                    });
-                                                }
+                                                // TARGET TASKS section removed - all targets are now only visible under their source tasks
 
                                                 // Finally, render tasks with no actions
                                                 const noActionTasks = uniquePlaygroundPoints.filter(p => {
