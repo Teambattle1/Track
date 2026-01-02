@@ -180,6 +180,15 @@ const GameApp: React.FC = () => {
   });
   const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': false });
 
+  // --- LOAD DRAWER STATES FROM ACTIVE GAME ---
+  useEffect(() => {
+    if (activeGame?.drawerStates) {
+      if (activeGame.drawerStates.settingsCollapsedSections) {
+        setCollapsedSections(activeGame.drawerStates.settingsCollapsedSections);
+      }
+    }
+  }, [activeGame?.id]);
+
   // --- SUPABASE ERROR DETECTION ---
   useEffect(() => {
     const handleSupabaseError = (event: CustomEvent) => {
