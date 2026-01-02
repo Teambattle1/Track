@@ -86,30 +86,46 @@ export const generateAiTasks = async (topic: string, count: number = 5, language
 
     if (!Array.isArray(rawData)) rawData = [];
 
-    return rawData.map((item: any, index: number) => ({
-        id: `ai-${Date.now()}-${index}`,
-        title: item.title,
-        iconId: (item.iconId as IconId) || 'default',
-        tags: ['AI', normalizedLanguage, ...(additionalTag ? [additionalTag] : [])],
-        createdAt: Date.now(),
-        points: 100,
-        task: {
-          type: (item.type as TaskType) || 'text',
-          question: item.question,
-          answer: item.answer,
-          options: item.options,
-          correctAnswers: item.correctAnswers,
-          range: item.numericRange ? { ...item.numericRange, step: 1, tolerance: 0 } : undefined
-        },
-        feedback: {
-          correctMessage: 'Correct!', showCorrectMessage: true,
-          incorrectMessage: 'Try again!', showIncorrectMessage: true,
-          hint: item.hint || '', hintCost: 10
-        },
-        settings: {
-          scoreDependsOnSpeed: false, language: normalizedLanguage, showAnswerStatus: true, showCorrectAnswerOnMiss: false
+    return rawData.map((item: any, index: number) => {
+        const taskType = (item.type as TaskType) || 'text';
+
+        // For boolean tasks, ensure answer is valid YES or NO
+        let taskAnswer = item.answer;
+        if (taskType === 'boolean') {
+            // Normalize the answer to YES or NO
+            if (!taskAnswer || (taskAnswer.toUpperCase() !== 'YES' && taskAnswer.toUpperCase() !== 'NO')) {
+                // Default to YES if AI didn't provide a valid answer
+                taskAnswer = 'YES';
+            } else {
+                taskAnswer = taskAnswer.toUpperCase();
+            }
         }
-    }));
+
+        return {
+            id: `ai-${Date.now()}-${index}`,
+            title: item.title,
+            iconId: (item.iconId as IconId) || 'default',
+            tags: ['AI', normalizedLanguage, ...(additionalTag ? [additionalTag] : [])],
+            createdAt: Date.now(),
+            points: 100,
+            task: {
+                type: taskType,
+                question: item.question,
+                answer: taskAnswer,
+                options: item.options,
+                correctAnswers: item.correctAnswers,
+                range: item.numericRange ? { ...item.numericRange, step: 1, tolerance: 0 } : undefined
+            },
+            feedback: {
+                correctMessage: 'Correct!', showCorrectMessage: true,
+                incorrectMessage: 'Try again!', showIncorrectMessage: true,
+                hint: item.hint || '', hintCost: 10
+            },
+            settings: {
+                scoreDependsOnSpeed: false, language: normalizedLanguage, showAnswerStatus: true, showCorrectAnswerOnMiss: false
+            }
+        };
+    });
   } catch (error) {
     console.error("AI Generation Error", error);
     throw error;
