@@ -287,7 +287,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
           {recentGames.length > 0 ? recentGames.map(game => (
             <div key={game.id} className="p-6 hover:bg-white/[0.05] transition-colors flex items-center justify-between group cursor-pointer" onClick={() => handleGameClick(game.id)}>
               <div>
-                <h4 className="font-black text-sm uppercase tracking-wide group-hover:text-[#00adef] transition-colors">{game.name}</h4>
+                <h4 className="font-black text-sm uppercase tracking-wide group-hover:text-[#00adef] transition-colors"><span className="text-orange-500">[{getGameDisplayId(game.id)}]</span> {game.name}</h4>
                 <p className="text-[10px] text-gray-600 font-mono mt-1 uppercase">{game.id}</p>
               </div>
               <button className="p-2 text-gray-500 hover:text-white"><ExternalLink className="w-4 h-4" /></button>
