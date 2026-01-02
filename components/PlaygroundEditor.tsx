@@ -2746,8 +2746,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     x2={targetX}
                                                     y2={targetY}
                                                     stroke="#10b981"
-                                                    strokeWidth="0.3"
-                                                    strokeDasharray="1,1"
+                                                    strokeWidth="0.8"
+                                                    strokeDasharray="3,2"
                                                     opacity="0.8"
                                                 />
                                             );
@@ -2766,8 +2766,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     x2={targetX}
                                                     y2={targetY}
                                                     stroke="#ef4444"
-                                                    strokeWidth="0.3"
-                                                    strokeDasharray="1,1"
+                                                    strokeWidth="0.8"
+                                                    strokeDasharray="3,2"
                                                     opacity="0.8"
                                                 />
                                             );
@@ -2786,8 +2786,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     x2={targetX}
                                                     y2={targetY}
                                                     stroke="#f59e0b"
-                                                    strokeWidth="0.3"
-                                                    strokeDasharray="1,1"
+                                                    strokeWidth="0.8"
+                                                    strokeDasharray="3,2"
                                                     opacity="0.8"
                                                 />
                                             );
