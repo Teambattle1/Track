@@ -136,7 +136,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [qrScannedValue, setQRScannedValue] = useState<string | null>(null);
 
     // Device-specific layout management
-    const [selectedDevice, setSelectedDevice] = useState<DeviceType>('desktop');
+    const [selectedDevice, setSelectedDevice] = useState<DeviceType>('mobile'); // Changed default to mobile
     const [deviceLayoutsCache, setDeviceLayoutsCache] = useState<Record<DeviceType, any> | null>(null);
     const orientationDragOffset = useRef({ x: 0, y: 0 });
     const showDragOffset = useRef({ x: 0, y: 0 });
@@ -649,8 +649,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             if (deviceLayout.orientationLock && deviceLayout.orientationLock !== 'none') {
                 setEditorOrientation(deviceLayout.orientationLock);
             } else {
-                // Default to landscape for all devices when no orientation lock
-                setEditorOrientation('landscape');
+                // Device-specific default orientations: mobile=portrait, tablet/desktop=landscape
+                const defaultOrientation = selectedDevice === 'mobile' ? 'portrait' : 'landscape';
+                setEditorOrientation(defaultOrientation);
             }
 
             // Load QR scanner position from device layout
@@ -661,8 +662,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             // Fallback to playground-level orientation for backward compatibility
             setEditorOrientation(activePlayground.orientationLock);
         } else {
-            // Default to landscape for all devices
-            setEditorOrientation('landscape');
+            // Device-specific default orientations: mobile=portrait, tablet/desktop=landscape
+            const defaultOrientation = selectedDevice === 'mobile' ? 'portrait' : 'landscape';
+            setEditorOrientation(defaultOrientation);
         }
     }, [activePlayground?.id, activePlayground?.orientationLock, activePlayground?.deviceLayouts, selectedDevice]);
 
