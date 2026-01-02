@@ -59,6 +59,65 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose, onLibraryUpdated }) =>
       return hasStoredGeminiKey ? 'KEY SET' : 'NOT SET';
   }, [geminiSaved, hasStoredGeminiKey]);
 
+  // Sound Upload Handlers
+  const handleUploadCorrectSound = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      // Validate audio file
+      if (!file.type.startsWith('audio/')) {
+          alert('Please upload an audio file (MP3, WAV, etc.)');
+          return;
+      }
+
+      setIsUploadingCorrect(true);
+      try {
+          const url = await uploadImage(file, 'game-assets');
+          if (url) {
+              setCorrectSoundUrl(url);
+          } else {
+              alert('Failed to upload sound file');
+          }
+      } catch (error) {
+          console.error('Upload error:', error);
+          alert('Failed to upload sound file');
+      } finally {
+          setIsUploadingCorrect(false);
+          if (correctSoundInputRef.current) {
+              correctSoundInputRef.current.value = '';
+          }
+      }
+  };
+
+  const handleUploadIncorrectSound = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      // Validate audio file
+      if (!file.type.startsWith('audio/')) {
+          alert('Please upload an audio file (MP3, WAV, etc.)');
+          return;
+      }
+
+      setIsUploadingIncorrect(true);
+      try {
+          const url = await uploadImage(file, 'game-assets');
+          if (url) {
+              setIncorrectSoundUrl(url);
+          } else {
+              alert('Failed to upload sound file');
+          }
+      } catch (error) {
+          console.error('Upload error:', error);
+          alert('Failed to upload sound file');
+      } finally {
+          setIsUploadingIncorrect(false);
+          if (incorrectSoundInputRef.current) {
+              incorrectSoundInputRef.current.value = '';
+          }
+      }
+  };
+
   // NOTE: Supabase setup SQL was moved to the SUPABASE module (System Tools).
 
   const handleMigrateGpsActivation = async () => {
