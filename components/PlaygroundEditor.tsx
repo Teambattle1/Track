@@ -251,13 +251,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     }, [game.id, selectedDevice]);
 
-    // Load QR scanner position from active playground's device layouts
-    useEffect(() => {
-        if (activePlayground?.deviceLayouts?.[selectedDevice]?.qrScannerPos) {
-            setQRScannerPos(activePlayground.deviceLayouts[selectedDevice].qrScannerPos);
-        }
-    }, [activePlayground?.id, selectedDevice]);
-
     // Save toolbar positions to game (device-aware)
     const saveToolbarPositions = () => {
         const existingPos = game.toolbarPositions || {};
