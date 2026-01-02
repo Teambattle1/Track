@@ -2284,6 +2284,21 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    Add translations to make this task available in multiple languages. AI will translate the content for you.
                                </p>
 
+                               {/* Warning about content changes */}
+                               {editedPoint.task.translations && Object.keys(editedPoint.task.translations).length > 0 && (
+                                   <div className="mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg p-3">
+                                       <div className="flex items-start gap-2">
+                                           <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                                           <div className="text-xs text-amber-800 dark:text-amber-200">
+                                               <p className="font-bold mb-1">⚠️ Auto-Invalidation</p>
+                                               <p className="text-amber-700 dark:text-amber-300">
+                                                   If you change the question, answers, or feedback in the main language, all translations will automatically be marked as "NEEDS REVIEW" to ensure accuracy.
+                                               </p>
+                                           </div>
+                                       </div>
+                                   </div>
+                               )}
+
                                {/* Current Translations */}
                                {editedPoint.task.translations && Object.keys(editedPoint.task.translations).length > 0 && (
                                    <div className="mb-6">
