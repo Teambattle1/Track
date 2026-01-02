@@ -57,6 +57,9 @@ interface EditorDrawerProps {
   // Playground Hover Props
   hoveredPlaygroundId?: string | null;
   onHoverPlayground?: (id: string | null) => void;
+  // Drawer State Props
+  collapsedZones?: Record<string, boolean>;
+  onCollapsedZonesChange?: (zones: Record<string, boolean>) => void;
 }
 
 const SortablePointItem: React.FC<{
