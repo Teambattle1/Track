@@ -52,6 +52,8 @@ import Access from './components/Access';
 import PlayzoneSelector from './components/PlayzoneSelector';
 import TranslationsManager from './components/TranslationsManager';
 import MediaManager from './components/MediaManager';
+import MediaApprovalNotification from './components/MediaApprovalNotification';
+import { approveMediaSubmission, rejectMediaSubmission } from './services/mediaUpload';
 import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
 
 // Inner App Component that consumes LocationContext
