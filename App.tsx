@@ -1873,6 +1873,21 @@ const GameApp: React.FC = () => {
                 </div>
             )}
 
+            {/* ACCESS SCREEN - Player game code entry */}
+            {showAccess && (
+                <Access
+                    onGameSelected={(gameId) => {
+                        setActiveGameId(gameId);
+                        setShowAccess(false);
+                        setMode(GameMode.PLAY);
+                        setShowLanding(false);
+                    }}
+                    onBack={() => {
+                        setShowAccess(false);
+                    }}
+                />
+            )}
+
             {renderModals()}
           </>
       );
