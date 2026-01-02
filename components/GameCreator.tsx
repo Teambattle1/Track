@@ -12,7 +12,8 @@ import {
 } from 'lucide-react';
 import { searchLogoUrl, generateAiLogo } from '../services/ai';
 import { uploadImage } from '../services/storage';
-import { fetchUniqueTags, fetchTagColors, saveTagColors as saveTagColorsToDb, countMapStyleUsage, replaceMapStyleInGames, fetchCustomMapStyles, saveCustomMapStyle, deleteCustomMapStyle } from '../services/db';
+import { fetchUniqueTags, countMapStyleUsage, replaceMapStyleInGames, fetchCustomMapStyles, saveCustomMapStyle, deleteCustomMapStyle } from '../services/db';
+import { useTagColors } from '../contexts/TagColorsContext';
 import { resizeImage } from '../utils/image';
 import GameLogViewer from './GameLogViewer';
 import MeetingPointMapPicker from './MeetingPointMapPicker';
@@ -242,7 +243,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   // Tags
   const [tags, setTags] = useState<string[]>(baseGame?.tags || []);
   const [tagInput, setTagInput] = useState('');
-  const [tagColors, setTagColors] = useState<Record<string, string>>({});
+  const { tagColors, setTagColor } = useTagColors();
   const [selectedTagColor, setSelectedTagColor] = useState(TAG_COLORS[0]);
   const [existingTags, setExistingTags] = useState<string[]>([]);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
@@ -350,28 +351,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const taskBgInputRef = useRef<HTMLInputElement>(null);
   const customStylePreviewInputRef = useRef<HTMLInputElement>(null);
 
-  // Load Tag Colors & Fetch Unique Tags on mount
+  // Load settings on mount (tag colors are loaded globally via TagColorsProvider)
   useEffect(() => {
       const loadSettings = async () => {
           try {
-              const stored = localStorage.getItem('geohunt_tag_colors');
-              let localColors: Record<string, string> = {};
-              if (stored) {
-                  try {
-                      localColors = JSON.parse(stored);
-                      setTagColors(localColors);
-                  } catch (e) {
-                      console.error('[GameCreator] Failed to parse local tag colors', e);
-                  }
-              }
-
-              const remoteColors = await fetchTagColors();
-              if (remoteColors && Object.keys(remoteColors).length > 0) {
-                  const merged = { ...remoteColors, ...localColors };
-                  setTagColors(merged);
-                  localStorage.setItem('geohunt_tag_colors', JSON.stringify(merged));
-              }
-
               // Load map previews (kept in localStorage for standard styles)
               const storedPreviews = localStorage.getItem('geohunt_map_previews');
               if (storedPreviews) setMapStylePreviews(JSON.parse(storedPreviews));
@@ -412,13 +395,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       loadUsageCounts();
   }, [customStyles]);
 
-  const saveTagColors = (newColors: Record<string, string>) => {
-      setTagColors(newColors);
-      localStorage.setItem('geohunt_tag_colors', JSON.stringify(newColors));
-      saveTagColorsToDb(newColors).catch((e) => {
-          console.warn('[GameCreator] Failed to persist tag colors to database', e);
-      });
-  };
 
   const handleMapPreviewUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -565,8 +541,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           const exists = tags.some(t => t.toLowerCase() === val.toLowerCase());
           if (!exists) {
               setTags([...tags, val]);
-              // Save color preference for this tag
-              saveTagColors({ ...tagColors, [val.toLowerCase()]: selectedTagColor });
+              // Save color preference for this tag (persisted globally)
+              setTagColor(val, selectedTagColor);
           }
           setTagInput('');
           setShowSuggestions(false);
@@ -582,7 +558,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       const currentColor = tagColors[key] || TAG_COLORS[0];
       const idx = TAG_COLORS.indexOf(currentColor);
       const nextColor = TAG_COLORS[(idx + 1) % TAG_COLORS.length];
-      saveTagColors({ ...tagColors, [key]: nextColor });
+      setTagColor(tag, nextColor);
   };
 
   const validateJson = () => {
