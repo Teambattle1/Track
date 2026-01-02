@@ -387,8 +387,8 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                                 </div>
                                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
                                     <div
-                                        className="h-full bg-red-600 rounded-full transition-all duration-300"
-                                        style={{ width: `${Math.min(100, Math.max(2, Math.round(purgeProgress * 100)))}%` }}
+                                        className="h-full bg-red-600 rounded-full transition-all duration-300 w-[var(--purge-progress)]"
+                                        style={{ ['--purge-progress' as any]: `${Math.min(100, Math.max(2, Math.round(purgeProgress * 100)))}%` }}
                                     />
                                 </div>
                             </div>
