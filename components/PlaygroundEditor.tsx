@@ -819,6 +819,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     }, [selectedDevice, activePlayground?.id]);
 
+    // Load and save task sort mode preference
+    useEffect(() => {
+        if (activePlayground) {
+            const storageKey = `playzone_sortmode_${activePlayground.id}`;
+            const savedSortMode = localStorage.getItem(storageKey);
+            if (savedSortMode) {
+                setTaskSortMode(savedSortMode as 'order' | 'actions');
+            }
+        }
+    }, [activePlayground?.id]);
+
+    useEffect(() => {
+        if (activePlayground) {
+            const storageKey = `playzone_sortmode_${activePlayground.id}`;
+            localStorage.setItem(storageKey, taskSortMode);
+        }
+    }, [taskSortMode, activePlayground?.id]);
+
     // Auto-collapse all source tasks on mount when in actions mode
     useEffect(() => {
         if (activePlayground && taskSortMode === 'actions') {
