@@ -2049,13 +2049,37 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           {sound.name} - {sound.description}
                                       </option>
                                   ))}
+                                  {!INCORRECT_SOUNDS.find(s => s.url === currentIncorrectSound) && currentIncorrectSound && (
+                                      <option value={currentIncorrectSound}>Custom Upload</option>
+                                  )}
                               </select>
-                              <button
-                                  onClick={() => playSound(currentIncorrectSound, currentVolume)}
-                                  className="mt-3 w-full px-4 py-3 bg-red-600/20 hover:bg-red-600/30 border border-red-600/50 text-red-400 rounded-xl text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
-                              >
-                                  <Play className="w-4 h-4" /> Preview Sound
-                              </button>
+                              <div className="flex gap-3 mt-3">
+                                  <button
+                                      onClick={() => playSound(currentIncorrectSound, currentVolume)}
+                                      className="flex-1 px-4 py-3 bg-red-600/20 hover:bg-red-600/30 border border-red-600/50 text-red-400 rounded-xl text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                                  >
+                                      <Play className="w-4 h-4" /> Preview
+                                  </button>
+                                  <button
+                                      onClick={() => incorrectSoundInputRef.current?.click()}
+                                      disabled={isUploadingIncorrectSound}
+                                      className="flex-1 px-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-600/50 text-purple-400 rounded-xl text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                      {isUploadingIncorrectSound ? (
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                      ) : (
+                                          <Upload className="w-4 h-4" />
+                                      )}
+                                      {isUploadingIncorrectSound ? 'Uploading...' : 'Upload'}
+                                  </button>
+                              </div>
+                              <input
+                                  ref={incorrectSoundInputRef}
+                                  type="file"
+                                  accept="audio/*"
+                                  onChange={handleUploadIncorrectSound}
+                                  className="hidden"
+                              />
                           </div>
 
                           {/* Reset to Global Defaults */}
