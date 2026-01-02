@@ -1383,6 +1383,35 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     return (
         <div className="fixed inset-0 z-[5000] bg-[#0f172a] text-white flex flex-row overflow-hidden font-sans animate-in fade-in">
 
+            {/* Draw Mode Banner - Absolute Positioned */}
+            {drawMode.active && drawMode.sourceTaskId && (
+                <div className={`absolute top-0 left-0 right-0 px-6 py-4 flex items-center justify-between z-[6000] border-b-4 animate-in slide-in-from-top-4 ${
+                    drawMode.trigger === 'onCorrect'
+                        ? 'bg-green-600 border-green-500'
+                        : drawMode.trigger === 'onIncorrect'
+                        ? 'bg-red-600 border-red-500'
+                        : 'bg-amber-600 border-amber-500'
+                }`}>
+                    <div className="flex items-center gap-4">
+                        <PenTool className="w-6 h-6 text-white animate-pulse" />
+                        <div>
+                            <h3 className="text-lg font-black uppercase tracking-wider text-white">
+                                {drawMode.trigger === 'onCorrect' ? '✓ IF CORRECT' : drawMode.trigger === 'onIncorrect' ? '✗ IF INCORRECT' : '⚡ WHEN OPENED'} DRAW MODE
+                            </h3>
+                            <p className="text-sm font-bold text-white/90">
+                                Click tasks to connect them. Click multiple to create a flow. Press ESC or click Exit to finish.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setDrawMode({ active: false, trigger: null, sourceTaskId: null, mousePosition: null })}
+                        className="px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-2 border-2 border-white/30"
+                    >
+                        <X className="w-5 h-5" /> EXIT DRAW MODE
+                    </button>
+                </div>
+            )}
+
             {/* LEFT SIDEBAR EDITOR - COLLAPSIBLE DRAWER */}
             <div className={`flex flex-col border-r border-slate-800 bg-[#0f172a] shadow-2xl z-20 transition-all duration-300 ease-in-out ${
                 isDrawerOpen ? 'w-[360px]' : 'w-0'
