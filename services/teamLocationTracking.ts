@@ -210,6 +210,12 @@ export const fetchImpossibleTravelWarnings = async (
   }>
 > => {
   try {
+    // Check if supabase client is available
+    if (!supabase) {
+      console.warn('[TeamTracking] Supabase client not initialized. Skipping impossible travel check.');
+      return [];
+    }
+
     // First fetch impossible travel locations
     const { data: locations, error: locError } = await supabase
       .from('team_locations')
@@ -220,7 +226,16 @@ export const fetchImpossibleTravelWarnings = async (
       .limit(50);
 
     if (locError) {
-      console.error('[TeamTracking] Error fetching impossible travel locations:', locError.message || JSON.stringify(locError));
+      // Check if it's a table not found error (feature not set up yet)
+      if (locError.message?.includes('relation') || locError.message?.includes('does not exist') || locError.code === '42P01') {
+        console.info('[TeamTracking] Team location tracking table not set up. Use Supabase Tools to initialize database schema.');
+        return [];
+      }
+
+      // Log other errors but don't spam console on network errors
+      if (!locError.message?.includes('Failed to fetch') && !locError.message?.includes('fetch')) {
+        console.error('[TeamTracking] Error fetching impossible travel locations:', locError.message || JSON.stringify(locError));
+      }
       return [];
     }
 
@@ -257,6 +272,12 @@ export const fetchImpossibleTravelWarnings = async (
       speed: parseFloat(record.speed || 0),
     }));
   } catch (error: any) {
+    // Silently fail on network errors (Failed to fetch)
+    if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch') || error?.name === 'TypeError') {
+      // Network error - fail silently as this is a non-critical feature
+      return [];
+    }
+
     console.error('[TeamTracking] Exception fetching impossible travel warnings:', error?.message || JSON.stringify(error));
     return [];
   }
