@@ -8,7 +8,7 @@ import {
     Tag, MessageSquare, Flag, MapPin, Users, PenTool, LayoutGrid, BarChart2,
     Settings, Play, Target, List, Palette, EyeOff, Eye, ScrollText, Check, AlertTriangle,
     Snowflake, Mountain, ExternalLink, Code, PlayCircle, ChevronRight, Plus, Wand2,
-    Copy, Monitor, Volume2
+    Copy, Monitor, Volume2, KeyRound, QrCode
 } from 'lucide-react';
 import { searchLogoUrl, generateAiLogo } from '../services/ai';
 import { uploadImage } from '../services/storage';
@@ -124,6 +124,7 @@ const TABS = [
     { id: 'TASKDESIGN', label: 'Task Design', icon: Palette },
     { id: 'PLAYGROUNDS', label: 'Zones', icon: LayoutGrid },
     { id: 'SOUNDS', label: 'Sounds', icon: Volume2 },
+    { id: 'ACCESS', label: 'Access', icon: KeyRound },
     { id: 'CLIENT', label: 'Client', icon: Monitor },
     { id: 'SETTINGS', label: 'Settings', icon: Settings },
     { id: 'LOGS', label: 'Logs', icon: ScrollText },
@@ -323,6 +324,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
   // Sound Settings
   const [soundSettings, setSoundSettings] = useState<import('../types').SoundSettings | undefined>(baseGame?.soundSettings);
+
+  // Access Code
+  const [accessCode, setAccessCode] = useState(baseGame?.accessCode || '');
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
 
   // Config
   const [timerMode, setTimerMode] = useState<TimerMode>(baseGame?.timerConfig?.mode || 'none');
@@ -870,6 +875,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           mapConfig,
           defaultTaskColorScheme,
           soundSettings,
+          accessCode: accessCode.toUpperCase().trim() || undefined,
           client: {
               name: clientName,
               logoUrl: clientLogo,
