@@ -3075,7 +3075,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 {/* Right Side Tools hidden - functionality moved to right tasks drawer */}
 
                 {/* Delete Zone - Bottom Right */}
-                {/* Zoom Controls - Bottom Center */}
+                {/* Zoom Controls & Tools - Bottom Center */}
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2 pointer-events-auto">
                     <button
                         onClick={() => setZoom(z => Math.max(0.2, z - 0.1))}
@@ -3084,6 +3084,29 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     >
                         <ZoomOut className="w-5 h-5" />
                     </button>
+
+                    {/* CENTER Button */}
+                    <button
+                        onClick={handleCenterBackground}
+                        className="p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl border border-slate-700 transition-colors"
+                        title="Center Background"
+                    >
+                        <Target className="w-5 h-5" />
+                    </button>
+
+                    {/* LOCK Background Button */}
+                    <button
+                        onClick={() => setIsBackgroundLocked(!isBackgroundLocked)}
+                        className={`p-3 rounded-full shadow-xl border-2 transition-colors ${
+                            isBackgroundLocked
+                                ? 'bg-red-600 border-red-500 text-white hover:bg-red-700'
+                                : 'bg-slate-900 border-slate-700 text-white hover:bg-slate-800'
+                        }`}
+                        title={isBackgroundLocked ? 'Unlock background (draggable)' : 'Lock background (not draggable)'}
+                    >
+                        {isBackgroundLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+                    </button>
+
                     <button
                         onClick={() => setZoom(z => Math.min(5, z + 0.1))}
                         className="p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl border border-slate-700 transition-colors"
