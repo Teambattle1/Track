@@ -3107,36 +3107,48 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         {/* Draggable QR Scanner Button - Inside Game Canvas */}
                         {showQRScanner && (
                             <div
-                                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-auto flex flex-col"
+                                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-auto group"
                                 style={{
                                     left: `${qrScannerPos.x}%`,
                                     top: `${qrScannerPos.y}%`,
+                                    width: `${qrScannerSize.width}px`,
+                                    height: `${qrScannerSize.height}px`,
                                 }}
+                                onPointerDown={handleQRScannerPointerDown}
+                                onPointerMove={handleQRScannerPointerMove}
+                                onPointerUp={handleQRScannerPointerUp}
+                                onPointerCancel={handleQRScannerPointerUp}
                             >
-                                {/* Drag Handle - Top Bar */}
-                                <div
-                                    onPointerDown={handleQRScannerPointerDown}
-                                    onPointerMove={handleQRScannerPointerMove}
-                                    onPointerUp={handleQRScannerPointerUp}
-                                    onPointerCancel={handleQRScannerPointerUp}
-                                    className="flex items-center justify-center bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-t-lg cursor-grab active:cursor-grabbing touch-none select-none border-b border-orange-700 transition-colors"
-                                    title="Drag to move"
-                                >
-                                    <GripHorizontal className="w-5 h-5 text-orange-200" />
-                                </div>
-
-                                {/* QR Scan Button - Not draggable */}
+                                {/* QR Scan Button - Resizable, draggable, color customizable */}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleQRScanClick();
                                     }}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-b-lg bg-orange-500 hover:bg-orange-600 text-white font-bold uppercase text-xs shadow-xl transition-all"
-                                    title="Scan QR Code"
+                                    style={{
+                                        backgroundColor: qrScannerColor,
+                                        width: '100%',
+                                        height: '100%'
+                                    }}
+                                    className="flex items-center justify-center gap-2 rounded-xl text-white font-bold uppercase shadow-xl transition-all cursor-move hover:ring-2 hover:ring-yellow-400 relative"
+                                    title="Click to change color | Drag to move"
                                 >
                                     <QrCode className="w-4 h-4" />
-                                    SCAN QR
+                                    <span className={qrScannerSize.width < 120 ? 'text-[10px]' : 'text-xs'}>
+                                        SCAN QR
+                                    </span>
                                 </button>
+
+                                {/* Resize handle - bottom-right corner */}
+                                <div
+                                    className="absolute bottom-0 right-0 w-4 h-4 bg-yellow-400 border-2 border-yellow-600 rounded-tl rounded-br cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onPointerDown={handleQRScannerResizeDown}
+                                    onPointerMove={handleQRScannerResizeMove}
+                                    onPointerUp={handleQRScannerResizeUp}
+                                    onPointerCancel={handleQRScannerResizeUp}
+                                    title="Drag to resize"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
                             </div>
                         )}
                     </div>
