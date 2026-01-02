@@ -2830,8 +2830,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 x2={mouseX}
                                                 y2={mouseY}
                                                 stroke={lineColor}
-                                                strokeWidth="0.5"
-                                                strokeDasharray="2,2"
+                                                strokeWidth="1.2"
+                                                strokeDasharray="4,3"
                                                 opacity="0.9"
                                                 className="animate-pulse"
                                             />
@@ -2839,7 +2839,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <circle
                                                 cx={mouseX}
                                                 cy={mouseY}
-                                                r="1"
+                                                r="1.5"
                                                 fill={lineColor}
                                                 opacity="0.7"
                                             />
