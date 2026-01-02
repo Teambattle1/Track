@@ -14,7 +14,7 @@ interface PlaygroundModalProps {
   taskCooldowns?: Map<string, number>; // Map of taskId -> cooldown end timestamp
 }
 
-const PlaygroundModal: React.FC<PlaygroundModalProps> = ({ playground, points, onClose, onPointClick, mode, onUpdatePlayground, onEditPlayground }) => {
+const PlaygroundModal: React.FC<PlaygroundModalProps> = ({ playground, points, onClose, onPointClick, mode, onUpdatePlayground, onEditPlayground, taskCooldowns = new Map() }) => {
   const playgroundPoints = points.filter(p => {
       if (p.playgroundId !== playground.id) return false;
       if (mode === GameMode.PLAY && p.isHiddenBeforeScan && !p.isUnlocked) {
