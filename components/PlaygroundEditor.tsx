@@ -14,6 +14,7 @@ import { generateAiImage, generateAiBackground, searchLogoUrl } from '../service
 import * as db from '../services/db';
 import { snapPointsToRoad, isPointInBox } from '../utils/mapbox';
 import jsQR from 'jsqr';
+import QRScannerModal from './QRScannerModal';
 import { getGlobalCorrectSound, getGlobalIncorrectSound, getGlobalVolume } from '../utils/sounds';
 import TaskActionModal from './TaskActionModal';
 import AiTaskGenerator from './AiTaskGenerator';
@@ -664,85 +665,28 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     };
 
-    // QR Scanner function - Show color picker in editor mode
+    // QR Scanner function - Show color picker in editor mode, scanner in simulation mode
     const handleQRScanClick = async () => {
-        // In editor mode, show color picker instead of scanning
-        setShowQRColorPicker(true);
-        return;
-
-        if (isQRScannerActive) {
-            // Stop scanning
-            if (qrStreamRef.current) {
-                qrStreamRef.current.getTracks().forEach(track => track.stop());
-            }
-            if (qrScanIntervalRef.current) {
-                clearInterval(qrScanIntervalRef.current);
-            }
-            setIsQRScannerActive(false);
-            setQRScannedValue(null);
+        // In simulation mode, show scanner
+        if (isSimulationActive) {
+            setIsQRScannerActive(!isQRScannerActive);
             return;
         }
 
-        // Start scanning
-        setIsQRScannerActive(true);
-
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'environment',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
-            });
-
-            qrStreamRef.current = stream;
-
-            if (qrVideoRef.current) {
-                qrVideoRef.current.srcObject = stream;
-                qrVideoRef.current.play();
-
-                qrScanIntervalRef.current = setInterval(() => {
-                    if (qrVideoRef.current && qrCanvasRef.current && qrVideoRef.current.readyState === qrVideoRef.current.HAVE_ENOUGH_DATA) {
-                        const canvas = qrCanvasRef.current;
-                        const ctx = canvas.getContext('2d');
-
-                        if (ctx) {
-                            canvas.width = qrVideoRef.current.videoWidth;
-                            canvas.height = qrVideoRef.current.videoHeight;
-                            ctx.drawImage(qrVideoRef.current, 0, 0);
-
-                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                            const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-                            if (code) {
-                                setQRScannedValue(code.data);
-                                if (qrStreamRef.current) {
-                                    qrStreamRef.current.getTracks().forEach(track => track.stop());
-                                }
-                                if (qrScanIntervalRef.current) {
-                                    clearInterval(qrScanIntervalRef.current);
-                                }
-                                setIsQRScannerActive(false);
-                            }
-                        }
-                    }
-                }, 100);
-            }
-        } catch (error: any) {
-            console.error('QR Scanner: Camera access failed:', error);
-            setIsQRScannerActive(false);
-        }
+        // In editor mode, show color picker
+        setShowQRColorPicker(true);
     };
 
-    // Cleanup QR scanner on unmount
+    // Handle QR scan result
+    const handleQRScan = (data: string) => {
+        setQRScannedValue(data);
+        console.log('QR Code scanned in editor:', data);
+    };
+
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
-            if (qrStreamRef.current) {
-                qrStreamRef.current.getTracks().forEach(track => track.stop());
-            }
-            if (qrScanIntervalRef.current) {
-                clearInterval(qrScanIntervalRef.current);
-            }
+            // Cleanup is now handled by QRScannerModal
         };
     }, []);
 
