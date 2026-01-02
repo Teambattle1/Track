@@ -2275,6 +2275,8 @@ const GameApp: React.FC = () => {
                     }
                 }}
                 onShowPlayzoneChoice={() => setShowPlayzoneChoiceModal(true)}
+                hoveredPlaygroundId={hoveredPlaygroundId}
+                onHoverPlayground={setHoveredPlaygroundId}
             />
         )}
 
