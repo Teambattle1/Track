@@ -503,6 +503,26 @@ const GameManager: React.FC<GameManagerProps> = ({
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.isTemplate ? 'Delete Template?' : 'Delete Game?'}
+        message={`Are you sure you want to delete this ${confirmModal.isTemplate ? 'template' : 'game'}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        icon="warning"
+        onConfirm={() => {
+          if (confirmModal.gameId) {
+            onDeleteGame(confirmModal.gameId);
+            setConfirmModal({ isOpen: false });
+          }
+        }}
+        onCancel={() => {
+          setConfirmModal({ isOpen: false });
+        }}
+      />
     </div>
   );
 };
