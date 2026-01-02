@@ -3746,9 +3746,28 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                         </p>
                                                     )}
 
-                                                    {/* Actions indicator */}
+                                                    {/* Action indicators - tri-color system */}
                                                     {showTaskActions && hasActions && (
-                                                        <Zap className="w-3 h-3 text-purple-400 flex-shrink-0" title="Has actions" />
+                                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                                            {point.logic?.onOpen?.length > 0 && (
+                                                                <div
+                                                                    className="w-2 h-2 rounded-full bg-yellow-400 border border-yellow-600"
+                                                                    title="When Opened action"
+                                                                />
+                                                            )}
+                                                            {point.logic?.onCorrect?.length > 0 && (
+                                                                <div
+                                                                    className="w-2 h-2 rounded-full bg-green-400 border border-green-600"
+                                                                    title="If Correct action"
+                                                                />
+                                                            )}
+                                                            {point.logic?.onIncorrect?.length > 0 && (
+                                                                <div
+                                                                    className="w-2 h-2 rounded-full bg-red-400 border border-red-600"
+                                                                    title="If Incorrect action"
+                                                                />
+                                                            )}
+                                                        </div>
                                                     )}
 
                                                     {/* Edit button */}
