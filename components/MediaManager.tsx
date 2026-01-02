@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, Download, Calendar, HardDrive, Image as ImageIcon, Video, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Game, MediaSubmission } from '../types';
+import { getMediaStats, deleteMediaOlderThan } from '../services/mediaUpload';
 
 interface MediaManagerProps {
   onClose: () => void;
