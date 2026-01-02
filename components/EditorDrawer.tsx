@@ -327,8 +327,8 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   }, [isExpanded, onExpandChange]);
 
   useEffect(() => {
-      if (activeGame?.playgrounds) {
-          setCollapsedZones(prev => {
+      if (activeGame?.playgrounds && !collapsedZonesProp) {
+          setCollapsedZonesLocal(prev => {
               const next = { ...prev };
               activeGame.playgrounds?.forEach(pg => {
                   if (next[pg.id] === undefined) next[pg.id] = false; // Default expanded now
@@ -336,7 +336,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
               return next;
           });
       }
-  }, [activeGame]);
+  }, [activeGame, collapsedZonesProp]);
   
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
