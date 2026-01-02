@@ -13,10 +13,10 @@ interface TaskActionModalProps {
 
 type TriggerType = 'onOpen' | 'onCorrect' | 'onIncorrect';
 
-const TRIGGER_TABS: { id: TriggerType; label: string; icon: any; color: string }[] = [
-    { id: 'onOpen', label: 'WHEN OPENED', icon: Zap, color: 'text-blue-500' },
-    { id: 'onCorrect', label: 'IF CORRECT', icon: CheckCircle, color: 'text-green-500' },
-    { id: 'onIncorrect', label: 'IF INCORRECT', icon: XCircle, color: 'text-red-500' },
+const TRIGGER_TABS: { id: TriggerType; label: string; icon: any; color: string; bgColor: string; borderColor: string }[] = [
+    { id: 'onOpen', label: 'WHEN OPENED', icon: Zap, color: 'text-yellow-600', bgColor: 'bg-yellow-500', borderColor: 'border-yellow-500' },
+    { id: 'onCorrect', label: 'IF CORRECT', icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-500', borderColor: 'border-green-500' },
+    { id: 'onIncorrect', label: 'IF INCORRECT', icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-500', borderColor: 'border-red-500' },
 ];
 
 const ACTION_TYPES: { id: ActionType; label: string; icon: any; description: string }[] = [
@@ -205,9 +205,9 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
                 <button
                     key={tab.id}
                     onClick={() => setActiveTrigger(tab.id)}
-                    className={`flex-1 py-3 text-xs font-bold uppercase flex flex-col items-center gap-1 transition-colors border-b-2 ${activeTrigger === tab.id ? 'border-indigo-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                    className={`flex-1 py-3 text-xs font-bold uppercase flex flex-col items-center gap-1 transition-colors border-b-4 ${activeTrigger === tab.id ? tab.borderColor + ' bg-white dark:bg-gray-900 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                 >
-                    <div className={`flex items-center gap-1 ${activeTrigger === tab.id ? tab.color : ''}`}>
+                    <div className={`flex items-center gap-1 ${tab.color}`}>
                         <tab.icon className="w-3 h-3" />
                         {tab.label}
                     </div>
@@ -217,23 +217,23 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
 
         {/* Action List Area */}
         <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-900">
-            {/* Draw Connections Button - Now Available for Correct AND Incorrect */}
-            {(activeTrigger === 'onCorrect' || activeTrigger === 'onIncorrect') && (
-                <button 
-                    onClick={() => {
-                        onSave({ ...point, logic });
-                        onStartDrawMode(activeTrigger);
-                    }}
-                    className={`w-full mb-4 py-3 text-white rounded-xl font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg transition-all ${
-                        activeTrigger === 'onCorrect' 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-red-600 hover:bg-red-700'
-                    }`}
-                >
-                    <PenTool className="w-4 h-4" /> 
-                    {activeTrigger === 'onCorrect' ? 'DRAW "IF CORRECT" FLOW' : 'DRAW "IF INCORRECT" FLOW'}
-                </button>
-            )}
+            {/* Draw Connections Button - Available for all trigger types */}
+            <button
+                onClick={() => {
+                    onSave({ ...point, logic });
+                    onStartDrawMode(activeTrigger);
+                }}
+                className={`w-full mb-4 py-3 text-white rounded-xl font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg transition-all ${
+                    activeTrigger === 'onCorrect'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : activeTrigger === 'onIncorrect'
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-yellow-600 hover:bg-yellow-700'
+                }`}
+            >
+                <PenTool className="w-4 h-4" />
+                {activeTrigger === 'onCorrect' ? 'DRAW "IF CORRECT" FLOW' : activeTrigger === 'onIncorrect' ? 'DRAW "IF INCORRECT" FLOW' : 'DRAW "WHEN OPENED" FLOW'}
+            </button>
 
             {activeActions.length === 0 ? (
                 <div className="text-center py-10 opacity-50 flex flex-col items-center">
