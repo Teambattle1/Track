@@ -24,12 +24,16 @@ const isFieldApproved = (translation: TaskTranslation, field: keyof TaskTranslat
  * Check if all fields in a translation are approved
  */
 export const isTranslationFullyApproved = (translation: TaskTranslation): boolean => {
+  // Question is always required and must be explicitly approved
+  if (translation.questionApproved !== true) {
+    return false;
+  }
+
   const checks = [
-    isFieldApproved(translation, 'question'),
-    translation.options ? isFieldApproved(translation, 'options') : true,
-    translation.answer ? isFieldApproved(translation, 'answer') : true,
-    translation.correctAnswers ? isFieldApproved(translation, 'correctAnswers') : true,
-    translation.placeholder ? isFieldApproved(translation, 'placeholder') : true,
+    translation.options ? (translation.optionsApproved === true) : true,
+    translation.answer ? (translation.answerApproved === true) : true,
+    translation.correctAnswers ? (translation.correctAnswersApproved === true) : true,
+    translation.placeholder ? (translation.placeholderApproved === true) : true,
   ];
 
   // Check feedback fields if feedback exists
