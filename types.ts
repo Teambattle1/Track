@@ -516,13 +516,16 @@ export interface Game {
   tags?: string[]; // New: Game Tags
   language?: Language;
   points: GamePoint[];
-  playgrounds?: Playground[]; 
-  dangerZones?: DangerZone[]; 
-  routes?: GameRoute[]; 
+  playgrounds?: Playground[];
+  dangerZones?: DangerZone[];
+  routes?: GameRoute[];
   createdAt: number;
   defaultMapStyle?: MapStyleId;
   googleMapStyleJson?: string; // New: Custom Google Maps Style
   toolbarPositions?: ToolbarPositions; // Per-game toolbar positions
+
+  // Game Access
+  accessCode?: string; // Uppercase alphanumeric code for game access (case-insensitive)
 
   // Game Mode Configuration
   gameMode?: 'standard' | 'playzone' | 'elimination'; // 'standard' = GPS-based, 'playzone' = playground-only indoor, 'elimination' = GPS-based CTF
