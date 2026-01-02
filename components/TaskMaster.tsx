@@ -561,19 +561,22 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const getActivationBadges = (task: TaskTemplate): string[] => {
         const badges: string[] = [];
 
-        if (task.activationTypes?.includes('qr') || task.qrCodeString) {
+        // Default to click activation if no activation types are set
+        const activationTypes = task.activationTypes || ['click'];
+
+        if (activationTypes.includes('qr') || task.qrCodeString) {
             badges.push('QR');
         }
-        if (task.activationTypes?.includes('nfc') || task.nfcTagId) {
+        if (activationTypes.includes('nfc') || task.nfcTagId) {
             badges.push('NFC');
         }
-        if (task.activationTypes?.includes('ibeacon') || task.ibeaconUUID) {
+        if (activationTypes.includes('ibeacon') || task.ibeaconUUID) {
             badges.push('iBeacon');
         }
-        if (task.activationTypes?.includes('radius')) {
+        if (activationTypes.includes('radius')) {
             badges.push('GPS');
         }
-        if (task.activationTypes?.includes('click')) {
+        if (activationTypes.includes('click')) {
             badges.push('TAP');
         }
 
