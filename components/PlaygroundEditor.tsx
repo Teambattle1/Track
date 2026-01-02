@@ -2440,6 +2440,36 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 <Zap className="w-4 h-4" /> CONFIGURE ACTIONS
                             </button>
 
+                            {/* Settings Button */}
+                            <button
+                                onClick={() => {
+                                    setTaskEditorTab('SETTINGS');
+                                    setShowTaskMaster(true);
+                                }}
+                                className="w-full py-3 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-400 hover:text-cyan-300 border border-cyan-600/40 hover:border-cyan-500 rounded-lg font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
+                                title="Open task settings"
+                            >
+                                <Settings className="w-4 h-4" /> TASK SETTINGS
+                            </button>
+
+                            {/* Copy Task Button */}
+                            <button
+                                onClick={() => {
+                                    // Create a copy of the selected task with a new ID
+                                    const newTask = { ...selectedTask, id: `task-${Date.now()}` };
+                                    onUpdateGame({
+                                        ...game,
+                                        points: [...game.points, newTask]
+                                    });
+                                    navigator.clipboard.writeText(JSON.stringify(newTask));
+                                    alert(`Task "${selectedTask.title}" copied! You can paste it in another game.`);
+                                }}
+                                className="w-full py-3 bg-green-600/20 hover:bg-green-600/40 text-green-400 hover:text-green-300 border border-green-600/40 hover:border-green-500 rounded-lg font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
+                                title="Copy this task to clipboard and duplicate in current zone"
+                            >
+                                <Copy className="w-4 h-4" /> COPY TASK
+                            </button>
+
                             {/* Delete Task Button */}
                             <button
                                 onClick={() => {
