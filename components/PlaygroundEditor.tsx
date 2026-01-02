@@ -2787,9 +2787,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     x2={targetX}
                                                     y2={targetY}
                                                     stroke="#eab308"
-                                                    strokeWidth="0.8"
-                                                    strokeDasharray="3,2"
-                                                    opacity="0.8"
+                                                    strokeWidth="1.2"
+                                                    strokeDasharray="4,3"
+                                                    opacity="0.9"
+                                                    className="animate-pulse"
                                                 />
                                             );
                                         })
