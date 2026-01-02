@@ -323,6 +323,11 @@ export interface GamePoint {
   instructorNotes?: string;
   showStatusMarkers?: boolean; // Show OK/Wrong answer markers (✓/✗) when task is completed
 
+  // Task Visibility After Completion
+  keepOnScreenOnCorrect?: boolean; // If true, task stays visible (grayed) after correct answer
+  keepOnScreenOnIncorrect?: boolean; // If true, task stays visible (grayed) after incorrect answer
+  showBadgeOnGrayedTask?: boolean; // If true, show ✓/✗ badge on grayed-out task icon
+
   // Visual Design
   colorScheme?: TaskColorScheme; // Local color scheme override (only for this task in this game)
   isColorSchemeLocked?: boolean; // If true, prevents color scheme changes when imported from library
