@@ -117,6 +117,33 @@ export interface GameTask {
 
   // Timeline
   timelineItems?: TimelineItem[];
+
+  // Translations
+  translations?: Record<Language, TaskTranslation>;
+}
+
+// Translation Entry for Multilingual Tasks
+export interface TaskTranslation {
+  question: string;
+  questionApproved?: boolean; // AI-generated translations default to false
+  options?: string[];
+  optionsApproved?: boolean;
+  answer?: string;
+  answerApproved?: boolean;
+  correctAnswers?: string[];
+  correctAnswersApproved?: boolean;
+  placeholder?: string;
+  placeholderApproved?: boolean;
+  timelineItems?: TimelineItem[];
+  timelineItemsApproved?: boolean;
+  feedback?: {
+    correctMessage: string;
+    correctMessageApproved?: boolean;
+    incorrectMessage: string;
+    incorrectMessageApproved?: boolean;
+    hint: string;
+    hintApproved?: boolean;
+  };
 }
 
 export interface TaskFeedback {
