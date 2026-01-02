@@ -3988,7 +3988,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     <Edit2 className="w-3.5 h-3.5 text-slate-500 group-hover:text-orange-500 transition-colors flex-shrink-0" />
                                                 </div>
                                             );
-                                        });
+                                            });
+
+                                            return renderedItems;
                                         })()}
                                     </div>
                                 )}
