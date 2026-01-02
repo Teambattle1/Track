@@ -3881,7 +3881,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 taskIconInputRef.current?.click();
                                             }}
                                             className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
-                                            title="Upload custom icon for unsolved state"
+                                            title="Upload custom icon for incorrect answer"
                                         >
                                             <Upload className="w-3 h-3" /> UPLOAD
                                         </button>
