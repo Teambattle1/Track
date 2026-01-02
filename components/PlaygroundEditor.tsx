@@ -3426,8 +3426,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        // Only open color picker if we didn't drag
-                                        if (!qrScannerDidDrag.current) {
+                                        // In simulation mode, always allow click to open scanner
+                                        // In editor mode, only open color picker if we didn't drag
+                                        if (isSimulationActive || !qrScannerDidDrag.current) {
                                             handleQRScanClick();
                                         }
                                     }}
@@ -3436,8 +3437,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         width: '100%',
                                         height: '100%'
                                     }}
-                                    className="flex items-center justify-center gap-2 rounded-xl text-white font-bold uppercase shadow-xl transition-all cursor-move hover:ring-2 hover:ring-yellow-400 relative"
-                                    title="Click to change color | Drag to move"
+                                    className={`flex items-center justify-center gap-2 rounded-xl text-white font-bold uppercase shadow-xl transition-all hover:ring-2 hover:ring-yellow-400 relative ${
+                                        isSimulationActive ? 'cursor-pointer' : 'cursor-move'
+                                    }`}
+                                    title={isSimulationActive ? 'Click to scan QR code' : 'Click to change color | Drag to move'}
                                 >
                                     <QrCode className="w-4 h-4" />
                                     <span className={qrScannerSize.width < 120 ? 'text-[10px]' : 'text-xs'}>
