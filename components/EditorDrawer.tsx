@@ -821,6 +821,16 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 >
                     {isSaved ? <><div className="flex items-center gap-2"><Check className="w-4 h-4" /> {isGameTemplateMode ? 'TEMPLATE UPDATED!' : 'GAME SAVED!'}</div></> : (isGameTemplateMode ? <><div className="flex items-center gap-2"><Save className="w-4 h-4" /> Update Template</div></> : <><div className="flex items-center gap-2"><Save className="w-4 h-4" /> Save Game</div></>)}
                 </button>
+
+                {!isGameTemplateMode && onExportGameToLibrary && (
+                    <button
+                        onClick={onExportGameToLibrary}
+                        className="w-full py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm uppercase tracking-wide bg-orange-600 text-white hover:bg-orange-700 shadow-orange-600/20"
+                        title="Export all game tasks to Global Library and sync to Supabase"
+                    >
+                        <Library className="w-4 h-4" /> Export Tasks to Library
+                    </button>
+                )}
             </div>
           </>
       )}
