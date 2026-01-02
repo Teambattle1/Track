@@ -293,7 +293,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   onExpandChange,
   isGameTemplateMode = false,
   onSaveGameTemplate,
-  onExportGameToLibrary,
   routes = [],
   onAddRoute,
   onDeleteRoute,
