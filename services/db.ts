@@ -667,6 +667,7 @@ const normalizeTemplateForSave = (template: TaskTemplate): TaskTemplate => {
 
     return {
         ...template,
+        tags: Array.isArray(template.tags) ? template.tags : [],
         settings: {
             ...template.settings,
             language: finalLanguage
