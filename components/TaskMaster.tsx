@@ -2627,6 +2627,20 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                 </div>
             )}
 
+            {/* Color Scheme Editor Modal */}
+            {showColorSchemeEditor && (
+                <ColorSchemeEditor
+                    initialScheme={editingColorScheme}
+                    onSave={handleSaveColorScheme}
+                    onClose={() => {
+                        setShowColorSchemeEditor(false);
+                        setColorSchemeTaskIds([]);
+                        setEditingColorScheme(undefined);
+                    }}
+                    title={`Edit Color Scheme (${colorSchemeTaskIds.length} task${colorSchemeTaskIds.length > 1 ? 's' : ''})`}
+                />
+            )}
+
             {/* Notification Modal */}
             {notification && (
                 <NotificationModal
