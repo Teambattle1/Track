@@ -3884,7 +3884,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 activationTypes: ['radius'],
                                 manualUnlockCode: undefined,
                                 playgroundId: targetPlaygroundId || activePlayground?.id,
-                                playgroundPosition: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 },
+                                devicePositions: {
+                                    [selectedDevice]: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 }
+                                },
                                 playgroundScale: 1,
                                 isHiddenBeforeScan: false,
                                 iconId: t.iconId || 'default',
