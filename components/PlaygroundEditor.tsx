@@ -748,7 +748,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     // Get active playground
     const activePlayground = game.playgrounds?.find(p => p.id === activePlaygroundId) || game.playgrounds?.[0];
-    const isOrientationLocked = !!activePlayground?.orientationLock && activePlayground.orientationLock !== 'none';
+
+    // Check orientation lock from device-specific layout first, then fallback to playground-level
+    const isOrientationLocked = (() => {
+        if (!activePlayground) return false;
+        const deviceLayout = activePlayground.deviceLayouts?.[selectedDevice];
+        const orientationSetting = deviceLayout?.orientationLock || activePlayground.orientationLock;
+        return !!orientationSetting && orientationSetting !== 'none';
+    })();
+
     const playgroundPoints = activePlayground && game.points ? game.points.filter(p => p.playgroundId === activePlayground.id) : [];
 
     useEffect(() => {
