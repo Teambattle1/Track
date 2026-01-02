@@ -29,6 +29,8 @@ interface ToolbarsDrawerProps {
     onToggleOpen: () => void;
     mode: GameMode;
     activeGame: Game | null;
+    visibleToolbars?: Record<string, boolean>;
+    onToggleToolbarVisibility?: (toolbarId: string) => void;
     
     // MAPMODE
     onSetMode: (mode: GameMode) => void;
