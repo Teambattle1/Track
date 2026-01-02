@@ -1850,9 +1850,27 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                         </button>
                                         <button
                                             onClick={handleBulkCopySelected}
-                                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold uppercase text-xs tracking-wide flex items-center gap-2 shadow-lg transition-all"
+                                            disabled={(() => {
+                                                const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
+                                                return selectedTasks.some(t => !Array.isArray(t.tags) || t.tags.length === 0);
+                                            })()}
+                                            className={`px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-wide flex items-center gap-2 shadow-lg transition-all ${
+                                                (() => {
+                                                    const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
+                                                    const hasTasksWithoutTags = selectedTasks.some(t => !Array.isArray(t.tags) || t.tags.length === 0);
+                                                    return hasTasksWithoutTags
+                                                        ? 'bg-slate-600 text-slate-400 cursor-not-allowed opacity-50'
+                                                        : 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer';
+                                                })()
+                                            }`}
                                             type="button"
-                                            title="Create copies of the selected tasks"
+                                            title={(() => {
+                                                const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
+                                                const hasTasksWithoutTags = selectedTasks.some(t => !Array.isArray(t.tags) || t.tags.length === 0);
+                                                return hasTasksWithoutTags
+                                                    ? 'Cannot copy tasks without tags'
+                                                    : 'Create copies of the selected tasks';
+                                            })()}
                                         >
                                             <Copy className="w-4 h-4" /> COPY
                                         </button>
