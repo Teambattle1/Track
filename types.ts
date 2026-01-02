@@ -181,6 +181,8 @@ export interface TaskLogic {
 export interface DeviceLayout {
   orientationLock: 'portrait' | 'landscape' | 'none';
   qrScannerPos?: { x: number; y: number }; // SCAN QR button position
+  qrScannerSize?: { width: number; height: number }; // SCAN QR button size
+  qrScannerColor?: string; // SCAN QR button background color (hex)
   iconPositions?: Record<string, { x: number; y: number }>; // Per-icon positions by point ID
   buttonVisible?: boolean; // Device-specific button visibility
   buttonLabel?: string; // Device-specific label
