@@ -5,7 +5,7 @@ import { uploadImage } from '../services/storage'; // IMPORTED
 import {
     X, Plus, Search, Layers, Library, Edit2, Trash2, ArrowLeft, Save,
     ImageIcon, Upload, Filter, Tag, LayoutList, RefreshCw, Check, Copy,
-    ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, Gamepad2, Settings, Loader2, Sparkles, LayoutGrid, Palette, Lock, Unlock
+    ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, Gamepad2, Settings, Loader2, Sparkles, LayoutGrid, Palette, Lock, Unlock, Zap
 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import AiTaskGenerator from './AiTaskGenerator';
@@ -136,6 +136,10 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     // Bulk Tag Editor
     const [showBulkTagModal, setShowBulkTagModal] = useState(false);
     const [bulkTagInput, setBulkTagInput] = useState('');
+
+    // Bulk Activation Editor
+    const [showBulkActivationModal, setShowBulkActivationModal] = useState(false);
+    const [bulkActivationTypes, setBulkActivationTypes] = useState<string[]>([]);
 
     // Tag Colors (shared across app + persisted to database)
     const { tagColors } = useTagColors();
