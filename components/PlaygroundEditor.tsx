@@ -611,6 +611,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     };
     const handleQRScannerPointerMove = (e: React.PointerEvent) => {
         if (!isDraggingQRScanner || !backgroundRef.current) return;
+
+        const target = e.target as HTMLElement | null;
+        // Don't drag if moving from the button itself
+        const isButton = target?.closest('button');
+        if (isButton) return;
+
         e.stopPropagation();
         e.preventDefault();
 
