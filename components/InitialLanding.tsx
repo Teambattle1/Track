@@ -304,12 +304,17 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
     const now = new Date();
     let filtered = games;
 
-    // Apply status tab filter
-    filtered = filtered.filter(game => getGameStatusTab(game, now) === statusTab);
+    // Apply search filter first (search across all games regardless of tab)
+    if (gameSearchQuery.trim()) {
+      filtered = filtered.filter(game => matchesGameSearch(game.name, game.id, gameSearchQuery));
+    }
 
-    // Apply search filter
-    if (!gameSearchQuery.trim()) return filtered;
-    return filtered.filter(game => matchesGameSearch(game.name, game.id, gameSearchQuery));
+    // Then apply status tab filter (only if no search query)
+    if (!gameSearchQuery.trim()) {
+      filtered = filtered.filter(game => getGameStatusTab(game, now) === statusTab);
+    }
+
+    return filtered;
   }, [games, gameSearchQuery, statusTab]);
 
   const filteredGamesForCreate = useMemo(() => {
