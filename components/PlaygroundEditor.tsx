@@ -2490,21 +2490,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         {activePlayground && (
                             <button
                                 onClick={() => {
-                                    const zoneName = activePlayground.title || 'this zone';
-                                    const taskCount = game.points.filter(p => p.playgroundId === activePlayground.id).length;
-                                    const confirmMessage = `⚠️ DELETE ZONE: "${zoneName}"?\n\n` +
-                                                         `This will permanently delete:\n` +
-                                                         `• The zone and all its settings\n` +
-                                                         `• ${taskCount} task${taskCount !== 1 ? 's' : ''} inside this zone\n\n` +
-                                                         `This action CANNOT be undone!\n\n` +
-                                                         `Are you absolutely sure?`;
-
-                                    if(window.confirm(confirmMessage)) {
-                                        const remaining = game.playgrounds?.filter(p => p.id !== activePlayground.id) || [];
-                                        onUpdateGame({ ...game, playgrounds: remaining });
-                                        if (remaining.length > 0) setActivePlaygroundId(remaining[0].id);
-                                        else setActivePlaygroundId(null);
-                                    }
+                                    setDeleteZoneConfirm({ isOpen: true, playgroundId: activePlayground.id });
                                 }}
                                 className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 border-2 border-red-500 shadow-lg shadow-red-500/20"
                                 title="Delete this zone permanently - WARNING: This cannot be undone!"
