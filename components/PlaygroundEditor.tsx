@@ -521,6 +521,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 // Default to landscape for all devices when no orientation lock
                 setEditorOrientation('landscape');
             }
+
+            // Load QR scanner position from device layout
+            if (deviceLayout.qrScannerPos) {
+                setQRScannerPos(deviceLayout.qrScannerPos);
+            }
         } else if (activePlayground.orientationLock && activePlayground.orientationLock !== 'none') {
             // Fallback to playground-level orientation for backward compatibility
             setEditorOrientation(activePlayground.orientationLock);
