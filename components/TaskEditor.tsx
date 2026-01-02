@@ -2293,11 +2293,29 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                                                            </span>
                                                                        )}
                                                                    </div>
-                                                                   <ul className="space-y-1">
-                                                                       {translation.options.map((opt, idx) => (
-                                                                           <li key={idx} className="text-sm text-gray-700 dark:text-gray-300">• {opt}</li>
-                                                                       ))}
-                                                                   </ul>
+                                                                   {translation.optionsApproved === false ? (
+                                                                       <div className="space-y-2">
+                                                                           {translation.options.map((opt, idx) => (
+                                                                               <input
+                                                                                   key={idx}
+                                                                                   type="text"
+                                                                                   value={opt}
+                                                                                   onChange={(e) => {
+                                                                                       const newOptions = [...translation.options!];
+                                                                                       newOptions[idx] = e.target.value;
+                                                                                       handleUpdateTranslationField(language, 'options', newOptions);
+                                                                                   }}
+                                                                                   className="w-full px-3 py-2 text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-orange-500 focus:outline-none"
+                                                                               />
+                                                                           ))}
+                                                                       </div>
+                                                                   ) : (
+                                                                       <ul className="space-y-1">
+                                                                           {translation.options.map((opt, idx) => (
+                                                                               <li key={idx} className="text-sm text-gray-700 dark:text-gray-300">• {opt}</li>
+                                                                           ))}
+                                                                       </ul>
+                                                                   )}
                                                                </div>
                                                            )}
 
