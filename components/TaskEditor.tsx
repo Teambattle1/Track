@@ -2333,7 +2333,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                            {['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew']
                                                .filter(lang => !editedPoint.task.translations?.[lang as any])
                                                .map(lang => (
-                                                   <option key={lang} value={lang}>{lang}</option>
+                                                   <option key={lang} value={lang}>{getFlag(lang)} {lang}</option>
                                                ))
                                            }
                                        </select>
