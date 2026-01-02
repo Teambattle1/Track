@@ -1748,7 +1748,7 @@ const GameApp: React.FC = () => {
                     }
                     if (action === 'ACCESS') {
                         setShowAccess(true);
-                        setShowLanding(false);
+                        // Keep showLanding true so Access renders on top of landing page
                         return;
                     }
                     ensureSession(() => {
