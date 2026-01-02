@@ -3503,14 +3503,34 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
+
                                         // In simulation mode, always allow click to open scanner
-                                        // In editor mode, only open color picker if we didn't drag
-                                        console.log('[QR Button Click]', { isSimulationActive, didDrag: qrScannerDidDrag.current });
-                                        if (isSimulationActive || !qrScannerDidDrag.current) {
-                                            console.log('[QR Button] Opening handler...');
+                                        if (isSimulationActive && !qrScannerDidDrag.current) {
                                             handleQRScanClick();
-                                        } else {
-                                            console.log('[QR Button] Click ignored - was dragging');
+                                            return;
+                                        }
+
+                                        // In editor mode, detect double-click for color picker
+                                        if (!isSimulationActive) {
+                                            qrScannerClickCount.current++;
+
+                                            if (qrScannerClickCount.current === 1) {
+                                                // First click - set timer to detect double-click
+                                                if (qrScannerClickTimer.current) {
+                                                    clearTimeout(qrScannerClickTimer.current);
+                                                }
+                                                qrScannerClickTimer.current = setTimeout(() => {
+                                                    // Single click - do nothing, just allow drag/resize
+                                                    qrScannerClickCount.current = 0;
+                                                }, 300);
+                                            } else if (qrScannerClickCount.current === 2) {
+                                                // Double-click detected - open color picker
+                                                if (qrScannerClickTimer.current) {
+                                                    clearTimeout(qrScannerClickTimer.current);
+                                                }
+                                                qrScannerClickCount.current = 0;
+                                                handleQRScanClick(); // Opens color picker
+                                            }
                                         }
                                     }}
                                     style={{
