@@ -1901,6 +1901,7 @@ const GameApp: React.FC = () => {
                             case 'PLAYGROUNDS': setShowPlaygroundManager(true); break;
                             case 'DATABASE': setShowDatabaseTools(true); break;
                             case 'DIAGNOSTICS': setShowSupabaseDiagnostic(true); break;
+                            case 'TRANSLATIONS': setShowTranslationsManager(true); break;
                             case 'GAMESTATS':
                                 setShowGameStats(true);
                                 break;
