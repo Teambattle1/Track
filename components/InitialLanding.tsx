@@ -777,8 +777,42 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
                         {showGameMenu && (
                             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-96 flex flex-col animate-in slide-in-from-top-2">
+                                {/* Status Tabs */}
+                                <div className="flex gap-2 p-3 border-b border-slate-700 bg-slate-900/50">
+                                    <button
+                                        onClick={() => setStatusTab('TODAY')}
+                                        className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${
+                                          statusTab === 'TODAY'
+                                            ? 'bg-blue-600 text-white border border-blue-500 shadow-lg shadow-blue-500/20'
+                                            : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:text-white'
+                                        }`}
+                                    >
+                                        TODAY
+                                    </button>
+                                    <button
+                                        onClick={() => setStatusTab('PLANNED')}
+                                        className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${
+                                          statusTab === 'PLANNED'
+                                            ? 'bg-amber-600 text-white border border-amber-500 shadow-lg shadow-amber-500/20'
+                                            : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:text-white'
+                                        }`}
+                                    >
+                                        PLANNED
+                                    </button>
+                                    <button
+                                        onClick={() => setStatusTab('COMPLETED')}
+                                        className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${
+                                          statusTab === 'COMPLETED'
+                                            ? 'bg-emerald-600 text-white border border-emerald-500 shadow-lg shadow-emerald-500/20'
+                                            : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:text-white'
+                                        }`}
+                                    >
+                                        COMPLETED
+                                    </button>
+                                </div>
+
                                 {/* Search Input */}
-                                <div className="sticky top-0 p-4 border-b border-slate-700 bg-slate-900">
+                                <div className="sticky top-16 p-4 border-b border-slate-700 bg-slate-900">
                                     <div className="relative flex items-center">
                                         <Search className="absolute left-3 w-4 h-4 text-slate-500 pointer-events-none" />
                                         <input
