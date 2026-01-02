@@ -560,21 +560,67 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         } catch {
             // ignore
         }
-        saveToolbarPositions();
+        saveQRScannerSettings();
+    };
 
-        // Also save QR scanner position to device-specific layout
+    // QR Scanner resize handlers
+    const handleQRScannerResizeDown = (e: React.PointerEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setIsResizingQRScanner(true);
+        qrScannerResizeStart.current = {
+            width: qrScannerSize.width,
+            height: qrScannerSize.height,
+            x: e.clientX,
+            y: e.clientY
+        };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    };
+
+    const handleQRScannerResizeMove = (e: React.PointerEvent) => {
+        if (!isResizingQRScanner) return;
+        e.stopPropagation();
+        e.preventDefault();
+
+        const deltaX = e.clientX - qrScannerResizeStart.current.x;
+        const deltaY = e.clientY - qrScannerResizeStart.current.y;
+        const newWidth = Math.max(100, qrScannerResizeStart.current.width + deltaX);
+        const newHeight = Math.max(40, qrScannerResizeStart.current.height + deltaY);
+
+        setQRScannerSize({ width: newWidth, height: newHeight });
+    };
+
+    const handleQRScannerResizeUp = (e: React.PointerEvent) => {
+        if (!isResizingQRScanner) return;
+        setIsResizingQRScanner(false);
+        try {
+            (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+        } catch {
+            // ignore
+        }
+        saveQRScannerSettings();
+    };
+
+    // Save QR Scanner settings to playground device layout
+    const saveQRScannerSettings = () => {
         if (activePlayground) {
             const newLayouts = { ...activePlayground.deviceLayouts };
             newLayouts[selectedDevice] = {
                 ...newLayouts[selectedDevice],
                 qrScannerPos: qrScannerPos,
+                qrScannerSize: qrScannerSize,
+                qrScannerColor: qrScannerColor
             };
             updatePlayground({ deviceLayouts: newLayouts });
         }
     };
 
-    // QR Scanner function
+    // QR Scanner function - Show color picker in editor mode
     const handleQRScanClick = async () => {
+        // In editor mode, show color picker instead of scanning
+        setShowQRColorPicker(true);
+        return;
+
         if (isQRScannerActive) {
             // Stop scanning
             if (qrStreamRef.current) {
