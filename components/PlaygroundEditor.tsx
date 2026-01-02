@@ -3541,7 +3541,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className={`flex items-center justify-center gap-2 rounded-xl text-white font-bold uppercase shadow-xl transition-all hover:ring-2 hover:ring-yellow-400 relative ${
                                         isSimulationActive ? 'cursor-pointer' : 'cursor-move'
                                     }`}
-                                    title={isSimulationActive ? 'Click to scan QR code' : 'Click to change color | Drag to move'}
+                                    title={isSimulationActive ? 'Click to scan QR code' : 'Double-click to change color | Drag to move | Resize from corner'}
                                 >
                                     <QrCode className="w-4 h-4" />
                                     <span className={qrScannerSize.width < 120 ? 'text-[10px]' : 'text-xs'}>
