@@ -1284,8 +1284,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             }
         });
 
-        // Within each row, sort by X and distribute horizontally
-        const PADDING = 5;
+        // Within each row, sort by X and snap to grid
+        const GRID_SIZE = 10; // Grid spacing (10% intervals)
         const snappedMarkedPoints = rows.flatMap((row, rowIndex) => {
             const baseY = getDevicePosition(row[0]).y;
             const sortedByX = [...row].sort((a, b) => {
@@ -1294,14 +1294,21 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 return aX - bX;
             });
 
-            const colWidth = (100 - (PADDING * 2)) / sortedByX.length;
-            return sortedByX.map((point, colIndex) => {
-                const x = PADDING + (colIndex * colWidth) + (colWidth / 2);
+            // Snap each point to the nearest grid position
+            return sortedByX.map((point) => {
+                const currentPos = getDevicePosition(point);
+
+                // Snap X to nearest grid point
+                const snappedX = Math.round(currentPos.x / GRID_SIZE) * GRID_SIZE;
+
+                // Snap Y to nearest grid point
+                const snappedY = Math.round(baseY / GRID_SIZE) * GRID_SIZE;
+
                 return {
                     ...point,
                     ...setDevicePosition(point, {
-                        x: Math.round(x * 10) / 10,
-                        y: Math.round(baseY * 10) / 10
+                        x: Math.min(95, Math.max(5, snappedX)),
+                        y: Math.min(95, Math.max(5, snappedY))
                     })
                 };
             });
