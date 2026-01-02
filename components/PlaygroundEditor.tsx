@@ -3087,7 +3087,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     };
 
                                     return [
-                                        ...getTargetIds(source.logic?.onCorrect).map((targetId) => {
+                                        ...getTargetIds(source.logic?.onCorrect).map((targetId, idx) => {
                                             const target = game.points?.find(p => p.id === targetId);
                                             if (!target) return null;
                                             const targetPos = getDevicePosition(target);
@@ -3095,7 +3095,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             const targetY = targetPos.y;
                                             return (
                                                 <line
-                                                    key={`correct-${source.id}-${targetId}`}
+                                                    key={`correct-${source.id}-${targetId}-${idx}`}
                                                     x1={sourceX}
                                                     y1={sourceY}
                                                     x2={targetX}
@@ -3108,7 +3108,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 />
                                             );
                                         }),
-                                        ...getTargetIds(source.logic?.onIncorrect).map((targetId) => {
+                                        ...getTargetIds(source.logic?.onIncorrect).map((targetId, idx) => {
                                             const target = game.points?.find(p => p.id === targetId);
                                             if (!target) return null;
                                             const targetPos = getDevicePosition(target);
@@ -3116,7 +3116,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             const targetY = targetPos.y;
                                             return (
                                                 <line
-                                                    key={`incorrect-${source.id}-${targetId}`}
+                                                    key={`incorrect-${source.id}-${targetId}-${idx}`}
                                                     x1={sourceX}
                                                     y1={sourceY}
                                                     x2={targetX}
@@ -3129,7 +3129,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 />
                                             );
                                         }),
-                                        ...getTargetIds(source.logic?.onOpen).map((targetId) => {
+                                        ...getTargetIds(source.logic?.onOpen).map((targetId, idx) => {
                                             const target = game.points?.find(p => p.id === targetId);
                                             if (!target) return null;
                                             const targetPos = getDevicePosition(target);
@@ -3137,7 +3137,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             const targetY = targetPos.y;
                                             return (
                                                 <line
-                                                    key={`open-${source.id}-${targetId}`}
+                                                    key={`open-${source.id}-${targetId}-${idx}`}
                                                     x1={sourceX}
                                                     y1={sourceY}
                                                     x2={targetX}
