@@ -1297,8 +1297,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         const numRows = rows.length;
         const numCols = Math.max(...rows.map(row => row.length));
 
-        // Padding from edges (increased to prevent cutoff)
-        const PADDING = 8; // 8% padding from all edges
+        // Padding from edges (increased to prevent text labels cutoff)
+        const PADDING = 12; // 12% padding from all edges (~2cm on most screens)
         const availableWidth = 100 - (PADDING * 2);
         const availableHeight = 100 - (PADDING * 2);
 
