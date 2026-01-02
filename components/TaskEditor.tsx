@@ -197,6 +197,10 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   // QR Code State
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
+  // Translation State
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [selectedTranslationLanguage, setSelectedTranslationLanguage] = useState<string>('');
+
   // Load existing tags for autocomplete
   useEffect(() => {
       fetchUniqueTags().then(tags => setExistingTags(tags)).catch(() => setExistingTags([]));
