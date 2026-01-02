@@ -223,6 +223,23 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
         qr: { x: window.innerWidth - 80, y: window.innerHeight - 100 }
     };
 
+    // Detect device type and load device-specific layout
+    useEffect(() => {
+        const device = detectDeviceTypeWithUA();
+        setDetectedDevice(device);
+
+        // If we're in a playzone game with device-specific layouts, load the QR scanner position for this device
+        if (targetPlaygroundId && playgrounds) {
+            const playground = playgrounds.find(p => p.id === targetPlaygroundId);
+            if (playground?.deviceLayouts?.[device]) {
+                const deviceLayout = getDeviceLayout(playground.deviceLayouts, device);
+                if (deviceLayout.qrScannerPos) {
+                    setQRScannerPos(deviceLayout.qrScannerPos);
+                }
+            }
+        }
+    }, [targetPlaygroundId, playgrounds]);
+
     // Load toolbar positions on mount and reset on new game (admin users only)
     useEffect(() => {
         const isAdmin = authUser?.role === 'Admin' || authUser?.role === 'Owner';
