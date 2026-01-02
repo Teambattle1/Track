@@ -2754,6 +2754,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showTaskScores) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowTaskScores(!showTaskScores);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2773,6 +2777,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showTaskOrder) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowTaskOrder(!showTaskOrder);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2792,6 +2800,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showTaskActions) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowTaskActions(!showTaskActions);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2811,6 +2823,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showTaskNames) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowTaskNames(!showTaskNames);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2830,6 +2846,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showTaskStatus) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowTaskStatus(!showTaskStatus);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2851,6 +2871,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showBackground) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowBackground(!showBackground);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2870,6 +2894,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showQRScanner) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowQRScanner(!showQRScanner);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2889,6 +2917,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            // Auto-switch to landscape if on tablet in portrait mode
+                                            if (selectedDevice === 'tablet' && editorOrientation === 'portrait' && !showRanking) {
+                                                setEditorOrientation('landscape');
+                                            }
                                             setShowRanking(!showRanking);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
