@@ -156,6 +156,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [qrScannedValue, setQRScannedValue] = useState<string | null>(null);
     const qrScannerResizeStart = useRef({ width: 0, height: 0, x: 0, y: 0 });
     const qrScannerDidDrag = useRef(false);
+    const qrScannerClickTimer = useRef<NodeJS.Timeout | null>(null);
+    const qrScannerClickCount = useRef(0);
 
     // Device-specific layout management
     // Smart device initialization: desktop for new playgrounds, last used for existing
