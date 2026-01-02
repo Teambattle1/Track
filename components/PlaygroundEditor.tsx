@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Game, Playground, GamePoint, IconId, TaskTemplate, TaskList } from '../types';
+import { Game, Playground, GamePoint, IconId, TaskTemplate, TaskList, DeviceType } from '../types';
+import { DEVICE_SPECS, getDeviceLayout, ensureDeviceLayouts, DEVICE_SPECS as SPECS } from '../utils/deviceUtils';
 import {
     X, Plus, LayoutGrid, Globe, Map as MapIcon, ArrowLeft, Trash2, Edit2,
     Image as ImageIcon, Upload, Grid, MousePointer2, Move, ZoomIn, ZoomOut,
