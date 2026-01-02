@@ -1504,7 +1504,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
             )}
 
             {/* QR Scanner Button - draggable, resizable floating button */}
-            {(mode === GameMode.PLAY || mode === GameMode.EDIT) && (
+            {(mode === GameMode.PLAY || mode === GameMode.EDIT) && !hideMapToolbars && (
                 <div
                     className="absolute z-[1100] pointer-events-auto group"
                     style={{
