@@ -163,13 +163,15 @@ export type PointCompletionLogic =
   | 'allow_close';
 
 // --- LOGIC SYSTEM ---
-export type ActionType = 'unlock' | 'lock' | 'score' | 'message' | 'sound' | 'reveal' | 'double_trouble' | 'open_playground';
+export type ActionType = 'unlock' | 'lock' | 'score' | 'message' | 'sound' | 'reveal' | 'double_trouble' | 'open_playground' | 'cooldown';
 
 export interface GameAction {
   id: string;
   type: ActionType;
   targetId?: string;
   value?: string | number;
+  // Cooldown-specific settings
+  cooldownSeconds?: number; // Duration in seconds for cooldown action
 }
 
 export interface TaskLogic {
