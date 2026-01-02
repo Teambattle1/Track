@@ -498,6 +498,11 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         };
     };
 
+    const getInvalidAnswersCount = (): number => {
+        if (!library || !Array.isArray(library)) return 0;
+        return library.filter(task => !hasValidAnswers(task)).length;
+    };
+
     const getLanguageFlag = (language: string): string => {
         const flagMap: Record<string, string> = {
             'English': '🇬🇧',
