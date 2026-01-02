@@ -134,6 +134,8 @@ export interface TaskSettings {
   language: string;
   showAnswerStatus: boolean;
   showCorrectAnswerOnMiss: boolean;
+  maxAttempts?: number; // Number of attempts allowed (default 1, 0 = unlimited)
+  matchTolerance?: number; // Similarity threshold for text answers (0-100, default 80)
 }
 
 // Color Scheme for Task Visual Design
