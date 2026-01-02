@@ -217,6 +217,10 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     // Orientation lock state
     const [isOrientationLocked, setIsOrientationLocked] = useState(false);
 
+    // Toolbars Drawer State
+    const [showToolbarsDrawer, setShowToolbarsDrawer] = useState(true);
+    const [hideMapToolbars, setHideMapToolbars] = useState(false);
+
     // Toolbar Position Persistence
     const saveDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isAdminRef = useRef(false);
