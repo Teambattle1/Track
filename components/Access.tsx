@@ -53,9 +53,23 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
       if (matchingGame) {
         setValidGame(matchingGame);
         setValidationError(null);
+
+        // Calculate available languages (only fully approved translations)
+        const approvedLangs = getApprovedLanguagesForGame(matchingGame);
+        setAvailableLanguages(approvedLangs);
+
+        // Default to game's language if available, otherwise English
+        const gameLanguage = matchingGame.language as Language || 'English';
+        if (approvedLangs.includes(gameLanguage)) {
+          setSelectedLanguage(gameLanguage);
+        } else {
+          setSelectedLanguage('English');
+        }
       } else {
         setValidationError('Invalid access code. Please check and try again.');
         setValidGame(null);
+        setAvailableLanguages(['English']);
+        setSelectedLanguage('English');
       }
     } catch (error) {
       console.error('Error validating access code:', error);
