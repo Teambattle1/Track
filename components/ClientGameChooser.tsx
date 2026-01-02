@@ -135,7 +135,7 @@ const ClientGameChooser: React.FC<ClientGameChooserProps> = ({ onClose, onSelect
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <h3 className="font-bold text-white text-lg group-hover:text-purple-400 transition-colors">
-                        {game.name}
+                        <span className="text-purple-400">[{getGameDisplayId(game.id)}]</span> {game.name}
                       </h3>
                       {game.description && (
                         <p className="text-sm text-gray-400 mt-1 line-clamp-2">
