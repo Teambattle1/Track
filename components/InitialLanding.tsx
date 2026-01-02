@@ -905,36 +905,37 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 </div>
             )}
 
-            {/* Operator Only (HOME view) */}
-            {view === 'HOME' && (
-                <div className="absolute top-0 right-0 flex flex-col gap-0 z-30 pt-4 pr-4 mt-16">
-                    {authUser && (
-                        <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-green-500/60 h-16 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="flex items-center gap-3 flex-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
-                                <div className="flex flex-col min-w-0">
-                                    <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR</p>
-                                    <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-0.5 truncate">{authUser.name}</p>
-                                </div>
+            {/* Operator Field (HOME view) */}
+            {view === 'HOME' && authUser && (
+                <div className="absolute top-0 left-0 z-30 pt-4 pl-4">
+                    <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-green-500/60 h-16 animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="flex items-center gap-3 flex-1">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                            <div className="flex flex-col min-w-0">
+                                <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR</p>
+                                <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-0.5 truncate">{authUser.name}</p>
                             </div>
-                            <button
-                                onClick={onLogout}
-                                title="Logout"
-                                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0"
-                            >
-                                <LogOut className="w-4 h-4" />
-                            </button>
                         </div>
-                    )}
+                        <button
+                            onClick={onLogout}
+                            title="Logout"
+                            className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0"
+                        >
+                            <LogOut className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
-                    {!authUser && (
-                        <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-slate-700 h-16">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <p className="text-[9px] font-black text-slate-500 tracking-[0.4em] uppercase">
-                              SYSTEM ONLINE &bull; v{version}
-                            </p>
-                        </div>
-                    )}
+            {/* System Status (HOME view, no auth) */}
+            {view === 'HOME' && !authUser && (
+                <div className="absolute top-0 left-0 z-30 pt-4 pl-4">
+                    <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-slate-700 h-16 animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <p className="text-[9px] font-black text-slate-500 tracking-[0.4em] uppercase">
+                          SYSTEM ONLINE &bull; v{version}
+                        </p>
+                    </div>
                 </div>
             )}
 
