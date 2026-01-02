@@ -373,7 +373,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         saveToolbarPositions();
     };
 
-    // Drag handlers for QR Scanner
+    // Drag handlers for QR Scanner (percentage-based, like tasks)
     const handleQRScannerPointerDown = (e: React.PointerEvent) => {
         const target = e.target as HTMLElement | null;
         if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
@@ -381,14 +381,31 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         e.stopPropagation();
         e.preventDefault();
         setIsDraggingQRScanner(true);
-        qrScannerDragOffset.current = { x: e.clientX - qrScannerPos.x, y: e.clientY - qrScannerPos.y };
+
+        // Calculate offset in percentage space
+        if (backgroundRef.current) {
+            const rect = backgroundRef.current.getBoundingClientRect();
+            const currentX = (qrScannerPos.x / 100) * rect.width + rect.left;
+            const currentY = (qrScannerPos.y / 100) * rect.height + rect.top;
+            qrScannerDragOffset.current = { x: e.clientX - currentX, y: e.clientY - currentY };
+        }
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     };
     const handleQRScannerPointerMove = (e: React.PointerEvent) => {
-        if (!isDraggingQRScanner) return;
+        if (!isDraggingQRScanner || !backgroundRef.current) return;
         e.stopPropagation();
         e.preventDefault();
-        setQRScannerPos({ x: e.clientX - qrScannerDragOffset.current.x, y: e.clientY - qrScannerDragOffset.current.y });
+
+        // Convert client coordinates to percentage within canvas
+        const rect = backgroundRef.current.getBoundingClientRect();
+        const x = ((e.clientX - qrScannerDragOffset.current.x - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - qrScannerDragOffset.current.y - rect.top) / rect.height) * 100;
+
+        // Clamp to canvas boundaries
+        setQRScannerPos({
+            x: Math.max(5, Math.min(95, x)),
+            y: Math.max(5, Math.min(95, y))
+        });
     };
     const handleQRScannerPointerUp = (e: React.PointerEvent) => {
         if (!isDraggingQRScanner) return;
