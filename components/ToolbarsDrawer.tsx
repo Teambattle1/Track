@@ -187,7 +187,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
             {/* Header */}
             <div className="px-4 py-3 bg-orange-600 text-white border-b border-orange-700 flex-shrink-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                         <h2 className="font-black text-sm uppercase tracking-widest">Settings</h2>
                         <button
                             onClick={onEditGameSettings}
@@ -215,7 +215,14 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                         <ChevronDown className="w-4 h-4" />
                     </button>
                 </div>
-                <p className="text-[10px] opacity-80 uppercase tracking-wide">Edit Mode Controls</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-[10px] opacity-80 uppercase tracking-wide flex-1">Edit Mode Controls</p>
+                    {activeGame && (
+                        <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 bg-orange-700 rounded-lg flex-shrink-0 whitespace-nowrap">
+                            {activeGame.name}
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900/50">
