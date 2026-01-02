@@ -89,7 +89,16 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showBackground, setShowBackground] = useState(true);
     const [isBackgroundLocked, setIsBackgroundLocked] = useState(false);
 
+    // Draw Mode State for Visual Connections
+    const [drawMode, setDrawMode] = useState<{
+        active: boolean;
+        trigger: 'onOpen' | 'onCorrect' | 'onIncorrect' | null;
+        sourceTaskId: string | null;
+        mousePosition: { x: number; y: number } | null;
+    }>({ active: false, trigger: null, sourceTaskId: null, mousePosition: null });
+
     const editorRootRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLDivElement>(null);
 
     const getDefaultEditorToolbarPositions = () => {
         const rootWidth = editorRootRef.current?.getBoundingClientRect().width || (typeof window !== 'undefined' ? window.innerWidth : 1200);
