@@ -413,7 +413,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                             topToolbarPos: DEFAULT_POSITIONS.tools,
                             viewSwitcherPos: DEFAULT_POSITIONS.mapmode,
                             pinsToolboxPos: DEFAULT_POSITIONS.pins,
-                            showToolboxPos: DEFAULT_POSITIONS.show
+                            showToolboxPos: DEFAULT_POSITIONS.show,
+                            layersToolboxPos: { x: 20, y: window.innerHeight - 200 }
                         },
                         toolbarPositionsVersion: DEFAULT_POSITIONS_VERSION
                     };
