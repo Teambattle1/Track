@@ -1808,7 +1808,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     await Promise.resolve(onUpdateGame(game));
                                     // Then save to database if in template mode
                                     if (isTemplateMode && onSaveTemplate) {
-                                        await Promise.resolve(onSaveTemplate(game.name));
+                                        // Use the actual playzone title instead of the template name
+                                        const templateName = activePlayground?.title || game.name;
+                                        await Promise.resolve(onSaveTemplate(templateName));
                                     }
                                     setSaveStatus('success');
                                     setTimeout(() => {
