@@ -767,7 +767,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                     />
 
                     {/* Session Selector with GOTO Button (Orange to Blue Border) */}
-                    <div className="relative flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-orange-500/60 h-16 transition-all animate-in fade-in slide-in-from-right-4 duration-500 delay-50">
+                    <div className="relative flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-orange-500/60 h-16 transition-all animate-in fade-in slide-in-from-right-4 duration-500 delay-50 w-96">
                         {/* Top gradient line */}
                         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500/60 via-blue-500/60 to-emerald-500/60 rounded-t-xl" />
                         <button
