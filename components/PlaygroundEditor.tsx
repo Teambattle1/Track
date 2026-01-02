@@ -4956,6 +4956,108 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </div>
                 </div>
             )}
+
+            {/* Ranking Leaderboard - Draggable Popup */}
+            {showRanking && (
+                <div
+                    className="fixed z-[9999] pointer-events-auto"
+                    style={{ left: rankingPos.x, top: rankingPos.y }}
+                >
+                    <div className="w-80 bg-slate-900 rounded-xl shadow-2xl overflow-hidden border-2 border-yellow-500">
+                        {/* Draggable Header */}
+                        <div
+                            className="bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 flex items-center justify-between cursor-move touch-none"
+                            onPointerDown={(e) => {
+                                setIsDraggingRanking(true);
+                                rankingDragOffset.current = { x: e.clientX - rankingPos.x, y: e.clientY - rankingPos.y };
+                                (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                            }}
+                            onPointerMove={(e) => {
+                                if (!isDraggingRanking) return;
+                                setRankingPos({ x: e.clientX - rankingDragOffset.current.x, y: e.clientY - rankingDragOffset.current.y });
+                            }}
+                            onPointerUp={(e) => {
+                                setIsDraggingRanking(false);
+                                try {
+                                    (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+                                } catch {}
+                            }}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Trophy className="w-5 h-5 text-white" />
+                                <h3 className="text-lg font-black text-white uppercase tracking-widest">Ranking</h3>
+                            </div>
+                            <button
+                                onClick={() => setShowRanking(false)}
+                                className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                                title="Close"
+                                type="button"
+                            >
+                                <X className="w-4 h-4 text-white" />
+                            </button>
+                        </div>
+
+                        {/* Leaderboard Content */}
+                        <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
+                            {isSimulationActive && simulationTeam ? (
+                                <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500 rounded-lg p-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-2xl font-black text-yellow-400">#1</div>
+                                            <div>
+                                                <p className="text-sm font-black text-white uppercase">{simulationTeam.name}</p>
+                                                <p className="text-xs text-slate-400">Simulation Mode</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-2xl font-black text-yellow-400">{simulationScore}</p>
+                                            <p className="text-[10px] text-slate-400 uppercase">Points</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                                    <p className="text-sm text-slate-400 font-bold">Start simulation to see ranking</p>
+                                    <p className="text-xs text-slate-500 mt-1">Use SIMULATOR button in TOOLS</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Simulation Task Modal */}
+            {isSimulationActive && activeSimulationTaskId && (() => {
+                const task = uniquePlaygroundPoints.find(p => p.id === activeSimulationTaskId);
+                if (!task) return null;
+
+                return (
+                    <TaskModal
+                        point={task}
+                        onClose={() => setActiveSimulationTaskId(null)}
+                        onTaskComplete={(pointId, isCorrect, scoreDelta) => {
+                            // Update simulation score
+                            setSimulationScore(prev => prev + scoreDelta);
+
+                            // Update task status
+                            const updatedPoints = game.points.map(p =>
+                                p.id === pointId
+                                    ? { ...p, isCompleted: true, isCorrect }
+                                    : p
+                            );
+                            onUpdateGame({ ...game, points: updatedPoints });
+
+                            // Close modal
+                            setActiveSimulationTaskId(null);
+                        }}
+                        mode="SIMULATION"
+                        teamId={simulationTeam?.id}
+                        showCorrectAnswer={true}
+                        game={game}
+                    />
+                );
+            })()}
         </div>
     );
 };
