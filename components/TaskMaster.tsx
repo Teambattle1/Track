@@ -132,6 +132,10 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [editingColorScheme, setEditingColorScheme] = useState<TaskColorScheme | undefined>();
     const [colorSchemeTaskIds, setColorSchemeTaskIds] = useState<string[]>([]);
 
+    // Bulk Tag Editor
+    const [showBulkTagModal, setShowBulkTagModal] = useState(false);
+    const [bulkTagInput, setBulkTagInput] = useState('');
+
     // Tag Colors (shared across app + persisted to database)
     const { tagColors } = useTagColors();
 
@@ -522,12 +526,14 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         if (!sourceTask) return 0;
 
         games.forEach(game => {
-            // Count how many times this task appears in the game's points
-            const taskCount = (game.points || []).filter(p => {
+            // Check if this game contains at least one instance of this task
+            const hasTask = (game.points || []).some(p => {
                 // Check if point was created from this template or has the same title/question
                 return p.task.question === sourceTask.task.question;
-            }).length;
-            count += taskCount;
+            });
+            if (hasTask) {
+                count++; // Count this game (not the number of instances)
+            }
         });
         return count;
     };
