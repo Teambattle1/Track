@@ -954,13 +954,34 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     if (!activePlayground) return null;
 
+    // Calculate viewport dimensions based on device type and orientation
+    const getViewportDimensions = () => {
+        const specs = DEVICE_SPECS[selectedDevice];
+        if (!specs) return { width: '100%', height: '100%', aspectRatio: 'auto' };
+
+        const width = editorOrientation === 'portrait'
+            ? Math.min(specs.width, specs.height)
+            : Math.max(specs.width, specs.height);
+        const height = editorOrientation === 'portrait'
+            ? Math.max(specs.width, specs.height)
+            : Math.min(specs.width, specs.height);
+
+        return {
+            width: `${width}px`,
+            height: `${height}px`,
+            aspectRatio: `${width} / ${height}` as any
+        };
+    };
+
+    const viewportDims = getViewportDimensions();
+
     const bgStyle: React.CSSProperties = {
         backgroundImage: showBackground && activePlayground.imageUrl ? `url(${activePlayground.imageUrl})` : 'none',
         backgroundSize: activePlayground.backgroundStyle === 'stretch' ? '100% 100%' : (activePlayground.backgroundStyle === 'cover' ? 'cover' : 'contain'),
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        width: '100%',
-        height: '100%',
+        width: viewportDims.width,
+        height: viewportDims.height,
         transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
         transition: isDragging ? 'none' : 'transform 0.1s ease-out'
     };
