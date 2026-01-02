@@ -262,6 +262,17 @@ CREATE INDEX IF NOT EXISTS idx_media_submissions_game_status ON public.media_sub
 
 NOTIFY pgrst, 'reload config';`;
 
+  // Generate a simple hash from the SQL code to detect changes
+  const sqlCodeHash = useMemo(() => {
+    let hash = 0;
+    for (let i = 0; i < sqlCode.length; i++) {
+      const char = sqlCode.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString();
+  }, [sqlCode]);
+
   useEffect(() => {
     const url = localStorage.getItem('SUPABASE_URL') ||
       (import.meta as any).env?.VITE_SUPABASE_URL ||
