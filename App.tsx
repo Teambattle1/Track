@@ -1602,6 +1602,11 @@ const GameApp: React.FC = () => {
                   onUpdateTaskLists={setTaskLists}
                   taskLibrary={taskLibrary}
                   onUpdateTaskLibrary={setTaskLibrary}
+                  onOpenGameSettings={() => {
+                      // For template mode, show playground manager instead
+                      setPlaygroundTemplateToEdit(null);
+                      setShowPlaygroundManager(true);
+                  }}
               />
           )}
           {viewingPlaygroundId && activeGame && (
