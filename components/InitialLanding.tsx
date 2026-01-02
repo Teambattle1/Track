@@ -796,6 +796,9 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                         )}
                     </div>
 
+                    {/* Divider */}
+                    <div className="h-px bg-gradient-to-r from-orange-500/60 to-blue-500/60" />
+
                     {/* Session Selector (Blue Border) */}
                     <button
                         onClick={() => setShowGameMenu(!showGameMenu)}
