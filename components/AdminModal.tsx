@@ -404,13 +404,37 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose, onLibraryUpdated }) =>
                               {sound.name} - {sound.description}
                           </option>
                       ))}
+                      {!CORRECT_SOUNDS.find(s => s.url === correctSoundUrl) && correctSoundUrl && (
+                          <option value={correctSoundUrl}>Custom Upload</option>
+                      )}
                   </select>
-                  <button
-                      onClick={() => playSound(correctSoundUrl, volume)}
-                      className="mt-2 w-full px-3 py-2 bg-green-600/20 hover:bg-green-600/30 border border-green-600/50 text-green-400 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
-                  >
-                      <Play className="w-3 h-3" /> Preview Correct Sound
-                  </button>
+                  <div className="flex gap-2 mt-2">
+                      <button
+                          onClick={() => playSound(correctSoundUrl, volume)}
+                          className="flex-1 px-3 py-2 bg-green-600/20 hover:bg-green-600/30 border border-green-600/50 text-green-400 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                      >
+                          <Play className="w-3 h-3" /> Preview
+                      </button>
+                      <button
+                          onClick={() => correctSoundInputRef.current?.click()}
+                          disabled={isUploadingCorrect}
+                          className="flex-1 px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-600/50 text-purple-400 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                          {isUploadingCorrect ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                              <Upload className="w-3 h-3" />
+                          )}
+                          {isUploadingCorrect ? 'Uploading...' : 'Upload'}
+                      </button>
+                  </div>
+                  <input
+                      ref={correctSoundInputRef}
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleUploadCorrectSound}
+                      className="hidden"
+                  />
               </div>
 
               {/* Incorrect Sound Selection */}
