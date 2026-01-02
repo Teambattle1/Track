@@ -1598,7 +1598,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     return (
         <div className="fixed inset-0 z-[5000] bg-[#0f172a] text-white flex flex-row overflow-hidden font-sans animate-in fade-in">
 
-            {/* Top-Right Settings Clockwheel - Fixed Position */}
+            {/* Top-Right Settings Gear - Fixed Position */}
             {!isSimulationActive && onOpenGameSettings && (
                 <button
                     onClick={(e) => {
@@ -1606,7 +1606,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         e.stopPropagation();
                         onOpenGameSettings();
                     }}
-                    className="absolute top-6 right-6 z-[6000] p-4 bg-gradient-to-br from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-full shadow-2xl border-2 border-orange-400/50 transition-all hover:scale-110 pointer-events-auto group"
+                    className="absolute top-6 right-6 z-[6000] p-2 text-orange-500 hover:text-orange-400 transition-all hover:scale-110 pointer-events-auto group"
                     title="Open Game Settings - Configure game rules, timing, and appearance"
                 >
                     <Settings className="w-6 h-6" />
