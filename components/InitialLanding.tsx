@@ -799,7 +799,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
                     {/* Dropdown Menu */}
                     {showGameMenu && (
-                        <div className="absolute top-full left-0 mt-0 w-full bg-slate-900 border border-slate-700 border-t-0 rounded-b-2xl shadow-2xl overflow-hidden z-50 max-h-96 flex flex-col animate-in slide-in-from-top-2">
+                        <div className="absolute top-full left-0 mt-0 bg-slate-900 border border-slate-700 border-t-0 rounded-b-2xl shadow-2xl overflow-hidden z-50 max-h-96 flex flex-col animate-in slide-in-from-top-2" style={{ width: '384px' }}>
                             {/* Status Tabs */}
                             <div className="flex gap-2 p-3 border-b border-slate-700 bg-slate-900/50">
                                 <button
