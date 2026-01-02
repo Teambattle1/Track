@@ -19,6 +19,7 @@ import AiTaskGenerator from './AiTaskGenerator';
 import TaskMaster from './TaskMaster';
 import TaskEditor from './TaskEditor';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
+import TaskModal from './TaskModal';
 
 interface PlaygroundEditorProps {
   game: Game;
