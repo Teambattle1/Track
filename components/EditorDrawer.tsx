@@ -229,8 +229,13 @@ const ZoneSection = ({
     const { setNodeRef, isOver } = useDroppable({ id });
 
     return (
-        <div ref={setNodeRef} className={`mb-2 rounded-xl transition-colors ${isOver ? 'bg-orange-50 dark:bg-orange-900/20 ring-2 ring-orange-500' : ''}`}>
-            <div 
+        <div
+            ref={setNodeRef}
+            className={`mb-2 rounded-xl transition-colors ${isOver ? 'bg-orange-50 dark:bg-orange-900/20 ring-2 ring-orange-500' : ''} ${isHovered ? 'ring-2 ring-orange-500' : ''}`}
+            onMouseEnter={() => onHover?.(id)}
+            onMouseLeave={() => onHover?.(null)}
+        >
+            <div
                 onClick={onToggle}
                 className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
             >
