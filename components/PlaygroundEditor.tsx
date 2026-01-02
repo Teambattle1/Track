@@ -100,6 +100,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [isDraggingQRScanner, setIsDraggingQRScanner] = useState(false);
     const [isQRScannerActive, setIsQRScannerActive] = useState(false);
     const [qrScannedValue, setQRScannedValue] = useState<string | null>(null);
+
+    // Device-specific layout management
+    const [selectedDevice, setSelectedDevice] = useState<DeviceType>('desktop');
+    const [deviceLayoutsCache, setDeviceLayoutsCache] = useState<Record<DeviceType, any> | null>(null);
     const orientationDragOffset = useRef({ x: 0, y: 0 });
     const showDragOffset = useRef({ x: 0, y: 0 });
     const toolsDragOffset = useRef({ x: 0, y: 0 });
