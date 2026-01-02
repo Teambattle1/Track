@@ -1626,13 +1626,27 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{game.playgrounds?.length || 0} ZONES ACTIVE</p>
                         </div>
                     </div>
-                    <button
-                        onClick={() => setIsDrawerOpen(false)}
-                        className="text-orange-500 hover:text-orange-400 transition-colors p-2 -mr-2"
-                        title="Close Settings"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={toggleAllSections}
+                            className="text-slate-400 hover:text-orange-400 transition-colors p-2"
+                            title={(() => {
+                                const anyExpanded = !isHudAppearanceCollapsed || !isBackgroundImageCollapsed ||
+                                                   !isBackgroundMusicCollapsed || !isDeviceCollapsed ||
+                                                   !isOrientationCollapsed || !isShowCollapsed || !isLayoutCollapsed;
+                                return anyExpanded ? "Collapse All Sections" : "Expand All Sections";
+                            })()}
+                        >
+                            <ChevronsUpDown className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={() => setIsDrawerOpen(false)}
+                            className="text-orange-500 hover:text-orange-400 transition-colors p-2 -mr-2"
+                            title="Close Settings"
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
