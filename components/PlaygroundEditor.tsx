@@ -178,6 +178,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
     const [editingTitleValue, setEditingTitleValue] = useState('');
     const [taskSortMode, setTaskSortMode] = useState<'order' | 'actions'>('order');
+    const [collapsedSources, setCollapsedSources] = useState<Set<string>>(new Set());
     const [bulkIconSourceId, setBulkIconSourceId] = useState<string | null>(null);
     const [bulkIconMode, setBulkIconMode] = useState(false);
     const [bulkIconTargets, setBulkIconTargets] = useState<Set<string>>(new Set());
