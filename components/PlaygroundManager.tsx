@@ -196,6 +196,13 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
                                                 {copiedId === tpl.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                                             </button>
                                             <button
+                                                onClick={(e) => handleAddToGame(tpl, e)}
+                                                className="p-2 bg-purple-600 text-white rounded-lg transition-all border border-white/10 hover:scale-110 hover:bg-purple-700 z-50 shadow-lg cursor-pointer flex items-center justify-center"
+                                                title="Add to Game"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                            </button>
+                                            <button
                                                 onClick={(e) => handleDelete(tpl, e)}
                                                 className="p-2 bg-red-600 text-white rounded-lg transition-all border border-white/10 hover:scale-110 hover:bg-red-700 z-50 shadow-lg cursor-pointer flex items-center justify-center"
                                                 title="Delete Template"
