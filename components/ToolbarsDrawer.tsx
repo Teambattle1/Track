@@ -187,7 +187,16 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
             {/* Header */}
             <div className="px-4 py-3 bg-orange-600 text-white border-b border-orange-700 flex-shrink-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                    <h2 className="font-black text-sm uppercase tracking-widest">Toolbars</h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="font-black text-sm uppercase tracking-widest">Settings</h2>
+                        <button
+                            onClick={onEditGameSettings}
+                            className="p-1 hover:bg-orange-700 rounded-lg transition-colors flex-shrink-0"
+                            title="Edit Game Setup"
+                        >
+                            <Settings className="w-4 h-4" />
+                        </button>
+                    </div>
                     <button
                         onClick={() => {
                             const allCollapsed = Object.values(collapsedSections).every(v => v);
