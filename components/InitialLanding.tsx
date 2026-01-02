@@ -743,29 +743,24 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
             {/* Right Side Fields Column (OPERATOR, GAME ID, SESSION) */}
             {(view === 'EDIT_MENU' || view === 'PLAY_MENU') && (
-                <div className="absolute top-0 right-0 flex flex-col gap-0 z-30 pt-4 pr-4 mt-16">
-                    {/* Operator Field (Green Border) */}
-                    {authUser && (
-                        <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-t-xl border-2 border-green-500/60 border-b-0 h-16 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="flex items-center gap-3 flex-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
-                                <div className="flex flex-col min-w-0">
-                                    <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR</p>
-                                    <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-0.5 truncate">{authUser.name}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={onLogout}
-                                title="Logout"
-                                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0"
-                            >
-                                <LogOut className="w-4 h-4" />
-                            </button>
-                        </div>
-                    )}
+                <div
+                  ref={fieldsContainerRef}
+                  className="absolute flex flex-col gap-0 z-30 select-none"
+                  style={{
+                    top: `${fieldsPosition.top}px`,
+                    right: `${fieldsPosition.right}px`,
+                    cursor: isDragging ? 'grabbing' : 'auto',
+                  }}
+                >
+                    {/* Drag Handle */}
+                    <div
+                      onMouseDown={handleDragStart}
+                      className="h-2 bg-gradient-to-r from-orange-500 via-blue-500 to-emerald-500 rounded-t-xl cursor-grab active:cursor-grabbing hover:opacity-80 transition-opacity"
+                      title="Drag to move fields"
+                    />
 
                     {/* Game ID Search Field (Orange Border) */}
-                    <div className="relative flex items-center bg-slate-900/50 backdrop-blur-md px-4 py-3 border-2 border-orange-500/60 border-t-0 border-b-0 h-16 animate-in fade-in slide-in-from-right-4 duration-500 delay-50">
+                    <div className="relative flex items-center bg-slate-900/50 backdrop-blur-md px-4 py-3 border-2 border-orange-500/60 border-t-0 border-b h-16 animate-in fade-in slide-in-from-right-4 duration-500 delay-50">
                         <Search className="absolute left-4 w-4 h-4 text-slate-500 pointer-events-none" />
                         <input
                             type="text"
