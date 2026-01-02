@@ -1716,7 +1716,27 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
 
                                             {/* Actions */}
                                             <div className="flex gap-2 flex-shrink-0">
-                                                {onImportTaskList && (
+                                                {onImportTaskList && isPlayzoneEditor && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => onImportTaskList(list, '__PLAYZONE__')}
+                                                            className="p-2 bg-slate-800 hover:bg-orange-600 text-slate-300 hover:text-white rounded-lg transition-colors"
+                                                            title="Add this task list to the current playzone"
+                                                            type="button"
+                                                        >
+                                                            <LayoutGrid className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => onImportTaskList(list, '__GAME__')}
+                                                            className="p-2 bg-slate-800 hover:bg-green-600 text-slate-300 hover:text-white rounded-lg transition-colors"
+                                                            title="Add this task list to the game (choose MAP or PLAYZONE)"
+                                                            type="button"
+                                                        >
+                                                            <Gamepad2 className="w-4 h-4" />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {onImportTaskList && !isPlayzoneEditor && (
                                                     <button
                                                         onClick={() => {
                                                             handleImportListWithGameSelect(list);
@@ -1806,7 +1826,29 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                 )}
 
                                                 <div className="flex gap-2 mt-auto">
-                                                    {onImportTaskList && (
+                                                    {onImportTaskList && isPlayzoneEditor && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => onImportTaskList(list, '__PLAYZONE__')}
+                                                                className="flex-1 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold uppercase text-[10px] tracking-wide transition-colors flex items-center justify-center gap-2"
+                                                                title="Add this task list to the current playzone"
+                                                                type="button"
+                                                            >
+                                                                <LayoutGrid className="w-4 h-4" />
+                                                                ADD
+                                                            </button>
+                                                            <button
+                                                                onClick={() => onImportTaskList(list, '__GAME__')}
+                                                                className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold uppercase text-[10px] tracking-wide transition-colors flex items-center justify-center gap-2"
+                                                                title="Add this task list to the game (choose MAP or PLAYZONE)"
+                                                                type="button"
+                                                            >
+                                                                <Gamepad2 className="w-4 h-4" />
+                                                                GAME
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {onImportTaskList && !isPlayzoneEditor && (
                                                         <button
                                                             onClick={() => {
                                                                 handleImportListWithGameSelect(list);
