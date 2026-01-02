@@ -222,6 +222,17 @@ const getGameStatusTab = (game: Game, now: Date): GameStatusTab => {
   return 'TODAY';
 };
 
+const getGameModeBadge = (gameMode?: string): { label: string; bgColor: string; textColor: string } => {
+  switch (gameMode) {
+    case 'playzone':
+      return { label: 'PLAYZONE', bgColor: 'bg-emerald-900/30', textColor: 'text-emerald-400' };
+    case 'elimination':
+      return { label: 'ELIMINATION', bgColor: 'bg-red-900/30', textColor: 'text-red-400' };
+    default:
+      return { label: 'STANDARD', bgColor: 'bg-blue-900/30', textColor: 'text-blue-400' };
+  }
+};
+
 const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, games, activeGameId, onSelectGame, authUser, onLogout }) => {
   const [view, setView] = useState<CategoryView>('HOME');
   const [showGameMenu, setShowGameMenu] = useState(false);
