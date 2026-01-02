@@ -96,6 +96,7 @@ interface GameMapProps {
   relocateScopeCenter?: Coordinate | null; // Center point when relocating all tasks
   relocateAllTaskIds?: string[]; // Task IDs selected for relocation
   onPointClick: (point: GamePoint) => void;
+  onAreaColorClick?: (point: GamePoint) => void; // NEW: Click on area color circle to open task view
   onPointHoverPreview?: (point: GamePoint | null) => void; // NEW: For hover preview
   onTeamClick?: (teamId: string) => void;
   onMapClick?: (coord: Coordinate) => void;
