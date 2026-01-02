@@ -2407,7 +2407,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             return (
                                 <div
                                     key={point.id}
-                                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 group ${isDraggingThis ? 'cursor-grabbing' : isMarkMode ? 'cursor-pointer' : 'cursor-grab'}`}
+                                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 group ${
+                                        isDraggingThis ? 'cursor-grabbing'
+                                        : isDrawTarget ? 'cursor-pointer'
+                                        : isMarkMode ? 'cursor-pointer'
+                                        : drawMode.active ? 'cursor-default'
+                                        : 'cursor-grab'
+                                    }`}
                                     style={{ left: `${displayX}%`, top: `${displayY}%` }}
                                     onMouseDown={(e) => {
                                         e.preventDefault();
