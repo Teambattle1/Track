@@ -581,6 +581,11 @@ const GameApp: React.FC = () => {
           if (action.type === 'open_playground' && action.targetId) {
               setViewingPlaygroundId(action.targetId);
           }
+          if (action.type === 'cooldown' && activeTaskModalId && action.cooldownSeconds) {
+              // Add cooldown for the current task (the one that triggered this action)
+              const cooldownEndTime = Date.now() + (action.cooldownSeconds * 1000);
+              setTaskCooldowns(prev => new Map(prev).set(activeTaskModalId, cooldownEndTime));
+          }
       });
 
       if (hasChanges) {
