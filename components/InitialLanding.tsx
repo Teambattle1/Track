@@ -277,16 +277,18 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
       const newTop = e.clientY - dragOffset.y;
       const newRight = window.innerWidth - (e.clientX + dragOffset.x);
 
-      setFieldsPosition({
+      const newPos = {
         top: Math.max(0, newTop),
         right: Math.max(0, newRight),
-      });
+      };
+
+      setFieldsPosition(newPos);
+      // Save position to localStorage in real-time during drag
+      localStorage.setItem('fieldsPosition', JSON.stringify(newPos));
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
-      // Save position to localStorage
-      localStorage.setItem('fieldsPosition', JSON.stringify(fieldsPosition));
     };
 
     window.addEventListener('mousemove', handleMouseMove);
