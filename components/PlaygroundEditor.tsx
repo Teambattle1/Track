@@ -45,6 +45,7 @@ interface PlaygroundEditorProps {
   taskLibrary: TaskTemplate[]; // Task library for TaskMaster
   onUpdateTaskLibrary: (library: TaskTemplate[]) => void; // Update task library
   onOpenGameSettings?: () => void; // Open game settings
+  onExportGameToLibrary?: () => void; // Export all tasks to library
 }
 
 const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
