@@ -1035,10 +1035,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
             return {
                 ...point,
-                playgroundPosition: {
+                ...setDevicePosition(point, {
                     x: Math.round(x * 10) / 10,
                     y: Math.round(y * 10) / 10
-                }
+                })
             };
         });
 
