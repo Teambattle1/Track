@@ -239,7 +239,64 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const [gameSearchQuery, setGameSearchQuery] = useState('');
   const [createMenuSearchQuery, setCreateMenuSearchQuery] = useState('');
   const [statusTab, setStatusTab] = useState<GameStatusTab>('TODAY');
+  const [fieldsPosition, setFieldsPosition] = useState({ top: 16, right: 16 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const fieldsContainerRef = React.useRef<HTMLDivElement>(null);
   const activeGame = games.find(g => g.id === activeGameId);
+
+  // Load saved position from localStorage on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('fieldsPosition');
+    if (saved) {
+      try {
+        const pos = JSON.parse(saved);
+        setFieldsPosition(pos);
+      } catch (e) {
+        console.error('Failed to load saved position:', e);
+      }
+    }
+  }, []);
+
+  // Handle drag start
+  const handleDragStart = (e: React.MouseEvent) => {
+    if (!fieldsContainerRef.current) return;
+    setIsDragging(true);
+    const rect = fieldsContainerRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  // Handle drag move
+  React.useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newTop = e.clientY - dragOffset.y;
+      const newRight = window.innerWidth - (e.clientX + dragOffset.x);
+
+      setFieldsPosition({
+        top: Math.max(0, newTop),
+        right: Math.max(0, newRight),
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      // Save position to localStorage
+      localStorage.setItem('fieldsPosition', JSON.stringify(fieldsPosition));
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
 
   const filteredGames = useMemo(() => {
     const now = new Date();
