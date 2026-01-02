@@ -2762,51 +2762,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full px-2 border border-orange-500/30 pointer-events-none">
                                 <GripHorizontal className="w-3 h-3" />
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-1">TOOLS</span>
-                                <div className="flex gap-3">
-                                    <div className="flex flex-col items-center gap-0.5">
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-
-                                                if (isSimulationActive) {
-                                                    // Stop simulation
-                                                    setIsSimulationActive(false);
-                                                    setSimulationScore(0);
-                                                    setSimulationTeam(null);
-                                                    setActiveSimulationTaskId(null);
-                                                } else {
-                                                    // Start simulation
-                                                    const testTeam = {
-                                                        id: 'sim-test-team',
-                                                        gameId: game.id,
-                                                        name: 'TEST',
-                                                        joinCode: 'TEST00',
-                                                        score: 0,
-                                                        members: [{ name: 'Simulator', deviceId: 'sim-device', photo: '' }],
-                                                        updatedAt: new Date().toISOString()
-                                                    };
-                                                    setSimulationTeam(testTeam);
-                                                    setSimulationScore(0);
-                                                    setIsSimulationActive(true);
-                                                    setShowRanking(true);
-                                                }
-                                            }}
-                                            className={`px-3 py-2 rounded transition-all cursor-pointer pointer-events-auto shadow-lg hover:shadow-xl active:scale-95 flex items-center gap-2 ${
-                                                isSimulationActive
-                                                    ? 'bg-red-600 text-white hover:bg-red-700'
-                                                    : 'bg-purple-600 text-white hover:bg-purple-700'
-                                            }`}
-                                            title={isSimulationActive ? 'Stop Simulation Mode' : 'Start Simulation Mode - Play the game with all tasks and rules enabled'}
-                                            type="button"
-                                        >
-                                            {isSimulationActive ? <X className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
-                                            <span className="text-xs font-black uppercase tracking-wider">{isSimulationActive ? 'STOP SIM' : 'SIMULATOR'}</span>
-                                        </button>
-                                    </div>
-                                    {onOpenGameSettings && (
+                            {onOpenGameSettings && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-1">TOOLS</span>
+                                    <div className="flex gap-3">
                                         <div className="flex flex-col items-center gap-0.5">
                                             <button
                                                 onClick={(e) => {
@@ -2822,9 +2781,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             </button>
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">SETTINGS</span>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                 </div>
 
