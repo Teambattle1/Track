@@ -89,6 +89,16 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showBackground, setShowBackground] = useState(true);
     const [isBackgroundLocked, setIsBackgroundLocked] = useState(false);
 
+    // Simulation Mode State
+    const [isSimulationActive, setIsSimulationActive] = useState(false);
+    const [simulationScore, setSimulationScore] = useState(0);
+    const [simulationTeam, setSimulationTeam] = useState<any | null>(null);
+    const [showRanking, setShowRanking] = useState(false);
+    const [rankingPos, setRankingPos] = useState({ x: window.innerWidth - 350, y: 100 });
+    const [isDraggingRanking, setIsDraggingRanking] = useState(false);
+    const rankingDragOffset = useRef({ x: 0, y: 0 });
+    const [activeSimulationTaskId, setActiveSimulationTaskId] = useState<string | null>(null);
+
     // Draw Mode State for Visual Connections
     const [drawMode, setDrawMode] = useState<{
         active: boolean;
