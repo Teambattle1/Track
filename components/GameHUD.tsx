@@ -222,7 +222,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     const [isOrientationLocked, setIsOrientationLocked] = useState(false);
 
     // Toolbars Drawer State
-    const [showToolbarsDrawer, setShowToolbarsDrawer] = useState(false);
+    const [showToolbarsDrawer, setShowToolbarsDrawer] = useState(true);
     const [visibleToolbars, setVisibleToolbars] = useState<Record<string, boolean>>({
         mapmode: true,
         layers: false,
