@@ -2115,15 +2115,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         height: viewportDims.height,
                         boxShadow: '0 0 0 12px #1f2937, 0 0 0 16px #000000, inset 0 0 0 1px #444'
                     }}>
-                        {/* Device Notch/Speaker */}
-                        {editorOrientation === 'landscape' && (
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-black rounded-b-xl z-10"></div>
-                        )}
-                        {editorOrientation === 'portrait' && (
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-black rounded-t-xl z-10"></div>
-                        )}
-
-                    <div
+                        <div
                         ref={backgroundRef}
                         style={{
                             ...bgStyle,
