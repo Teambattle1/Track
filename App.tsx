@@ -1957,6 +1957,7 @@ const GameApp: React.FC = () => {
                 mode={mode}
                 mapStyle={localMapStyle || 'osm'}
                 onPointClick={handlePointClick}
+                onAreaColorClick={handleAreaColorClick}
                 onZoneClick={(z) => setActiveDangerZone(z)}
                 onZoneMove={async (zoneId, newLoc) => {
                     if (!activeGame) return;
