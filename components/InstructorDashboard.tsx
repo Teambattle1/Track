@@ -558,12 +558,13 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
         {/* ... (Team Control Modal and Playground Modal logic remains same) ... */}
         {/* Instructor Playground Viewer */}
         {activePlaygroundId && activePlayground && (
-            <PlaygroundModal 
+            <PlaygroundModal
                 playground={activePlayground}
                 points={liveGame.points}
                 onClose={() => setActivePlaygroundId(null)}
-                onPointClick={() => {}} 
+                onPointClick={() => {}}
                 mode={GameMode.INSTRUCTOR}
+                taskCooldowns={new Map()}
             />
         )}
     </div>
