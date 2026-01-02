@@ -149,7 +149,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     onOpenLiveApproval,
     pendingApprovalsCount = 0,
 }) => {
-    const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    const [collapsedSectionsLocal, setCollapsedSectionsLocal] = useState<Record<string, boolean>>({
         mapmode: true,
         layers: true,
         location: true,
@@ -161,6 +161,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     const [showToolbarsMenu, setShowToolbarsMenu] = useState(false);
 
     // Use prop if provided, otherwise use local state
+    const collapsedSections = collapsedSectionsProp || collapsedSectionsLocal;
     const visibleToolbars = visibleToolbarsProp || {
         mapmode: false,
         layers: false,
@@ -171,10 +172,16 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     };
 
     const toggleSection = (section: string) => {
-        setCollapsedSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }));
+        const newState = {
+            ...collapsedSections,
+            [section]: !collapsedSections[section]
+        };
+
+        if (onCollapsedSectionsChange) {
+            onCollapsedSectionsChange(newState);
+        } else {
+            setCollapsedSectionsLocal(newState);
+        }
     };
 
     const isVisible = (section: string) => !collapsedSections[section];
