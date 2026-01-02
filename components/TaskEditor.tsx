@@ -341,6 +341,23 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
       window.setTimeout(() => setShowTagSuggestions(false), 150);
   };
 
+  const getReadableTextColor = (hexColor: string): string => {
+      const hex = hexColor.replace('#', '');
+      if (hex.length !== 6) return '#ffffff';
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 140 ? '#0f172a' : '#ffffff';
+  };
+
+  const getTagChipVars = (tag: string) => {
+      const key = tag.toLowerCase();
+      const bg = tagColorsMap[key] || '#64748b';
+      const fg = getReadableTextColor(bg);
+      return { ['--tag-bg' as any]: bg, ['--tag-fg' as any]: fg };
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editedPoint.tags || editedPoint.tags.length === 0) {
