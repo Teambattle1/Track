@@ -104,10 +104,12 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
               buttonVisible: true
           };
 
-          await db.updateGame(game.id, {
+          const updatedGame = {
               ...game,
               playgrounds: [...(game.playgrounds || []), newPlayground]
-          });
+          };
+
+          await db.saveGame(updatedGame);
 
           setShowGameSelector(false);
           setSelectedTemplateForGame(null);
