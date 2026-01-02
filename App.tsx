@@ -50,6 +50,7 @@ import ClientLobby from './components/ClientLobby';
 import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
 import PlayzoneSelector from './components/PlayzoneSelector';
+import TranslationsManager from './components/TranslationsManager';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
@@ -58,6 +59,7 @@ const GameApp: React.FC = () => {
 
   // --- SUPABASE DIAGNOSTIC ---
   const [showSupabaseDiagnostic, setShowSupabaseDiagnostic] = useState(false);
+  const [showTranslationsManager, setShowTranslationsManager] = useState(false);
 
   // CRITICAL NULL CHECK: Validate props before rendering
   // This prevents crashes from undefined game/playground states
