@@ -595,36 +595,80 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
     }
 };
 
-export const saveTemplate = async (template: TaskTemplate) => {
+const VALID_TEMPLATE_LANGUAGES = ['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew'];
+
+const normalizeTemplateForSave = (template: TaskTemplate): TaskTemplate => {
+    // Respect user's language choice if explicitly set, otherwise auto-detect
+    const hasValidLanguage = template.settings?.language && VALID_TEMPLATE_LANGUAGES.includes(template.settings.language);
+
+    const finalLanguage = hasValidLanguage
+        ? template.settings!.language
+        : detectLanguageFromText(template.task.question || '');
+
+    return {
+        ...template,
+        settings: {
+            ...template.settings,
+            language: finalLanguage
+        }
+    };
+};
+
+const chunkArray = <T,>(items: T[], chunkSize: number): T[][] => {
+    if (chunkSize <= 0) return [items];
+    const chunks: T[][] = [];
+    for (let i = 0; i < items.length; i += chunkSize) {
+        chunks.push(items.slice(i, i + chunkSize));
+    }
+    return chunks;
+};
+
+export const saveTemplates = async (
+    templates: TaskTemplate[],
+    opts?: { chunkSize?: number }
+): Promise<{ ok: boolean }> => {
     try {
-        // Respect user's language choice if explicitly set, otherwise auto-detect
-        const validLanguages = ['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew'];
-        const hasValidLanguage = template.settings?.language && validLanguages.includes(template.settings.language);
+        if (!templates || templates.length === 0) return { ok: true };
 
-        const finalLanguage = hasValidLanguage
-            ? template.settings.language
-            : detectLanguageFromText(template.task.question || '');
+        // Many parallel upserts can overwhelm Postgres and trigger statement_timeout (57014).
+        // We chunk + save sequentially to keep each statement small and predictable.
+        const chunkSize = Math.max(1, Math.min(opts?.chunkSize ?? 10, 50));
+        const updatedAt = new Date().toISOString();
 
-        const normalizedTemplate = {
-            ...template,
-            settings: {
-                ...template.settings,
-                language: finalLanguage
-            }
-        };
+        const normalized = templates.map(normalizeTemplateForSave);
+        const chunks = chunkArray(normalized, chunkSize);
 
-        await retryWithBackoff(
-            () => supabase.from('library').upsert({
-                id: normalizedTemplate.id,
-                data: normalizedTemplate,
-                updated_at: new Date().toISOString()
-            }).then(result => {
-                if (result.error) throw result.error;
-                return result;
-            }),
-            'saveTemplate'
-        );
-    } catch (e) { logError('saveTemplate', e); }
+        for (let i = 0; i < chunks.length; i++) {
+            const chunk = chunks[i];
+            await retryWithBackoff(
+                () =>
+                    supabase
+                        .from('library')
+                        .upsert(
+                            chunk.map(t => ({ id: t.id, data: t, updated_at: updatedAt })),
+                            { onConflict: 'id', returning: 'minimal' }
+                        )
+                        .then(result => {
+                            if (result.error) throw result.error;
+                            return result;
+                        }),
+                `saveTemplates[chunk=${i + 1}/${chunks.length}]`
+            );
+        }
+
+        return { ok: true };
+    } catch (e) {
+        logError('saveTemplates', e);
+        return { ok: false };
+    }
+};
+
+export const saveTemplate = async (template: TaskTemplate) => {
+    const { ok } = await saveTemplates([template]);
+    if (!ok) {
+        // Keep existing behavior (log + don't throw), but ensure saveTemplate logs show up.
+        console.warn('[DB Service] saveTemplate failed (see previous error for details)');
+    }
 };
 
 export const deleteTemplate = async (id: string) => {
