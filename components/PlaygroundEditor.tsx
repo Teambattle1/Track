@@ -3789,12 +3789,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[10px] font-bold text-purple-400">{Math.round((selectedTask.iconImageScale || 0.9) * 100)}%</span>
                                 </div>
                                 <p className="text-[8px] text-slate-400">
-                                    Adjust the size of the picture inside the icon circle
+                                    Adjust the size of the picture inside the icon circle (stays within border)
                                 </p>
                                 <input
                                     type="range"
                                     min="0.5"
-                                    max="1.5"
+                                    max="1.2"
                                     step="0.05"
                                     value={selectedTask.iconImageScale || 0.9}
                                     onChange={(e) => updateTask({ iconImageScale: parseFloat(e.target.value) })}
