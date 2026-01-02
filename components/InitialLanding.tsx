@@ -672,8 +672,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 )}
             </div>
 
-            {/* Right Controls */}
-            <div className="absolute top-0 right-0 flex flex-col items-end gap-3 z-30 pt-4 pr-4">
+            {/* Top Right Controls */}
+            <div className="absolute top-0 right-0 flex items-center gap-4 z-30 pt-4 pr-4">
                 {/* Settings Button */}
                 <button
                     onClick={() => setView(view === 'SETTINGS' ? 'HOME' : 'SETTINGS')}
@@ -682,47 +682,57 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 >
                     <Settings className="w-5 h-5" />
                 </button>
+            </div>
 
-                {/* User Selector / Operator Status */}
-                {authUser && (
-                    <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/5">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
-                            <div className="flex flex-col">
-                                <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR ONLINE</p>
-                                <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-1">{authUser.name}</p>
+            {/* Right Side Fields Column (OPERATOR, GAME ID, SESSION) */}
+            {(view === 'EDIT_MENU' || view === 'PLAY_MENU') && (
+                <div className="absolute top-0 right-0 flex flex-col gap-0 z-30 pt-4 pr-4 mt-16">
+                    {/* Operator Field (Green Border) */}
+                    {authUser && (
+                        <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-t-xl border-2 border-green-500/60 border-b-0 h-16 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="flex items-center gap-3 flex-1">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                                <div className="flex flex-col min-w-0">
+                                    <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR</p>
+                                    <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-0.5 truncate">{authUser.name}</p>
+                                </div>
                             </div>
+                            <button
+                                onClick={onLogout}
+                                title="Logout"
+                                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0"
+                            >
+                                <LogOut className="w-4 h-4" />
+                            </button>
                         </div>
-                        <div className="h-6 w-px bg-white/10 mx-1"></div>
-                        <button
-                            onClick={onLogout}
-                            title="Logout"
-                            className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
-                        >
-                            <LogOut className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
+                    )}
 
-                {!authUser && view === 'HOME' && (
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                        <p className="text-[9px] font-black text-slate-500 tracking-[0.4em] uppercase">
-                          SYSTEM ONLINE &bull; v{version}
-                        </p>
-                    </div>
-                )}
-
-                {/* Game Search Field (Top right for EDIT_MENU and PLAY_MENU) */}
-                {(view === 'EDIT_MENU' || view === 'PLAY_MENU') && (
-                    <div className="relative w-72 flex items-center animate-in fade-in slide-in-from-right-4 duration-500">
-                        <Search className="absolute left-3 w-4 h-4 text-slate-500 pointer-events-none" />
+                    {/* Game ID Search Field (Orange Border) */}
+                    <div className="relative flex items-center bg-slate-900/50 backdrop-blur-md px-4 py-3 border-2 border-orange-500/60 border-t-0 border-b-0 h-16 animate-in fade-in slide-in-from-right-4 duration-500 delay-50">
+                        <Search className="absolute left-4 w-4 h-4 text-slate-500 pointer-events-none" />
                         <input
                             type="text"
-                            placeholder="Quick search: game ID or name..."
+                            placeholder="GAME ID"
                             value={gameSearchQuery}
                             onChange={(e) => setGameSearchQuery(e.target.value)}
-                            className="w-full pl-11 pr-4 py-2.5 bg-slate-800/60 text-white text-xs rounded-lg border border-slate-600 focus:border-orange-500 focus:bg-slate-800 focus:outline-none placeholder-slate-500 backdrop-blur-sm transition-all"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    if (gameSearchQuery.trim()) {
+                                        const searchId = gameSearchQuery.replace(/[\[\]]/g, '').trim();
+                                        const found = games.find(g => {
+                                            const gId = getGameDisplayId(g.id);
+                                            return gId === searchId || g.id === searchId || g.name.toLowerCase().includes(searchId.toLowerCase());
+                                        });
+                                        if (found) {
+                                            onSelectGame(found.id);
+                                            setGameSearchQuery('');
+                                        } else {
+                                            setShowGameMenu(true);
+                                        }
+                                    }
+                                }
+                            }}
+                            className="w-full pl-11 pr-8 py-0 bg-transparent text-white text-xs focus:outline-none placeholder-slate-500 transition-all h-full"
                         />
                         {gameSearchQuery && (
                             <button
@@ -733,8 +743,143 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                             </button>
                         )}
                     </div>
-                )}
-            </div>
+
+                    {/* Session Selector (Blue Border) */}
+                    <button
+                        onClick={() => setShowGameMenu(!showGameMenu)}
+                        className="flex items-center justify-between bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-b-xl border-2 border-blue-500/60 border-t-0 h-16 transition-all w-full hover:bg-slate-800/50 animate-in fade-in slide-in-from-right-4 duration-500 delay-100"
+                    >
+                        <span className="text-xs font-black text-white tracking-widest uppercase leading-none truncate max-w-[200px]">
+                            {activeGame ? `[${getGameDisplayId(activeGame.id)}] ${activeGame.name}` : "SELECT SESSION"}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 transition-transform shrink-0 text-slate-400 ${showGameMenu ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showGameMenu && (
+                        <div className="absolute top-full left-0 mt-0 w-full bg-slate-900 border border-slate-700 border-t-0 rounded-b-2xl shadow-2xl overflow-hidden z-50 max-h-96 flex flex-col animate-in slide-in-from-top-2">
+                            {/* Status Tabs */}
+                            <div className="flex gap-2 p-3 border-b border-slate-700 bg-slate-900/50">
+                                <button
+                                    onClick={() => setStatusTab('TODAY')}
+                                    className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${
+                                      statusTab === 'TODAY'
+                                        ? 'bg-blue-600 text-white border border-blue-500 shadow-lg shadow-blue-500/20'
+                                        : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:text-white'
+                                    }`}
+                                >
+                                    TODAY
+                                </button>
+                                <button
+                                    onClick={() => setStatusTab('PLANNED')}
+                                    className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${
+                                      statusTab === 'PLANNED'
+                                        ? 'bg-amber-600 text-white border border-amber-500 shadow-lg shadow-amber-500/20'
+                                        : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:text-white'
+                                    }`}
+                                >
+                                    PLANNED
+                                </button>
+                                <button
+                                    onClick={() => setStatusTab('COMPLETED')}
+                                    className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${
+                                      statusTab === 'COMPLETED'
+                                        ? 'bg-emerald-600 text-white border border-emerald-500 shadow-lg shadow-emerald-500/20'
+                                        : 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:text-white'
+                                    }`}
+                                >
+                                    COMPLETED
+                                </button>
+                            </div>
+
+                            {/* Search Input */}
+                            <div className="sticky top-16 p-4 border-b border-slate-700 bg-slate-900">
+                                <div className="relative flex items-center">
+                                    <Search className="absolute left-3 w-4 h-4 text-slate-500 pointer-events-none" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by ID or name..."
+                                        value={gameSearchQuery}
+                                        onChange={(e) => setGameSearchQuery(e.target.value)}
+                                        className="w-full pl-10 pr-8 py-2 bg-slate-800 text-white text-xs rounded-lg border border-slate-700 focus:border-orange-500 focus:outline-none placeholder-slate-500"
+                                        autoFocus
+                                    />
+                                    {gameSearchQuery && (
+                                        <button
+                                            onClick={() => setGameSearchQuery('')}
+                                            className="absolute right-2 p-1 hover:bg-slate-700 rounded transition-colors"
+                                        >
+                                            <XIcon className="w-4 h-4 text-slate-400 hover:text-white" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Game List */}
+                            <div className="overflow-y-auto">
+                                {filteredGames.length === 0 && <div className="p-6 text-xs text-slate-500 font-bold text-center uppercase tracking-widest">NO GAMES FOUND</div>}
+                                {filteredGames.map(game => {
+                                    const badge = getGameModeBadge(game.gameMode);
+                                    return (
+                                        <button
+                                            key={game.id}
+                                            onClick={() => { onSelectGame(game.id); setShowGameMenu(false); setGameSearchQuery(''); }}
+                                            className={`w-full text-left px-5 py-3 text-xs border-b border-slate-800 hover:bg-slate-800 transition-colors flex flex-col gap-2 ${game.id === activeGameId ? 'text-orange-500 bg-orange-900/10' : 'text-slate-300'}`}
+                                        >
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="truncate flex items-center gap-2 flex-1">
+                                                    <span className="text-orange-400 font-black shrink-0">[{getGameDisplayId(game.id)}]</span>
+                                                    <span className="font-bold truncate">{game.name}</span>
+                                                </span>
+                                                {game.id === activeGameId && <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_orange] shrink-0" />}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`px-2 py-1 rounded-md text-[9px] font-black tracking-wide border ${badge.bgColor} ${badge.textColor} border-slate-700`}>
+                                                    {badge.label}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                    {showGameMenu && <div className="fixed inset-0 z-40" onClick={() => setShowGameMenu(false)} />}
+                </div>
+            )}
+
+            {/* Operator Only (HOME view) */}
+            {view === 'HOME' && (
+                <div className="absolute top-0 right-0 flex flex-col gap-0 z-30 pt-4 pr-4 mt-16">
+                    {authUser && (
+                        <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-green-500/60 h-16 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="flex items-center gap-3 flex-1">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                                <div className="flex flex-col min-w-0">
+                                    <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR</p>
+                                    <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-0.5 truncate">{authUser.name}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={onLogout}
+                                title="Logout"
+                                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0"
+                            >
+                                <LogOut className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
+
+                    {!authUser && (
+                        <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-slate-700 h-16">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <p className="text-[9px] font-black text-slate-500 tracking-[0.4em] uppercase">
+                              SYSTEM ONLINE &bull; v{version}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Centered Title & Session Selector Block */}
             <div className="flex flex-col items-center justify-center pt-8 pb-4 gap-6">
