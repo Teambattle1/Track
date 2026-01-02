@@ -2579,40 +2579,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             </button>
                                         </div>
                                     )}
-                                    <div className="flex flex-col items-center gap-0.5">
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleCenterBackground();
-                                            }}
-                                            className="p-2 rounded transition-all cursor-pointer pointer-events-auto bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white shadow-lg"
-                                            title="Center Background"
-                                            type="button"
-                                        >
-                                            <Target className="w-4 h-4" />
-                                        </button>
-                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">CENTER</span>
-                                    </div>
-                                    <div className="flex flex-col items-center gap-0.5">
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setIsBackgroundLocked(!isBackgroundLocked);
-                                            }}
-                                            className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
-                                                isBackgroundLocked
-                                                    ? 'bg-red-600 text-white shadow-lg hover:bg-red-700'
-                                                    : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
-                                            }`}
-                                            title={isBackgroundLocked ? 'Unlock background (draggable)' : 'Lock background (not draggable)'}
-                                            type="button"
-                                        >
-                                            {isBackgroundLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                                        </button>
-                                        <span className={`text-[8px] font-black uppercase tracking-widest ${isBackgroundLocked ? 'text-red-400' : 'text-slate-500'}`}>LOCK</span>
-                                    </div>
                                     {onOpenGameSettings && (
                                         <div className="flex flex-col items-center gap-0.5">
                                             <button
