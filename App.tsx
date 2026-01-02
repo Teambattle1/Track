@@ -1458,6 +1458,39 @@ const GameApp: React.FC = () => {
                       const targetGame = gameId ? games.find(g => g.id === gameId) : activeGame;
 
                       if (targetGame) {
+                          // Check if game has multiple languages configured
+                          const configuredLanguages = getConfiguredLanguagesForGame(targetGame);
+
+                          if (configuredLanguages.length > 1) {
+                              // Validate each task has all required translations
+                              const invalidTasks: Array<{ task: any; missingLanguages: string[] }> = [];
+
+                              list.tasks.forEach(task => {
+                                  const validation = validateTaskTranslations(task.task, configuredLanguages);
+                                  if (!validation.valid) {
+                                      invalidTasks.push({
+                                          task,
+                                          missingLanguages: validation.missingLanguages,
+                                      });
+                                  }
+                              });
+
+                              if (invalidTasks.length > 0) {
+                                  // Show error message with details
+                                  const taskNames = invalidTasks.map(item => `• ${item.task.title}`).join('\n');
+                                  const languageList = configuredLanguages.filter(l => l !== 'English').join(', ');
+
+                                  alert(
+                                      `⚠️ Translation Required\n\n` +
+                                      `This game uses multiple languages: ${languageList}\n\n` +
+                                      `The following tasks from "${list.name}" are missing approved translations:\n${taskNames}\n\n` +
+                                      `Please add and approve translations for all tasks before adding them to this game.\n\n` +
+                                      `💡 Tip: Open each task in the Task Editor and go to the "Languages" tab to add translations.`
+                                  );
+                                  return; // Don't add tasks
+                              }
+                          }
+
                           const mapCenter = mapRef.current?.getCenter();
                           const newPoints = list.tasks.map((t, idx) => ({
                               ...t,
