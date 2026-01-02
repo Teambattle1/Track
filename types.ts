@@ -184,6 +184,9 @@ export interface Playground {
   // Audio Support
   audioUrl?: string;
   audioLoop?: boolean; // true = continuous, false = once
+
+  // Device-specific layouts (for multi-device support)
+  deviceLayouts?: Record<DeviceType, DeviceLayout>;
 }
 
 export interface DangerZone {
