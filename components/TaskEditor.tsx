@@ -207,6 +207,81 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
       fetchUniqueTags().then(tags => setExistingTags(tags)).catch(() => setExistingTags([]));
   }, []);
 
+  // Track original task content to detect changes
+  const [originalTaskContent, setOriginalTaskContent] = useState(() => ({
+    question: point.task.question,
+    options: JSON.stringify(point.task.options || []),
+    answer: point.task.answer,
+    correctAnswers: JSON.stringify(point.task.correctAnswers || []),
+    correctMessage: point.feedback?.correctMessage || '',
+    incorrectMessage: point.feedback?.incorrectMessage || '',
+    hint: point.feedback?.hint || '',
+  }));
+
+  // Invalidate all translation approvals when base task content changes
+  useEffect(() => {
+    const currentContent = {
+      question: editedPoint.task.question,
+      options: JSON.stringify(editedPoint.task.options || []),
+      answer: editedPoint.task.answer,
+      correctAnswers: JSON.stringify(editedPoint.task.correctAnswers || []),
+      correctMessage: editedPoint.feedback?.correctMessage || '',
+      incorrectMessage: editedPoint.feedback?.incorrectMessage || '',
+      hint: editedPoint.feedback?.hint || '',
+    };
+
+    // Check if any content has changed
+    const hasChanged =
+      currentContent.question !== originalTaskContent.question ||
+      currentContent.options !== originalTaskContent.options ||
+      currentContent.answer !== originalTaskContent.answer ||
+      currentContent.correctAnswers !== originalTaskContent.correctAnswers ||
+      currentContent.correctMessage !== originalTaskContent.correctMessage ||
+      currentContent.incorrectMessage !== originalTaskContent.incorrectMessage ||
+      currentContent.hint !== originalTaskContent.hint;
+
+    if (hasChanged && editedPoint.task.translations && Object.keys(editedPoint.task.translations).length > 0) {
+      // Invalidate all translation approvals
+      const updatedTranslations: any = {};
+
+      Object.keys(editedPoint.task.translations).forEach(lang => {
+        const translation = editedPoint.task.translations![lang as any];
+        updatedTranslations[lang] = {
+          ...translation,
+          questionApproved: false,
+          optionsApproved: translation.options ? false : translation.optionsApproved,
+          answerApproved: translation.answer ? false : translation.answerApproved,
+          correctAnswersApproved: translation.correctAnswers ? false : translation.correctAnswersApproved,
+          feedback: translation.feedback ? {
+            ...translation.feedback,
+            correctMessageApproved: false,
+            incorrectMessageApproved: false,
+            hintApproved: translation.feedback.hint ? false : translation.feedback.hintApproved,
+          } : translation.feedback,
+        };
+      });
+
+      setEditedPoint(prev => ({
+        ...prev,
+        task: {
+          ...prev.task,
+          translations: updatedTranslations,
+        },
+      }));
+
+      // Update the original content reference
+      setOriginalTaskContent(currentContent);
+    }
+  }, [
+    editedPoint.task.question,
+    editedPoint.task.options,
+    editedPoint.task.answer,
+    editedPoint.task.correctAnswers,
+    editedPoint.feedback?.correctMessage,
+    editedPoint.feedback?.incorrectMessage,
+    editedPoint.feedback?.hint,
+  ]);
+
   // Auto-detect language from task question on component mount
   useEffect(() => {
       const hasQuestion = editedPoint.task.question && editedPoint.task.question.trim().length > 0;
