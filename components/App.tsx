@@ -1534,7 +1534,7 @@ const GameApp: React.FC = () => {
       return (
           <>
             <InitialLanding
-                version="4.0.1"
+                version="4.3"
                 games={games}
                 activeGameId={activeGameId}
                 onSelectGame={setActiveGameId}
