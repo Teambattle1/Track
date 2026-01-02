@@ -1763,6 +1763,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     setSimulationScore(0);
                                     setSimulationTeam(null);
                                     setActiveSimulationTaskId(null);
+                                    setShowRanking(false); // Close ranking window
                                 } else {
                                     // Start simulation
                                     const testTeam = {
