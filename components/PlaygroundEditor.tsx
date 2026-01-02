@@ -208,6 +208,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [isShowCollapsed, setIsShowCollapsed] = useState(false); // Expanded by default
     const [isLayoutCollapsed, setIsLayoutCollapsed] = useState(false); // Expanded by default
 
+    // Toggle all sections collapsed/expanded
+    const toggleAllSections = () => {
+        // Check if any section is expanded
+        const anyExpanded = !isHudAppearanceCollapsed || !isBackgroundImageCollapsed ||
+                           !isBackgroundMusicCollapsed || !isDeviceCollapsed ||
+                           !isOrientationCollapsed || !isShowCollapsed || !isLayoutCollapsed;
+
+        // If any are expanded, collapse all. Otherwise, expand all.
+        const newState = anyExpanded;
+        setIsHudAppearanceCollapsed(newState);
+        setIsBackgroundImageCollapsed(newState);
+        setIsBackgroundMusicCollapsed(newState);
+        setIsDeviceCollapsed(newState);
+        setIsOrientationCollapsed(newState);
+        setIsShowCollapsed(newState);
+        setIsLayoutCollapsed(newState);
+    };
+
     // Snap to Road State
     const [snapToRoadMode, setSnapToRoadMode] = useState(false);
     const [selectionBox, setSelectionBox] = useState<{ start: { x: number; y: number } | null; current: { x: number; y: number } | null }>({ start: null, current: null });
