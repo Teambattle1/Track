@@ -56,12 +56,15 @@ const MediaManager: React.FC<MediaManagerProps> = ({ onClose, games }) => {
 
     setIsClearing(true);
     try {
-      // TODO: Implement Supabase deletion logic
-      // 1. Query media_submissions table for items older than selectedDate
-      // 2. Delete files from Supabase Storage
-      // 3. Delete records from media_submissions table
-      
-      alert('✅ Media cleanup completed!');
+      const beforeDate = new Date(selectedDate);
+      const result = await deleteMediaOlderThan(selectedGame, beforeDate);
+
+      if (result.errors.length > 0) {
+        alert(`⚠️ Partially completed:\n${result.deletedCount} items deleted\n${result.errors.length} errors occurred`);
+      } else {
+        alert(`✅ Media cleanup completed!\n${result.deletedCount} items deleted.`);
+      }
+
       await loadMediaStats();
     } catch (error) {
       console.error('Failed to clear media:', error);
