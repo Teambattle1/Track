@@ -3513,8 +3513,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         e.stopPropagation();
                                         // In simulation mode, always allow click to open scanner
                                         // In editor mode, only open color picker if we didn't drag
+                                        console.log('[QR Button Click]', { isSimulationActive, didDrag: qrScannerDidDrag.current });
                                         if (isSimulationActive || !qrScannerDidDrag.current) {
+                                            console.log('[QR Button] Opening handler...');
                                             handleQRScanClick();
+                                        } else {
+                                            console.log('[QR Button] Click ignored - was dragging');
                                         }
                                     }}
                                     style={{
