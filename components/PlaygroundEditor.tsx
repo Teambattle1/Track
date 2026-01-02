@@ -3417,10 +3417,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     width: `${qrScannerSize.width}px`,
                                     height: `${qrScannerSize.height}px`,
                                 }}
-                                onPointerDown={handleQRScannerPointerDown}
-                                onPointerMove={handleQRScannerPointerMove}
-                                onPointerUp={handleQRScannerPointerUp}
-                                onPointerCancel={handleQRScannerPointerUp}
+                                onPointerDown={isSimulationActive ? undefined : handleQRScannerPointerDown}
+                                onPointerMove={isSimulationActive ? undefined : handleQRScannerPointerMove}
+                                onPointerUp={isSimulationActive ? undefined : handleQRScannerPointerUp}
+                                onPointerCancel={isSimulationActive ? undefined : handleQRScannerPointerUp}
                             >
                                 {/* QR Scan Button - Resizable, draggable, color customizable */}
                                 <button
