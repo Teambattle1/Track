@@ -676,6 +676,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             const defaultOrientation = selectedDevice === 'mobile' ? 'portrait' : 'landscape';
             setEditorOrientation(defaultOrientation);
         }
+
+        // Initialize visibility states from playground (defaults to true if not set)
+        setShowTaskScores(activePlayground.showTaskScores !== false);
+        setShowTaskOrder(activePlayground.showTaskOrder !== false);
+        setShowTaskActions(activePlayground.showTaskActions !== false);
+        setShowTaskNames(activePlayground.showTaskNames !== false);
+        setShowTaskStatus(activePlayground.showTaskStatus !== false);
+        setShowBackground(activePlayground.showBackground !== false);
+        setShowQRScanner(activePlayground.showQRScanner !== false);
     }, [activePlayground?.id, activePlayground?.orientationLock, activePlayground?.deviceLayouts, selectedDevice]);
 
     // Deduplicate to prevent "same key" errors
