@@ -3007,7 +3007,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         }}
                         className="relative"
                     >
-                        {!activePlayground.imageUrl && (
+                        {!activePlayground?.imageUrl && (
                             <div className="absolute inset-0 flex items-center justify-center border-4 border-dashed border-slate-700/50 m-20 rounded-3xl">
                                 <div className="text-center opacity-30">
                                     <ImageIcon className="w-24 h-24 mx-auto mb-4" />
