@@ -1379,19 +1379,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     const viewportDims = getViewportDimensions();
 
-    // Debug logging
-    console.log('[PlaygroundEditor Debug]', {
-        activePlayground: activePlayground?.id,
-        hasImageUrl: !!activePlayground?.imageUrl,
-        imageUrl: activePlayground?.imageUrl?.substring(0, 80),
-        selectedDevice,
-        editorOrientation,
-        viewportDims: JSON.stringify(viewportDims),
-        playgroundPointsCount: playgroundPoints.length,
-        showBackground,
-        bgStyleBgImage: bgStyle.backgroundImage?.substring(0, 50)
-    });
-
     const bgStyle: React.CSSProperties = {
         backgroundImage: showBackground && activePlayground?.imageUrl ? `url(${activePlayground.imageUrl})` : 'none',
         backgroundSize: activePlayground?.backgroundStyle === 'stretch' ? '100% 100%' : (activePlayground?.backgroundStyle === 'cover' ? 'cover' : 'contain'),
