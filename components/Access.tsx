@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { KeyRound, Play, QrCode, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { KeyRound, Play, QrCode, Loader2, CheckCircle, XCircle, Camera } from 'lucide-react';
 import * as db from '../services/db';
 import { Game } from '../types';
+import QRScannerModal from './QRScannerModal';
 
 interface AccessProps {
   onGameSelected: (gameId: string) => void;
@@ -13,6 +14,7 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [validGame, setValidGame] = useState<Game | null>(null);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   // Check URL params for code (from QR scan)
   useEffect(() => {
