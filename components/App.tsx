@@ -99,6 +99,10 @@ const GameApp: React.FC = () => {
   const [showTaskId, setShowTaskId] = useState(true); // Task order (001, 002, etc.)
   const [showTaskTitle, setShowTaskTitle] = useState(true); // Task name/title
 
+  // --- COOLDOWN STATE ---
+  // Map of taskId -> timestamp when cooldown expires
+  const [taskCooldowns, setTaskCooldowns] = useState<Map<string, number>>(new Map());
+
   // Update showScores when game changes based on designConfig.hideScore
   useEffect(() => {
     const currentGame = games.find(g => g.id === activeGameId);
