@@ -188,12 +188,18 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const [view, setView] = useState<CategoryView>('HOME');
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [gameSearchQuery, setGameSearchQuery] = useState('');
+  const [createMenuSearchQuery, setCreateMenuSearchQuery] = useState('');
   const activeGame = games.find(g => g.id === activeGameId);
 
   const filteredGames = useMemo(() => {
     if (!gameSearchQuery.trim()) return games;
     return games.filter(game => matchesGameSearch(game.name, game.id, gameSearchQuery));
   }, [games, gameSearchQuery]);
+
+  const filteredGamesForCreate = useMemo(() => {
+    if (!createMenuSearchQuery.trim()) return games;
+    return games.filter(game => matchesGameSearch(game.name, game.id, createMenuSearchQuery));
+  }, [games, createMenuSearchQuery]);
 
   // Dynamic Header Content
   const getHeaderContent = () => {
