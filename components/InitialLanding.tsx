@@ -27,13 +27,15 @@ const NavCard = ({
   subtitle,
   icon: Icon,
   color,
-  onClick
+  onClick,
+  badge
 }: {
   title: string;
   subtitle: string;
   icon: any;
   color: string;
-  onClick: () => void
+  onClick: () => void;
+  badge?: string;
 }) => (
   <button
     onClick={onClick}
