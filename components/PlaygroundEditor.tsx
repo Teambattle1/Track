@@ -221,6 +221,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     // Delete Zone State
     const [isOverDeleteZone, setIsOverDeleteZone] = useState(false);
+    const [deleteZoneConfirm, setDeleteZoneConfirm] = useState<{ isOpen: boolean; playgroundId?: string }>({ isOpen: false });
 
     // Collapse State for Left Drawer Sections (default: all collapsed)
     const [isHudAppearanceCollapsed, setIsHudAppearanceCollapsed] = useState(true);
