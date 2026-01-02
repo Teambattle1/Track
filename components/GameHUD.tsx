@@ -241,6 +241,12 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 if (deviceLayout.qrScannerPos) {
                     setQRScannerPos(deviceLayout.qrScannerPos);
                 }
+                if (deviceLayout.qrScannerSize) {
+                    setQRScannerSize(deviceLayout.qrScannerSize);
+                }
+                if (deviceLayout.qrScannerColor) {
+                    setQRScannerColor(deviceLayout.qrScannerColor);
+                }
             }
         }
     }, [targetPlaygroundId, playgrounds]);
