@@ -317,14 +317,14 @@ const SupabaseToolsModal: React.FC<SupabaseToolsModalProps> = ({ onClose }) => {
   const copyToClipboard = async () => {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(sqlCode);
+        await navigator.clipboard.writeText(SQL_CODE);
       } else {
         throw new Error('Clipboard API not available');
       }
     } catch (error) {
       try {
         const textArea = document.createElement('textarea');
-        textArea.value = sqlCode;
+        textArea.value = SQL_CODE;
         textArea.style.position = 'fixed';
         textArea.style.left = '-999999px';
         textArea.style.top = '-999999px';
@@ -521,7 +521,7 @@ const SupabaseToolsModal: React.FC<SupabaseToolsModalProps> = ({ onClose }) => {
 
                   <div className="relative">
                     <pre className="text-[10px] text-green-400 font-mono overflow-x-auto whitespace-pre-wrap max-h-60 custom-scrollbar p-2 bg-[#0d1117] rounded-lg border border-white/10">
-                      {sqlCode}
+                      {SQL_CODE}
                     </pre>
                     <button
                       onClick={copyToClipboard}
