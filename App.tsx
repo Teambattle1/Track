@@ -51,6 +51,7 @@ import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
 import PlayzoneSelector from './components/PlayzoneSelector';
 import TranslationsManager from './components/TranslationsManager';
+import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
