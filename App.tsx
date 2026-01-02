@@ -2237,7 +2237,21 @@ const GameApp: React.FC = () => {
             />
         )}
 
-        {!activeGameId && mode === GameMode.PLAY && !showLanding && !playgroundTemplateToEdit && (
+        {showAccess && (
+            <Access
+                onGameSelected={(gameId) => {
+                    setActiveGameId(gameId);
+                    setShowAccess(false);
+                    setMode(GameMode.PLAY);
+                }}
+                onBack={() => {
+                    setShowAccess(false);
+                    setShowLanding(true);
+                }}
+            />
+        )}
+
+        {!activeGameId && mode === GameMode.PLAY && !showLanding && !showAccess && !playgroundTemplateToEdit && (
             <WelcomeScreen
                 games={playableGames}
                 userLocation={userLocation}
