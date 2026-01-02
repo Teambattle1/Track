@@ -2151,13 +2151,20 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                                        translation.feedback.hintApproved !== false
                                                    ) : true);
 
+                                               const isExpanded = expandedLanguages.has(language);
+
                                                return (
                                                    <div
                                                        key={language}
-                                                       className="border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800"
+                                                       className="border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 overflow-hidden"
                                                    >
-                                                       <div className="flex items-center justify-between mb-4">
+                                                       {/* Clickable Header */}
+                                                       <div
+                                                           className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                                           onClick={() => toggleLanguageExpanded(language)}
+                                                       >
                                                            <div className="flex items-center gap-3">
+                                                               <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                                <Globe className="w-5 h-5 text-blue-500" />
                                                                <span className="text-sm font-black uppercase">{language}</span>
                                                                {!allApproved && (
@@ -2173,7 +2180,10 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                                            </div>
                                                            <button
                                                                type="button"
-                                                               onClick={() => handleRemoveTranslation(language)}
+                                                               onClick={(e) => {
+                                                                   e.stopPropagation();
+                                                                   handleRemoveTranslation(language);
+                                                               }}
                                                                className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                                                                title="Remove translation"
                                                            >
@@ -2181,8 +2191,11 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                                            </button>
                                                        </div>
 
-                                                       {/* Question Field */}
-                                                       <div className="space-y-3">
+                                                       {/* Collapsible Content */}
+                                                       {isExpanded && (
+                                                           <div className="p-4 pt-0 border-t border-gray-200 dark:border-gray-700">
+                                                               {/* Question Field */}
+                                                               <div className="space-y-3">
                                                            <div className={`p-3 rounded-lg ${translation.questionApproved === false ? 'bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700' : 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'}`}>
                                                                <div className="flex items-center justify-between mb-2">
                                                                    <label className="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase">Question</label>
@@ -2296,7 +2309,9 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                                                    )}
                                                                </div>
                                                            )}
-                                                       </div>
+                                                               </div>
+                                                           </div>
+                                                       )}
                                                    </div>
                                                );
                                            })}
