@@ -155,6 +155,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [isQRScannerActive, setIsQRScannerActive] = useState(false);
     const [qrScannedValue, setQRScannedValue] = useState<string | null>(null);
     const qrScannerResizeStart = useRef({ width: 0, height: 0, x: 0, y: 0 });
+    const qrScannerDidDrag = useRef(false);
 
     // Device-specific layout management
     // Smart device initialization: desktop for new playgrounds, last used for existing
@@ -580,6 +581,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
         e.stopPropagation();
         e.preventDefault();
+        qrScannerDidDrag.current = false; // Reset drag flag
         setIsDraggingQRScanner(true);
 
         // Calculate offset in percentage space
@@ -595,6 +597,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         if (!isDraggingQRScanner || !backgroundRef.current) return;
         e.stopPropagation();
         e.preventDefault();
+
+        qrScannerDidDrag.current = true; // Mark that we actually dragged
 
         // Convert client coordinates to percentage within canvas
         const rect = backgroundRef.current.getBoundingClientRect();
@@ -3423,7 +3427,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleQRScanClick();
+                                        // Only open color picker if we didn't drag
+                                        if (!qrScannerDidDrag.current) {
+                                            handleQRScanClick();
+                                        }
                                     }}
                                     style={{
                                         backgroundColor: qrScannerColor,
