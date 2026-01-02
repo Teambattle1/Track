@@ -1221,6 +1221,198 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                        </div>
                    )}
 
+                   {/* MEDIA TAB - Photo/Video Task Settings */}
+                   {activeTab === 'MEDIA' && (
+                       <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                           {/* Only show for PHOTO/VIDEO task types */}
+                           {(editedPoint.task.type === 'photo' || editedPoint.task.type === 'video') ? (
+                               <>
+                                   <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl p-4">
+                                       <div className="flex items-center gap-2 mb-2">
+                                           <MonitorPlay className="w-5 h-5 text-purple-400" />
+                                           <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                                               {editedPoint.task.type === 'photo' ? 'Photo' : 'Video'} Task Settings
+                                           </h3>
+                                       </div>
+                                       <p className="text-xs text-purple-200">
+                                           Configure how {editedPoint.task.type === 'photo' ? 'photos' : 'videos'} are submitted and approved for this task.
+                                       </p>
+                                   </div>
+
+                                   {/* Approval Mode */}
+                                   <div>
+                                       <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-[0.2em]">Approval Mode</label>
+                                       <div className="space-y-2">
+                                           <button
+                                               type="button"
+                                               onClick={() => setEditedPoint({
+                                                   ...editedPoint,
+                                                   task: {
+                                                       ...editedPoint.task,
+                                                       mediaSettings: {
+                                                           ...(editedPoint.task.mediaSettings || {}),
+                                                           requireApproval: false
+                                                       }
+                                                   }
+                                               })}
+                                               className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                                                   editedPoint.task.mediaSettings?.requireApproval === false
+                                                       ? 'border-green-500 bg-green-900/20'
+                                                       : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                                               }`}
+                                           >
+                                               <div className="flex items-start gap-3">
+                                                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                                       editedPoint.task.mediaSettings?.requireApproval === false
+                                                           ? 'border-green-500 bg-green-500'
+                                                           : 'border-gray-600'
+                                                   }`}>
+                                                       {editedPoint.task.mediaSettings?.requireApproval === false && <Check className="w-3 h-3 text-white" />}
+                                                   </div>
+                                                   <div>
+                                                       <div className="font-bold text-white text-sm">Auto-Approve</div>
+                                                       <div className="text-xs text-gray-400 mt-1">
+                                                           Teams get points immediately after submitting. No instructor review needed.
+                                                       </div>
+                                                   </div>
+                                               </div>
+                                           </button>
+
+                                           <button
+                                               type="button"
+                                               onClick={() => setEditedPoint({
+                                                   ...editedPoint,
+                                                   task: {
+                                                       ...editedPoint.task,
+                                                       mediaSettings: {
+                                                           ...(editedPoint.task.mediaSettings || {}),
+                                                           requireApproval: true
+                                                       }
+                                                   }
+                                               })}
+                                               className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                                                   editedPoint.task.mediaSettings?.requireApproval === true
+                                                       ? 'border-orange-500 bg-orange-900/20'
+                                                       : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                                               }`}
+                                           >
+                                               <div className="flex items-start gap-3">
+                                                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                                       editedPoint.task.mediaSettings?.requireApproval === true
+                                                           ? 'border-orange-500 bg-orange-500'
+                                                           : 'border-gray-600'
+                                                   }`}>
+                                                       {editedPoint.task.mediaSettings?.requireApproval === true && <Check className="w-3 h-3 text-white" />}
+                                                   </div>
+                                                   <div>
+                                                       <div className="font-bold text-white text-sm">Require Instructor Approval</div>
+                                                       <div className="text-xs text-gray-400 mt-1">
+                                                           Instructor/Admin must review and approve/reject submissions before teams earn points.
+                                                       </div>
+                                                   </div>
+                                               </div>
+                                           </button>
+                                       </div>
+                                   </div>
+
+                                   {/* Partial Scoring (only when approval is required) */}
+                                   {editedPoint.task.mediaSettings?.requireApproval && (
+                                       <div>
+                                           <label className="flex items-center gap-3 cursor-pointer group">
+                                               <input
+                                                   type="checkbox"
+                                                   checked={editedPoint.task.mediaSettings?.partialScoreEnabled || false}
+                                                   onChange={(e) => setEditedPoint({
+                                                       ...editedPoint,
+                                                       task: {
+                                                           ...editedPoint.task,
+                                                           mediaSettings: {
+                                                               ...(editedPoint.task.mediaSettings || {}),
+                                                               requireApproval: true,
+                                                               partialScoreEnabled: e.target.checked
+                                                           }
+                                                       }
+                                                   })}
+                                                   className="w-5 h-5 rounded border-2 border-gray-600 bg-gray-800 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer"
+                                               />
+                                               <div>
+                                                   <span className="text-sm font-bold text-white block">Enable Partial Scoring</span>
+                                                   <span className="text-xs text-gray-400">
+                                                       Allow instructors to award 0-100% of points using a slider (instead of full approve/reject).
+                                                   </span>
+                                               </div>
+                                           </label>
+                                       </div>
+                                   )}
+
+                                   {/* Multiple Submissions */}
+                                   <div>
+                                       <label className="flex items-center gap-3 cursor-pointer group">
+                                           <input
+                                               type="checkbox"
+                                               checked={editedPoint.task.mediaSettings?.allowMultipleSubmissions || false}
+                                               onChange={(e) => setEditedPoint({
+                                                   ...editedPoint,
+                                                   task: {
+                                                       ...editedPoint.task,
+                                                       mediaSettings: {
+                                                           ...(editedPoint.task.mediaSettings || { requireApproval: false }),
+                                                           allowMultipleSubmissions: e.target.checked
+                                                       }
+                                                   }
+                                               })}
+                                               className="w-5 h-5 rounded border-2 border-gray-600 bg-gray-800 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer"
+                                           />
+                                           <div>
+                                               <span className="text-sm font-bold text-white block">Allow Multiple Submissions</span>
+                                               <span className="text-xs text-gray-400">
+                                                   Teams can submit multiple times if rejected (task reopens on map).
+                                               </span>
+                                           </div>
+                                       </label>
+                                   </div>
+
+                                   {/* File Size Limit */}
+                                   <div>
+                                       <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-[0.2em]">
+                                           Max File Size (MB)
+                                       </label>
+                                       <input
+                                           type="number"
+                                           min="1"
+                                           max={editedPoint.task.type === 'photo' ? 50 : 200}
+                                           value={editedPoint.task.mediaSettings?.maxFileSize || (editedPoint.task.type === 'photo' ? 10 : 50)}
+                                           onChange={(e) => setEditedPoint({
+                                               ...editedPoint,
+                                               task: {
+                                                   ...editedPoint.task,
+                                                   mediaSettings: {
+                                                       ...(editedPoint.task.mediaSettings || { requireApproval: false }),
+                                                       maxFileSize: parseInt(e.target.value) || 10
+                                                   }
+                                               }
+                                           })}
+                                           className="w-full px-4 py-3 border-2 border-gray-700 rounded-xl bg-gray-800 text-white font-bold focus:border-orange-500 outline-none transition-all"
+                                       />
+                                       <p className="text-xs text-gray-500 mt-1">
+                                           Recommended: {editedPoint.task.type === 'photo' ? '10 MB for photos' : '50 MB for videos'}
+                                       </p>
+                                   </div>
+                               </>
+                           ) : (
+                               <div className="text-center py-12">
+                                   <MonitorPlay className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                                   <p className="text-sm font-bold text-gray-500">
+                                       Media settings are only available for PHOTO and VIDEO task types.
+                                   </p>
+                                   <p className="text-xs text-gray-600 mt-2">
+                                       Change the task type in the ANSWER tab to access these settings.
+                                   </p>
+                               </div>
+                           )}
+                       </div>
+                   )}
+
                    {/* ... Settings and Actions Tabs ... */}
                    {activeTab === 'SETTINGS' && (
                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
