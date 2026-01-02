@@ -219,7 +219,14 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
 
     // Toolbars Drawer State
     const [showToolbarsDrawer, setShowToolbarsDrawer] = useState(true);
-    const [hideMapToolbars, setHideMapToolbars] = useState(false);
+    const [visibleToolbars, setVisibleToolbars] = useState<Record<string, boolean>>({
+        mapmode: true,
+        layers: true,
+        location: true,
+        pins: true,
+        show: true,
+        tools: true,
+    });
 
     // Toolbar Position Persistence
     const saveDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
