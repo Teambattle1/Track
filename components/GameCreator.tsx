@@ -551,7 +551,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const handleTagInputChange = (val: string) => {
       setTagInput(val);
       if (val.trim()) {
-          const matches = existingTags.filter(t => t.toLowerCase().includes(val.toLowerCase()) && !tags.includes(t));
+          const matches = existingTags.filter(t => t.toLowerCase().includes(val.toLowerCase()) && !tags.some(existing => existing.toLowerCase() === t.toLowerCase()));
           setFilteredSuggestions(matches.slice(0, 5)); // Limit to 5 suggestions
           setShowSuggestions(true);
       } else {
@@ -562,10 +562,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const handleAddTag = (tagToAdd: string = tagInput) => {
       const val = tagToAdd.trim();
       if (val) {
-          if (!tags.includes(val)) {
+          const exists = tags.some(t => t.toLowerCase() === val.toLowerCase());
+          if (!exists) {
               setTags([...tags, val]);
               // Save color preference for this tag
-              saveTagColors({ ...tagColors, [val]: selectedTagColor });
+              saveTagColors({ ...tagColors, [val.toLowerCase()]: selectedTagColor });
           }
           setTagInput('');
           setShowSuggestions(false);
@@ -577,10 +578,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   };
 
   const cycleTagColor = (tag: string) => {
-      const currentColor = tagColors[tag] || TAG_COLORS[0];
+      const key = tag.toLowerCase();
+      const currentColor = tagColors[key] || TAG_COLORS[0];
       const idx = TAG_COLORS.indexOf(currentColor);
       const nextColor = TAG_COLORS[(idx + 1) % TAG_COLORS.length];
-      saveTagColors({ ...tagColors, [tag]: nextColor });
+      saveTagColors({ ...tagColors, [key]: nextColor });
   };
 
   const validateJson = () => {
