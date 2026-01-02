@@ -3448,16 +3448,18 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     </span>
                                 </button>
 
-                                {/* Resize handle - bottom-right corner */}
-                                <div
-                                    className="qr-resize-handle absolute bottom-0 right-0 w-4 h-4 bg-yellow-400 border-2 border-yellow-600 rounded-tl rounded-br cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onPointerDown={handleQRScannerResizeDown}
-                                    onPointerMove={handleQRScannerResizeMove}
-                                    onPointerUp={handleQRScannerResizeUp}
-                                    onPointerCancel={handleQRScannerResizeUp}
-                                    title="Drag to resize"
-                                    onClick={(e) => e.stopPropagation()}
-                                />
+                                {/* Resize handle - bottom-right corner (hidden in simulation mode) */}
+                                {!isSimulationActive && (
+                                    <div
+                                        className="qr-resize-handle absolute bottom-0 right-0 w-4 h-4 bg-yellow-400 border-2 border-yellow-600 rounded-tl rounded-br cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onPointerDown={handleQRScannerResizeDown}
+                                        onPointerMove={handleQRScannerResizeMove}
+                                        onPointerUp={handleQRScannerResizeUp}
+                                        onPointerCancel={handleQRScannerResizeUp}
+                                        title="Drag to resize"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                )}
                             </div>
                         )}
                         </div>
