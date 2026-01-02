@@ -1766,53 +1766,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     {/* Orange Divider */}
                     <div className="h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30 my-4" />
 
-                    {/* Simulator Toggle */}
-                    <div className="mb-4">
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                if (isSimulationActive) {
-                                    // Stop simulation
-                                    setIsSimulationActive(false);
-                                    setSimulationScore(0);
-                                    setSimulationTeam(null);
-                                    setActiveSimulationTaskId(null);
-                                    setShowRanking(false); // Close ranking window
-                                } else {
-                                    // Start simulation
-                                    const testTeam = {
-                                        id: 'sim-test-team',
-                                        gameId: game.id,
-                                        name: 'TEST',
-                                        joinCode: 'TEST00',
-                                        score: 0,
-                                        members: [{ name: 'Simulator', deviceId: 'sim-device', photo: '' }],
-                                        updatedAt: new Date().toISOString()
-                                    };
-                                    setSimulationTeam(testTeam);
-                                    setSimulationScore(0);
-                                    setIsSimulationActive(true);
-                                    setShowRanking(true);
-                                }
-                            }}
-                            className={`w-full px-4 py-3 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                                isSimulationActive
-                                    ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/20'
-                                    : 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-500/20'
-                            }`}
-                            title={isSimulationActive ? 'Stop Simulation Mode' : 'Start Simulation Mode - Play the game with all tasks and rules enabled'}
-                            type="button"
-                        >
-                            {isSimulationActive ? <X className="w-5 h-5" /> : <PlayCircle className="w-5 h-5" />}
-                            <span className="text-xs font-black uppercase tracking-wider">{isSimulationActive ? 'STOP SIM' : 'SIMULATOR'}</span>
-                        </button>
-                    </div>
-
-                    {/* Orange Divider */}
-                    <div className="h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30 my-4" />
-
                     {/* Device Selection */}
                     <div>
                         <button
