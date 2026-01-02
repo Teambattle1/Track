@@ -1789,13 +1789,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         )}
                     </div>
 
-                    {/* SHOW Section */}
+                    {/* SHOW IN GAME Section */}
                     <div>
                         <button
                             onClick={() => setIsShowCollapsed(!isShowCollapsed)}
                             className="flex justify-between items-center mb-2 w-full hover:bg-slate-800/50 rounded-lg p-2 -mx-2 transition-colors group"
                         >
-                            <span className="text-[10px] font-black text-slate-500 group-hover:text-slate-400 uppercase tracking-widest">SHOW</span>
+                            <span className="text-[10px] font-black text-slate-500 group-hover:text-slate-400 uppercase tracking-widest">SHOW IN GAME</span>
                             <ChevronDown className={`w-5 h-5 text-orange-500 group-hover:text-orange-400 transition-transform ${isShowCollapsed ? '-rotate-90' : ''}`} />
                         </button>
 
