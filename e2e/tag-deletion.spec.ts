@@ -21,6 +21,9 @@ test.describe('Tags - Global Purge', () => {
     await page.getByText('EDIT', { exact: true }).click();
     await page.getByText('EDIT TASK', { exact: true }).click();
 
+    // Some actions require a session; login overlay may appear after clicking.
+    await maybeLogin(page);
+
     // TaskMaster modal
     await expect(page.getByText('TASK MASTER', { exact: false })).toBeVisible({ timeout: 15000 });
 
