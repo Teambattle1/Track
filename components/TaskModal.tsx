@@ -326,10 +326,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const handleFinalize = () => {
       const agreedAnswer = teamVotes[0].answer;
       let isCorrect = false;
+      const maxAttempts = point.settings?.maxAttempts ?? 1;
+      const matchTolerance = point.settings?.matchTolerance ?? 80;
+      const language = point.settings?.language || 'English';
 
       if (point.task.type === 'multiple_choice' || point.task.type === 'boolean' || point.task.type === 'dropdown') {
           isCorrect = agreedAnswer === point.task.answer;
-      } 
+      }
       else if (point.task.type === 'checkbox' || point.task.type === 'multi_select_dropdown') {
           const correct = point.task.correctAnswers || [];
           const sortedSelected = [...(agreedAnswer as string[])].sort();
@@ -343,9 +346,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
           isCorrect = Math.abs(val - target) <= tolerance;
       }
       else {
+          // Text answer with fuzzy matching
           const val = agreedAnswer as string;
           const correct = point.task.answer || '';
-          isCorrect = val.toLowerCase().trim() === correct.toLowerCase().trim();
+          isCorrect = isAnswerAcceptable(val, correct, matchTolerance, false);
       }
 
       if (isCorrect) {
@@ -353,14 +357,26 @@ const TaskModal: React.FC<TaskModalProps> = ({
           onComplete(point.id, finalScore);
           onClose();
       } else {
+          const newAttemptsUsed = attemptsUsed + 1;
+          setAttemptsUsed(newAttemptsUsed);
+
           if (onTaskIncorrect) onTaskIncorrect();
 
-          // Use custom incorrect message if available
-          const incorrectMsg = point.feedback?.showIncorrectMessage && point.feedback.incorrectMessage
+          // Check if attempts exhausted
+          const attemptsRemaining = maxAttempts > 0 ? maxAttempts - newAttemptsUsed : 999;
+          const attemptsExhausted = maxAttempts > 0 && newAttemptsUsed >= maxAttempts;
+
+          // Build error message
+          let incorrectMsg = point.feedback?.showIncorrectMessage && point.feedback.incorrectMessage
               ? point.feedback.incorrectMessage
               : (isDoubleTrouble
                   ? `DOUBLE TROUBLE! Incorrect answer. You lost ${point.points} points.`
-                  : "Team answer is incorrect. Try again!");
+                  : "Team answer is incorrect.");
+
+          // Add attempts message if not exhausted
+          if (!attemptsExhausted && maxAttempts > 0) {
+              incorrectMsg += ` ${getAttemptMessage(language, attemptsRemaining)}`;
+          }
 
           if (isDoubleTrouble && onPenalty) {
               onPenalty(point.points);
@@ -368,8 +384,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
           setErrorMsg(incorrectMsg);
 
-          // Show correct answer if configured
-          if (point.settings?.showCorrectAnswerOnMiss) {
+          // Show correct answer if configured or attempts exhausted
+          if (point.settings?.showCorrectAnswerOnMiss || attemptsExhausted) {
               setShowCorrectAnswer(true);
           }
           setIsVoting(false);
