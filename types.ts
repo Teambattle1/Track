@@ -10,7 +10,7 @@ export type IconId = 'default' | 'star' | 'flag' | 'trophy' | 'camera' | 'questi
 
 export type DeviceType = 'mobile' | 'tablet' | 'desktop';
 
-export type TaskType = 'text' | 'multiple_choice' | 'checkbox' | 'boolean' | 'slider' | 'dropdown' | 'multi_select_dropdown' | 'timeline';
+export type TaskType = 'text' | 'multiple_choice' | 'checkbox' | 'boolean' | 'slider' | 'dropdown' | 'multi_select_dropdown' | 'timeline' | 'photo' | 'video';
 
 export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'clean' | 'winter' | 'ski' | 'historic' | 'treasure' | 'desert' | 'google_custom' | 'none';
 
