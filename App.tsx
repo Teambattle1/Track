@@ -1026,10 +1026,14 @@ const GameApp: React.FC = () => {
 
       const listChanges = updatedLists.filter(x => x.listChanged).map(x => x.updated);
       if (listChanges.length > 0) {
-          for (let i = 0; i < listChanges.length; i++) {
-              onProgress?.(0.65 + (i / listChanges.length) * 0.15, `Updating lists (${i + 1}/${listChanges.length})`);
-              await db.saveTaskList(listChanges[i]);
-          }
+          const { ok } = await db.saveTaskLists(listChanges, {
+              chunkSize: 10,
+              onProgress: ({ completed, total }) => {
+                  const pct = total ? completed / total : 1;
+                  onProgress?.(0.65 + pct * 0.15, `Updating lists (${Math.min(total, completed)}/${total})`);
+              }
+          });
+          if (!ok) console.error('Error saving task lists: saveTaskLists failed');
       }
 
       const gameChanges = updatedGames.filter(x => x.gameChanged).map(x => x.updated);
@@ -1109,10 +1113,14 @@ const GameApp: React.FC = () => {
 
       const listChanges = updatedLists.filter(x => x.listChanged).map(x => x.updated);
       if (listChanges.length > 0) {
-          for (let i = 0; i < listChanges.length; i++) {
-              onProgress?.(0.65 + (i / listChanges.length) * 0.15, `Updating lists (${i + 1}/${listChanges.length})`);
-              await db.saveTaskList(listChanges[i]);
-          }
+          const { ok } = await db.saveTaskLists(listChanges, {
+              chunkSize: 10,
+              onProgress: ({ completed, total }) => {
+                  const pct = total ? completed / total : 1;
+                  onProgress?.(0.65 + pct * 0.15, `Updating lists (${Math.min(total, completed)}/${total})`);
+              }
+          });
+          if (!ok) console.error('Error saving task lists: saveTaskLists failed');
       }
 
       const gameChanges = updatedGames.filter(x => x.gameChanged).map(x => x.updated);
