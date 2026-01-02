@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Game } from '../types';
 import * as db from '../services/db';
 import { X, Loader2, Trophy, Clock, CheckCircle, Search } from 'lucide-react';
+import { getGameDisplayId, matchesGameSearch } from '../utils/gameIdUtils';
 
 interface ClientGameChooserProps {
   onClose: () => void;
