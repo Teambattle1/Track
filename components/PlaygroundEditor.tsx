@@ -956,6 +956,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     // Calculate viewport dimensions based on device type and orientation
     const getViewportDimensions = () => {
+        // Desktop mode: use 100% to fill available space
+        if (selectedDevice === 'desktop') {
+            return { width: '100%', height: '100%', aspectRatio: 'auto' };
+        }
+
+        // Mobile and Tablet: use fixed device dimensions
         const specs = DEVICE_SPECS[selectedDevice];
         if (!specs) return { width: '100%', height: '100%', aspectRatio: 'auto' };
 
