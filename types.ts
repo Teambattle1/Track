@@ -470,6 +470,13 @@ export interface MapConfiguration {
   allowWeakGps: boolean;
 }
 
+// Sound Configuration
+export interface SoundSettings {
+  correctAnswerSound?: string; // URL to sound file
+  incorrectAnswerSound?: string; // URL to sound file
+  volume?: number; // 0-100, default 80
+}
+
 export interface GameChangeLogEntry {
     timestamp: number;
     user: string;
