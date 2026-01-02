@@ -146,12 +146,12 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     pendingApprovalsCount = 0,
 }) => {
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-        mapmode: false,
-        layers: false,
-        location: false,
-        pins: false,
-        show: false,
-        tools: false,
+        mapmode: true,
+        layers: true,
+        location: true,
+        pins: true,
+        show: true,
+        tools: true,
     });
     const [showMapStylesMenu, setShowMapStylesMenu] = useState(false);
     const [showToolbarsMenu, setShowToolbarsMenu] = useState(false);
