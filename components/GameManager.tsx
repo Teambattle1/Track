@@ -182,6 +182,15 @@ const GameSummaryCard: React.FC<{
         >
           <Play className="w-4 h-4" />
         </button>
+        {onSettings && (
+          <button
+            onClick={onSettings}
+            className="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+            title="Game Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        )}
         <button
           onClick={onDelete}
           className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
