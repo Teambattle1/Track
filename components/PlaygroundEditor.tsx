@@ -2855,6 +2855,28 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 />
                             </div>
 
+                            {/* Text Label Size Slider - NEW */}
+                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                        <Type className="w-3 h-3" /> TEXT LABEL SIZE
+                                    </label>
+                                    <span className="text-[10px] font-bold text-cyan-400">{Math.round((selectedTask.textLabelScale || 1) * 100)}%</span>
+                                </div>
+                                <p className="text-[8px] text-slate-400">
+                                    Adjust text label size to prevent overlapping in Portrait mode
+                                </p>
+                                <input
+                                    type="range"
+                                    min="0.5"
+                                    max="2"
+                                    step="0.1"
+                                    value={selectedTask.textLabelScale || 1}
+                                    onChange={(e) => updateTask({ textLabelScale: parseFloat(e.target.value) })}
+                                    className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                                />
+                            </div>
+
                             {/* Icon Editor */}
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TASK ICON</label>
