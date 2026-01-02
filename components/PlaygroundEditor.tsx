@@ -3861,7 +3861,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     {selectedTask.iconUrl && (
                                         <div className="p-3 bg-slate-700 rounded-lg flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-3">
-                                                <img src={selectedTask.iconUrl} alt="Unsolved Icon" className="w-8 h-8 object-contain" />
+                                                <img src={selectedTask.iconUrl} alt="Incorrect Answer Icon" className="w-8 h-8 object-contain" />
                                                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">CUSTOM ICON</span>
                                             </div>
                                             <button
