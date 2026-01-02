@@ -1811,7 +1811,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         {!isShowCollapsed && (
                             <div className="grid grid-cols-4 gap-2">
                                 <button
-                                    onClick={() => setShowTaskScores(!showTaskScores)}
+                                    onClick={() => {
+                                        const newValue = !showTaskScores;
+                                        setShowTaskScores(newValue);
+                                        updatePlayground({ showTaskScores: newValue });
+                                    }}
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskScores ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
@@ -1821,7 +1825,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[8px] font-black uppercase">SCORE</span>
                                 </button>
                                 <button
-                                    onClick={() => setShowTaskOrder(!showTaskOrder)}
+                                    onClick={() => {
+                                        const newValue = !showTaskOrder;
+                                        setShowTaskOrder(newValue);
+                                        updatePlayground({ showTaskOrder: newValue });
+                                    }}
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskOrder ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
