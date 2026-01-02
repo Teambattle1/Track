@@ -7,7 +7,8 @@ import { getCroppedImg } from '../utils/image';
 import Cropper from 'react-easy-crop';
 import { generateAiImage } from '../services/ai';
 import { uploadImage } from '../services/storage'; // IMPORTED
-import { fetchUniqueTags, fetchTagColors } from '../services/db';
+import { fetchUniqueTags } from '../services/db';
+import { useTagColors } from '../contexts/TagColorsContext';
 import QRCode from 'qrcode';
 import MeetingPointMapPicker from './MeetingPointMapPicker';
 import {
@@ -155,7 +156,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   const [tagError, setTagError] = useState(false);
   const [existingTags, setExistingTags] = useState<string[]>([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
-  const [tagColorsMap, setTagColorsMap] = useState<Record<string, string>>({});
+  const { tagColors } = useTagColors();
   const [qrCodeDuplicateWarning, setQrCodeDuplicateWarning] = useState(false);
 
   // Map picker modal state
@@ -190,32 +191,9 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   // QR Code State
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
-  // Load existing tags + tag colors for autocomplete and consistent UI
+  // Load existing tags for autocomplete
   useEffect(() => {
       fetchUniqueTags().then(tags => setExistingTags(tags)).catch(() => setExistingTags([]));
-
-      const stored = localStorage.getItem('geohunt_tag_colors');
-      let localColors: Record<string, string> = {};
-      if (stored) {
-          try {
-              localColors = JSON.parse(stored);
-              setTagColorsMap(localColors);
-          } catch {
-              // ignore
-          }
-      }
-
-      fetchTagColors()
-          .then((remote) => {
-              if (remote && Object.keys(remote).length > 0) {
-                  const merged = { ...remote, ...localColors };
-                  setTagColorsMap(merged);
-                  localStorage.setItem('geohunt_tag_colors', JSON.stringify(merged));
-              }
-          })
-          .catch(() => {
-              // ignore
-          });
   }, []);
 
   // Auto-detect language from task question on component mount
@@ -353,7 +331,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
   const getTagChipVars = (tag: string) => {
       const key = tag.toLowerCase();
-      const bg = tagColorsMap[key] || '#64748b';
+      const bg = tagColors[key] || '#64748b';
       const fg = getReadableTextColor(bg);
       return { ['--tag-bg' as any]: bg, ['--tag-fg' as any]: fg };
   };
