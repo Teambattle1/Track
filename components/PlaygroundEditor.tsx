@@ -3658,9 +3658,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         });
                     }}
                     onAddToLibrary={async (tasks) => {
-                        for (const t of tasks) {
-                            await db.saveTemplate(t);
-                        }
+                        const { ok } = await db.saveTemplates(tasks);
+                        if (!ok) console.error('[PlaygroundEditor] Failed to save templates to library');
                     }}
                 />
             )}
