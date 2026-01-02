@@ -34,6 +34,12 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose, onLibraryUpdated }) =>
   const [isMigratingGps, setIsMigratingGps] = useState(false);
   const [gpsMigrationResult, setGpsMigrationResult] = useState<any | null>(null);
 
+  // Sound Settings State
+  const [correctSoundUrl, setCorrectSoundUrl] = useState(getGlobalCorrectSound());
+  const [incorrectSoundUrl, setIncorrectSoundUrl] = useState(getGlobalIncorrectSound());
+  const [volume, setVolume] = useState(getGlobalVolume());
+  const [soundsSaved, setSoundsSaved] = useState(false);
+
   useEffect(() => {
       try {
           const existing = localStorage.getItem('GEMINI_API_KEY');
