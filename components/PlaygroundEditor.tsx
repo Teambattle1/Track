@@ -1383,11 +1383,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     console.log('[PlaygroundEditor Debug]', {
         activePlayground: activePlayground?.id,
         hasImageUrl: !!activePlayground?.imageUrl,
-        imageUrl: activePlayground?.imageUrl,
+        imageUrl: activePlayground?.imageUrl?.substring(0, 80),
         selectedDevice,
         editorOrientation,
-        viewportDims,
-        playgroundPointsCount: playgroundPoints.length
+        viewportDims: JSON.stringify(viewportDims),
+        playgroundPointsCount: playgroundPoints.length,
+        showBackground,
+        bgStyleBgImage: bgStyle.backgroundImage?.substring(0, 50)
     });
 
     const bgStyle: React.CSSProperties = {
