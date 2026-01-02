@@ -1500,15 +1500,6 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                             )}
                                         </div>
                                     )}
-
-                                    {/* TOOLBARS TOGGLE Button */}
-                                    <button
-                                        onClick={() => setHideMapToolbars(!hideMapToolbars)}
-                                        className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/toolbar relative ${hideMapToolbars ? 'bg-indigo-700 text-indigo-100 border-indigo-600' : 'bg-purple-700 text-purple-100 border-purple-600 hover:bg-purple-800 hover:text-white'}`}
-                                        title={hideMapToolbars ? "Show Toolbars" : "Hide Toolbars"}
-                                    >
-                                        <GripHorizontal className="w-4 h-4" />
-                                    </button>
                                 </div>
                                 <div className="flex gap-1 text-center">
                                     <div className="flex-1 text-[7px] font-black text-purple-100 uppercase tracking-widest leading-tight">ORDER ID</div>
