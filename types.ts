@@ -191,18 +191,27 @@ export interface Playground {
   id: string;
   title: string;
   imageUrl?: string;
-  backgroundStyle?: 'cover' | 'contain' | 'stretch'; 
-  buttonVisible: boolean; 
+  backgroundStyle?: 'cover' | 'contain' | 'stretch';
+  buttonVisible: boolean;
   buttonLabel?: string;
   iconId?: IconId;
-  iconUrl?: string; 
-  buttonSize?: number; 
-  orientationLock?: 'portrait' | 'landscape' | 'none'; 
-  location?: Coordinate; 
-  showLabels?: boolean; 
+  iconUrl?: string;
+  buttonSize?: number;
+  orientationLock?: 'portrait' | 'landscape' | 'none';
+  location?: Coordinate;
+  showLabels?: boolean;
   // Audio Support
   audioUrl?: string;
   audioLoop?: boolean; // true = continuous, false = once
+
+  // Task visibility settings (SHOW IN GAME)
+  showTaskScores?: boolean;
+  showTaskOrder?: boolean;
+  showTaskActions?: boolean;
+  showTaskNames?: boolean;
+  showTaskStatus?: boolean;
+  showBackground?: boolean;
+  showQRScanner?: boolean;
 
   // Device-specific layouts (for multi-device support)
   deviceLayouts?: Record<DeviceType, DeviceLayout>;
