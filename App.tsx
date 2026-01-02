@@ -1746,6 +1746,11 @@ const GameApp: React.FC = () => {
                         setMode(GameMode.PLAY);
                         return;
                     }
+                    if (action === 'ACCESS') {
+                        setShowAccess(true);
+                        setShowLanding(false);
+                        return;
+                    }
                     ensureSession(() => {
                         switch (action) {
                             case 'GAMES': setShowGameChooser(true); break;
