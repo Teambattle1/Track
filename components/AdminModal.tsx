@@ -40,6 +40,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose, onLibraryUpdated }) =>
   const [incorrectSoundUrl, setIncorrectSoundUrl] = useState(getGlobalIncorrectSound());
   const [volume, setVolume] = useState(getGlobalVolume());
   const [soundsSaved, setSoundsSaved] = useState(false);
+  const [isUploadingCorrect, setIsUploadingCorrect] = useState(false);
+  const [isUploadingIncorrect, setIsUploadingIncorrect] = useState(false);
+  const correctSoundInputRef = useRef<HTMLInputElement>(null);
+  const incorrectSoundInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
       try {
