@@ -153,14 +153,16 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     });
     const [showMapStylesMenu, setShowMapStylesMenu] = useState(false);
     const [showToolbarsMenu, setShowToolbarsMenu] = useState(false);
-    const [visibleToolbars, setVisibleToolbars] = useState<Record<string, boolean>>({
+
+    // Use prop if provided, otherwise use local state
+    const visibleToolbars = visibleToolbarsProp || {
         mapmode: true,
         layers: true,
         location: true,
         pins: true,
         show: true,
         tools: true,
-    });
+    };
 
     const toggleSection = (section: string) => {
         setCollapsedSections(prev => ({
