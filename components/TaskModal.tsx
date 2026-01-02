@@ -667,6 +667,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
           if (type === 'text') return <div className="p-4 border rounded-xl opacity-80 bg-gray-100 dark:bg-gray-800 text-center text-sm italic text-gray-500">Text Input Field</div>;
           if (type === 'slider') return <div className="p-4 border rounded-xl opacity-80 bg-gray-100 dark:bg-gray-800 text-center font-mono">SLIDER {range?.min} - {range?.max}</div>;
           if (type === 'boolean') return <div className="flex gap-2 opacity-80 pointer-events-none"><div className="flex-1 p-3 border rounded-xl text-center">True</div><div className="flex-1 p-3 border rounded-xl text-center">False</div></div>;
+          if (type === 'photo') return <div className="p-4 border rounded-xl opacity-80 bg-gray-100 dark:bg-gray-800 text-center text-sm font-mono uppercase flex items-center justify-center gap-2"><Camera className="w-5 h-5" /> PHOTO UPLOAD</div>;
+          if (type === 'video') return <div className="p-4 border rounded-xl opacity-80 bg-gray-100 dark:bg-gray-800 text-center text-sm font-mono uppercase flex items-center justify-center gap-2"><Video className="w-5 h-5" /> VIDEO UPLOAD</div>;
           return (
               <div className="space-y-2 opacity-80 pointer-events-none">
                   {options?.map((opt, idx) => (
