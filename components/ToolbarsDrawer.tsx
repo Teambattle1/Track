@@ -596,7 +596,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                 )}
 
                 {/* TOOLS Section - Slate */}
-                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
+                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
                     <div className="bg-slate-700 border-2 border-slate-600 rounded-xl p-3 space-y-3">
                         <button
                             onClick={() => toggleSection('tools')}
