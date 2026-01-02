@@ -13,6 +13,8 @@ interface PlaygroundManagerProps {
 const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, onCreate, onUseInGame }) => {
   const [templates, setTemplates] = useState<PlaygroundTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteWarningTemplate, setDeleteWarningTemplate] = useState<PlaygroundTemplate | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTemplates();
