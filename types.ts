@@ -266,9 +266,11 @@ export interface GamePoint {
   ibeaconProximity?: 'immediate' | 'near' | 'far'; // Required proximity to trigger task 
   
   // Playground Specific
-  playgroundId?: string; 
-  playgroundPosition?: { x: number; y: number }; 
-  playgroundScale?: number; 
+  playgroundId?: string;
+  playgroundPosition?: { x: number; y: number }; // Legacy: shared across all devices
+  devicePositions?: Record<DeviceType, { x: number; y: number }>; // NEW: device-specific positions
+  playgroundScale?: number;
+  textLabelScale?: number; // NEW: text label size scale (0.5 to 2.0, default 1.0)
   isHiddenBeforeScan?: boolean; 
 
   // Appearance
