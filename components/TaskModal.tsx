@@ -1114,6 +1114,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
                        point.task.type === 'slider' ? '🎚️ Slider' :
                        point.task.type === 'boolean' ? '✓ True/False' :
                        point.task.type === 'timeline' ? '📅 Timeline' :
+                       point.task.type === 'photo' ? '📸 Photo Task' :
+                       point.task.type === 'video' ? '🎥 Video Task' :
                        point.task.type}
                     </span>
                   </div>
