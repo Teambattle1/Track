@@ -31,6 +31,8 @@ interface ToolbarsDrawerProps {
     activeGame: Game | null;
     visibleToolbars?: Record<string, boolean>;
     onToggleToolbarVisibility?: (toolbarId: string) => void;
+    collapsedSections?: Record<string, boolean>;
+    onCollapsedSectionsChange?: (sections: Record<string, boolean>) => void;
     
     // MAPMODE
     onSetMode: (mode: GameMode) => void;
