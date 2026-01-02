@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { KeyRound, Play, QrCode, Loader2, CheckCircle, XCircle, Camera } from 'lucide-react';
+import { KeyRound, Play, QrCode, Loader2, CheckCircle, XCircle, Camera, Globe } from 'lucide-react';
 import * as db from '../services/db';
-import { Game } from '../types';
+import { Game, Language } from '../types';
 import QRScannerModal from './QRScannerModal';
+import { getApprovedLanguagesForGame } from '../utils/translationValidation';
+import { getFlag } from '../utils/i18n';
 
 interface AccessProps {
   onGameSelected: (gameId: string) => void;
