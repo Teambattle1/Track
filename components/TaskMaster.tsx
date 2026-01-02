@@ -321,6 +321,51 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         }
     };
 
+    const cloneTemplateWithCopyTitle = (template: TaskTemplate, index: number): TaskTemplate => {
+        const id = `task-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`;
+
+        return {
+            ...template,
+            id,
+            title: `Copy of ${template.title}`,
+            createdAt: Date.now(),
+            task: {
+                ...template.task,
+                options: Array.isArray(template.task?.options) ? [...template.task.options] : [],
+                correctAnswers: Array.isArray((template.task as any)?.correctAnswers)
+                    ? [...(template.task as any).correctAnswers]
+                    : (template.task as any)?.correctAnswers,
+                range: template.task?.range ? { ...template.task.range } : undefined,
+                timelineItems: Array.isArray((template.task as any)?.timelineItems)
+                    ? [...(template.task as any).timelineItems]
+                    : (template.task as any)?.timelineItems
+            },
+            feedback: template.feedback ? { ...template.feedback } : undefined,
+            settings: template.settings ? { ...template.settings } : undefined,
+            logic: template.logic ? { ...template.logic } : undefined
+        };
+    };
+
+    const handleBulkCopySelected = async () => {
+        const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
+        if (selectedTasks.length === 0) return;
+
+        const copies = selectedTasks.map((t, i) => cloneTemplateWithCopyTitle(t, i));
+
+        try {
+            await Promise.all(copies.map(t => db.saveTemplate(t)));
+
+            const updatedLibrary = [...library, ...copies];
+            setLibrary(updatedLibrary);
+            onUpdateTaskLibrary(updatedLibrary);
+
+            setNotification({ message: `✓ Copied ${copies.length} task${copies.length !== 1 ? 's' : ''} to new tasks`, type: 'success' });
+        } catch (e) {
+            console.error('Bulk copy failed', e);
+            setNotification({ message: 'Failed to copy tasks. Please try again.', type: 'error' });
+        }
+    };
+
     // Convert TaskTemplate to GamePoint for editing
     const templateToGamePoint = (template: TaskTemplate): GamePoint => {
         return {
