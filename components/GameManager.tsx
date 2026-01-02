@@ -405,6 +405,10 @@ const GameManager: React.FC<GameManagerProps> = ({
                     game={game}
                     isActive={game.id === activeGameId}
                     onPrimaryAction={() => primaryActionForGame(game.id)}
+                    onSettings={() => {
+                      onSelectGame(game.id);
+                      if (onEditGame) onEditGame(game.id);
+                    }}
                     onDelete={() => {
                       if (confirm('Delete game?')) onDeleteGame(game.id);
                     }}
