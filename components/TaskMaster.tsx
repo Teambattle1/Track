@@ -1663,6 +1663,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                                             setLanguageFilters({});
                                                             setActivationFilters({});
                                                             setShowOnlyWithActivations(false);
+                                                            setShowOnlyInvalidAnswers(false);
                                                         }}
                                                         className="text-[9px] font-bold text-orange-400 hover:text-orange-300 uppercase"
                                                         type="button"
