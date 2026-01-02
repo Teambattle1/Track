@@ -1102,13 +1102,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               <div className="flex flex-wrap gap-2 min-h-[32px]">
                                   {tags.length === 0 && <span className="text-xs text-slate-600 italic">No tags added yet.</span>}
                                   {tags.map((tag, index) => {
-                                      const color = tagColors[tag] || TAG_COLORS[0];
+                                      const colorKey = tag.toLowerCase();
+                                      const color = tagColors[colorKey] || TAG_COLORS[0];
                                       return (
                                           <span
                                             key={`${tag}-${index}`}
                                             onClick={() => cycleTagColor(tag)}
-                                            className="text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity select-none shadow-sm"
-                                            style={{ backgroundColor: color }}
+                                            className="text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity select-none shadow-sm bg-[var(--tag-bg)]"
+                                            style={{ ['--tag-bg' as any]: color }}
                                             title="Click to cycle color"
                                           >
                                               {tag}
