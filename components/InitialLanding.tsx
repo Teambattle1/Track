@@ -615,32 +615,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 )}
             </div>
 
-            {/* Quick Search Bar (Top center for EDIT_MENU and PLAY_MENU) */}
-            {(view === 'EDIT_MENU' || view === 'PLAY_MENU') && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30">
-                    <div className="relative w-80 flex items-center">
-                        <Search className="absolute left-4 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="text"
-                            placeholder="Quick search: game ID or name..."
-                            value={gameSearchQuery}
-                            onChange={(e) => setGameSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-slate-800/60 text-white text-xs rounded-full border border-slate-600 focus:border-orange-500 focus:bg-slate-800 focus:outline-none placeholder-slate-500 backdrop-blur-sm transition-all"
-                        />
-                        {gameSearchQuery && (
-                            <button
-                                onClick={() => setGameSearchQuery('')}
-                                className="absolute right-4 p-1 hover:bg-slate-700 rounded transition-colors"
-                            >
-                                <XIcon className="w-4 h-4 text-slate-400 hover:text-white" />
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
-
             {/* Right Controls */}
-            <div className="absolute top-0 right-0 flex items-center gap-4 z-30">
+            <div className="absolute top-0 right-0 flex flex-col items-end gap-3 z-30 pt-4 pr-4">
                 {/* Settings Button */}
                 <button
                     onClick={() => setView(view === 'SETTINGS' ? 'HOME' : 'SETTINGS')}
