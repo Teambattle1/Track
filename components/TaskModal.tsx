@@ -375,6 +375,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
       }
 
       if (isCorrect) {
+          // Play correct answer sound
+          const correctSoundUrl = game?.soundSettings?.correctAnswerSound || getGlobalCorrectSound();
+          const volume = game?.soundSettings?.volume ?? getGlobalVolume();
+          playSound(correctSoundUrl, volume);
+
           const finalScore = isDoubleTrouble ? point.points * 2 : point.points;
           onComplete(point.id, finalScore);
           onClose();
@@ -383,6 +388,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
           setAttemptsUsed(newAttemptsUsed);
 
           if (onTaskIncorrect) onTaskIncorrect();
+
+          // Play incorrect answer sound
+          const incorrectSoundUrl = game?.soundSettings?.incorrectAnswerSound || getGlobalIncorrectSound();
+          const volume = game?.soundSettings?.volume ?? getGlobalVolume();
+          playSound(incorrectSoundUrl, volume);
 
           // Vibrate on incorrect answer
           if (navigator.vibrate) {
