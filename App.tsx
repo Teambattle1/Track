@@ -2235,7 +2235,17 @@ const GameApp: React.FC = () => {
                 onDeletePoint={handleDeleteItem}
                 onReorderPoints={async (pts) => { if (activeGame) await updateActiveGame({ ...activeGame, points: pts }); }}
                 onClearMap={() => { if (activeGame && confirm("Clear all points?")) updateActiveGame({ ...activeGame, points: [] }); }}
-                onSaveGame={() => updateActiveGame(activeGame!)}
+                onSaveGame={() => {
+                    if (activeGame) {
+                        updateActiveGame({
+                            ...activeGame,
+                            drawerStates: {
+                                settingsCollapsedSections: collapsedSections,
+                                visibleToolbars: activeGame.drawerStates?.visibleToolbars || {}
+                            }
+                        });
+                    }
+                }}
                 onOpenTaskMaster={() => setShowTaskMaster(true)}
                 onFitBounds={(coords) => {
                     if (coords && coords.length > 0) mapRef.current?.fitBounds(coords);
