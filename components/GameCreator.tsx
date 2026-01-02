@@ -363,6 +363,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const mapPreviewInputRef = useRef<HTMLInputElement>(null);
   const taskBgInputRef = useRef<HTMLInputElement>(null);
   const customStylePreviewInputRef = useRef<HTMLInputElement>(null);
+  const correctSoundInputRef = useRef<HTMLInputElement>(null);
+  const incorrectSoundInputRef = useRef<HTMLInputElement>(null);
 
   // Load settings on mount (tag colors are loaded globally via TagColorsProvider)
   useEffect(() => {
