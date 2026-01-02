@@ -1284,40 +1284,56 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             }
         });
 
-        // Within each row, sort by X and snap to grid while preserving spacing
-        const GRID_SIZE = 10; // Grid spacing (10% intervals)
+        // Create even grid spacing in both directions
+        const PADDING = 5; // 5% padding from edges
+        const GRID_SIZE = 10; // Snap to 10% grid intervals
+
+        // Calculate even vertical spacing between rows
+        const numRows = rows.length;
+        const rowSpacing = numRows > 1 ? (100 - (PADDING * 2)) / (numRows - 1) : 0;
+
         const snappedMarkedPoints = rows.flatMap((row, rowIndex) => {
-            const baseY = getDevicePosition(row[0]).y;
+            // Sort icons in this row by X position
             const sortedByX = [...row].sort((a, b) => {
                 const aX = getDevicePosition(a).x;
                 const bX = getDevicePosition(b).x;
                 return aX - bX;
             });
 
-            // Snap Y coordinate to grid
-            const snappedY = Math.round(baseY / GRID_SIZE) * GRID_SIZE;
+            // Calculate Y position with even vertical spacing
+            let rowY;
+            if (numRows === 1) {
+                // Single row: use middle or snap to nearest grid
+                const currentY = getDevicePosition(row[0]).y;
+                rowY = Math.round(currentY / GRID_SIZE) * GRID_SIZE;
+            } else {
+                // Multiple rows: distribute evenly and snap to grid
+                const calculatedY = PADDING + (rowIndex * rowSpacing);
+                rowY = Math.round(calculatedY / GRID_SIZE) * GRID_SIZE;
+            }
 
-            // Only snap the first icon's X to grid, then preserve relative spacing
-            return sortedByX.map((point, index) => {
-                const currentPos = getDevicePosition(point);
-                let snappedX;
+            // Calculate even horizontal spacing within the row
+            const numCols = sortedByX.length;
+            const colSpacing = numCols > 1 ? (100 - (PADDING * 2)) / (numCols - 1) : 0;
 
-                if (index === 0) {
-                    // First icon: snap to nearest grid point
-                    snappedX = Math.round(currentPos.x / GRID_SIZE) * GRID_SIZE;
+            return sortedByX.map((point, colIndex) => {
+                let iconX;
+
+                if (numCols === 1) {
+                    // Single icon in row: use current position or center
+                    const currentX = getDevicePosition(point).x;
+                    iconX = Math.round(currentX / GRID_SIZE) * GRID_SIZE;
                 } else {
-                    // Subsequent icons: preserve spacing from first icon
-                    const firstIconOriginalX = getDevicePosition(sortedByX[0]).x;
-                    const firstIconSnappedX = Math.round(firstIconOriginalX / GRID_SIZE) * GRID_SIZE;
-                    const originalOffset = currentPos.x - firstIconOriginalX;
-                    snappedX = firstIconSnappedX + originalOffset;
+                    // Multiple icons: distribute evenly and snap to grid
+                    const calculatedX = PADDING + (colIndex * colSpacing);
+                    iconX = Math.round(calculatedX / GRID_SIZE) * GRID_SIZE;
                 }
 
                 return {
                     ...point,
                     ...setDevicePosition(point, {
-                        x: Math.min(95, Math.max(5, snappedX)),
-                        y: Math.min(95, Math.max(5, snappedY))
+                        x: Math.min(95, Math.max(5, iconX)),
+                        y: Math.min(95, Math.max(5, rowY))
                     })
                 };
             });
