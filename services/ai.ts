@@ -110,6 +110,7 @@ Return JSON array.`,
             tags: ['AI', normalizedLanguage, ...(additionalTag ? [additionalTag] : [])],
             createdAt: Date.now(),
             points: 100,
+            activationTypes: ['click'], // Default to click activation for all AI tasks
             task: {
                 type: taskType,
                 question: item.question,
