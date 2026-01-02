@@ -74,8 +74,8 @@ export const detectDeviceTypeWithUA = (): DeviceType => {
  */
 export const getDefaultDeviceLayouts = (): Record<DeviceType, DeviceLayout> => ({
   mobile: {
-    orientationLock: 'portrait',
-    qrScannerPos: { x: 20, y: window.innerHeight - 100 },
+    orientationLock: 'landscape',
+    qrScannerPos: { x: window.innerWidth - 120, y: window.innerHeight - 100 },
     iconPositions: {},
     buttonVisible: true,
     iconScale: 1.0,
