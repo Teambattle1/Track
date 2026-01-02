@@ -4,6 +4,7 @@ import { X, CheckCircle, Lock, MapPin, Glasses, AlertCircle, ChevronDown, Chevro
 import { teamSync } from '../services/teamSync';
 import DOMPurify from 'dompurify';
 import { isAnswerAcceptable, getAttemptMessage } from '../utils/stringMatch';
+import { playSound, getGlobalCorrectSound, getGlobalIncorrectSound, getGlobalVolume } from '../utils/sounds';
 
 interface TaskModalProps {
   point: GamePoint | null;
