@@ -793,7 +793,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     onClick={handleSaveClick}
                     className={`w-full py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm uppercase tracking-wide ${isSaved ? 'bg-green-100 text-green-700 border-2 border-green-500' : (isGameTemplateMode ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-green-600 text-white hover:bg-green-700 shadow-green-600/20')}`}
                 >
-                    {isSaved ? <><div className="flex items-center gap-2"><Check className="w-4 h-4" /> {isGameTemplateMode ? 'TEMPLATE UPDATED!' : 'GAME SAVED!'}</div></> : (isGameTemplateMode ? <><div className="flex items-center gap-2"><RefreshCw className="w-4 h-4" /> Update Template</div></> : <><div className="flex items-center gap-2"><Save className="w-4 h-4" /> Save Game</div></>)}
+                    {isSaved ? <><div className="flex items-center gap-2"><Check className="w-4 h-4" /> {isGameTemplateMode ? 'TEMPLATE UPDATED!' : 'GAME SAVED!'}</div></> : (isGameTemplateMode ? <><div className="flex items-center gap-2"><Save className="w-4 h-4" /> Update Template</div></> : <><div className="flex items-center gap-2"><Save className="w-4 h-4" /> Save Game</div></>)}
                 </button>
             </div>
           </>
