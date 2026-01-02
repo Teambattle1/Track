@@ -2999,6 +2999,35 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 />
             )}
 
+            {/* Task Settings Modal */}
+            {showTaskSettingsModal && settingsModalTaskId && selectedTask?.id === settingsModalTaskId && selectedTask && (
+                <TaskEditor
+                    point={selectedTask}
+                    requestedTab="SETTINGS"
+                    gameMode="playzone"
+                    onSave={(updatedPoint) => {
+                        onUpdateGame({
+                            ...game,
+                            points: game.points.map(p => p.id === updatedPoint.id ? updatedPoint : p)
+                        });
+                        setShowTaskSettingsModal(false);
+                        setSettingsModalTaskId(null);
+                    }}
+                    onDelete={(pointId) => {
+                        onUpdateGame({
+                            ...game,
+                            points: game.points.filter(p => p.id !== pointId)
+                        });
+                        setShowTaskSettingsModal(false);
+                        setSettingsModalTaskId(null);
+                    }}
+                    onClose={() => {
+                        setShowTaskSettingsModal(false);
+                        setSettingsModalTaskId(null);
+                    }}
+                />
+            )}
+
             {/* Playzone Selector Modal - For choosing which playzone to add tasks to */}
             {showPlayzoneSelector && (
                 <div className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
