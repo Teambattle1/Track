@@ -191,6 +191,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showLogoPrompt, setShowLogoPrompt] = useState(false);
     const [logoCompanyName, setLogoCompanyName] = useState('');
     const [isSearchingLogo, setIsSearchingLogo] = useState(false);
+    const [editingCompletedIcon, setEditingCompletedIcon] = useState(false); // Track if editing completed icon
     const [isMarkMode, setIsMarkMode] = useState(false);
     const [markedTaskIds, setMarkedTaskIds] = useState<Set<string>>(new Set());
     const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
