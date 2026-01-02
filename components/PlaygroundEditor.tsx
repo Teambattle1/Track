@@ -1195,7 +1195,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
                     {/* Active Zone Card */}
-                    <div className="bg-[#1e293b]/50 border border-slate-700 rounded-xl p-4 space-y-4 hidden">
+                    <div className="bg-[#1e293b]/50 border border-slate-700 rounded-xl p-4 space-y-4">
                         <div className="flex justify-between items-start">
                             <div className="flex flex-col flex-1">
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ZONE TITLE</span>
@@ -1572,7 +1572,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
                     <div className="p-4 flex items-center gap-4 relative">
                         {/* Left: Title */}
-                        <div className="flex items-center gap-3 bg-slate-900/80 backdrop-blur-sm border border-orange-500/30 rounded-xl px-4 py-2 shadow-xl pointer-events-auto flex-shrink-0">
+                        <div className="hidden flex items-center gap-3 bg-slate-900/80 backdrop-blur-sm border border-orange-500/30 rounded-xl px-4 py-2 shadow-xl pointer-events-auto flex-shrink-0">
                             <LayoutGrid className="w-5 h-5 text-orange-500" />
                             <div>
                                 <h1 className="text-sm font-black text-white uppercase tracking-widest">
