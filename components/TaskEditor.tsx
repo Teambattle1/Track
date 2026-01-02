@@ -1882,6 +1882,19 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                        onClose={() => setShowMapPicker(false)}
                    />
                )}
+
+               {/* Color Scheme Editor Modal */}
+               {showColorSchemeEditor && (
+                   <ColorSchemeEditor
+                       initialScheme={editedPoint.colorScheme}
+                       onSave={(scheme) => {
+                           setEditedPoint({ ...editedPoint, colorScheme: scheme });
+                           setShowColorSchemeEditor(false);
+                       }}
+                       onClose={() => setShowColorSchemeEditor(false)}
+                       title="Task Color Scheme (Local Override)"
+                   />
+               )}
            </form>
         )}
       </div>
