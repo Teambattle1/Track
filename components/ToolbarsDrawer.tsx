@@ -535,12 +535,12 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                             <div className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-2">Show Toolbars on Map:</div>
 
                                             {[
-                                                { id: 'mapmode', label: 'MAPMODE', color: 'red' },
-                                                { id: 'layers', label: 'LAYERS', color: 'cyan' },
-                                                { id: 'location', label: 'LOCATION', color: 'green' },
-                                                { id: 'pins', label: 'PINS', color: 'yellow' },
-                                                { id: 'show', label: 'SHOW', color: 'purple' },
-                                                { id: 'tools', label: 'TOOLS', color: 'slate' },
+                                                { id: 'mapmode', label: 'MAPMODE', bgActive: 'bg-red-700', borderActive: 'border-red-500', bgCheck: 'bg-red-600', borderCheck: 'border-red-400' },
+                                                { id: 'layers', label: 'LAYERS', bgActive: 'bg-cyan-700', borderActive: 'border-cyan-500', bgCheck: 'bg-cyan-600', borderCheck: 'border-cyan-400' },
+                                                { id: 'location', label: 'LOCATION', bgActive: 'bg-green-700', borderActive: 'border-green-500', bgCheck: 'bg-green-600', borderCheck: 'border-green-400' },
+                                                { id: 'pins', label: 'PINS', bgActive: 'bg-yellow-700', borderActive: 'border-yellow-500', bgCheck: 'bg-yellow-600', borderCheck: 'border-yellow-400' },
+                                                { id: 'show', label: 'SHOW', bgActive: 'bg-purple-700', borderActive: 'border-purple-500', bgCheck: 'bg-purple-600', borderCheck: 'border-purple-400' },
+                                                { id: 'tools', label: 'TOOLS', bgActive: 'bg-slate-600', borderActive: 'border-slate-500', bgCheck: 'bg-slate-500', borderCheck: 'border-slate-400' },
                                             ].map(toolbar => (
                                                 <button
                                                     key={toolbar.id}
@@ -551,13 +551,13 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                                     }}
                                                     className={`w-full px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${
                                                         visibleToolbars[toolbar.id]
-                                                            ? `bg-${toolbar.color}-700 text-white border-2 border-${toolbar.color}-500`
+                                                            ? `${toolbar.bgActive} text-white border-2 ${toolbar.borderActive}`
                                                             : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:text-slate-300'
                                                     }`}
                                                 >
                                                     <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
                                                         visibleToolbars[toolbar.id]
-                                                            ? `bg-${toolbar.color}-600 border-${toolbar.color}-400`
+                                                            ? `${toolbar.bgCheck} ${toolbar.borderCheck}`
                                                             : 'border-slate-600'
                                                     }`}>
                                                         {visibleToolbars[toolbar.id] && <Check className="w-3 h-3 text-white" />}
