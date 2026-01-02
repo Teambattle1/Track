@@ -744,7 +744,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 setQRScannerSize(deviceLayout.qrScannerSize);
             }
             if (deviceLayout.qrScannerColor) {
+                console.log('[PlaygroundEditor] Loading saved QR color:', deviceLayout.qrScannerColor);
                 setQRScannerColor(deviceLayout.qrScannerColor);
+            } else {
+                console.log('[PlaygroundEditor] No saved QR color, using default');
             }
         } else if (activePlayground.orientationLock && activePlayground.orientationLock !== 'none') {
             // Fallback to playground-level orientation for backward compatibility
