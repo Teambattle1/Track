@@ -256,6 +256,13 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
           </div>
         </div>
       </div>
+
+      {/* QR Scanner Modal */}
+      <QRScannerModal
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScan={handleQRScan}
+      />
     </div>
   );
 };
