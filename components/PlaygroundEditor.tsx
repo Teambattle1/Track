@@ -2745,19 +2745,32 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         {/* Draggable QR Scanner Button - Inside Game Canvas */}
                         {showQRScanner && (
                             <div
-                                onPointerDown={handleQRScannerPointerDown}
-                                onPointerMove={handleQRScannerPointerMove}
-                                onPointerUp={handleQRScannerPointerUp}
-                                onPointerCancel={handleQRScannerPointerUp}
-                                className={`absolute transform -translate-x-1/2 -translate-y-1/2 z-40 cursor-grab active:cursor-grabbing pointer-events-auto touch-none select-none`}
+                                className="absolute transform -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-auto flex flex-col"
                                 style={{
                                     left: `${qrScannerPos.x}%`,
                                     top: `${qrScannerPos.y}%`,
                                 }}
                             >
+                                {/* Drag Handle - Top Bar */}
+                                <div
+                                    onPointerDown={handleQRScannerPointerDown}
+                                    onPointerMove={handleQRScannerPointerMove}
+                                    onPointerUp={handleQRScannerPointerUp}
+                                    onPointerCancel={handleQRScannerPointerUp}
+                                    className="flex items-center justify-center bg-orange-600 hover:bg-orange-700 px-4 py-1 rounded-t-lg cursor-grab active:cursor-grabbing touch-none select-none border-b border-orange-700 transition-colors"
+                                    title="Drag to move"
+                                >
+                                    <GripHorizontal className="w-4 h-4 text-orange-200" />
+                                    <span className="text-[8px] font-black text-orange-100 uppercase tracking-wider ml-1">DRAG</span>
+                                </div>
+
+                                {/* QR Scan Button - Not draggable */}
                                 <button
-                                    onClick={handleQRScanClick}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold uppercase text-xs shadow-xl transition-all"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleQRScanClick();
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-b-lg bg-orange-500 hover:bg-orange-600 text-white font-bold uppercase text-xs shadow-xl transition-all"
                                     title="Scan QR Code"
                                 >
                                     <QrCode className="w-4 h-4" />
