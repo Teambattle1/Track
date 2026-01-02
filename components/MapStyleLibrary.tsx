@@ -3,6 +3,7 @@ import { X, Plus, Trash2, Eye, Map as MapIcon, Globe, Layers, Snowflake, Mountai
 import { MapStyleId } from '../types';
 import * as db from '../services/db';
 import { uploadImage } from '../services/storage';
+import ConfirmationModal from './ConfirmationModal';
 
 interface MapStyleLibraryProps {
     onClose: () => void;
