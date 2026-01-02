@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import { Game, TimerConfig, TimerMode, MapStyleId, Language, DesignConfig, GameTaskConfiguration, MapConfiguration } from '../types';
+import { Game, TimerConfig, TimerMode, MapStyleId, Language, DesignConfig, GameTaskConfiguration, MapConfiguration, TaskColorScheme } from '../types';
 import {
     X, Gamepad2, Calendar, Building2, Upload, Search, Loader2, Clock, Hourglass,
     StopCircle, CheckCircle, Image as ImageIcon, Save, Edit, Map as MapIcon,
@@ -18,6 +18,7 @@ import { resizeImage } from '../utils/image';
 import GameLogViewer from './GameLogViewer';
 import MeetingPointMapPicker from './MeetingPointMapPicker';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
+import ColorSchemeEditor from './ColorSchemeEditor';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './DatePickerStyles.css';
@@ -313,6 +314,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [showMyTrack, setShowMyTrack] = useState<boolean>(baseGame?.mapConfig?.showMyTrack || false);
   const [allowNavigation, setAllowNavigation] = useState<boolean>(baseGame?.mapConfig?.allowNavigation || false);
   const [allowWeakGps, setAllowWeakGps] = useState<boolean>(baseGame?.mapConfig?.allowWeakGps || false);
+
+  // Task Design Configuration (Color Scheme)
+  const [defaultTaskColorScheme, setDefaultTaskColorScheme] = useState<TaskColorScheme | undefined>(baseGame?.defaultTaskColorScheme);
+  const [showColorSchemeEditor, setShowColorSchemeEditor] = useState(false);
 
   // Config
   const [timerMode, setTimerMode] = useState<TimerMode>(baseGame?.timerConfig?.mode || 'none');
