@@ -1396,43 +1396,67 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 </div>
             )}
 
-            {/* QR Scanner Button - PLAY mode only, draggable floating button */}
-            {mode === GameMode.PLAY && (
+            {/* QR Scanner Button - draggable, resizable floating button */}
+            {(mode === GameMode.PLAY || mode === GameMode.EDIT) && (
                 <div
-                    className="absolute z-[1100] pointer-events-auto touch-none"
-                    style={{ left: qrScannerPos.x, top: qrScannerPos.y }}
-                    onPointerDown={handleQRScannerPointerDown}
-                    onPointerMove={handleQRScannerPointerMove}
-                    onPointerUp={handleQRScannerPointerUp}
+                    className="absolute z-[1100] pointer-events-auto group"
+                    style={{
+                        left: qrScannerPos.x,
+                        top: qrScannerPos.y,
+                        width: qrScannerSize.width,
+                        height: qrScannerSize.height
+                    }}
+                    onPointerDown={mode === GameMode.EDIT ? handleQRScannerPointerDown : undefined}
+                    onPointerMove={mode === GameMode.EDIT ? handleQRScannerPointerMove : undefined}
+                    onPointerUp={mode === GameMode.EDIT ? handleQRScannerPointerUp : undefined}
                 >
                     <button
                         onClick={handleQRScanClick}
-                        disabled={isQRScannerActive}
-                        data-qr-drag-handle
-                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-all cursor-move font-bold uppercase tracking-widest text-xs shadow-xl group relative ${
-                            qrScannedValue
-                                ? 'bg-green-600 text-white hover:bg-green-700 animate-pulse'
+                        disabled={isQRScannerActive && mode === GameMode.PLAY}
+                        data-qr-drag-handle={mode === GameMode.EDIT ? true : undefined}
+                        style={{
+                            backgroundColor: qrScannedValue ? '#16a34a' : isQRScannerActive ? '#ea580c' : qrScannerColor,
+                            width: '100%',
+                            height: '100%'
+                        }}
+                        className={`flex items-center justify-center gap-2 rounded-xl transition-all font-bold uppercase tracking-widest shadow-xl relative ${
+                            mode === GameMode.EDIT
+                                ? 'cursor-move hover:ring-2 hover:ring-yellow-400'
+                                : qrScannedValue
+                                ? 'text-white hover:bg-green-700 animate-pulse cursor-pointer'
                                 : isQRScannerActive
-                                ? 'bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 cursor-not-allowed'
-                                : 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg'
+                                ? 'text-white disabled:opacity-50 cursor-not-allowed'
+                                : 'text-white hover:brightness-110 cursor-pointer'
                         }`}
-                        title={isQRScannerActive ? 'Scanning... click to stop' : 'Click to scan QR code for task activation'}
+                        title={mode === GameMode.EDIT ? 'Click to change color | Drag to move' : (isQRScannerActive ? 'Scanning... click to stop' : 'Click to scan QR code for task activation')}
                         type="button"
                     >
-                        {/* Drag handle indicator */}
-                        <div className="absolute -top-1 -left-1 w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {/* Three-dot indicator at top removed */}
 
-                        {isQRScannerActive && !qrScannedValue && (
+                        {mode === GameMode.PLAY && isQRScannerActive && !qrScannedValue && (
                             <Loader2 className="w-4 h-4 animate-spin" />
                         )}
-                        {!isQRScannerActive && (
+                        {(!isQRScannerActive || mode === GameMode.EDIT) && (
                             <QrCode className="w-4 h-4" />
                         )}
-                        {qrScannedValue ? 'SCANNED' : isQRScannerActive ? 'SCANNING...' : 'SCAN QR'}
+                        <span className={qrScannerSize.width < 120 ? 'text-[10px]' : 'text-xs'}>
+                            {mode === GameMode.EDIT ? 'SCAN QR' : (qrScannedValue ? 'SCANNED' : isQRScannerActive ? 'SCANNING...' : 'SCAN QR')}
+                        </span>
                     </button>
 
-                    {/* QR Scanner Video Modal (Hidden Canvas) */}
-                    {isQRScannerActive && (
+                    {/* Resize handle - EDIT mode only */}
+                    {mode === GameMode.EDIT && (
+                        <div
+                            className="absolute bottom-0 right-0 w-4 h-4 bg-yellow-400 border-2 border-yellow-600 rounded-tl rounded-br cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                            onPointerDown={handleQRScannerResizeDown}
+                            onPointerMove={handleQRScannerResizeMove}
+                            onPointerUp={handleQRScannerResizeUp}
+                            title="Drag to resize"
+                        />
+                    )}
+
+                    {/* QR Scanner Video Modal (Hidden Canvas) - PLAY mode only */}
+                    {mode === GameMode.PLAY && isQRScannerActive && (
                         <div className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
                             <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-orange-500">
                                 {/* Header */}
