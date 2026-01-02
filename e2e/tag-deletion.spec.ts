@@ -30,12 +30,11 @@ test.describe('Tags - Global Purge', () => {
 
     // The demo content uses the "demo" tag. Purge it.
     // Click the trash button on the "demo" tag row.
-    const demoRow = page.locator('div').filter({ hasText: /^demo$/i }).first();
+    const row = page
+      .locator('div')
+      .filter({ has: page.locator('h3', { hasText: /^demo$/i }) })
+      .first();
 
-    // If the strict row match fails due to nested content, fall back to locating the title text.
-    const fallbackRow = page.locator('h3', { hasText: /^demo$/i }).locator('..').locator('..');
-
-    const row = (await demoRow.count()) > 0 ? demoRow : fallbackRow;
     await row.locator('button[title="GLOBAL PURGE"]').click();
 
     await expect(page.getByText('GLOBAL PURGE?', { exact: true })).toBeVisible();
