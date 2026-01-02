@@ -869,6 +869,23 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                                 <span className={`px-2 py-1 rounded-md text-[9px] font-black tracking-wide border ${badge.bgColor} ${badge.textColor} border-slate-700 whitespace-nowrap`}>
                                                     {badge.label}
                                                 </span>
+                                                {/* Game Settings Button */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onSelectGame(game.id);
+                                                        setShowGameMenu(false);
+                                                        setGameSearchQuery('');
+                                                        // Trigger game settings action
+                                                        setTimeout(() => {
+                                                            onAction('EDIT_GAME');
+                                                        }, 0);
+                                                    }}
+                                                    className="p-1 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-orange-400 flex-shrink-0"
+                                                    title="Game Settings"
+                                                >
+                                                    <Settings className="w-4 h-4" />
+                                                </button>
                                                 {game.id === activeGameId && <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_orange] shrink-0" />}
                                             </div>
                                         </button>
