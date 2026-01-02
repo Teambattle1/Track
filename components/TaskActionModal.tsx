@@ -178,6 +178,26 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
                           ⚠️ Correct: 2x Points | Incorrect: -1x Points
                       </div>
                   )}
+
+                  {action.type === 'cooldown' && (
+                      <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                              <input
+                                  type="number"
+                                  className="w-24 p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-sm focus:border-indigo-500 outline-none"
+                                  value={action.cooldownSeconds || 10}
+                                  onChange={(e) => handleUpdateAction(action.id, { cooldownSeconds: parseInt(e.target.value) || 10 })}
+                                  placeholder="10"
+                                  min="1"
+                                  max="3600"
+                              />
+                              <span className="text-xs text-gray-500 uppercase">Seconds</span>
+                          </div>
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded text-xs text-blue-800 dark:text-blue-200 font-bold">
+                              ⏱️ Task becomes unclickable for {action.cooldownSeconds || 10}s with countdown timer
+                          </div>
+                      </div>
+                  )}
               </div>
           </div>
       );
