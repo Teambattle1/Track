@@ -86,6 +86,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [showOnlyWithActivations, setShowOnlyWithActivations] = useState(false); // Show only tasks with activations
     const [taskListViewMode, setTaskListViewMode] = useState<'grid' | 'list'>('list'); // List view as default
     const [activationFiltersCollapsed, setActivationFiltersCollapsed] = useState(true); // Collapse activation filters by default
+    const [showFiltersMenu, setShowFiltersMenu] = useState(false);
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [showGameSelector, setShowGameSelector] = useState(false);
     const [gameForBulkAdd, setGameForBulkAdd] = useState<Game | null>(null);
@@ -1430,158 +1431,183 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     />
                                 </div>
 
-                                {/* Task List Filter */}
-                                <div className="w-full sm:w-auto">
-                                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Filter by Task List:</p>
-                                            {taskListFilter && (
-                                                <button
-                                                    onClick={() => setTaskListFilter('')}
-                                                    className="text-[9px] font-bold text-purple-400 hover:text-purple-300 uppercase"
-                                                >
-                                                    Clear
-                                                </button>
-                                            )}
-                                        </div>
-                                        <select
-                                            value={taskListFilter}
-                                            onChange={(e) => setTaskListFilter(e.target.value)}
-                                            className={`w-full sm:w-48 bg-slate-800 border rounded-lg px-3 py-2 text-xs font-bold text-white outline-none transition-all ${taskListFilter ? 'border-purple-500' : 'border-slate-700 focus:border-purple-500'}`}
-                                        >
-                                            <option value="">All Tasks</option>
-                                            {taskLists.map(list => (
-                                                <option key={list.id} value={list.id}>
-                                                    {list.name} ({list.tasks.length})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
+                                {/* Filters Menu (Task List / Language / Activation) */}
+                                <div className="relative w-full sm:w-auto">
+                                    <button
+                                        onClick={() => setShowFiltersMenu(prev => !prev)}
+                                        className="px-4 py-3 bg-slate-900 border border-slate-800 hover:border-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wide transition-colors flex items-center gap-2 shadow-lg w-full sm:w-auto"
+                                        type="button"
+                                        title="Filters"
+                                    >
+                                        <Filter className="w-4 h-4 text-slate-300" />
+                                        Filters
+                                        <span className="text-[10px] font-black text-slate-300 bg-slate-800 px-2 py-1 rounded">
+                                            {getFilteredAndSortedLibrary().length}/{library.length}
+                                        </span>
+                                    </button>
 
-                                {/* Language Filter */}
-                                <div className="w-full sm:w-auto">
-                                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-2">Filter by Language:</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {getUsedLanguagesInLibrary().map(lang => (
-                                                <label key={lang} className="flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={languageFilters[lang] || false}
-                                                        onChange={(e) => setLanguageFilters(prev => ({
-                                                            ...prev,
-                                                            [lang]: e.target.checked
-                                                        }))}
-                                                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-blue-600"
-                                                    />
-                                                    <span>{getLanguageFlag(lang)} {lang}</span>
-                                                </label>
-                                            ))}
-                                            {Object.keys(languageFilters).some(lang => languageFilters[lang]) && (
-                                                <button
-                                                    onClick={() => setLanguageFilters({})}
-                                                    className="text-[9px] font-bold text-orange-400 hover:text-orange-300 uppercase ml-2"
-                                                >
-                                                    Clear Filters
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Activation Type Filter */}
-                                <div className="w-full sm:w-auto">
-                                    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 space-y-3">
-                                        <button
-                                            onClick={() => setActivationFiltersCollapsed(!activationFiltersCollapsed)}
-                                            className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
-                                        >
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase">🔧 Activation Filters</p>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[8px] font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded">
-                                                    {getFilteredAndSortedLibrary().length} / {library.length}
-                                                </span>
-                                                <span className="text-slate-400 text-xs font-bold">{activationFiltersCollapsed ? '▶' : '▼'}</span>
-                                            </div>
-                                        </button>
-
-                                        {!activationFiltersCollapsed && (
-                                            <>
-                                                {/* Activation Stats Summary */}
-                                                {getActivationStats().withActivations > 0 && (
-                                                    <div className="bg-slate-800/50 rounded border border-slate-700 p-2 text-[8px] space-y-1">
-                                                        <p className="font-bold text-slate-300">Activation Statistics:</p>
-                                                        <div className="flex justify-between text-slate-400">
-                                                            <span>✓ With Activations: <span className="text-green-400 font-bold">{getActivationStats().withActivations}</span></span>
-                                                            <span>✗ Without: <span className="text-slate-500 font-bold">{getActivationStats().withoutActivations}</span></span>
-                                                        </div>
+                                    {showFiltersMenu && (
+                                        <>
+                                            <div className="fixed inset-0 z-40" onClick={() => setShowFiltersMenu(false)} />
+                                            <div className="absolute right-0 top-full mt-2 w-full sm:w-[560px] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                                                <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-300 flex items-center gap-2">
+                                                        <Filter className="w-4 h-4" />
+                                                        Filters
                                                     </div>
-                                                )}
-
-                                                {/* Show Only With Activations Toggle */}
-                                                <label className="flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400 mb-2 p-2 bg-slate-800/50 rounded border border-slate-700">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={showOnlyWithActivations}
-                                                        onChange={(e) => setShowOnlyWithActivations(e.target.checked)}
-                                                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
-                                                    />
-                                                    <span>Only With Activations</span>
-                                                </label>
-
-                                                {getUsedActivationsInLibrary().length > 0 && (
-                                                    <>
-                                                        <p className="text-[8px] font-bold text-slate-500 uppercase mb-2">Filter by Type:</p>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {getUsedActivationsInLibrary().map(activation => {
-                                                                const badgeColors: Record<string, string> = {
-                                                                    'QR': 'text-purple-400 border-purple-500/50',
-                                                                    'NFC': 'text-green-400 border-green-500/50',
-                                                                    'iBeacon': 'text-indigo-400 border-indigo-500/50',
-                                                                    'GPS': 'text-blue-400 border-blue-500/50',
-                                                                    'TAP': 'text-orange-400 border-orange-500/50'
-                                                                };
-                                                                const bgColors: Record<string, string> = {
-                                                                    'QR': 'hover:bg-purple-900/30',
-                                                                    'NFC': 'hover:bg-green-900/30',
-                                                                    'iBeacon': 'hover:bg-indigo-900/30',
-                                                                    'GPS': 'hover:bg-blue-900/30',
-                                                                    'TAP': 'hover:bg-orange-900/30'
-                                                                };
-                                                                return (
-                                                                    <label key={activation} className={`flex items-center gap-2 text-[10px] font-bold cursor-pointer transition-all px-2 py-1 rounded border ${activationFilters[activation] ? badgeColors[activation] + ' bg-slate-700/50' : 'text-slate-400 border-slate-600 ' + bgColors[activation]}`}>
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={activationFilters[activation] || false}
-                                                                            onChange={(e) => setActivationFilters(prev => ({
-                                                                                ...prev,
-                                                                                [activation]: e.target.checked
-                                                                            }))}
-                                                                            className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
-                                                                        />
-                                                                        <span>{activation}</span>
-                                                                    </label>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </>
-                                                )}
-
-                                                {(Object.keys(activationFilters).some(type => activationFilters[type]) || showOnlyWithActivations) && (
                                                     <button
                                                         onClick={() => {
+                                                            setTaskListFilter('');
+                                                            setLanguageFilters({});
                                                             setActivationFilters({});
                                                             setShowOnlyWithActivations(false);
                                                         }}
-                                                        className="mt-2 w-full text-[9px] font-bold text-purple-400 hover:text-purple-300 uppercase py-1.5 bg-slate-800/50 rounded border border-purple-500/30 hover:border-purple-500/60 transition-all"
+                                                        className="text-[9px] font-bold text-orange-400 hover:text-orange-300 uppercase"
+                                                        type="button"
                                                     >
-                                                        ✕ CLEAR ALL FILTERS
+                                                        Clear All
                                                     </button>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
+                                                </div>
+
+                                                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    {/* Task List */}
+                                                    <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-3">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Task List</p>
+                                                            {taskListFilter && (
+                                                                <button
+                                                                    onClick={() => setTaskListFilter('')}
+                                                                    className="text-[9px] font-bold text-purple-400 hover:text-purple-300 uppercase"
+                                                                    type="button"
+                                                                >
+                                                                    Clear
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <select
+                                                            value={taskListFilter}
+                                                            onChange={(e) => setTaskListFilter(e.target.value)}
+                                                            className={`w-full bg-slate-800 border rounded-lg px-3 py-2 text-xs font-bold text-white outline-none transition-all ${taskListFilter ? 'border-purple-500' : 'border-slate-700 focus:border-purple-500'}`}
+                                                        >
+                                                            <option value="">All Tasks</option>
+                                                            {taskLists.map(list => (
+                                                                <option key={list.id} value={list.id}>
+                                                                    {list.name} ({list.tasks.length})
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Language */}
+                                                    <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-3">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Language</p>
+                                                            {Object.keys(languageFilters).some(lang => languageFilters[lang]) && (
+                                                                <button
+                                                                    onClick={() => setLanguageFilters({})}
+                                                                    className="text-[9px] font-bold text-orange-400 hover:text-orange-300 uppercase"
+                                                                    type="button"
+                                                                >
+                                                                    Clear
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {getUsedLanguagesInLibrary().map(lang => (
+                                                                <label key={lang} className="flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={languageFilters[lang] || false}
+                                                                        onChange={(e) => setLanguageFilters(prev => ({
+                                                                            ...prev,
+                                                                            [lang]: e.target.checked
+                                                                        }))}
+                                                                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-blue-600"
+                                                                    />
+                                                                    <span>{getLanguageFlag(lang)} {lang}</span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Activation (full width) */}
+                                                    <div className="sm:col-span-2 bg-slate-950/40 border border-slate-800 rounded-xl p-3">
+                                                        <button
+                                                            onClick={() => setActivationFiltersCollapsed(!activationFiltersCollapsed)}
+                                                            className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
+                                                            type="button"
+                                                        >
+                                                            <p className="text-[9px] font-bold text-slate-400 uppercase">🔧 Activation Filters</p>
+                                                            <span className="text-slate-400 text-xs font-bold">{activationFiltersCollapsed ? '▶' : '▼'}</span>
+                                                        </button>
+
+                                                        {!activationFiltersCollapsed && (
+                                                            <div className="mt-3">
+                                                                <label className="flex items-center gap-2 text-[10px] font-bold cursor-pointer hover:text-white text-slate-400 mb-2 p-2 bg-slate-800/50 rounded border border-slate-700">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={showOnlyWithActivations}
+                                                                        onChange={(e) => setShowOnlyWithActivations(e.target.checked)}
+                                                                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
+                                                                    />
+                                                                    <span>Only With Activations</span>
+                                                                </label>
+
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {getUsedActivationsInLibrary().map(activation => {
+                                                                        const badgeColors: Record<string, string> = {
+                                                                            'QR': 'text-purple-400 border-purple-500/50',
+                                                                            'NFC': 'text-green-400 border-green-500/50',
+                                                                            'iBeacon': 'text-indigo-400 border-indigo-500/50',
+                                                                            'GPS': 'text-blue-400 border-blue-500/50',
+                                                                            'TAP': 'text-orange-400 border-orange-500/50'
+                                                                        };
+                                                                        const bgColors: Record<string, string> = {
+                                                                            'QR': 'hover:bg-purple-900/30',
+                                                                            'NFC': 'hover:bg-green-900/30',
+                                                                            'iBeacon': 'hover:bg-indigo-900/30',
+                                                                            'GPS': 'hover:bg-blue-900/30',
+                                                                            'TAP': 'hover:bg-orange-900/30'
+                                                                        };
+                                                                        return (
+                                                                            <label
+                                                                                key={activation}
+                                                                                className={`flex items-center gap-2 text-[10px] font-bold cursor-pointer transition-all px-2 py-1 rounded border ${activationFilters[activation] ? badgeColors[activation] + ' bg-slate-700/50' : 'text-slate-400 border-slate-600 ' + bgColors[activation]}`}
+                                                                            >
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={activationFilters[activation] || false}
+                                                                                    onChange={(e) => setActivationFilters(prev => ({
+                                                                                        ...prev,
+                                                                                        [activation]: e.target.checked
+                                                                                    }))}
+                                                                                    className="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-purple-600"
+                                                                                />
+                                                                                <span>{activation}</span>
+                                                                            </label>
+                                                                        );
+                                                                    })}
+                                                                </div>
+
+                                                                {(Object.keys(activationFilters).some(type => activationFilters[type]) || showOnlyWithActivations) && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setActivationFilters({});
+                                                                            setShowOnlyWithActivations(false);
+                                                                        }}
+                                                                        className="mt-2 w-full text-[9px] font-bold text-purple-400 hover:text-purple-300 uppercase py-1.5 bg-slate-800/50 rounded border border-purple-500/30 hover:border-purple-500/60 transition-all"
+                                                                        type="button"
+                                                                    >
+                                                                        ✕ CLEAR ACTIVATION FILTERS
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Settings Button with Dropdown */}
