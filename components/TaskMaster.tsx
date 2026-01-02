@@ -884,6 +884,43 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         setBulkSelectionMode(false);
     };
 
+    const handleBulkSetActivation = async () => {
+        if (bulkActivationTypes.length === 0) {
+            setNotification({ message: 'Please select at least one activation type', type: 'warning' });
+            return;
+        }
+
+        // Update selected tasks with new activation types
+        const updatedLibrary = library.map(task => {
+            if (selectedTemplateIds.includes(task.id)) {
+                return { ...task, activationTypes: bulkActivationTypes as any };
+            }
+            return task;
+        });
+
+        setLibrary(updatedLibrary);
+        onUpdateTaskLibrary(updatedLibrary);
+
+        // Update in database
+        for (const taskId of selectedTemplateIds) {
+            const task = updatedLibrary.find(t => t.id === taskId);
+            if (task) {
+                await db.saveTemplate(task);
+            }
+        }
+
+        setNotification({
+            message: `✓ Updated activation types for ${selectedTemplateIds.length} task${selectedTemplateIds.length > 1 ? 's' : ''}`,
+            type: 'success'
+        });
+
+        // Reset
+        setBulkActivationTypes([]);
+        setShowBulkActivationModal(false);
+        setSelectedTemplateIds([]);
+        setBulkSelectionMode(false);
+    };
+
     const handleAddSingleTaskToGame = async (game: Game) => {
         if (!singleTaskGameSelector) return;
         const task = library.find(t => t.id === singleTaskGameSelector.taskId);
