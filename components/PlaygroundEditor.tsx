@@ -1500,7 +1500,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
                     {/* Active Zone Card */}
                     <div className="bg-[#1e293b]/50 border border-slate-700 rounded-xl p-4 space-y-4">
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-center gap-2">
                             <div className="flex flex-col flex-1">
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ZONE TITLE</span>
                                 <input
@@ -1510,6 +1510,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className="bg-transparent border-b border-slate-600 text-sm font-bold text-white uppercase focus:border-orange-500 outline-none pb-1 w-full"
                                 />
                             </div>
+                            <button
+                                onClick={() => setIsHudAppearanceCollapsed(!isHudAppearanceCollapsed)}
+                                className="p-2 bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-white rounded-lg transition-all"
+                                title="HUD Button Appearance Settings"
+                            >
+                                <Settings className="w-4 h-4" />
+                            </button>
                         </div>
 
                         {/* HUD Appearance */}
