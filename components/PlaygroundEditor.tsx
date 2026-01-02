@@ -3571,18 +3571,31 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     style={{
                                         backgroundColor: qrScannerColor,
                                         width: '100%',
-                                        height: '100%'
+                                        height: '100%',
+                                        boxShadow: `inset 0 0 0 2px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.9), 0 0 16px rgba(0, 0, 0, 0.7)`
                                     }}
-                                    className={`flex items-center justify-center gap-2 rounded-xl text-white font-bold uppercase shadow-xl transition-all hover:ring-2 hover:ring-yellow-400 relative ${
+                                    className={`flex items-center justify-center gap-1 rounded-xl text-white font-bold uppercase shadow-xl transition-all hover:ring-2 hover:ring-yellow-400 relative ${
                                         isSimulationActive ? 'cursor-pointer' : 'cursor-move'
                                     }`}
                                     title={isSimulationActive ? 'Click to scan QR code' : 'Double-click to change color | Drag to move | Resize from corner'}
                                     type="button"
                                 >
-                                    <QrCode className="w-4 h-4" />
-                                    <span className={qrScannerSize.width < 120 ? 'text-[10px]' : 'text-xs'}>
-                                        SCAN QR
-                                    </span>
+                                    {(() => {
+                                        // Scale icon and text proportionally based on button height
+                                        const baseHeight = 48;
+                                        const scale = qrScannerSize.height / baseHeight;
+                                        const iconSize = Math.max(12, Math.min(32, 16 * scale));
+                                        const fontSize = Math.max(8, Math.min(14, 10 * scale));
+
+                                        return (
+                                            <>
+                                                <QrCode style={{ width: `${iconSize}px`, height: `${iconSize}px` }} />
+                                                <span style={{ fontSize: `${fontSize}px` }}>
+                                                    SCAN QR
+                                                </span>
+                                            </>
+                                        );
+                                    })()}
                                 </button>
 
                                 {/* Resize handle - bottom-right corner (hidden in simulation mode) */}
