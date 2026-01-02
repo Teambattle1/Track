@@ -2377,6 +2377,29 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             );
                         })}
 
+                        {/* Draggable QR Scanner Button - Inside Game Canvas */}
+                        {showQRScanner && (
+                            <div
+                                onPointerDown={handleQRScannerPointerDown}
+                                onPointerMove={handleQRScannerPointerMove}
+                                onPointerUp={handleQRScannerPointerUp}
+                                onPointerCancel={handleQRScannerPointerUp}
+                                className={`absolute z-40 cursor-grab active:cursor-grabbing pointer-events-auto touch-none user-select-none`}
+                                style={{
+                                    left: `${qrScannerPos.x}px`,
+                                    top: `${qrScannerPos.y}px`,
+                                }}
+                            >
+                                <button
+                                    onClick={handleQRScanClick}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold uppercase text-xs shadow-xl transition-all"
+                                    title="Scan QR Code"
+                                >
+                                    <QrCode className="w-4 h-4" />
+                                    SCAN QR
+                                </button>
+                            </div>
+                        )}
                     </div>
                     </div>
                 </div>
