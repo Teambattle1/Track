@@ -5206,7 +5206,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     task: t.task,
                                     location: { lat: 0, lng: 0 },
                                     radiusMeters,
-                                    activationTypes: ['radius'],
+                                    activationTypes: t.activationTypes || ['radius'], // Use task's activation types or default to radius for map
                                     manualUnlockCode: undefined,
                                     iconId: t.iconId || 'default',
                                     iconUrl: (t as any).iconUrl,
