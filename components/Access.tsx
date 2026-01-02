@@ -127,9 +127,23 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
           setValidGame(game);
           setAccessCode('');
           setValidationError(null);
+
+          // Calculate available languages
+          const approvedLangs = getApprovedLanguagesForGame(game);
+          setAvailableLanguages(approvedLangs);
+
+          // Default to game's language if available
+          const gameLanguage = game.language as Language || 'English';
+          if (approvedLangs.includes(gameLanguage)) {
+            setSelectedLanguage(gameLanguage);
+          } else {
+            setSelectedLanguage('English');
+          }
         } else {
           setValidationError('Game not found. Please try again.');
           setValidGame(null);
+          setAvailableLanguages(['English']);
+          setSelectedLanguage('English');
         }
       } catch (error) {
         console.error('Error fetching game:', error);
