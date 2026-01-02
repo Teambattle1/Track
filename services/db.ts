@@ -242,20 +242,51 @@ export const fetchGames = async (): Promise<Game[]> => {
     }
 };
 
-export const saveGame = async (game: Game) => {
+export const saveGames = async (
+    games: Game[],
+    opts?: { chunkSize?: number; onProgress?: (info: { completed: number; total: number }) => void }
+): Promise<{ ok: boolean }> => {
     try {
-        await retryWithBackoff(
-            () => supabase.from('games').upsert({
-                id: game.id,
-                data: game,
-                updated_at: new Date().toISOString()
-            }).then(result => {
-                if (result.error) throw result.error;
-                return result;
-            }),
-            'saveGame'
-        );
-    } catch (e) { logError('saveGame', e); }
+        if (!games || games.length === 0) return { ok: true };
+
+        // Games can be large JSON objects; keep chunks small to avoid DB statement timeouts.
+        const chunkSize = Math.max(1, Math.min(opts?.chunkSize ?? 2, 10));
+        const updatedAt = new Date().toISOString();
+        const chunks = chunkArray(games, chunkSize);
+
+        for (let i = 0; i < chunks.length; i++) {
+            const chunk = chunks[i];
+            opts?.onProgress?.({ completed: i, total: chunks.length });
+
+            await retryWithBackoff(
+                () =>
+                    supabase
+                        .from('games')
+                        .upsert(
+                            chunk.map(g => ({ id: g.id, data: g, updated_at: updatedAt })),
+                            { onConflict: 'id', returning: 'minimal' }
+                        )
+                        .then(result => {
+                            if (result.error) throw result.error;
+                            return result;
+                        }),
+                `saveGames[chunk=${i + 1}/${chunks.length}]`
+            );
+        }
+
+        opts?.onProgress?.({ completed: chunks.length, total: chunks.length });
+        return { ok: true };
+    } catch (e) {
+        logError('saveGames', e);
+        return { ok: false };
+    }
+};
+
+export const saveGame = async (game: Game) => {
+    const { ok } = await saveGames([game]);
+    if (!ok) {
+        console.warn('[DB Service] saveGame failed (see previous error for details)');
+    }
 };
 
 export const fetchGame = async (id: string): Promise<Game | null> => {
