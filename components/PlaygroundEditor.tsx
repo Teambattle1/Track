@@ -188,6 +188,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     // Task Settings Modal State
     const [showTaskSettingsModal, setShowTaskSettingsModal] = useState(false);
     const [settingsModalTaskId, setSettingsModalTaskId] = useState<string | null>(null);
+    const [showTaskViewModal, setShowTaskViewModal] = useState(false);
 
     // Refs
     const fileInputRef = useRef<HTMLInputElement>(null);
