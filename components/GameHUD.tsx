@@ -282,6 +282,54 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
         };
     }, [isOrientationLocked]);
 
+    // Auto-apply orientation lock when entering playground in PLAY mode
+    useEffect(() => {
+        const device = detectDeviceTypeWithUA();
+        if (!targetPlaygroundId || !playgrounds || mode !== GameMode.PLAY) {
+            // Unlock orientation when leaving playground or not in play mode
+            if (isOrientationLocked && 'orientation' in screen && 'unlock' in screen.orientation) {
+                try {
+                    (screen.orientation as any).unlock();
+                    setIsOrientationLocked(false);
+                } catch (error) {
+                    console.warn('Failed to unlock orientation:', error);
+                }
+            }
+            return;
+        }
+
+        const playground = playgrounds.find(p => p.id === targetPlaygroundId);
+        if (!playground) return;
+
+        // Get the orientation lock setting from playground
+        const deviceLayout = playground.deviceLayouts?.[device];
+        const orientationSetting = deviceLayout?.orientationLock || playground.orientationLock || 'none';
+
+        if (orientationSetting !== 'none') {
+            // Auto-lock orientation when entering playground
+            if ('orientation' in screen && 'lock' in screen.orientation) {
+                (screen.orientation as any).lock(orientationSetting === 'portrait' ? 'portrait-primary' : 'landscape-primary')
+                    .then(() => {
+                        setIsOrientationLocked(true);
+                        console.log(`🔒 Orientation locked to ${orientationSetting}`);
+                    })
+                    .catch((error: any) => {
+                        console.warn('Failed to auto-lock orientation:', error);
+                    });
+            }
+        } else {
+            // Unlock if setting is 'none'
+            if (isOrientationLocked && 'orientation' in screen && 'unlock' in screen.orientation) {
+                try {
+                    (screen.orientation as any).unlock();
+                    setIsOrientationLocked(false);
+                } catch (error) {
+                    console.warn('Failed to unlock orientation:', error);
+                }
+            }
+        }
+    }, [targetPlaygroundId, playgrounds, mode]);
+
     // Detect device type and load device-specific layout
     useEffect(() => {
         const device = detectDeviceTypeWithUA();
