@@ -2034,6 +2034,19 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                             <Tag className="w-4 h-4" /> ADD TAGS
                                         </button>
                                         <button
+                                            onClick={() => {
+                                                // Pre-populate with first selected task's activation types if available
+                                                const firstTask = library.find(t => t.id === selectedTemplateIds[0]);
+                                                setBulkActivationTypes(firstTask?.activationTypes || ['click']);
+                                                setShowBulkActivationModal(true);
+                                            }}
+                                            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white rounded-xl font-bold uppercase text-xs tracking-wide flex items-center gap-2 shadow-lg transition-all"
+                                            type="button"
+                                            title="Edit activation types for selected tasks"
+                                        >
+                                            <Zap className="w-4 h-4" /> ACTIVATION
+                                        </button>
+                                        <button
                                             onClick={handleBulkEditColorScheme}
                                             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-bold uppercase text-xs tracking-wide flex items-center gap-2 shadow-lg transition-all"
                                             type="button"
