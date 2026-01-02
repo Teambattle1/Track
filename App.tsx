@@ -130,6 +130,7 @@ const GameApp: React.FC = () => {
   const [selectedTeamForFogOfWar, setSelectedTeamForFogOfWar] = useState<string | null>(null);
   const [teamsForFogOfWar, setTeamsForFogOfWar] = useState<Team[]>([]);
   const [showRemoteOverride, setShowRemoteOverride] = useState(false);
+  const [hoveredPlaygroundId, setHoveredPlaygroundId] = useState<string | null>(null);
 
   // Layer toggles (all default to true/visible)
   const [showMapLayer, setShowMapLayer] = useState(true);
