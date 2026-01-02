@@ -537,7 +537,11 @@ NOTIFY pgrst, 'reload config';`;
                   <p className="font-black uppercase tracking-widest text-xs text-white">SETUP SCRIPT COMPLETED</p>
                   <p className="text-[10px] uppercase mt-1">Code snippet has been hidden.</p>
                   <button
-                    onClick={() => setSetupComplete(false)}
+                    onClick={() => {
+                      setSetupComplete(false);
+                      // Clear the stored hash to allow showing new code
+                      localStorage.removeItem('supabase_setup_completed_hash');
+                    }}
                     className="mt-4 text-[9px] font-bold underline text-slate-600 hover:text-slate-400 uppercase"
                   >
                     Show Code Again
