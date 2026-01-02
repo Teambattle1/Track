@@ -393,7 +393,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
               <div className="flex items-center justify-center"><div className="w-4 h-4 border border-white/10 rounded hover:border-blue-500 cursor-pointer"></div></div>
               
               <div className="min-w-0 pr-4">
-                <h4 className="text-sm font-black text-white uppercase tracking-wide truncate group-hover:text-[#00adef] transition-colors">{game.name}</h4>
+                <h4 className="text-sm font-black text-white uppercase tracking-wide truncate group-hover:text-[#00adef] transition-colors"><span className="text-orange-500">[{getGameDisplayId(game.id)}]</span> {game.name}</h4>
                 <div className="flex items-center gap-1 mt-1 text-gray-500">
                   <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center"><Gamepad2 className="w-2.5 h-2.5 text-white" /></div>
                   <span className="text-[10px] font-bold uppercase tracking-widest">Creator</span>
