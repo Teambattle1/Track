@@ -2981,7 +2981,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 {/* Canvas Area */}
                 <div
                     ref={canvasRef}
-                    className={`flex-1 overflow-hidden relative bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:40px_40px] [background-position:center] flex items-center justify-center p-8 ${
+                    className={`flex-1 overflow-hidden relative bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:40px_40px] [background-position:center] flex items-center justify-center ${
+                        // Reduce padding in tablet portrait mode to maximize visible area
+                        selectedDevice === 'tablet' && editorOrientation === 'portrait' ? 'p-2' : 'p-8'
+                    } ${
                         snapToRoadMode ? 'cursor-crosshair'
                         : drawMode.active ? 'cursor-crosshair'
                         : 'cursor-grab active:cursor-grabbing'
@@ -2992,12 +2995,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     onMouseUp={snapToRoadMode ? handleSnapToRoadEnd : handleMouseUp}
                     onMouseLeave={snapToRoadMode ? undefined : handleMouseUp}
                 >
-                    {/* Device Frame Container - Responsive to Selected Device */}
-                    <div className={`relative border-8 border-slate-950 rounded-3xl overflow-hidden flex-shrink-0`}
+                    {/* Device Frame Container - Responsive to Selected Device with better scaling for tablet portrait */}
+                    <div className={`relative border-8 border-slate-950 rounded-3xl overflow-hidden flex-shrink-0 ${
+                        // Ensure tablet portrait frame scales to fit viewport
+                        selectedDevice === 'tablet' && editorOrientation === 'portrait' ? 'max-h-[calc(100vh-120px)]' : ''
+                    }`}
                     style={{
                         width: viewportDims.width,
                         height: viewportDims.height,
-                        boxShadow: '0 0 0 12px #1f2937, 0 0 0 16px #000000, inset 0 0 0 1px #444'
+                        boxShadow: '0 0 0 12px #1f2937, 0 0 0 16px #000000, inset 0 0 0 1px #444',
+                        // Add contain-fit scaling for tablet portrait to ensure full frame visibility
+                        ...(selectedDevice === 'tablet' && editorOrientation === 'portrait' ? {
+                            objectFit: 'contain' as const,
+                            transform: 'scale(0.95)'
+                        } : {})
                     }}>
                         <div
                         ref={backgroundRef}
