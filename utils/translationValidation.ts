@@ -237,3 +237,39 @@ export const getAllMissingTranslations = (games: Game[]): MissingTranslation[] =
 
   return allMissing;
 };
+
+/**
+ * Check if a task has complete and approved translations for required languages
+ * Returns { valid: boolean, missingLanguages: Language[] }
+ */
+export const validateTaskTranslations = (
+  task: { translations?: Record<Language, any> },
+  requiredLanguages: Language[]
+): { valid: boolean; missingLanguages: Language[] } => {
+  const missingLanguages: Language[] = [];
+
+  requiredLanguages.forEach(language => {
+    // Skip English as it's the default language (always in the base task)
+    if (language === 'English') {
+      return;
+    }
+
+    const translation = task.translations?.[language];
+
+    // If translation doesn't exist for this language
+    if (!translation) {
+      missingLanguages.push(language);
+      return;
+    }
+
+    // Check if translation is fully approved
+    if (!isTranslationFullyApproved(translation)) {
+      missingLanguages.push(language);
+    }
+  });
+
+  return {
+    valid: missingLanguages.length === 0,
+    missingLanguages,
+  };
+};
