@@ -782,39 +782,93 @@ export const fetchTaskListByToken = async (token: string): Promise<TaskList | nu
     } catch (e) { logError('fetchTaskListByToken', e); return null; }
 };
 
+const VALID_TASKLIST_LANGUAGES = ['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew'];
+
+const normalizeTaskListForSave = (list: TaskList): TaskList => {
+    return {
+        ...list,
+        tasks: list.tasks.map(task => {
+            const hasValidLanguage = task.settings?.language && VALID_TASKLIST_LANGUAGES.includes(task.settings.language);
+            const finalLanguage = hasValidLanguage
+                ? task.settings.language
+                : detectLanguageFromText(task.task.question || '');
+
+            return {
+                ...task,
+                settings: {
+                    ...task.settings,
+                    language: finalLanguage
+                }
+            };
+        })
+    };
+};
+
+export const saveTaskLists = async (
+    lists: TaskList[],
+    opts?: { chunkSize?: number; onProgress?: (info: { completed: number; total: number }) => void }
+): Promise<{ ok: boolean }> => {
+    try {
+        if (!lists || lists.length === 0) return { ok: true };
+
+        const chunkSize = Math.max(1, Math.min(opts?.chunkSize ?? 10, 50));
+        const updatedAt = new Date().toISOString();
+
+        const normalized = lists.map(normalizeTaskListForSave);
+        const chunks = chunkArray(normalized, chunkSize);
+
+        const total = normalized.length;
+
+        for (let i = 0; i < chunks.length; i++) {
+            const completedBeforeChunk = Math.min(i * chunkSize, total);
+            opts?.onProgress?.({ completed: completedBeforeChunk, total });
+
+            const chunk = chunks[i];
+
+            await retryWithBackoff(
+                () =>
+                    supabase
+                        .from('task_lists')
+                        .upsert(
+                            chunk.map(list => ({ id: list.id, data: list, updated_at: updatedAt })),
+                            { onConflict: 'id', returning: 'minimal' }
+                        )
+                        .then(result => {
+                            if (result.error) throw result.error;
+                            return result;
+                        }),
+                `saveTaskLists[chunk=${i + 1}/${chunks.length}]`
+            );
+        }
+
+        opts?.onProgress?.({ completed: total, total });
+
+        return { ok: true };
+    } catch (e) {
+        logError('saveTaskLists', e);
+        return { ok: false };
+    }
+};
+
 export const saveTaskList = async (list: TaskList) => {
     try {
-        // Respect user's language choice for each task, otherwise auto-detect
-        const validLanguages = ['English', 'Danish', 'German', 'Spanish', 'French', 'Swedish', 'Norwegian', 'Dutch', 'Belgian', 'Hebrew'];
-        const normalizedList = {
-            ...list,
-            tasks: list.tasks.map(task => {
-                const hasValidLanguage = task.settings?.language && validLanguages.includes(task.settings.language);
-                const finalLanguage = hasValidLanguage
-                    ? task.settings.language
-                    : detectLanguageFromText(task.task.question || '');
-
-                return {
-                    ...task,
-                    settings: {
-                        ...task.settings,
-                        language: finalLanguage
-                    }
-                };
-            })
-        };
+        const normalizedList = normalizeTaskListForSave(list);
 
         await retryWithBackoff(
-            () => supabase.from('task_lists').upsert({
-                id: normalizedList.id,
-                data: normalizedList,
-                updated_at: new Date().toISOString()
-            }).then(result => {
-                if (result.error) {
-                    throw result.error;
-                }
-                return result;
-            }),
+            () =>
+                supabase
+                    .from('task_lists')
+                    .upsert({
+                        id: normalizedList.id,
+                        data: normalizedList,
+                        updated_at: new Date().toISOString()
+                    })
+                    .then(result => {
+                        if (result.error) {
+                            throw result.error;
+                        }
+                        return result;
+                    }),
             'saveTaskList'
         );
     } catch (e) {
