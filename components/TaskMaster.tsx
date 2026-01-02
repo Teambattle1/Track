@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TaskList, TaskTemplate, Game, GamePoint, Coordinate } from '../types';
+import { TaskList, TaskTemplate, Game, GamePoint, Coordinate, TaskColorScheme } from '../types';
 import * as db from '../services/db';
 import { uploadImage } from '../services/storage'; // IMPORTED
 import {
     X, Plus, Search, Layers, Library, Edit2, Trash2, ArrowLeft, Save,
     ImageIcon, Upload, Filter, Tag, LayoutList, RefreshCw, Check, Copy,
-    ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, Gamepad2, Settings, Loader2, Sparkles, LayoutGrid
+    ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, Gamepad2, Settings, Loader2, Sparkles, LayoutGrid, Palette, Lock, Unlock
 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import AiTaskGenerator from './AiTaskGenerator';
@@ -14,6 +14,7 @@ import AccountTags from './AccountTags';
 import Dashboard from './Dashboard';
 import TaskEditor from './TaskEditor';
 import TaskModal from './TaskModal';
+import ColorSchemeEditor from './ColorSchemeEditor';
 import { runCompleteLanguageMigration } from '../services/languageMigrationScript';
 import NotificationModal from './NotificationModal';
 import { useTagColors } from '../contexts/TagColorsContext'; 
@@ -121,6 +122,11 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     // Notification State
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'warning' | 'error' } | null>(null);
     const [migrationResults, setMigrationResults] = useState<{totalUpdated: number; totalErrors: number} | null>(null);
+
+    // Color Scheme Editor
+    const [showColorSchemeEditor, setShowColorSchemeEditor] = useState(false);
+    const [editingColorScheme, setEditingColorScheme] = useState<TaskColorScheme | undefined>();
+    const [colorSchemeTaskIds, setColorSchemeTaskIds] = useState<string[]>([]);
 
     // Tag Colors (shared across app + persisted to database)
     const { tagColors } = useTagColors();
