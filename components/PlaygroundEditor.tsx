@@ -5436,33 +5436,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     onScan={handleQRScan}
                 />
             )}
-
-            {/* Zone Deletion Confirmation Modal */}
-            <ConfirmationModal
-                isOpen={deleteZoneConfirm.isOpen}
-                title="Delete Zone?"
-                message={
-                    activePlayground && deleteZoneConfirm.playgroundId === activePlayground.id
-                        ? `Are you sure you want to delete "${activePlayground.title || 'this zone'}"?\n\nThis will permanently delete:\n• The zone and all its settings\n• ${game.points.filter(p => p.playgroundId === activePlayground.id).length} task(s) inside this zone\n\nThis action CANNOT be undone!`
-                        : 'Are you sure you want to delete this zone? This action cannot be undone.'
-                }
-                confirmText="Delete"
-                cancelText="Cancel"
-                isDangerous={true}
-                icon="warning"
-                onConfirm={() => {
-                    if (deleteZoneConfirm.playgroundId) {
-                        const remaining = game.playgrounds?.filter(p => p.id !== deleteZoneConfirm.playgroundId) || [];
-                        onUpdateGame({ ...game, playgrounds: remaining });
-                        if (remaining.length > 0) setActivePlaygroundId(remaining[0].id);
-                        else setActivePlaygroundId(null);
-                        setDeleteZoneConfirm({ isOpen: false });
-                    }
-                }}
-                onCancel={() => {
-                    setDeleteZoneConfirm({ isOpen: false });
-                }}
-            />
         </div>
     );
 };
