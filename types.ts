@@ -523,6 +523,10 @@ export interface Game {
   defaultMapStyle?: MapStyleId;
   googleMapStyleJson?: string; // New: Custom Google Maps Style
   toolbarPositions?: ToolbarPositions; // Per-game toolbar positions
+  drawerStates?: {
+    settingsCollapsedSections?: Record<string, boolean>; // Settings drawer collapsed sections (mapmode, layers, location, pins, show, tools)
+    visibleToolbars?: Record<string, boolean>; // Visible toolbars on map (mapmode, layers, location, pins, show, tools)
+  };
 
   // Game Access
   accessCode?: string; // Uppercase alphanumeric code for game access (case-insensitive)
