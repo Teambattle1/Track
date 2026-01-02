@@ -931,7 +931,13 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 showTeamPathSelector={showTeamPathSelector}
                 selectedTeamPaths={selectedTeamPaths}
                 teams={teams}
-                onToggleVisibleToolbars={() => setHideMapToolbars(!hideMapToolbars)}
+                visibleToolbars={visibleToolbars}
+                onToggleToolbarVisibility={(toolbarId) => {
+                    setVisibleToolbars(prev => ({
+                        ...prev,
+                        [toolbarId]: !prev[toolbarId]
+                    }));
+                }}
                 onToggleChat={onToggleChat}
                 onEditGameSettings={onEditGameSettings}
                 timerConfig={timerConfig}
