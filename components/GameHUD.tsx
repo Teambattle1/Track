@@ -1618,8 +1618,17 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
 
             {/* LAYERS Toolbar - EDIT and INSTRUCTOR modes only */}
             {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && visibleToolbars['layers'] && (
-                <div className="absolute bottom-24 left-4 z-[1100] pointer-events-auto">
-                    <div className="bg-cyan-600 border-2 border-cyan-500 rounded-xl shadow-2xl p-2">
+                <div
+                    className="absolute z-[1100] pointer-events-auto touch-none"
+                    style={{ left: layersToolboxPos.x, top: layersToolboxPos.y }}
+                    onPointerDown={handleLayersBoxPointerDown}
+                    onPointerMove={handleLayersBoxPointerMove}
+                    onPointerUp={handleLayersBoxPointerUp}
+                >
+                    <div className="bg-cyan-600 border-2 border-cyan-500 rounded-xl shadow-2xl p-2 cursor-move group relative">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-cyan-200 opacity-0 group-hover:opacity-100 transition-opacity bg-cyan-700 rounded-full px-2 border border-cyan-600 pointer-events-none">
+                            <GripHorizontal className="w-3 h-3" />
+                        </div>
                         <div className="flex flex-col gap-1">
                             <div className="text-center mb-1">
                                 <h3 className="text-[9px] font-black uppercase tracking-widest text-white flex items-center gap-1 justify-center">
