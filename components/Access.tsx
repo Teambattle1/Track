@@ -75,11 +75,11 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-orange-600 to-orange-700 mb-4">
             <KeyRound className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-black text-white uppercase tracking-wider mb-2">
@@ -91,7 +91,7 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
         </div>
 
         {/* Access Code Input Card */}
-        <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-3xl p-8 shadow-2xl">
           <div className="space-y-6">
             {/* Input Section */}
             <div>
