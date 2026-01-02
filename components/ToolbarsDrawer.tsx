@@ -100,6 +100,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     activeGame,
     visibleToolbars: visibleToolbarsProp,
     onToggleToolbarVisibility,
+    collapsedSections: collapsedSectionsProp,
+    onCollapsedSectionsChange,
     onSetMode,
     showMapLayer,
     showZoneLayer,
