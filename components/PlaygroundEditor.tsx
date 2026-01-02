@@ -5417,6 +5417,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     />
                 );
             })()}
+
+            {/* QR Scanner Modal - Active in simulation mode */}
+            {isSimulationActive && (
+                <QRScannerModal
+                    isOpen={isQRScannerActive}
+                    onClose={() => setIsQRScannerActive(false)}
+                    onScan={handleQRScan}
+                />
+            )}
         </div>
     );
 };
