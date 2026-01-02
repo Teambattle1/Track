@@ -1625,7 +1625,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             </button>
 
                             {/* Zone Tabs */}
-                            {game.playgrounds?.map((pg, index) => (
+                            {game.playgrounds?.map((pg, index) => {
+                                const TabIcon = ICON_COMPONENTS[pg.iconId || 'default'] || ICON_COMPONENTS.default;
+                                return (
                                 <button
                                     key={pg.id}
                                     onClick={() => setActivePlaygroundId(pg.id)}
@@ -1636,11 +1638,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     }`}
                                     title={`Switch to ${pg.title}`}
                                 >
-                                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                                    <TabIcon className="w-3 h-3 flex-shrink-0" />
                                     <span className="text-[10px] font-black opacity-70">{String(index + 1).padStart(2, '0')}</span>
                                     {pg.title}
                                 </button>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Right: Home Button */}
