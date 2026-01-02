@@ -119,6 +119,7 @@ const TABS = [
     { id: 'PLAY', label: 'Play', icon: PlayCircle },
     { id: 'DESIGN', label: 'Game Setup', icon: PenTool },
     { id: 'TASKS', label: 'Tasks', icon: List },
+    { id: 'TASKDESIGN', label: 'Task Design', icon: Palette },
     { id: 'PLAYGROUNDS', label: 'Zones', icon: LayoutGrid },
     { id: 'CLIENT', label: 'Client', icon: Monitor },
     { id: 'SETTINGS', label: 'Settings', icon: Settings },
