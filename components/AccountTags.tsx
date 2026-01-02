@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  X, Tag, Plus, Trash2, Palette, Search, Hash, 
+import {
+  X, Tag, Plus, Trash2, Palette, Search, Hash,
   ChevronDown, AlertCircle, Check, RotateCcw, Info,
   Database, Zap, Eye, Loader2, Save
 } from 'lucide-react';
 import { Game, TaskTemplate } from '../types';
+import * as db from '../services/db';
 
 const TAG_COLORS = [
   '#64748b', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e',
@@ -12,11 +13,13 @@ const TAG_COLORS = [
   '#334155', '#991b1b', '#9a3412', '#92400e', '#3f6212', '#065f46', '#155e75', '#1e40af', '#5b21b6', '#86198f', '#9f1239'
 ];
 
+type TagMutationProgress = (progress: number, label: string) => void;
+
 interface AccountTagsProps {
     games?: Game[];
     library?: TaskTemplate[];
-    onDeleteTagGlobally?: (tagName: string) => Promise<void>;
-    onRenameTagGlobally?: (oldTag: string, newTag: string) => Promise<void>;
+    onDeleteTagGlobally?: (tagName: string, onProgress?: TagMutationProgress) => Promise<void>;
+    onRenameTagGlobally?: (oldTag: string, newTag: string, onProgress?: TagMutationProgress) => Promise<void>;
 }
 
 const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onDeleteTagGlobally, onRenameTagGlobally }) => {
@@ -31,6 +34,8 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
     // Actions State
     const [purgeTarget, setPurgeTarget] = useState<string | null>(null);
     const [isPurging, setIsPurging] = useState(false);
+    const [purgeProgress, setPurgeProgress] = useState(0);
+    const [purgeLabel, setPurgeLabel] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -40,11 +45,23 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                 setTagColors(JSON.parse(stored));
             } catch (e) { console.error(e); }
         }
+
+        const loadFromDb = async () => {
+            const remote = await db.fetchTagColors();
+            if (remote && Object.keys(remote).length > 0) {
+                setTagColors(prev => ({ ...remote, ...prev }));
+            }
+        };
+
+        loadFromDb();
     }, []);
 
     const saveTags = (newTags: Record<string, string>) => {
         setTagColors(newTags);
         localStorage.setItem('geohunt_tag_colors', JSON.stringify(newTags));
+        db.saveTagColors(newTags).catch((e) => {
+            console.warn('[AccountTags] Failed to persist tag colors to database', e);
+        });
     };
 
     // Scan for tags actually used in the system
@@ -78,7 +95,10 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                 if (editingOldName !== name) {
                     // Rename logic
                     if (onRenameTagGlobally) {
-                        await onRenameTagGlobally(editingOldName, name);
+                        await onRenameTagGlobally(editingOldName, name, (progress, label) => {
+                            setPurgeLabel(label);
+                            setPurgeProgress(progress);
+                        });
                     }
                     const next = { ...tagColors };
                     delete next[editingOldName];
@@ -132,15 +152,23 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
     const handleConfirmPurge = async () => {
         if (!purgeTarget || !onDeleteTagGlobally) return;
         setIsPurging(true);
+        setPurgeProgress(0);
+        setPurgeLabel('Starting purge...');
         const tagToPurge = purgeTarget;
 
         try {
             console.log(`[AccountTags] Starting global purge of tag: "${tagToPurge}"`);
 
             // Delete from database FIRST (all tasks/games)
-            await onDeleteTagGlobally(tagToPurge);
+            await onDeleteTagGlobally(tagToPurge, (progress, label) => {
+                setPurgeProgress(progress);
+                setPurgeLabel(label);
+            });
 
             console.log(`[AccountTags] Database purge complete for: "${tagToPurge}"`);
+
+            setPurgeProgress(1);
+            setPurgeLabel('Finalizing...');
 
             // THEN delete from localStorage to complete the operation
             const next = { ...tagColors };
@@ -160,6 +188,8 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
             // Keep purge target so user can retry
         } finally {
             setIsPurging(false);
+            setPurgeLabel('');
+            setPurgeProgress(0);
         }
     };
 
@@ -343,11 +373,27 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                             <AlertCircle className="w-10 h-10" />
                         </div>
                         <h3 className="text-2xl font-black text-white uppercase tracking-widest mb-3 leading-tight">GLOBAL PURGE?</h3>
-                        <p className="text-xs text-gray-500 uppercase tracking-widest leading-relaxed mb-10">
-                            THE TAG <span className="text-white font-black">"{purgeTarget.toUpperCase()}"</span> IS CURRENTLY USED IN <span className="text-orange-500 font-black">{inUseTagsCountMap[purgeTarget]} TASKS</span>. 
+                        <p className="text-xs text-gray-500 uppercase tracking-widest leading-relaxed mb-6">
+                            THE TAG <span className="text-white font-black">"{purgeTarget.toUpperCase()}"</span> IS CURRENTLY USED IN <span className="text-orange-500 font-black">{inUseTagsCountMap[purgeTarget]} TASKS</span>.
                             <br/><br/>
                             THIS WILL STRIP THE TAG FROM EVERY ITEM IN THE DATABASE. THIS CANNOT BE UNDONE.
                         </p>
+
+                        {isPurging && (
+                            <div className="mb-8">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">{purgeLabel || 'PURGING...'}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">{Math.round(purgeProgress * 100)}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
+                                    <div
+                                        className="h-full bg-red-600 rounded-full transition-all duration-300"
+                                        style={{ width: `${Math.min(100, Math.max(2, Math.round(purgeProgress * 100)))}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="flex gap-4">
                             <button 
                                 onClick={() => setPurgeTarget(null)}
