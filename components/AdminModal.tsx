@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Game } from '../types';
-import { X, KeyRound, Eye, EyeOff, Trash2, Download, Book, Zap, Loader2, Check, Volume2, Play } from 'lucide-react';
+import { X, KeyRound, Eye, EyeOff, Trash2, Download, Book, Zap, Loader2, Check, Volume2, Play, Upload } from 'lucide-react';
 import { generateFeatureCatalogPDF } from '../utils/pdfGenerator';
 import { migrateAllTasksToGpsEnabled } from '../services/migrationGpsActivation';
+import { uploadImage } from '../services/storage';
 import {
   CORRECT_SOUNDS,
   INCORRECT_SOUNDS,
