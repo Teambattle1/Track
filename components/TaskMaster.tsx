@@ -1256,6 +1256,77 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                         )}
                     </div>
                 </div>
+
+                {/* AI Generator for Task List Editor (must live here because editingList uses early return) */}
+                {showAiGenForList && (
+                    <AiTaskGenerator
+                        onClose={() => setShowAiGenForList(false)}
+                        onAddTasks={(tasks) => {
+                            setEditingList({
+                                ...editingList,
+                                tasks: [...editingList.tasks, ...tasks]
+                            });
+                            setShowAiGenForList(false);
+                            setNotification({ message: `✨ ${tasks.length} AI-generated tasks added to list!`, type: 'success' });
+                        }}
+                        onAddTasksToList={(listId, tasks) => {
+                            const updatedLists = taskLists.map(l =>
+                                l.id === listId ? { ...l, tasks: [...l.tasks, ...tasks] } : l
+                            );
+                            onUpdateTaskLists(updatedLists);
+                            setShowAiGenForList(false);
+                            setNotification({ message: `✨ ${tasks.length} AI-generated tasks added!`, type: 'success' });
+                        }}
+                        onCreateListWithTasks={(name, tasks) => {
+                            const newList: TaskList = {
+                                id: `list_${Date.now()}`,
+                                name: name,
+                                description: `AI-generated tasks about ${name}`,
+                                tasks: tasks,
+                                imageUrl: '',
+                                createdAt: new Date().toISOString()
+                            };
+                            onUpdateTaskLists([...taskLists, newList]);
+                            setShowAiGenForList(false);
+                            setNotification({ message: `✨ New list "${name}" created with ${tasks.length} AI tasks!`, type: 'success' });
+                        }}
+                        onAddToLibrary={async (tasks) => {
+                            for (const t of tasks) await db.saveTemplate(t);
+                            await loadLibrary(true);
+                        }}
+                        taskLists={taskLists}
+                        targetMode="LIST"
+                    />
+                )}
+
+                {/* Task Settings Modal (click task in list) */}
+                {editingTaskIndex !== null && editingList.tasks[editingTaskIndex] && (
+                    <TaskEditor
+                        point={templateToGamePoint(editingList.tasks[editingTaskIndex])}
+                        onSave={handleSaveTaskInList}
+                        onDelete={async (pointId) => {
+                            if (editingTaskIndex !== null) {
+                                const updatedTasks = editingList.tasks.filter(t => t.id !== pointId);
+                                setEditingList({ ...editingList, tasks: updatedTasks });
+                                setEditingTaskIndex(null);
+                            }
+                        }}
+                        onClose={() => setEditingTaskIndex(null)}
+                        isTemplateMode={true}
+                        requestedTab="SETTINGS"
+                    />
+                )}
+
+                {/* Notification Modal */}
+                {notification && (
+                    <NotificationModal
+                        message={notification.message}
+                        type={notification.type}
+                        onClose={() => setNotification(null)}
+                        autoClose={true}
+                        duration={3000}
+                    />
+                )}
             </div>
         );
     }
