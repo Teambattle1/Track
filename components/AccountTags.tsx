@@ -208,6 +208,10 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
             .sort((a, b) => a.localeCompare(b));
     }, [tagColors, inUseTags, searchQuery]);
 
+    const purgeProgressPercent = isPurging
+        ? Math.min(100, Math.max(2, Math.round(purgeProgress * 100)))
+        : 0;
+
     return (
         <div className="max-w-[100%] mx-auto animate-in fade-in duration-500 pb-20">
             <div className="flex justify-between items-center mb-8">
@@ -379,20 +383,22 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                             THIS WILL STRIP THE TAG FROM EVERY ITEM IN THE DATABASE. THIS CANNOT BE UNDONE.
                         </p>
 
-                        {isPurging && (
-                            <div className="mb-8">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">{purgeLabel || 'PURGING...'}</span>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">{Math.round(purgeProgress * 100)}%</span>
-                                </div>
-                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
-                                    <div
-                                        className="h-full bg-red-600 rounded-full transition-all duration-300 w-[var(--purge-progress)]"
-                                        style={{ ['--purge-progress' as any]: `${Math.min(100, Math.max(2, Math.round(purgeProgress * 100)))}%` }}
-                                    />
-                                </div>
+                        <div className={`mb-8 transition-opacity ${isPurging ? 'opacity-100' : 'opacity-60'}`} aria-live="polite">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
+                                    {isPurging ? (purgeLabel || 'PURGING...') : 'READY'}
+                                </span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
+                                    {isPurging ? `${Math.round(purgeProgress * 100)}%` : '0%'}
+                                </span>
                             </div>
-                        )}
+                            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
+                                <div
+                                    className="h-full bg-red-600 rounded-full transition-all duration-300 w-[var(--purge-progress)]"
+                                    style={{ ['--purge-progress' as any]: `${purgeProgressPercent}%` }}
+                                />
+                            </div>
+                        </div>
 
                         <div className="flex gap-4">
                             <button 
