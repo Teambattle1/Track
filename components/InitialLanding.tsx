@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Game, AuthUser } from '../types';
 import { getGameDisplayId, matchesGameSearch, formatGameNameWithId } from '../utils/gameIdUtils';
+import { hasNewSupabaseSetup } from './SupabaseToolsModal';
 import './InitialLandingStyles.css';
 
 interface InitialLandingProps {
@@ -653,6 +654,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           icon={Gauge}
                           color="bg-green-600"
                           onClick={() => onAction('DIAGNOSTICS')}
+                          badge={hasNewSupabaseSetup() ? 'NEW' : undefined}
                       />
                       <NavCard
                           title="DELETE GAMES"
