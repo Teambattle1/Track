@@ -2218,6 +2218,27 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            setShowTaskStatus(!showTaskStatus);
+                                        }}
+                                        className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
+                                            showTaskStatus
+                                                ? 'bg-orange-600 text-white shadow-lg'
+                                                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white'
+                                        }`}
+                                        title="Show/Hide answer markers (✓ correct / ✗ wrong) in editor preview. Each task can enable/disable this in settings."
+                                        type="button"
+                                    >
+                                        <CheckCircle className="w-4 h-4" />
+                                    </button>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest ${
+                                        showTaskStatus ? 'text-orange-300' : 'text-slate-500'
+                                    }`}>ANSWERS</span>
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
                                             setShowBackground(!showBackground);
                                         }}
                                         className={`w-9 h-9 rounded transition-all cursor-pointer pointer-events-auto flex items-center justify-center ${
@@ -2696,7 +2717,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         )}
 
                                         {/* OK/Wrong Answer Marker - Green Check (correct) or Red X (wrong) */}
-                                        {(point.showStatusMarkers ?? true) && (point.isCompleted || (point as any).answeredIncorrectly) && (
+                                        {showTaskStatus && (point.showStatusMarkers ?? true) && (point.isCompleted || (point as any).answeredIncorrectly) && (
                                             <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${
                                                 (point as any).answeredIncorrectly ? 'opacity-90' : 'opacity-80'
                                             }`}>
@@ -2857,20 +2878,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     <div className="flex flex-col items-center gap-2">
                         <h2 className="text-sm font-black uppercase tracking-widest text-white">TASKS</h2>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{uniquePlaygroundPoints.length} in zone</p>
-
-                        {/* Status Markers Toggle - Editor Preview Only */}
-                        <button
-                            onClick={() => setShowTaskStatus(!showTaskStatus)}
-                            className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border-2 flex items-center gap-2 ${
-                                showTaskStatus
-                                    ? 'bg-green-600 border-green-500 text-white shadow-lg'
-                                    : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
-                            }`}
-                            title="Toggle visibility in editor (per-task control in settings)"
-                        >
-                            <CheckCircle className="w-4 h-4" />
-                            <span>Preview Markers</span>
-                        </button>
                     </div>
                 </div>
 
@@ -2933,13 +2940,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 </div>
                             </div>
 
-                            {/* Task Status Markers Toggle */}
+                            {/* Task Answer Markers - Per-Task Setting */}
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-3">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                    <CheckCircle className="w-3 h-3" /> SHOW OK/WRONG ANSWER MARKERS
+                                    <CheckCircle className="w-3 h-3" /> ANSWER MARKERS IN GAMEPLAY
                                 </label>
                                 <p className="text-[8px] text-slate-400">
-                                    When enabled, this task will display visual markers (✓ OK / ✗ WRONG) when teams re-enter the playzone after solving it.
+                                    When enabled, this task will show ✓ OK or ✗ WRONG markers when teams re-enter the playzone after solving it. Toggle visibility in editor using SHOW toolbar → ANSWERS button.
                                 </p>
                                 <button
                                     onClick={() => updateTask({ showStatusMarkers: !(selectedTask.showStatusMarkers ?? true) })}
