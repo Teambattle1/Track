@@ -43,7 +43,8 @@ test.describe('Tags - Global Purge', () => {
     await page.getByRole('button', { name: /CONFIRM PURGE/i }).click();
 
     // Progress UI should appear while operation runs.
-    await expect(page.locator('text=PURGING...').or(page.locator('text=/\d+%/'))).toBeVisible({ timeout: 5000 });
+    // We render a percentage while purging.
+    await expect(page.locator('text=/\\d+%/')).toBeVisible({ timeout: 5000 });
 
     // Modal should close when finished.
     await expect(page.getByText('GLOBAL PURGE?', { exact: true })).toBeHidden({ timeout: 30000 });
