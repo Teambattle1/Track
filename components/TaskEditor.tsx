@@ -691,9 +691,20 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                               </label>
                                <div className="flex flex-wrap gap-2 mb-2">
                                    {editedPoint.tags?.map((tag, index) => (
-                                       <span key={`${tag}-${index}`} onClick={() => setActiveTab('TAGS')} className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors">
+                                       <span
+                                           key={`${tag}-${index}`}
+                                           onClick={() => setActiveTab('TAGS')}
+                                           className="px-2 py-1 rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer transition-opacity border border-black/10 dark:border-white/10 bg-[var(--tag-bg)] text-[var(--tag-fg)] hover:opacity-90"
+                                           style={getTagChipVars(tag)}
+                                       >
                                            {tag}
-                                           <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveTag(tag); }} className="hover:text-blue-900 dark:hover:text-white"><X className="w-3 h-3" /></button>
+                                           <button
+                                               type="button"
+                                               onClick={(e) => { e.stopPropagation(); handleRemoveTag(tag); }}
+                                               className="opacity-80 hover:opacity-100"
+                                           >
+                                               <X className="w-3 h-3" />
+                                           </button>
                                        </span>
                                    ))}
                                </div>
