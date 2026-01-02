@@ -189,6 +189,11 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   // QR Code State
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
+  // Load existing tags for autocomplete
+  useEffect(() => {
+      fetchUniqueTags().then(tags => setExistingTags(tags)).catch(() => setExistingTags([]));
+  }, []);
+
   // Auto-detect language from task question on component mount
   useEffect(() => {
       const hasQuestion = editedPoint.task.question && editedPoint.task.question.trim().length > 0;
