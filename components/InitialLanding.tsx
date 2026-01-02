@@ -392,56 +392,6 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
   const renderCreateMenu = () => (
       <div className="flex flex-col items-center w-full gap-8">
-          {/* Game Search Section */}
-          <div className="w-full max-w-2xl px-4">
-              <div className="bg-slate-900/60 backdrop-blur-md border border-slate-700 rounded-2xl p-4 shadow-xl">
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Quick Search Games</label>
-                  <div className="relative flex items-center mb-3">
-                      <Search className="absolute left-4 w-4 h-4 text-slate-500 pointer-events-none" />
-                      <input
-                          type="text"
-                          placeholder="Search by game ID or name..."
-                          value={createMenuSearchQuery}
-                          onChange={(e) => setCreateMenuSearchQuery(e.target.value)}
-                          className="w-full pl-12 pr-4 py-3 bg-slate-800/60 text-white text-xs rounded-xl border border-slate-700 focus:border-orange-500 focus:outline-none placeholder-slate-500 transition-all"
-                      />
-                      {createMenuSearchQuery && (
-                          <button
-                              onClick={() => setCreateMenuSearchQuery('')}
-                              className="absolute right-4 p-1 hover:bg-slate-700 rounded transition-colors"
-                          >
-                              <XIcon className="w-4 h-4 text-slate-400 hover:text-white" />
-                          </button>
-                      )}
-                  </div>
-
-                  {/* Search Results */}
-                  {createMenuSearchQuery && (
-                      <div className="space-y-2">
-                          {filteredGamesForCreate.length === 0 ? (
-                              <div className="text-center py-4 text-xs text-slate-500 uppercase font-bold tracking-widest">NO GAMES FOUND</div>
-                          ) : (
-                              <div className="max-h-48 overflow-y-auto space-y-2">
-                                  {filteredGamesForCreate.map(game => (
-                                      <button
-                                          key={game.id}
-                                          onClick={() => { onSelectGame(game.id); setCreateMenuSearchQuery(''); onAction('EDIT_GAME'); }}
-                                          className="w-full text-left px-4 py-3 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-orange-500/50 rounded-lg transition-colors flex items-center justify-between text-xs font-bold uppercase"
-                                      >
-                                          <span className="flex items-center gap-2 truncate">
-                                              <span className="text-orange-400 font-black">[{getGameDisplayId(game.id)}]</span>
-                                              <span className="truncate">{game.name}</span>
-                                          </span>
-                                          <ExternalLink className="w-3 h-3 text-slate-500 shrink-0 ml-2" />
-                                      </button>
-                                  ))}
-                              </div>
-                          )}
-                      </div>
-                  )}
-              </div>
-          </div>
-
           {/* Create Options */}
           <div className="flex flex-col md:flex-row gap-12 md:gap-16 lg:gap-20 items-center justify-center w-full px-4 pb-10">
               <MapPinButton
