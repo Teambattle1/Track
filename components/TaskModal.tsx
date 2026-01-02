@@ -3,6 +3,7 @@ import { GamePoint, TaskVote, GameMode, TimelineItem, Game } from '../types';
 import { X, CheckCircle, Lock, MapPin, Glasses, AlertCircle, ChevronDown, ChevronsUpDown, Users, AlertTriangle, Loader2, ThumbsUp, Zap, Edit2, Skull, ArrowRight, ArrowDown, Lightbulb, Shield } from 'lucide-react';
 import { teamSync } from '../services/teamSync';
 import DOMPurify from 'dompurify';
+import { isAnswerAcceptable, getAttemptMessage } from '../utils/stringMatch';
 
 interface TaskModalProps {
   point: GamePoint | null;
