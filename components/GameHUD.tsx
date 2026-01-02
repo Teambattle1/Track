@@ -196,6 +196,10 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     // SHOW toolbar - right side, top
     const [showToolboxPos, setShowToolboxPos] = useState({ x: window.innerWidth - 180, y: 10 });
     const [isDraggingShowBox, setIsDraggingShowBox] = useState(false);
+    // LAYERS toolbar - left side, bottom
+    const [layersToolboxPos, setLayersToolboxPos] = useState({ x: 20, y: window.innerHeight - 200 });
+    const [isDraggingLayersBox, setIsDraggingLayersBox] = useState(false);
+    const layersDragOffset = useRef({ x: 0, y: 0 });
 
     // QR Scanner - floating button on game playing area
     const [qrScannerPos, setQRScannerPos] = useState({ x: window.innerWidth - 80, y: window.innerHeight - 100 });
