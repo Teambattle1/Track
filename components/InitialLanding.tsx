@@ -760,7 +760,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                     />
 
                     {/* Game ID Search Field (Orange Border) */}
-                    <div className="relative flex items-center bg-slate-900/50 backdrop-blur-md px-4 py-3 border-2 border-orange-500/60 border-t-0 border-b h-16 animate-in fade-in slide-in-from-right-4 duration-500 delay-50">
+                    <div className="relative flex items-center bg-slate-900/50 backdrop-blur-md px-4 py-3 border-2 border-orange-500/60 border-t-0 border-b-0 h-16 animate-in fade-in slide-in-from-right-4 duration-500 delay-50">
                         <Search className="absolute left-4 w-4 h-4 text-slate-500 pointer-events-none" />
                         <input
                             type="text"
