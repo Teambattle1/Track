@@ -1669,7 +1669,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             e.preventDefault();
                                             e.stopPropagation();
                                             setEditorOrientation('portrait');
-                                            if (isOrientationLocked) updatePlayground({ orientationLock: 'portrait' });
+                                            if (isOrientationLocked && activePlayground) {
+                                                const newLayouts = { ...activePlayground.deviceLayouts };
+                                                newLayouts[selectedDevice] = {
+                                                    ...newLayouts[selectedDevice],
+                                                    orientationLock: 'portrait',
+                                                };
+                                                updatePlayground({ deviceLayouts: newLayouts });
+                                            }
                                         }}
                                         className={`p-2 rounded transition-all cursor-pointer pointer-events-auto ${
                                             editorOrientation === 'portrait'
