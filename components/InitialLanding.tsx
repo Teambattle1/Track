@@ -850,7 +850,15 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                     return (
                                         <button
                                             key={game.id}
-                                            onClick={() => { onSelectGame(game.id); setShowGameMenu(false); setGameSearchQuery(''); }}
+                                            onClick={() => {
+                                              onSelectGame(game.id);
+                                              setShowGameMenu(false);
+                                              setGameSearchQuery('');
+                                              // In PLAY_MENU, go directly to EDIT (simulation) mode
+                                              if (view === 'PLAY_MENU') {
+                                                onAction('EDIT_GAME');
+                                              }
+                                            }}
                                             className={`w-full text-left px-5 py-3 text-xs border-b border-slate-800 hover:bg-slate-800 transition-colors flex items-center justify-between gap-3 ${game.id === activeGameId ? 'text-orange-500 bg-orange-900/10' : 'text-slate-300'}`}
                                         >
                                             <span className="truncate flex items-center gap-2 flex-1">
