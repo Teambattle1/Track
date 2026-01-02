@@ -158,7 +158,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     onOpenLiveApproval, pendingApprovalsCount = 0,
     showMapLayer, showZoneLayer, showTaskLayer, showLiveLayer,
     onToggleMapLayer, onToggleZoneLayer, onToggleTaskLayer, onToggleLiveLayer,
-    hoveredPlaygroundId, onHoverPlayground
+    hoveredPlaygroundId, onHoverPlayground,
+    collapsedSections, onCollapsedSectionsChange
 }, ref) => {
     // Device detection for multi-device layout support
     const [detectedDevice, setDetectedDevice] = useState<DeviceType>('desktop');
