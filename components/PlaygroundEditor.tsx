@@ -3111,27 +3111,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 </div>
                             </div>
 
-                            {/* Actions Button */}
-                            <button
-                                onClick={() => setShowActionModal(true)}
-                                className="w-full py-3 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 hover:text-indigo-300 border border-indigo-600/40 hover:border-indigo-500 rounded-lg font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
-                                title="Set up if/then logic and actions"
-                            >
-                                <Zap className="w-4 h-4" /> CONFIGURE ACTIONS
-                            </button>
-
-                            {/* Settings Button */}
-                            <button
-                                onClick={() => {
-                                    setSettingsModalTaskId(selectedTask.id);
-                                    setShowTaskSettingsModal(true);
-                                }}
-                                className="w-full py-3 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-400 hover:text-cyan-300 border border-cyan-600/40 hover:border-cyan-500 rounded-lg font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
-                                title="Open task settings"
-                            >
-                                <Settings className="w-4 h-4" /> TASK SETTINGS
-                            </button>
-
                             {/* Copy Task Button */}
                             <button
                                 onClick={() => {
