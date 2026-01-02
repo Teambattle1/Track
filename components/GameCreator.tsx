@@ -795,6 +795,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           designConfig,
           taskConfig,
           mapConfig,
+          defaultTaskColorScheme,
           client: {
               name: clientName,
               logoUrl: clientLogo,
