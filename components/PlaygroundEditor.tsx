@@ -3392,7 +3392,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <img
                                                 src={point.completedIconUrl}
                                                 alt={`${point.title} (Completed)`}
-                                                className={`object-contain rounded-full ${isActionTarget ? 'opacity-50' : ''}`}
+                                                className={`object-cover object-center rounded-full ${isActionTarget ? 'opacity-50' : ''}`}
                                                 style={{
                                                     width: `${(point.iconImageScale || 0.9) * 100}%`,
                                                     height: `${(point.iconImageScale || 0.9) * 100}%`
@@ -3402,7 +3402,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <img
                                                 src={point.iconUrl}
                                                 alt={point.title}
-                                                className={`object-contain rounded-full ${isActionTarget ? 'opacity-50' : ''}`}
+                                                className={`object-cover object-center rounded-full ${isActionTarget ? 'opacity-50' : ''}`}
                                                 style={{
                                                     width: `${(point.iconImageScale || 0.9) * 100}%`,
                                                     height: `${(point.iconImageScale || 0.9) * 100}%`
@@ -3810,7 +3810,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <span className="text-[10px] font-bold text-purple-400">{Math.round((selectedTask.iconImageScale || 0.9) * 100)}%</span>
                                 </div>
                                 <p className="text-[8px] text-slate-400">
-                                    Zoom picture from 50% to 200% (stays within white circle)
+                                    Zoom & center picture from 50% to 200% (crops to stay within circles)
                                 </p>
                                 <input
                                     type="range"
