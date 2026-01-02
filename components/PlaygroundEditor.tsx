@@ -571,7 +571,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     // Drag handlers for QR Scanner (percentage-based, like tasks)
     const handleQRScannerPointerDown = (e: React.PointerEvent) => {
         const target = e.target as HTMLElement | null;
-        if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
+        // Allow dragging from the QR button itself, but prevent dragging from other interactive elements
+        const isResizeHandle = target?.closest('.qr-resize-handle');
+        if (isResizeHandle) return; // Let resize handle work
+
+        // Don't block dragging from buttons in this case - we want the QR button to be draggable
+        // if (target?.closest('button, a, input, textarea, select, [role="button"]')) return;
 
         e.stopPropagation();
         e.preventDefault();
@@ -3436,7 +3441,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                                 {/* Resize handle - bottom-right corner */}
                                 <div
-                                    className="absolute bottom-0 right-0 w-4 h-4 bg-yellow-400 border-2 border-yellow-600 rounded-tl rounded-br cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="qr-resize-handle absolute bottom-0 right-0 w-4 h-4 bg-yellow-400 border-2 border-yellow-600 rounded-tl rounded-br cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity"
                                     onPointerDown={handleQRScannerResizeDown}
                                     onPointerMove={handleQRScannerResizeMove}
                                     onPointerUp={handleQRScannerResizeUp}
