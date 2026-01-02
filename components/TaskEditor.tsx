@@ -657,15 +657,36 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    ))}
                                </div>
                                <div className="flex gap-2">
-                                   <input 
-                                      type="text" 
-                                      value={tagInput} 
-                                      onChange={(e) => setTagInput(e.target.value)} 
-                                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                                      className={`flex-1 px-3 py-2 border-2 ${tagError ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'dark:border-gray-700 bg-gray-50 dark:bg-gray-800'} rounded-lg text-sm outline-none`} 
-                                      placeholder="Add tag and press Enter..." 
-                                   />
-                                   <button type="button" onClick={handleAddTag} className="px-3 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"><Plus className="w-4 h-4" /></button>
+                                   <div className="relative flex-1">
+                                       <input
+                                          type="text"
+                                          value={tagInput}
+                                          onChange={(e) => { setTagInput(e.target.value); setShowTagSuggestions(true); setTagError(false); }}
+                                          onFocus={() => setShowTagSuggestions(true)}
+                                          onBlur={handleTagInputBlur}
+                                          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                                          className={`w-full px-3 py-2 border-2 ${tagError ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'dark:border-gray-700 bg-gray-50 dark:bg-gray-800'} rounded-lg text-sm outline-none`}
+                                          placeholder="Add tag and press Enter..."
+                                       />
+
+                                       {showTagSuggestions && filteredTagSuggestions.length > 0 && (
+                                           <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl overflow-hidden z-50">
+                                               {filteredTagSuggestions.map((tag) => (
+                                                   <button
+                                                       key={tag}
+                                                       type="button"
+                                                       onMouseDown={(e) => e.preventDefault()}
+                                                       onClick={() => handleSelectTagSuggestion(tag)}
+                                                       className="w-full text-left px-3 py-2 text-[11px] font-black uppercase tracking-wide text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                   >
+                                                       {tag}
+                                                   </button>
+                                               ))}
+                                           </div>
+                                       )}
+                                   </div>
+
+                                   <button type="button" onClick={() => handleAddTag()} className="px-3 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"><Plus className="w-4 h-4" /></button>
                                </div>
                                {tagError && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase">At least one tag is required to save.</p>}
                            </div>
@@ -1666,20 +1687,42 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                <div className="space-y-3">
                                    <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">ADD NEW TAG</label>
                                    <div className="flex gap-2">
-                                       <input
-                                           type="text"
-                                           value={tagInput}
-                                           onChange={(e) => {
-                                               setTagInput(e.target.value);
-                                               setTagError(false);
-                                           }}
-                                           onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-                                           placeholder="Type tag name and press Enter..."
-                                           className={`flex-1 px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:outline-none transition-all ${tagError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-blue-500'}`}
-                                       />
+                                       <div className="relative flex-1">
+                                           <input
+                                               type="text"
+                                               value={tagInput}
+                                               onChange={(e) => {
+                                                   setTagInput(e.target.value);
+                                                   setShowTagSuggestions(true);
+                                                   setTagError(false);
+                                               }}
+                                               onFocus={() => setShowTagSuggestions(true)}
+                                               onBlur={handleTagInputBlur}
+                                               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                                               placeholder="Type tag name and press Enter..."
+                                               className={`w-full px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:outline-none transition-all ${tagError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-blue-500'}`}
+                                           />
+
+                                           {showTagSuggestions && filteredTagSuggestions.length > 0 && (
+                                               <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden z-50">
+                                                   {filteredTagSuggestions.map((tag) => (
+                                                       <button
+                                                           key={tag}
+                                                           type="button"
+                                                           onMouseDown={(e) => e.preventDefault()}
+                                                           onClick={() => handleSelectTagSuggestion(tag)}
+                                                           className="w-full text-left px-4 py-2 text-xs font-black uppercase tracking-wide text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                       >
+                                                           {tag}
+                                                       </button>
+                                                   ))}
+                                               </div>
+                                           )}
+                                       </div>
+
                                        <button
                                            type="button"
-                                           onClick={handleAddTag}
+                                           onClick={() => handleAddTag()}
                                            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold uppercase text-xs tracking-wide transition-colors flex items-center gap-2"
                                        >
                                            <Plus className="w-4 h-4" />
