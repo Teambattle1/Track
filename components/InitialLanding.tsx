@@ -132,8 +132,15 @@ const MapPinButton = ({
 
     return (
         <div
-            className={`flex flex-col items-center gap-6 group cursor-pointer perspective-1000 ${scaleClass}`}
+            className={`flex flex-col items-center gap-6 group cursor-pointer perspective-1000 pointer-events-auto ${scaleClass}`}
             onClick={onClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    onClick();
+                }
+            }}
         >
             <div className="relative">
                 {/* Pin Shape */}
