@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Game, MapStyleId, Language, Coordinate, Team } from '../types';
 import { Play, Users, MapPin, Globe, ArrowLeft, LogOut, Plus, Search, RefreshCw, Clock, User, Hash, Camera, ChevronDown, QrCode, Image as ImageIcon, X, Home, Check, Shield } from 'lucide-react';
@@ -7,6 +6,7 @@ import { haversineMeters } from '../utils/geo';
 import * as db from '../services/db';
 import jsQR from 'jsqr';
 import AvatarCreator from './AvatarCreator';
+import { getGameDisplayId } from '../utils/gameIdUtils';
 
 interface WelcomeScreenProps {
   games: Game[];
