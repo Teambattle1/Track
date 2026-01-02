@@ -1000,11 +1000,9 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     <button onClick={onBackToHub} className="w-12 h-12 bg-white dark:bg-slate-900 rounded-full shadow-lg flex items-center justify-center border border-gray-200 dark:border-slate-700 hover:scale-105 transition-transform">
                         <ChevronLeft className="w-6 h-6 text-slate-700 dark:text-slate-200" />
                     </button>
-                    {mode === GameMode.EDIT && renderGameNameButton()}
                 </div>
 
                 <div className={`flex flex-col items-center gap-2 pointer-events-auto transition-transform duration-300 ease-in-out ${sidebarOffset}`}>
-                    {mode !== GameMode.EDIT && renderGameNameButton()}
                     {timeLeft && (activeGame?.designConfig?.enableGameTime !== false) && (
                         <div className="flex flex-col gap-2">
                             <div className={`px-4 py-2 rounded-xl backdrop-blur-md font-mono font-bold text-lg shadow-lg flex items-center gap-2 border ${timerAlert ? 'bg-red-600/90 border-red-500 animate-pulse text-white' : 'bg-black/60 border-white/10 text-white'}`}>
