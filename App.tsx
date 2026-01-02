@@ -956,86 +956,180 @@ const GameApp: React.FC = () => {
   };
 
   // --- TAG MANAGEMENT ---
-  const handleRenameTagGlobally = async (oldTag: string, newTag: string) => {
-      const renameInTasks = (tasks: TaskTemplate[]) => {
-          return tasks.map(t => ({
-              ...t,
-              tags: t.tags?.map(tag => tag === oldTag ? newTag : tag) || []
-          }));
+  const handleRenameTagGlobally = async (
+      oldTag: string,
+      newTag: string,
+      onProgress?: (progress: number, label: string) => void
+  ) => {
+      const oldLower = oldTag.toLowerCase();
+      const newLower = newTag.toLowerCase();
+
+      const replaceTag = (tags: string[] | undefined): { next: string[]; changed: boolean } => {
+          const current = tags || [];
+          let changed = false;
+          const next = current.map(t => {
+              if (t.toLowerCase() === oldLower) {
+                  changed = true;
+                  return newLower;
+              }
+              return t;
+          });
+          return { next, changed };
       };
 
-      const updatedLib = renameInTasks(taskLibrary);
-      // Save updated templates (chunked to avoid DB statement timeouts)
-      const { ok: renameOk } = await db.saveTemplates(updatedLib.filter(t => t.tags?.includes(newTag)));
-      if (!renameOk) {
-          console.error('Error saving templates: saveTemplates failed');
+      onProgress?.(0, 'Scanning items...');
+
+      const updatedLib: TaskTemplate[] = [];
+      const changedTemplates: TaskTemplate[] = [];
+      for (const t of taskLibrary) {
+          const { next, changed } = replaceTag(t.tags);
+          const updated = { ...t, tags: next };
+          updatedLib.push(updated);
+          if (changed) changedTemplates.push(updated);
       }
+
+      const updatedLists = taskLists.map(list => {
+          let listChanged = false;
+          const updatedTasks = (list.tasks || []).map(task => {
+              const { next, changed } = replaceTag(task.tags);
+              if (changed) listChanged = true;
+              return { ...task, tags: next };
+          });
+          const updated = { ...list, tasks: updatedTasks };
+          return { updated, listChanged };
+      });
+
+      const updatedGames = games.map(g => {
+          let gameChanged = false;
+          const updatedPoints = (g.points || []).map(p => {
+              const { next, changed } = replaceTag(p.tags as any);
+              if (changed) gameChanged = true;
+              return { ...p, tags: next };
+          });
+          const updated = { ...g, points: updatedPoints };
+          return { updated, gameChanged };
+      });
+
+      // Persist only what actually changed (this is the biggest speedup)
+      onProgress?.(0.05, 'Updating task library...');
+
+      if (changedTemplates.length > 0) {
+          const { ok } = await db.saveTemplates(changedTemplates, {
+              onProgress: ({ completed, total }) => {
+                  const pct = total ? completed / total : 1;
+                  onProgress?.(0.05 + pct * 0.55, `Updating tasks (${Math.min(total, completed + 1)}/${total})`);
+              }
+          });
+          if (!ok) console.error('Error saving templates: saveTemplates failed');
+      }
+
+      const listChanges = updatedLists.filter(x => x.listChanged).map(x => x.updated);
+      if (listChanges.length > 0) {
+          for (let i = 0; i < listChanges.length; i++) {
+              onProgress?.(0.65 + (i / listChanges.length) * 0.15, `Updating lists (${i + 1}/${listChanges.length})`);
+              await db.saveTaskList(listChanges[i]);
+          }
+      }
+
+      const gameChanges = updatedGames.filter(x => x.gameChanged).map(x => x.updated);
+      if (gameChanges.length > 0) {
+          await db.saveGames(gameChanges, {
+              chunkSize: 2,
+              onProgress: ({ completed, total }) => {
+                  const pct = total ? completed / total : 1;
+                  onProgress?.(0.8 + pct * 0.2, `Updating games (${Math.min(total, completed + 1)}/${total})`);
+              }
+          });
+      }
+
+      onProgress?.(1, 'Done');
+
       setTaskLibrary(updatedLib);
-
-      const updatedLists = taskLists.map(list => ({
-          ...list,
-          tasks: renameInTasks(list.tasks)
-      }));
-      // Save all lists in parallel
-      await Promise.all(updatedLists.map(list => db.saveTaskList(list))).catch(err => {
-          console.error('Error saving lists:', err);
-      });
-      setTaskLists(updatedLists);
-
-      const updatedGames = games.map(g => ({
-          ...g,
-          points: g.points.map(p => ({
-              ...p,
-              tags: p.tags?.map(tag => tag === oldTag ? newTag : tag) || []
-          }))
-      }));
-      // Save all games in parallel
-      await Promise.all(updatedGames.map(g => db.saveGame(g))).catch(err => {
-          console.error('Error saving games:', err);
-      });
-      setGames(updatedGames);
+      setTaskLists(updatedLists.map(x => x.updated));
+      setGames(updatedGames.map(x => x.updated));
   };
 
-  const handleDeleteTagGlobally = async (tagToDelete: string) => {
+  const handleDeleteTagGlobally = async (
+      tagToDelete: string,
+      onProgress?: (progress: number, label: string) => void
+  ) => {
       const tagToDeleteLower = tagToDelete.toLowerCase();
 
-      const removeInTasks = (tasks: TaskTemplate[]) => {
-          return tasks.map(t => ({
-              ...t,
-              tags: t.tags?.filter(tag => tag.toLowerCase() !== tagToDeleteLower) || []
-          }));
+      const stripTag = (tags: string[] | undefined): { next: string[]; changed: boolean } => {
+          const current = tags || [];
+          const next = current.filter(tag => tag.toLowerCase() !== tagToDeleteLower);
+          return { next, changed: next.length !== current.length };
       };
 
-      const updatedLib = removeInTasks(taskLibrary);
-      // Save updated templates (chunked to avoid DB statement timeouts)
-      const { ok: deleteOk } = await db.saveTemplates(updatedLib);
-      if (!deleteOk) {
-          console.error('Error saving templates: saveTemplates failed');
+      onProgress?.(0, 'Scanning items...');
+
+      const updatedLib: TaskTemplate[] = [];
+      const changedTemplates: TaskTemplate[] = [];
+      for (const t of taskLibrary) {
+          const { next, changed } = stripTag(t.tags);
+          const updated = { ...t, tags: next };
+          updatedLib.push(updated);
+          if (changed) changedTemplates.push(updated);
       }
+
+      const updatedLists = taskLists.map(list => {
+          let listChanged = false;
+          const updatedTasks = (list.tasks || []).map(task => {
+              const { next, changed } = stripTag(task.tags);
+              if (changed) listChanged = true;
+              return { ...task, tags: next };
+          });
+          const updated = { ...list, tasks: updatedTasks };
+          return { updated, listChanged };
+      });
+
+      const updatedGames = games.map(g => {
+          let gameChanged = false;
+          const updatedPoints = (g.points || []).map(p => {
+              const { next, changed } = stripTag(p.tags as any);
+              if (changed) gameChanged = true;
+              return { ...p, tags: next };
+          });
+          const updated = { ...g, points: updatedPoints };
+          return { updated, gameChanged };
+      });
+
+      onProgress?.(0.05, 'Updating task library...');
+
+      if (changedTemplates.length > 0) {
+          const { ok } = await db.saveTemplates(changedTemplates, {
+              onProgress: ({ completed, total }) => {
+                  const pct = total ? completed / total : 1;
+                  onProgress?.(0.05 + pct * 0.55, `Updating tasks (${Math.min(total, completed + 1)}/${total})`);
+              }
+          });
+          if (!ok) console.error('Error saving templates: saveTemplates failed');
+      }
+
+      const listChanges = updatedLists.filter(x => x.listChanged).map(x => x.updated);
+      if (listChanges.length > 0) {
+          for (let i = 0; i < listChanges.length; i++) {
+              onProgress?.(0.65 + (i / listChanges.length) * 0.15, `Updating lists (${i + 1}/${listChanges.length})`);
+              await db.saveTaskList(listChanges[i]);
+          }
+      }
+
+      const gameChanges = updatedGames.filter(x => x.gameChanged).map(x => x.updated);
+      if (gameChanges.length > 0) {
+          await db.saveGames(gameChanges, {
+              chunkSize: 2,
+              onProgress: ({ completed, total }) => {
+                  const pct = total ? completed / total : 1;
+                  onProgress?.(0.8 + pct * 0.2, `Updating games (${Math.min(total, completed + 1)}/${total})`);
+              }
+          });
+      }
+
+      onProgress?.(1, 'Done');
+
       setTaskLibrary(updatedLib);
-
-      const updatedLists = taskLists.map(list => ({
-          ...list,
-          tasks: removeInTasks(list.tasks)
-      }));
-      // Save all lists in parallel
-      await Promise.all(updatedLists.map(list => db.saveTaskList(list))).catch(err => {
-          console.error('Error saving lists:', err);
-      });
-      setTaskLists(updatedLists);
-
-      const updatedGames = games.map(g => ({
-          ...g,
-          points: g.points.map(p => ({
-              ...p,
-              tags: p.tags?.filter(tag => tag.toLowerCase() !== tagToDeleteLower) || []
-          }))
-      }));
-      // Save all games in parallel
-      await Promise.all(updatedGames.map(g => db.saveGame(g))).catch(err => {
-          console.error('Error saving games:', err);
-      });
-      setGames(updatedGames);
+      setTaskLists(updatedLists.map(x => x.updated));
+      setGames(updatedGames.map(x => x.updated));
   };
 
   // Check for Client Submission URL
