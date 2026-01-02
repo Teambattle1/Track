@@ -2303,9 +2303,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </div>
                 )}
 
-                {/* Draggable SHOW Toolbar */}
+                {/* Draggable SHOW Toolbar - HIDDEN - Now in left drawer */}
                 <div
-                    className="absolute z-[1100] pointer-events-auto touch-none"
+                    className="hidden absolute z-[1100] pointer-events-auto touch-none"
                     style={{ left: showToolbarPos.x, top: showToolbarPos.y }}
                     onPointerDown={handleShowPointerDown}
                     onPointerMove={handleShowPointerMove}
@@ -2960,11 +2960,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     onPointerMove={handleQRScannerPointerMove}
                                     onPointerUp={handleQRScannerPointerUp}
                                     onPointerCancel={handleQRScannerPointerUp}
-                                    className="flex items-center justify-center bg-orange-600 hover:bg-orange-700 px-4 py-1 rounded-t-lg cursor-grab active:cursor-grabbing touch-none select-none border-b border-orange-700 transition-colors"
+                                    className="flex items-center justify-center bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-t-lg cursor-grab active:cursor-grabbing touch-none select-none border-b border-orange-700 transition-colors"
                                     title="Drag to move"
                                 >
-                                    <GripHorizontal className="w-4 h-4 text-orange-200" />
-                                    <span className="text-[8px] font-black text-orange-100 uppercase tracking-wider ml-1">DRAG</span>
+                                    <GripHorizontal className="w-5 h-5 text-orange-200" />
                                 </div>
 
                                 {/* QR Scan Button - Not draggable */}
