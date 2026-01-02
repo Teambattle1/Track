@@ -101,6 +101,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const rankingDragOffset = useRef({ x: 0, y: 0 });
     const [activeSimulationTaskId, setActiveSimulationTaskId] = useState<string | null>(null);
 
+    // Audio refs for simulation mode
+    const simulationBgAudioRef = useRef<HTMLAudioElement | null>(null);
+
     // Draw Mode State for Visual Connections
     const [drawMode, setDrawMode] = useState<{
         active: boolean;
@@ -2392,6 +2395,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 setSimulationTeam(null);
                                 setActiveSimulationTaskId(null);
                                 setShowRanking(false);
+
+                                // Stop background music
+                                if (simulationBgAudioRef.current) {
+                                    simulationBgAudioRef.current.pause();
+                                    simulationBgAudioRef.current.currentTime = 0;
+                                    simulationBgAudioRef.current = null;
+                                }
                             } else {
                                 // Start simulation
                                 const testTeam = {
@@ -2407,6 +2417,19 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 setSimulationScore(0);
                                 setIsSimulationActive(true);
                                 setShowRanking(true);
+
+                                // Play background music if available
+                                if (activePlayground?.audioUrl) {
+                                    try {
+                                        const audio = new Audio(activePlayground.audioUrl);
+                                        audio.loop = activePlayground.audioLoop !== false;
+                                        audio.volume = (getGlobalVolume() / 100) * 0.8; // 80% of global volume for BG music
+                                        audio.play().catch(err => console.warn('Auto-play prevented:', err));
+                                        simulationBgAudioRef.current = audio;
+                                    } catch (err) {
+                                        console.warn('Failed to play background music:', err);
+                                    }
+                                }
                             }
                         }}
                         className={`w-full px-4 py-4 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 font-black uppercase tracking-widest text-xs shadow-lg ${
