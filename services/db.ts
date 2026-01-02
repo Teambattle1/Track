@@ -459,6 +459,28 @@ export const registerTeam = async (team: Team) => {
     } catch (e) { logError('registerTeam', e); }
 };
 
+export const updateTeam = async (teamId: string, updates: Partial<Team>) => {
+    try {
+        const payload: any = {};
+
+        if (updates.name !== undefined) payload.name = updates.name;
+        if (updates.joinCode !== undefined) payload.join_code = updates.joinCode;
+        if (updates.photoUrl !== undefined) payload.photo_url = updates.photoUrl;
+        if (updates.members !== undefined) payload.members = updates.members;
+        if (updates.score !== undefined) payload.score = updates.score;
+        if (updates.captainDeviceId !== undefined) payload.captain_device_id = updates.captainDeviceId;
+        if (updates.isStarted !== undefined) payload.is_started = updates.isStarted;
+        if (updates.completedPointIds !== undefined) payload.completed_point_ids = updates.completedPointIds;
+
+        payload.updated_at = updates.updatedAt || new Date().toISOString();
+
+        const { error } = await supabase.from('teams').update(payload).eq('id', teamId);
+        if (error) throw error;
+    } catch (e) {
+        logError('updateTeam', e);
+    }
+};
+
 // ATOMIC UPDATE (Fixes Race Condition Point 5)
 export const updateTeamScore = async (teamId: string, delta: number) => {
     try {
