@@ -1106,10 +1106,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 const x = PADDING + (colIndex * colWidth) + (colWidth / 2);
                 return {
                     ...point,
-                    playgroundPosition: {
+                    ...setDevicePosition(point, {
                         x: Math.round(x * 10) / 10,
                         y: Math.round(baseY * 10) / 10
-                    }
+                    })
                 };
             });
         });
@@ -1119,7 +1119,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             ...game,
             points: game.points?.map(p => {
                 const snapped = snappedMarkedPoints.find(sp => sp.id === p.id);
-                return snapped ? { ...p, playgroundPosition: snapped.playgroundPosition } : p;
+                if (snapped && snapped.devicePositions) {
+                    return { ...p, devicePositions: snapped.devicePositions };
+                }
+                return p;
             })
         });
 
