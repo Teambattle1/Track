@@ -542,34 +542,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 )}
             </div>
 
-            <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 relative z-[50]">
-                <button 
-                    onClick={() => setShowFilterMenu(!showFilterMenu)}
-                    className={`w-full p-3 flex items-center justify-between transition-colors ${isFiltered ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500'}`}
-                >
-                    <div className="flex items-center gap-2">
-                        {isFiltered ? <Eye className="w-4 h-4" /> : <Filter className="w-4 h-4 opacity-70" />}
-                        <span className="text-xs font-bold uppercase tracking-wider">
-                            {isFiltered ? 
-                                (filterState.mode === 'TAG' ? `TAG: ${filterState.value}` : `FILTER ACTIVE`) 
-                                : "FILTER MAP POINTS"}
-                        </span>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showFilterMenu ? 'rotate-180' : ''}`} />
-                </button>
-
-                {showFilterMenu && onSetFilter && (
-                    <div className="absolute top-full left-0 right-0 z-[6000] p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-2xl animate-in slide-in-from-top-2 max-h-80 overflow-y-auto">
-                        <button 
-                            onClick={() => { onSetFilter({ mode: 'ALL', value: '' }); setShowFilterMenu(false); }}
-                            className="w-full mb-2 py-2 text-xs font-bold uppercase text-red-500 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                            Reset Filter (Show All)
-                        </button>
-                        <div className="text-center text-[10px] text-gray-400 p-2">Use map filter bar for advanced options.</div>
-                    </div>
-                )}
-            </div>
+            {/* Filter bar hidden - not functional */}
 
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900/50 z-0">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
