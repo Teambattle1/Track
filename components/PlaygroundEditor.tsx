@@ -2387,6 +2387,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             const displaySize = (point.playgroundScale || 1) * 48;
                             const isDraggingThis = draggingTaskId === point.id;
 
+                            // Draw mode visual states
+                            const isDrawSource = drawMode.active && drawMode.sourceTaskId === point.id;
+                            const isDrawTarget = drawMode.active && drawMode.sourceTaskId && point.id !== drawMode.sourceTaskId;
+                            const isHoveredTarget = isDrawTarget && hoveredTaskId === point.id;
+
                             // Check if this task is a target of any action from other tasks
                             const isActionTarget = uniquePlaygroundPoints.some(source =>
                                 source.id !== point.id && source.logic && (
