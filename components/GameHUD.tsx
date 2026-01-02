@@ -1209,7 +1209,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
             )}
 
             {/* Draggable View Switcher (Editor, Instructor, Team) - Hide for PLAYZONE to avoid map confusion */}
-            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && !hideMapToolbars && (
+            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && visibleToolbars['mapmode'] && (
                 <div
                     className="absolute z-[1100] pointer-events-auto touch-none"
                     style={{ left: viewSwitcherPos.x, top: viewSwitcherPos.y }}
