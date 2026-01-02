@@ -179,17 +179,47 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         if (!activePlaygroundId && game.playgrounds && game.playgrounds.length > 0) {
             setActivePlaygroundId(game.playgrounds[0].id);
         } else if (!game.playgrounds || game.playgrounds.length === 0) {
-            // Auto-create if none exists
+            // Auto-create if none exists with full device layouts configuration
+            const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 600;
+            const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 800;
+
             const newPg: Playground = {
                 id: `pg-${Date.now()}`,
                 title: 'Global 1',
                 buttonVisible: true,
                 iconId: 'default',
                 location: { lat: 0, lng: 0 },
-                orientationLock: 'landscape'
+                orientationLock: 'landscape',
+                deviceLayouts: {
+                    mobile: {
+                        orientationLock: 'landscape',
+                        qrScannerPos: { x: windowWidth - 120, y: windowHeight - 100 },
+                        iconPositions: {},
+                        buttonVisible: true,
+                        iconScale: 1.0,
+                    },
+                    tablet: {
+                        orientationLock: 'landscape',
+                        qrScannerPos: { x: windowWidth - 120, y: windowHeight - 100 },
+                        iconPositions: {},
+                        buttonVisible: true,
+                        iconScale: 1.0,
+                    },
+                    desktop: {
+                        orientationLock: 'landscape',
+                        qrScannerPos: { x: windowWidth - 120, y: windowHeight - 100 },
+                        iconPositions: {},
+                        buttonVisible: true,
+                        iconScale: 1.0,
+                    },
+                },
             };
             onUpdateGame({ ...game, playgrounds: [newPg] });
             setActivePlaygroundId(newPg.id);
+
+            // Open drawers by default for new games
+            setIsDrawerOpen(true);
+            setIsTasksDrawerOpen(true);
         }
     }, [game.playgrounds]);
 
