@@ -3720,88 +3720,189 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 )}
                             </div>
 
-                            {/* Icon Editor */}
-                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TASK ICON</label>
+                            {/* Icon Editor - Dual State */}
+                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-3">
+                                {/* UNSOLVED ICON Section */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-red-400 uppercase tracking-widest">🔒 UNSOLVED ICON</label>
 
-                                {/* Current Icon Preview */}
-                                {selectedTask.iconUrl && (
-                                    <div className="p-3 bg-slate-700 rounded-lg flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-3">
-                                            <img src={selectedTask.iconUrl} alt="Task Icon" className="w-8 h-8 object-contain" />
-                                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">CUSTOM ICON</span>
+                                    {/* Current Icon Preview */}
+                                    {selectedTask.iconUrl && (
+                                        <div className="p-3 bg-slate-700 rounded-lg flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <img src={selectedTask.iconUrl} alt="Unsolved Icon" className="w-8 h-8 object-contain" />
+                                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">CUSTOM ICON</span>
+                                            </div>
+                                            <button
+                                                onClick={() => updateTask({ iconUrl: undefined, iconId: 'default' })}
+                                                className="p-1.5 text-slate-500 hover:text-red-500 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
                                         </div>
+                                    )}
+
+                                    {/* Icon Buttons */}
+                                    <div className="grid grid-cols-3 gap-2">
                                         <button
-                                            onClick={() => updateTask({ iconUrl: undefined, iconId: 'default' })}
-                                            className="p-1.5 text-slate-500 hover:text-red-500 transition-colors"
+                                            onClick={() => {
+                                                setEditingCompletedIcon(false);
+                                                taskIconInputRef.current?.click();
+                                            }}
+                                            className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
+                                            title="Upload custom icon for unsolved state"
                                         >
-                                            <X className="w-4 h-4" />
+                                            <Upload className="w-3 h-3" /> UPLOAD
+                                        </button>
+                                        <input ref={taskIconInputRef} type="file" className="hidden" accept="image/*" onChange={handleTaskIconUpload} />
+
+                                        <button
+                                            onClick={() => {
+                                                setEditingCompletedIcon(false);
+                                                setLogoCompanyName('');
+                                                setShowLogoPrompt(true);
+                                            }}
+                                            disabled={isSearchingLogo && !editingCompletedIcon}
+                                            className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
+                                                isSearchingLogo && !editingCompletedIcon
+                                                    ? 'bg-blue-600/50 text-blue-300 cursor-wait'
+                                                    : 'border border-dashed border-blue-600 text-blue-400 hover:text-blue-300 hover:border-blue-400'
+                                            }`}
+                                            title="Search for company logo online"
+                                            type="button"
+                                        >
+                                            {isSearchingLogo && !editingCompletedIcon ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-[9px]">SEARCHING...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Globe className="w-3 h-3" /> LOGO
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setEditingCompletedIcon(false);
+                                                setAiIconPromptValue('');
+                                                setShowAiIconPrompt(true);
+                                            }}
+                                            disabled={isGeneratingIcon && !editingCompletedIcon}
+                                            className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
+                                                isGeneratingIcon && !editingCompletedIcon
+                                                    ? 'bg-purple-600/50 text-purple-300 cursor-wait'
+                                                    : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
+                                            }`}
+                                            title="Generate icon with AI for unsolved state"
+                                            type="button"
+                                        >
+                                            {isGeneratingIcon && !editingCompletedIcon ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-[9px]">GENERATING...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Wand2 className="w-3 h-3" /> AI ICON
+                                                </>
+                                            )}
                                         </button>
                                     </div>
-                                )}
+                                </div>
 
-                                {/* Icon Buttons */}
-                                <div className="grid grid-cols-3 gap-2">
-                                    <button
-                                        onClick={() => taskIconInputRef.current?.click()}
-                                        className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
-                                        title="Upload custom icon"
-                                    >
-                                        <Upload className="w-3 h-3" /> UPLOAD
-                                    </button>
-                                    <input ref={taskIconInputRef} type="file" className="hidden" accept="image/*" onChange={handleTaskIconUpload} />
+                                {/* Divider */}
+                                <div className="h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
 
-                                    <button
-                                        onClick={() => {
-                                            setLogoCompanyName('');
-                                            setShowLogoPrompt(true);
-                                        }}
-                                        disabled={isSearchingLogo}
-                                        className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
-                                            isSearchingLogo
-                                                ? 'bg-blue-600/50 text-blue-300 cursor-wait'
-                                                : 'border border-dashed border-blue-600 text-blue-400 hover:text-blue-300 hover:border-blue-400'
-                                        }`}
-                                        title="Search for company logo online"
-                                        type="button"
-                                    >
-                                        {isSearchingLogo ? (
-                                            <>
-                                                <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
-                                                <span className="text-[9px]">SEARCHING...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Globe className="w-3 h-3" /> LOGO
-                                            </>
-                                        )}
-                                    </button>
+                                {/* SOLVED ICON Section */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-green-400 uppercase tracking-widest">✓ SOLVED ICON</label>
 
-                                    <button
-                                        onClick={() => {
-                                            setAiIconPromptValue('');
-                                            setShowAiIconPrompt(true);
-                                        }}
-                                        disabled={isGeneratingIcon}
-                                        className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
-                                            isGeneratingIcon
-                                                ? 'bg-purple-600/50 text-purple-300 cursor-wait'
-                                                : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
-                                        }`}
-                                        title="Generate icon with AI"
-                                        type="button"
-                                    >
-                                        {isGeneratingIcon ? (
-                                            <>
-                                                <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
-                                                <span className="text-[9px]">GENERATING...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Wand2 className="w-3 h-3" /> AI ICON
-                                            </>
-                                        )}
-                                    </button>
+                                    {/* Current Completed Icon Preview */}
+                                    {selectedTask.completedIconUrl && (
+                                        <div className="p-3 bg-slate-700 rounded-lg flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <img src={selectedTask.completedIconUrl} alt="Solved Icon" className="w-8 h-8 object-contain" />
+                                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">CUSTOM ICON</span>
+                                            </div>
+                                            <button
+                                                onClick={() => updateTask({ completedIconUrl: undefined, completedIconId: 'default' })}
+                                                className="p-1.5 text-slate-500 hover:text-red-500 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Icon Buttons */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setEditingCompletedIcon(true);
+                                                completedTaskIconInputRef.current?.click();
+                                            }}
+                                            className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
+                                            title="Upload custom icon for solved state"
+                                        >
+                                            <Upload className="w-3 h-3" /> UPLOAD
+                                        </button>
+                                        <input ref={completedTaskIconInputRef} type="file" className="hidden" accept="image/*" onChange={handleCompletedTaskIconUpload} />
+
+                                        <button
+                                            onClick={() => {
+                                                setEditingCompletedIcon(true);
+                                                setLogoCompanyName('');
+                                                setShowLogoPrompt(true);
+                                            }}
+                                            disabled={isSearchingLogo && editingCompletedIcon}
+                                            className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
+                                                isSearchingLogo && editingCompletedIcon
+                                                    ? 'bg-blue-600/50 text-blue-300 cursor-wait'
+                                                    : 'border border-dashed border-blue-600 text-blue-400 hover:text-blue-300 hover:border-blue-400'
+                                            }`}
+                                            title="Search for company logo online"
+                                            type="button"
+                                        >
+                                            {isSearchingLogo && editingCompletedIcon ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-[9px]">SEARCHING...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Globe className="w-3 h-3" /> LOGO
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setEditingCompletedIcon(true);
+                                                setAiIconPromptValue('');
+                                                setShowAiIconPrompt(true);
+                                            }}
+                                            disabled={isGeneratingIcon && editingCompletedIcon}
+                                            className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
+                                                isGeneratingIcon && editingCompletedIcon
+                                                    ? 'bg-purple-600/50 text-purple-300 cursor-wait'
+                                                    : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
+                                            }`}
+                                            title="Generate icon with AI for solved state"
+                                            type="button"
+                                        >
+                                            {isGeneratingIcon && editingCompletedIcon ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-[9px]">GENERATING...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Wand2 className="w-3 h-3" /> AI ICON
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
