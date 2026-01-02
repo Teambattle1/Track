@@ -227,9 +227,68 @@ const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   // --- STANDARD TASK LOGIC ---
-  const handleSubmitVote = (e: React.FormEvent) => {
+  const handleSubmitVote = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+
+    // Handle Photo/Video tasks
+    if (point.task.type === 'photo' || point.task.type === 'video') {
+        if (!capturedMedia) {
+            setErrorMsg(`Please ${point.task.type === 'photo' ? 'take a photo' : 'record a video'} before submitting.`);
+            return;
+        }
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
+            // Get team info from teamSync
+            const teamState = teamSync.getState();
+            const teamId = teamState?.teamId || 'unknown-team';
+            const teamName = teamState?.teamName || 'Unknown Team';
+            const gameId = game?.id || 'unknown-game';
+
+            // Upload the file
+            setUploadProgress(30);
+            const mediaUrl = await uploadMediaFile(capturedMedia, gameId, teamId);
+
+            setUploadProgress(60);
+            // Create submission record
+            const submission = await createMediaSubmission(
+                gameId,
+                teamId,
+                teamName,
+                point.id,
+                point.title,
+                mediaUrl,
+                point.task.type
+            );
+
+            setUploadProgress(100);
+
+            // Check if auto-approve or requires approval
+            const requiresApproval = point.task.mediaSettings?.requireApproval !== false;
+
+            if (requiresApproval) {
+                // Show pending message
+                alert(`📸 ${point.task.type === 'photo' ? 'Photo' : 'Video'} submitted!\n\nYour submission is pending instructor approval. You'll be notified once it's reviewed.`);
+                onClose();
+            } else {
+                // Auto-approve: Award points immediately
+                const finalScore = isDoubleTrouble ? point.points * 2 : point.points;
+                onComplete(point.id, finalScore);
+                onClose();
+            }
+
+            return;
+        } catch (error: any) {
+            console.error('Media upload failed:', error);
+            setErrorMsg(`Upload failed: ${error.message || 'Please try again.'}`);
+            setIsUploading(false);
+            setUploadProgress(0);
+            return;
+        }
+    }
 
     let finalAnswer: any = answer;
     if (point.task.type === 'checkbox' || point.task.type === 'multi_select_dropdown') {
