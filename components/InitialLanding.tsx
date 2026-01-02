@@ -876,10 +876,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                                         onSelectGame(game.id);
                                                         setShowGameMenu(false);
                                                         setGameSearchQuery('');
-                                                        // Trigger game settings action
-                                                        setTimeout(() => {
-                                                            onAction('EDIT_GAME');
-                                                        }, 0);
+                                                        onAction('EDIT_GAME');
                                                     }}
                                                     className="p-1 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-orange-400 flex-shrink-0"
                                                     title="Game Settings"
