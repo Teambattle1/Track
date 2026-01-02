@@ -532,7 +532,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 </div>
                 {onOpenPlaygroundEditor && (
                     <button
-                        onClick={() => onOpenPlaygroundEditor()}
+                        onClick={() => onShowPlayzoneChoice?.()}
                         className="px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center gap-2"
                         title="Open Playzone Editor"
                     >
