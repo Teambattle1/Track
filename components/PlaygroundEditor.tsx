@@ -295,6 +295,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     mobile: {
                         orientationLock: 'landscape',
                         qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
+                        qrScannerSize: { width: 140, height: 48 },
+                        qrScannerColor: '#f97316', // Orange-500 default
                         iconPositions: {},
                         buttonVisible: true,
                         iconScale: 1.0,
@@ -302,6 +304,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     tablet: {
                         orientationLock: 'landscape',
                         qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
+                        qrScannerSize: { width: 140, height: 48 },
+                        qrScannerColor: '#f97316', // Orange-500 default
                         iconPositions: {},
                         buttonVisible: true,
                         iconScale: 1.0,
@@ -309,6 +313,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     desktop: {
                         orientationLock: 'landscape',
                         qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
+                        qrScannerSize: { width: 140, height: 48 },
+                        qrScannerColor: '#f97316', // Orange-500 default
                         iconPositions: {},
                         buttonVisible: true,
                         iconScale: 1.0,
@@ -893,6 +899,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 mobile: {
                     orientationLock: 'landscape',
                     qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
+                    qrScannerSize: { width: 140, height: 48 },
+                    qrScannerColor: '#f97316', // Orange-500 default
                     iconPositions: {},
                     buttonVisible: true,
                     iconScale: 1.0,
@@ -900,6 +908,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 tablet: {
                     orientationLock: 'landscape',
                     qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
+                    qrScannerSize: { width: 140, height: 48 },
+                    qrScannerColor: '#f97316', // Orange-500 default
                     iconPositions: {},
                     buttonVisible: true,
                     iconScale: 1.0,
@@ -907,6 +917,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 desktop: {
                     orientationLock: 'landscape',
                     qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
+                    qrScannerSize: { width: 140, height: 48 },
+                    qrScannerColor: '#f97316', // Orange-500 default
                     iconPositions: {},
                     buttonVisible: true,
                     iconScale: 1.0,
