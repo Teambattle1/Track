@@ -224,12 +224,12 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     // Toolbars Drawer State
     const [showToolbarsDrawer, setShowToolbarsDrawer] = useState(true);
     const [visibleToolbars, setVisibleToolbars] = useState<Record<string, boolean>>({
-        mapmode: true,
+        mapmode: false,
         layers: false,
-        location: true,
-        pins: true,
-        show: true,
-        tools: true,
+        location: false,
+        pins: false,
+        show: false,
+        tools: false,
     });
 
     // Toolbar Position Persistence
