@@ -3372,7 +3372,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <img
                                                 src={point.completedIconUrl}
                                                 alt={`${point.title} (Completed)`}
-                                                className={`object-contain ${isActionTarget ? 'opacity-50' : ''}`}
+                                                className={`object-contain rounded-full ${isActionTarget ? 'opacity-50' : ''}`}
                                                 style={{
                                                     width: `${(point.iconImageScale || 0.9) * 100}%`,
                                                     height: `${(point.iconImageScale || 0.9) * 100}%`
@@ -3382,7 +3382,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <img
                                                 src={point.iconUrl}
                                                 alt={point.title}
-                                                className={`object-contain ${isActionTarget ? 'opacity-50' : ''}`}
+                                                className={`object-contain rounded-full ${isActionTarget ? 'opacity-50' : ''}`}
                                                 style={{
                                                     width: `${(point.iconImageScale || 0.9) * 100}%`,
                                                     height: `${(point.iconImageScale || 0.9) * 100}%`
@@ -3390,34 +3390,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             />
                                         ) : (
                                             <Icon className={`w-6 h-6 ${point.isCompleted ? 'text-white' : isActionTarget ? 'text-slate-400' : 'text-slate-900'}`} />
-                                        )}
-
-                                        {/* Mark Indicator Badge */}
-                                        {isMarked && (
-                                            <div className="absolute -top-2 -right-2 bg-orange-400 text-white text-[10px] font-black rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow-lg">
-                                                ✓
-                                            </div>
-                                        )}
-
-                                        {/* Task Order Badge */}
-                                        {showTaskOrder && (
-                                            <div className="absolute -top-1 -right-1 bg-orange-600 text-white text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg">
-                                                {String(index + 1).padStart(2, '0')}
-                                            </div>
-                                        )}
-
-                                        {/* Task Score Badge */}
-                                        {showTaskScores && (
-                                            <div className="absolute -bottom-1 -right-1 bg-yellow-500 text-slate-900 text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg">
-                                                {point.points}
-                                            </div>
-                                        )}
-
-                                        {/* Task Actions Badge */}
-                                        {showTaskActions && point.logic && (point.logic.onOpen?.length || point.logic.onCorrect?.length || point.logic.onIncorrect?.length) && (
-                                            <div className="absolute -bottom-1 -left-1 bg-purple-600 text-white text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg">
-                                                ⚡
-                                            </div>
                                         )}
 
                                         {/* OK/Wrong Answer Marker - Green Check (correct) or Red X (wrong) */}
@@ -3445,6 +3417,35 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Badges - Positioned outside overflow-hidden container to render on top */}
+                                    {/* Mark Indicator Badge */}
+                                    {isMarked && (
+                                        <div className="absolute -top-2 -right-2 bg-orange-400 text-white text-[10px] font-black rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow-lg pointer-events-none">
+                                            ✓
+                                        </div>
+                                    )}
+
+                                    {/* Task Order Badge */}
+                                    {showTaskOrder && (
+                                        <div className="absolute -top-1 -right-1 bg-orange-600 text-white text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg pointer-events-none">
+                                            {String(index + 1).padStart(2, '0')}
+                                        </div>
+                                    )}
+
+                                    {/* Task Score Badge */}
+                                    {showTaskScores && (
+                                        <div className="absolute -bottom-1 -right-1 bg-yellow-500 text-slate-900 text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg pointer-events-none">
+                                            {point.points}
+                                        </div>
+                                    )}
+
+                                    {/* Task Actions Badge */}
+                                    {showTaskActions && point.logic && (point.logic.onOpen?.length || point.logic.onCorrect?.length || point.logic.onIncorrect?.length) && (
+                                        <div className="absolute -bottom-1 -left-1 bg-purple-600 text-white text-[8px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg pointer-events-none">
+                                            ⚡
+                                        </div>
+                                    )}
 
                                     {/* Task Name - Always Visible when showTaskNames is true */}
                                     {showTaskNames && (
