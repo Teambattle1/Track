@@ -1,0 +1,326 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic:
+      - img
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Go Back" [ref=e8] [cursor=pointer]:
+          - img [ref=e9]
+        - button "System Settings & Tools" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+        - generic [ref=e16]:
+          - generic "Drag to move fields" [ref=e17]
+          - button "SELECT SESSION" [ref=e20] [cursor=pointer]:
+            - generic [ref=e21]: SELECT SESSION
+            - img [ref=e22]
+        - generic [ref=e26]:
+          - heading "EDIT CENTER" [level=1] [ref=e27]
+          - generic [ref=e28]:
+            - paragraph [ref=e29]: MODIFY RESOURCES
+            - paragraph [ref=e30]: v4.2
+      - generic [ref=e34]:
+        - generic [ref=e35] [cursor=pointer]:
+          - img [ref=e39]
+          - heading "EDIT GAME" [level=2] [ref=e44]
+        - generic [ref=e46] [cursor=pointer]:
+          - img [ref=e50]
+          - heading "EDIT TASK" [level=2] [ref=e55]
+        - generic [ref=e57] [cursor=pointer]:
+          - img [ref=e61]
+          - heading "EDIT PLAYZONE" [level=2] [ref=e67]
+      - paragraph [ref=e70]: POWERED BY TEAMBATTLE
+  - generic [ref=e72]:
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - img [ref=e76]
+        - generic [ref=e78]:
+          - heading "TASK MASTER" [level=2] [ref=e79]
+          - paragraph [ref=e80]: GLOBAL RESOURCE MANAGER
+      - button [ref=e81] [cursor=pointer]:
+        - img [ref=e82]
+    - generic [ref=e85]:
+      - button "GLOBAL LIBRARY" [ref=e86] [cursor=pointer]
+      - button "TASK LISTS" [ref=e87] [cursor=pointer]
+      - button "TAGS & CATEGORIES" [active] [ref=e88] [cursor=pointer]
+      - button "CLIENT PORTAL" [ref=e89] [cursor=pointer]
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - heading "TAG CATEGORIES" [level=1] [ref=e93]
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - img [ref=e96]
+            - generic [ref=e100]: 16 TAGS IN USE
+          - generic [ref=e101]:
+            - img [ref=e102]
+            - generic [ref=e104]: 0 CONFIGURED
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - generic [ref=e107]:
+            - heading "DEFINE NEW TAG" [level=2] [ref=e108]:
+              - img [ref=e109]
+              - text: DEFINE NEW TAG
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - generic [ref=e112]: TAG NAME
+                - textbox "E.G. HISTORICAL..." [ref=e113]
+              - generic [ref=e114]:
+                - generic [ref=e115]: BRAND COLOR
+                - generic [ref=e116]:
+                  - button [ref=e117] [cursor=pointer]
+                  - button [ref=e118] [cursor=pointer]
+                  - button [ref=e119] [cursor=pointer]
+                  - button [ref=e120] [cursor=pointer]
+                  - button [ref=e121] [cursor=pointer]
+                  - button [ref=e122] [cursor=pointer]
+                  - button [ref=e123] [cursor=pointer]
+                  - button [ref=e124] [cursor=pointer]
+                  - button [ref=e125] [cursor=pointer]
+                  - button [ref=e126] [cursor=pointer]
+                  - button [ref=e127] [cursor=pointer]
+                  - button [ref=e128] [cursor=pointer]
+                  - button [ref=e129] [cursor=pointer]
+                  - button [ref=e130] [cursor=pointer]
+                  - button [ref=e131] [cursor=pointer]
+                  - button [ref=e132] [cursor=pointer]
+                  - button [ref=e133] [cursor=pointer]
+                  - button [ref=e134] [cursor=pointer]
+                  - button [ref=e135] [cursor=pointer]
+                  - button [ref=e136] [cursor=pointer]
+                  - button [ref=e137] [cursor=pointer]
+                  - button [ref=e138] [cursor=pointer]
+                  - button [ref=e139] [cursor=pointer]
+                  - button [ref=e140] [cursor=pointer]
+                  - button [ref=e141] [cursor=pointer]
+                  - button [ref=e142] [cursor=pointer]
+                  - button [ref=e143] [cursor=pointer]
+                  - button [ref=e144] [cursor=pointer]
+                  - button [ref=e145] [cursor=pointer]
+                  - button [ref=e146] [cursor=pointer]
+                  - button [ref=e147] [cursor=pointer]
+                  - button [ref=e148] [cursor=pointer]
+                  - button [ref=e149] [cursor=pointer]
+              - button "REGISTER TAG" [disabled] [ref=e151]
+          - generic [ref=e152]:
+            - img [ref=e153]
+            - generic [ref=e155]:
+              - paragraph [ref=e156]: AUTO-DISCOVERY ACTIVE
+              - paragraph [ref=e157]: THE REGISTRY AUTOMATICALLY DETECTS TAGS USED IN YOUR LIBRARY. CLICK ANY TAG IN THE LIST TO EDIT ITS COLOR OR RENAME IT GLOBALLY.
+        - generic [ref=e159]:
+          - generic [ref=e160]:
+            - heading "MANAGEMENT REGISTRY" [level=2] [ref=e161]
+            - generic [ref=e162]:
+              - img [ref=e163]
+              - textbox "FILTER SYSTEM TAGS..." [ref=e166]
+          - generic [ref=e167]:
+            - generic [ref=e168] [cursor=pointer]:
+              - generic [ref=e169]:
+                - generic [ref=e170]: �
+                - generic [ref=e171]:
+                  - generic [ref=e172]:
+                    - heading "🇩🇰" [level=3] [ref=e173]
+                    - generic [ref=e174]: NOT REGISTERED
+                    - generic "44 tasks use this tag" [ref=e175]:
+                      - img [ref=e176]
+                      - text: 44 IN USE
+                  - paragraph [ref=e178]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e180]:
+                - img [ref=e181]
+            - generic [ref=e184] [cursor=pointer]:
+              - generic [ref=e185]:
+                - generic [ref=e186]: "8"
+                - generic [ref=e187]:
+                  - generic [ref=e188]:
+                    - heading "80 music" [level=3] [ref=e189]
+                    - generic [ref=e190]: NOT REGISTERED
+                    - generic "5 tasks use this tag" [ref=e191]:
+                      - img [ref=e192]
+                      - text: 5 IN USE
+                  - paragraph [ref=e194]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e196]:
+                - img [ref=e197]
+            - generic [ref=e200] [cursor=pointer]:
+              - generic [ref=e201]:
+                - generic [ref=e202]: "8"
+                - generic [ref=e203]:
+                  - generic [ref=e204]:
+                    - heading "80´es musik" [level=3] [ref=e205]
+                    - generic [ref=e206]: NOT REGISTERED
+                    - generic "21 tasks use this tag" [ref=e207]:
+                      - img [ref=e208]
+                      - text: 21 IN USE
+                  - paragraph [ref=e210]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e212]:
+                - img [ref=e213]
+            - generic [ref=e216] [cursor=pointer]:
+              - generic [ref=e217]:
+                - generic [ref=e218]: A
+                - generic [ref=e219]:
+                  - generic [ref=e220]:
+                    - heading "ai" [level=3] [ref=e221]
+                    - generic [ref=e222]: NOT REGISTERED
+                    - generic "117 tasks use this tag" [ref=e223]:
+                      - img [ref=e224]
+                      - text: 117 IN USE
+                  - paragraph [ref=e226]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e228]:
+                - img [ref=e229]
+            - generic [ref=e232] [cursor=pointer]:
+              - generic [ref=e233]:
+                - generic [ref=e234]: A
+                - generic [ref=e235]:
+                  - generic [ref=e236]:
+                    - heading "arla" [level=3] [ref=e237]
+                    - generic [ref=e238]: NOT REGISTERED
+                    - generic "10 tasks use this tag" [ref=e239]:
+                      - img [ref=e240]
+                      - text: 10 IN USE
+                  - paragraph [ref=e242]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e244]:
+                - img [ref=e245]
+            - generic [ref=e248] [cursor=pointer]:
+              - generic [ref=e249]:
+                - generic [ref=e250]: A
+                - generic [ref=e251]:
+                  - generic [ref=e252]:
+                    - heading "arla - playzone" [level=3] [ref=e253]
+                    - generic [ref=e254]: NOT REGISTERED
+                    - generic "5 tasks use this tag" [ref=e255]:
+                      - img [ref=e256]
+                      - text: 5 IN USE
+                  - paragraph [ref=e258]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e260]:
+                - img [ref=e261]
+            - generic [ref=e264] [cursor=pointer]:
+              - generic [ref=e265]:
+                - generic [ref=e266]: C
+                - generic [ref=e267]:
+                  - generic [ref=e268]:
+                    - heading "cross country" [level=3] [ref=e269]
+                    - generic [ref=e270]: NOT REGISTERED
+                    - generic "10 tasks use this tag" [ref=e271]:
+                      - img [ref=e272]
+                      - text: 10 IN USE
+                  - paragraph [ref=e274]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e276]:
+                - img [ref=e277]
+            - generic [ref=e280] [cursor=pointer]:
+              - generic [ref=e281]:
+                - generic [ref=e282]: D
+                - generic [ref=e283]:
+                  - generic [ref=e284]:
+                    - heading "danish" [level=3] [ref=e285]
+                    - generic [ref=e286]: NOT REGISTERED
+                    - generic "5 tasks use this tag" [ref=e287]:
+                      - img [ref=e288]
+                      - text: 5 IN USE
+                  - paragraph [ref=e290]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e292]:
+                - img [ref=e293]
+            - generic [ref=e296] [cursor=pointer]:
+              - generic [ref=e297]:
+                - generic [ref=e298]: M
+                - generic [ref=e299]:
+                  - generic [ref=e300]:
+                    - heading "matematik" [level=3] [ref=e301]
+                    - generic [ref=e302]: NOT REGISTERED
+                    - generic "20 tasks use this tag" [ref=e303]:
+                      - img [ref=e304]
+                      - text: 20 IN USE
+                  - paragraph [ref=e306]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e308]:
+                - img [ref=e309]
+            - generic [ref=e312] [cursor=pointer]:
+              - generic [ref=e313]:
+                - generic [ref=e314]: M
+                - generic [ref=e315]:
+                  - generic [ref=e316]:
+                    - heading "mickey" [level=3] [ref=e317]
+                    - generic [ref=e318]: NOT REGISTERED
+                    - generic "1 tasks use this tag" [ref=e319]:
+                      - img [ref=e320]
+                      - text: 1 IN USE
+                  - paragraph [ref=e322]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e324]:
+                - img [ref=e325]
+            - generic [ref=e328] [cursor=pointer]:
+              - generic [ref=e329]:
+                - generic [ref=e330]: M
+                - generic [ref=e331]:
+                  - generic [ref=e332]:
+                    - heading "mozart" [level=3] [ref=e333]
+                    - generic [ref=e334]: NOT REGISTERED
+                    - generic "39 tasks use this tag" [ref=e335]:
+                      - img [ref=e336]
+                      - text: 39 IN USE
+                  - paragraph [ref=e338]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e340]:
+                - img [ref=e341]
+            - generic [ref=e344] [cursor=pointer]:
+              - generic [ref=e345]:
+                - generic [ref=e346]: "N"
+                - generic [ref=e347]:
+                  - generic [ref=e348]:
+                    - heading "nordsetter" [level=3] [ref=e349]
+                    - generic [ref=e350]: NOT REGISTERED
+                    - generic "10 tasks use this tag" [ref=e351]:
+                      - img [ref=e352]
+                      - text: 10 IN USE
+                  - paragraph [ref=e354]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e356]:
+                - img [ref=e357]
+            - generic [ref=e360] [cursor=pointer]:
+              - generic [ref=e361]:
+                - generic [ref=e362]: P
+                - generic [ref=e363]:
+                  - generic [ref=e364]:
+                    - heading "pepsi" [level=3] [ref=e365]
+                    - generic [ref=e366]: NOT REGISTERED
+                    - generic "6 tasks use this tag" [ref=e367]:
+                      - img [ref=e368]
+                      - text: 6 IN USE
+                  - paragraph [ref=e370]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e372]:
+                - img [ref=e373]
+            - generic [ref=e376] [cursor=pointer]:
+              - generic [ref=e377]:
+                - generic [ref=e378]: T
+                - generic [ref=e379]:
+                  - generic [ref=e380]:
+                    - heading "tivoli" [level=3] [ref=e381]
+                    - generic [ref=e382]: NOT REGISTERED
+                    - generic "11 tasks use this tag" [ref=e383]:
+                      - img [ref=e384]
+                      - text: 11 IN USE
+                  - paragraph [ref=e386]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e388]:
+                - img [ref=e389]
+            - generic [ref=e392] [cursor=pointer]:
+              - generic [ref=e393]:
+                - generic [ref=e394]: W
+                - generic [ref=e395]:
+                  - generic [ref=e396]:
+                    - heading "world goal" [level=3] [ref=e397]
+                    - generic [ref=e398]: NOT REGISTERED
+                    - generic "5 tasks use this tag" [ref=e399]:
+                      - img [ref=e400]
+                      - text: 5 IN USE
+                  - paragraph [ref=e402]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e404]:
+                - img [ref=e405]
+            - generic [ref=e408] [cursor=pointer]:
+              - generic [ref=e409]:
+                - generic [ref=e410]: W
+                - generic [ref=e411]:
+                  - generic [ref=e412]:
+                    - heading "world goals" [level=3] [ref=e413]
+                    - generic [ref=e414]: NOT REGISTERED
+                    - generic "5 tasks use this tag" [ref=e415]:
+                      - img [ref=e416]
+                      - text: 5 IN USE
+                  - paragraph [ref=e418]: "#UNDEFINED"
+              - button "GLOBAL PURGE" [ref=e420]:
+                - img [ref=e421]
+```
