@@ -3565,10 +3565,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 {/* QR Scan Button - Resizable, draggable, color customizable */}
                                 <button
                                     onPointerDown={(e) => {
-                                        e.stopPropagation();
                                         // Track button position for click detection (separate from wrapper's drag)
                                         qrScannerButtonDownPos.current = { x: e.clientX, y: e.clientY };
                                         qrScannerHasMoved.current = false;
+                                        // Don't stop propagation - allow parent wrapper to handle dragging
                                     }}
                                     onPointerMove={(e) => {
                                         // Track if user moved significantly (threshold: 5px)
@@ -3579,7 +3579,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         }
                                     }}
                                     onPointerUp={(e) => {
-                                        e.stopPropagation();
 
                                         // Only count as click if there was minimal movement
                                         if (qrScannerHasMoved.current) {
