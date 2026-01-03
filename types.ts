@@ -222,6 +222,8 @@ export interface DeviceLayout {
   qrScannerPos?: { x: number; y: number }; // SCAN QR button position
   qrScannerSize?: { width: number; height: number }; // SCAN QR button size
   qrScannerColor?: string; // SCAN QR button background color (hex)
+  titleTextPos?: { x: number; y: number }; // Title text position (percentage-based)
+  titleTextSize?: { width: number; height: number }; // Title text size (px)
   iconPositions?: Record<string, { x: number; y: number }>; // Per-icon positions by point ID
   buttonVisible?: boolean; // Device-specific button visibility
   buttonLabel?: string; // Device-specific label
