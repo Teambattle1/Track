@@ -2884,6 +2884,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                        title="Task Color Scheme (Local Override)"
                    />
                )}
+
+               {/* Device Preview Modal */}
+               {showDevicePreview && (
+                   <DevicePreviewModal
+                       point={editedPoint}
+                       onClose={() => setShowDevicePreview(false)}
+                   />
+               )}
            </form>
         )}
       </div>
