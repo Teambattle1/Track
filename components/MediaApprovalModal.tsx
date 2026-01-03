@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, XCircle, Slider, Camera, Video, Send } from 'lucide-react';
+import { X, Check, XCircle, SlidersHorizontal, Camera, Video, Send } from 'lucide-react';
 import { MediaSubmission } from '../types';
 
 interface MediaApprovalModalProps {
@@ -126,7 +126,7 @@ const MediaApprovalModal: React.FC<MediaApprovalModalProps> = ({
             <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-black text-blue-300 uppercase flex items-center gap-2">
-                  <Slider className="w-4 h-4" />
+                  <SlidersHorizontal className="w-4 h-4" />
                   Partial Score
                 </label>
                 <span className="text-2xl font-black text-white">{partialScore}%</span>
