@@ -256,6 +256,12 @@ export interface Playground {
   showBackground?: boolean;
   showQRScanner?: boolean;
 
+  // Title Text Overlay
+  showTitleText?: boolean;
+  titleText?: string;
+  titleTextColor?: string; // Hex color
+  titleTextFontSize?: number; // Font size in pixels
+
   // Device-specific layouts (for multi-device support)
   deviceLayouts?: Record<DeviceType, DeviceLayout>;
 }
