@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { Game, Team, TeamMember, Coordinate, GameMode, TeamStatus } from '../types';
-import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, AlertTriangle, Loader2, BookOpen, CheckCircle, Monitor, ExternalLink } from 'lucide-react';
+import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, AlertTriangle, Loader2, BookOpen, CheckCircle, Monitor, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
@@ -392,6 +392,18 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                         >
                             <Monitor className="w-4 h-4" />
                             CLIENT LOBBY
+                            <ExternalLink className="w-3 h-3" />
+                        </a>
+
+                        <a
+                            href={`#/client/${game.id}?tab=gallery`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-1.5 rounded-lg border bg-gradient-to-r from-teal-600 to-teal-700 border-teal-500 text-white hover:from-teal-700 hover:to-teal-800 text-xs font-bold uppercase transition-all shadow-lg"
+                            title="Open Media Gallery"
+                        >
+                            <ImageIcon className="w-4 h-4" />
+                            MEDIA GALLERY
                             <ExternalLink className="w-3 h-3" />
                         </a>
                     </div>
