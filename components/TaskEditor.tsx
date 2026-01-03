@@ -1029,8 +1029,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                            <button
                                key={tab.id}
                                type="button"
-                               onClick={() => setActiveTab(tab.id as any)}
-                               className={`flex-1 py-3 text-[10px] font-black uppercase flex flex-col items-center gap-1 border-b-2 transition-all relative ${activeTab === tab.id ? 'border-orange-600 text-orange-600 dark:text-orange-400 bg-white dark:bg-gray-800' : 'border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                               onClick={() => {
+                                   if (tab.id === 'VIEW') {
+                                       setShowDevicePreview(true);
+                                   } else {
+                                       setActiveTab(tab.id as any);
+                                   }
+                               }}
+                               className={`flex-1 py-3 text-[10px] font-black uppercase flex flex-col items-center gap-1 border-b-2 transition-all relative ${activeTab === tab.id && tab.id !== 'VIEW' ? 'border-orange-600 text-orange-600 dark:text-orange-400 bg-white dark:bg-gray-800' : 'border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                            >
                                <tab.icon className="w-4 h-4" />
                                <span className="flex items-center gap-1">
