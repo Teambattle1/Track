@@ -1007,7 +1007,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
       );
   };
 
-  const sanitizedQuestion = DOMPurify.sanitize(point.task.question);
+  // Get team name for placeholder replacement
+  const teamState = teamSync.getState();
+  const teamName = teamState?.teamName || 'Your Team';
+
+  // Replace placeholders in task question
+  const questionWithPlaceholders = replacePlaceholders(point.task.question, teamName);
+  const sanitizedQuestion = DOMPurify.sanitize(questionWithPlaceholders);
 
   return (
     <div className="fixed inset-0 z-[2600] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
