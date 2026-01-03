@@ -33,6 +33,12 @@ const MediaManager: React.FC<MediaManagerProps> = ({ onClose, games }) => {
     try {
       const stats = await getMediaStats(games);
       setGameStats(stats);
+
+      // Check if all stats are zero (might mean SQL script not run)
+      const hasAnyData = stats.some(s => s.photoCount > 0 || s.videoCount > 0);
+      if (!hasAnyData && stats.length > 0) {
+        console.log('[Media Manager] No media found. If you just set this up, make sure to run the SQL script in Supabase!');
+      }
     } catch (error) {
       console.error('Failed to load media stats:', error);
     } finally {

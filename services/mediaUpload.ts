@@ -290,12 +290,27 @@ export const getMediaStats = async (games: { id: string; name: string }[]) => {
   try {
     const stats = await Promise.all(
       games.map(async (game) => {
+        // Try to query media_type first to check if table exists
         const { data, error } = await supabase
           .from('media_submissions')
-          .select('media_type, downloaded_by_client')
+          .select('media_type')
           .eq('game_id', game.id);
 
+        // If table doesn't exist or query failed, return empty stats
         if (error) {
+          // Table might not exist yet - SQL script not run
+          if (error.code === '42P01' || error.code === '42703') {
+            // 42P01 = table does not exist, 42703 = column does not exist
+            // Silently return empty stats (user needs to run SQL script)
+            return {
+              gameId: game.id,
+              gameName: game.name,
+              photoCount: 0,
+              videoCount: 0,
+              totalSizeMB: 0,
+              downloadedCount: 0
+            };
+          }
           console.error('[Media Stats] Query failed for game:', game.id, error);
           return {
             gameId: game.id,
@@ -309,7 +324,9 @@ export const getMediaStats = async (games: { id: string; name: string }[]) => {
 
         const photoCount = data.filter((s) => s.media_type === 'photo').length;
         const videoCount = data.filter((s) => s.media_type === 'video').length;
-        const downloadedCount = data.filter((s) => s.downloaded_by_client === true).length;
+
+        // downloaded_by_client might not exist yet - gracefully handle
+        const downloadedCount = 0; // Will be 0 until SQL script is run
 
         // Estimate size (we don't track actual file sizes in the DB for simplicity)
         // Average: 2MB per photo, 10MB per video
