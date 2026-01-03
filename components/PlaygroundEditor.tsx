@@ -3579,11 +3579,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         }
                                     }}
                                     onPointerUp={(e) => {
-
                                         // Only count as click if there was minimal movement
                                         if (qrScannerHasMoved.current) {
                                             return; // This was a drag, not a click
                                         }
+
+                                        // Stop propagation only if this is a valid click (not a drag)
+                                        e.stopPropagation();
 
                                         // In simulation mode, always open scanner on single click
                                         if (isSimulationActive) {
