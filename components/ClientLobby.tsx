@@ -20,6 +20,15 @@ const ClientLobby: React.FC<ClientLobbyProps> = ({ gameId, onBack }) => {
   const [activeView, setActiveView] = useState<ClientView>('ranking');
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Check URL parameter for tab
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'gallery' || tabParam === 'stats') {
+      setActiveView(tabParam as ClientView);
+    }
+  }, []);
+
   // Load game and teams
   useEffect(() => {
     loadGameData();
