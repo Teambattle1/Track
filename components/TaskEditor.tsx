@@ -169,6 +169,9 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   // Color scheme editor state
   const [showColorSchemeEditor, setShowColorSchemeEditor] = useState(false);
 
+  // Device preview modal state
+  const [showDevicePreview, setShowDevicePreview] = useState(false);
+
   // Collapse/expand states for activation sections
   const [expandedActivations, setExpandedActivations] = useState<Record<string, boolean>>({
     click: false,
