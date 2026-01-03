@@ -1004,6 +1004,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                        {id: 'ACTIVATION', label: 'Activation', icon: Lock},
                        {id: 'TAGS', label: 'Tags', icon: Tag},
                        {id: 'LANGUAGES', label: 'Languages', icon: Globe},
+                       {id: 'VIEW', label: 'View', icon: Eye},
                    ].map(tab => {
                        // Count unapproved translations for Languages tab badge
                        let unapprovedCount = 0;
