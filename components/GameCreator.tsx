@@ -2317,6 +2317,18 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           </div>
                                       </a>
 
+                                      <a
+                                          href={`${clientLink}?tab=gallery`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block w-full px-4 py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white rounded-lg font-bold transition-all text-center"
+                                      >
+                                          <div className="flex items-center justify-center gap-2">
+                                              <ImageIcon className="w-5 h-5" />
+                                              Open Media Gallery
+                                          </div>
+                                      </a>
+
                                       <p className="text-xs text-gray-400 text-center">
                                           Use this to present rankings and media on stage or projectors
                                       </p>
