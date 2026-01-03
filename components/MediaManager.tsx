@@ -108,6 +108,26 @@ const MediaManager: React.FC<MediaManagerProps> = ({ onClose, games }) => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          {/* Setup Reminder */}
+          {!isLoading && totalStats.photoCount === 0 && totalStats.videoCount === 0 && (
+            <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-yellow-300 text-sm mb-1">Setup Required</p>
+                  <p className="text-xs text-yellow-200">
+                    No media found. If you just enabled photo/video tasks, make sure to:
+                  </p>
+                  <ol className="text-xs text-yellow-200 mt-2 ml-4 list-decimal space-y-1">
+                    <li>Go to <strong>System Tools → SUPABASE</strong></li>
+                    <li>Click <strong>"Setup Database Tables"</strong></li>
+                    <li>Run the SQL script in Supabase SQL Editor</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Global Stats */}
           <div className="grid grid-cols-4 gap-4">
             <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
