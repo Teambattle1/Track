@@ -170,7 +170,14 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
         setError("Tag is required for filtering.");
         return;
     }
-    
+
+    // Check if API key is configured first
+    if (!hasApiKey()) {
+        setPendingGenerationParams({topic, taskCount, language, autoTag});
+        setShowGeminiKeyModal(true);
+        return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setProgress(0);
