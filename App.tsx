@@ -10,6 +10,8 @@ import { LocationProvider, useLocation } from './contexts/LocationContext';
 import { TagColorsProvider } from './contexts/TagColorsContext';
 import { haversineMeters, isWithinRadius, isValidCoordinate } from './utils/geo';
 import { snapPointsToRoad, isPointInBox } from './utils/mapbox';
+import { playSound } from './utils/sounds';
+import { vibrateChatNotification } from './utils/vibration';
 import { generateDemoTeamHistory } from './services/teamHistoryDemo';
 import GameMap, { GameMapHandle } from './components/GameMap';
 import GameHUD from './components/GameHUD';
