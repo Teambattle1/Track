@@ -526,6 +526,15 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
             <span>CHAT</span>
           </button>
 
+          <button
+            onClick={() => setIsQRScannerActive(true)}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+            title="Scan QR Code"
+          >
+            <QrCode className="w-5 h-5" />
+            <span>SCAN QR</span>
+          </button>
+
           {/* Map Style Selector */}
           {!game.designConfig?.lockMapStyle ? (
             <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 hover:bg-orange-700 rounded-xl transition-colors">
