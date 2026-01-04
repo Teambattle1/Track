@@ -261,14 +261,16 @@ const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
   }
 
   const layer = MAP_LAYERS[mapStyle] || MAP_LAYERS.osm;
-  
+
   return (
     <>
-      <TileLayer 
-        url={layer.url} 
-        attribution={layer.attribution} 
-        className={layer.className || ''}
-      />
+      {showMapLayer && (
+        <TileLayer
+          url={layer.url}
+          attribution={layer.attribution}
+          className={layer.className || ''}
+        />
+      )}
       
       {/* Historic Filter CSS Injection */}
       {mapStyle === 'historic' && (
