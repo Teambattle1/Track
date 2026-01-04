@@ -173,6 +173,28 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
     aspectRatio: `${specs.width} / ${specs.height}`
   } : { width: '100%', height: '100%', aspectRatio: 'auto' };
 
+  // Force landscape orientation for team view
+  useEffect(() => {
+    if (!isInstructor && typeof window !== 'undefined' && window.screen?.orientation) {
+      try {
+        window.screen.orientation.lock('landscape').catch((error: any) => {
+          console.log('Orientation lock request failed (may not be supported):', error);
+        });
+      } catch (error) {
+        console.log('Orientation lock not supported on this device');
+      }
+    }
+    return () => {
+      if (!isInstructor && typeof window !== 'undefined' && window.screen?.orientation) {
+        try {
+          window.screen.orientation.unlock();
+        } catch (error) {
+          console.log('Orientation unlock failed');
+        }
+      }
+    };
+  }, [isInstructor]);
+
   // Cleanup tap timeout on unmount
   useEffect(() => {
     return () => {
