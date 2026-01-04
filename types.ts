@@ -609,6 +609,9 @@ export interface Game {
   allowChatting?: boolean;
   showPlayerLocations?: boolean;
   
+  // Device Layouts for Map Games (GPS)
+  mapDeviceLayouts?: Record<DeviceType, DeviceLayout>; // Device-specific layouts for map-based games (Mobile, Tablet, Desktop)
+
   // New Metadata
   client?: ClientInfo;
   timerConfig?: TimerConfig;
