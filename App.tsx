@@ -1980,7 +1980,7 @@ const GameApp: React.FC = () => {
               />
           )}
           {activeTaskActionPoint && activeGame && (
-              <TaskActionModal 
+              <TaskActionModal
                   point={activeTaskActionPoint}
                   allPoints={activeGame.points}
                   playgrounds={activeGame.playgrounds}
@@ -1991,7 +1991,12 @@ const GameApp: React.FC = () => {
                           updateActiveGame({ ...activeGame, points: updatedPoints });
                       }
                   }}
-                  onStartDrawMode={() => {}}
+                  onStartDrawMode={(trigger) => {
+                      // Set pending draw request and switch to EDIT mode
+                      setPendingDrawRequest(trigger);
+                      setMode(GameMode.EDIT);
+                      setActiveTaskActionPoint(null); // Close modal
+                  }}
               />
           )}
           {latestMessage && (
