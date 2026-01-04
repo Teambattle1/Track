@@ -1853,6 +1853,7 @@ const GameApp: React.FC = () => {
                           pendingDrawTrigger={pendingDrawRequest}
                           activeTaskActionPoint={activeTaskActionPoint}
                           onDrawModeActivated={() => setPendingDrawRequest(null)}
+                          onDrawModeDeactivated={() => setActiveTaskActionPoint(null)}
                           onEditPoint={(p) => setActiveTask(p)}
                           onPointClick={(p) => {
                               mapRef.current?.jumpTo(p.location);
