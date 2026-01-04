@@ -98,23 +98,33 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
       if (!selectedTemplateForGame) return;
 
       try {
+          const newPlaygroundId = `pg-${Date.now()}`;
           const newPlayground = {
-              id: `pg-${Date.now()}`,
+              id: newPlaygroundId,
               ...selectedTemplateForGame.playgroundData,
               title: selectedTemplateForGame.title,
               buttonVisible: true
           };
 
+          // Copy tasks from template and associate them with the new playground
+          const newPoints = selectedTemplateForGame.tasks?.map((task, index) => ({
+              ...task,
+              id: task.id, // Keep original task ID for library sync
+              playgroundId: newPlaygroundId, // Associate with new playground
+              order: index
+          })) || [];
+
           const updatedGame = {
               ...game,
-              playgrounds: [...(game.playgrounds || []), newPlayground]
+              playgrounds: [...(game.playgrounds || []), newPlayground],
+              points: [...(game.points || []), ...newPoints] // Add the imported tasks to game points
           };
 
           await db.saveGame(updatedGame);
 
           setShowGameSelector(false);
           setSelectedTemplateForGame(null);
-          alert(`Playzone "${selectedTemplateForGame.title}" added to "${game.name}"!`);
+          alert(`Playzone "${selectedTemplateForGame.title}" with ${newPoints.length} task(s) added to "${game.name}"!`);
       } catch (error) {
           console.error('Error adding playzone to game:', error);
           alert('Failed to add playzone to game');
