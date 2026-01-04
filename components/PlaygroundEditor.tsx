@@ -2575,6 +2575,35 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         </div>
                                     </div>
                                 )}
+
+                                {/* SCAN QR Button Color Picker */}
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
+                                        SCAN QR BUTTON COLOR
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="color"
+                                            value={qrScannerColor}
+                                            onChange={(e) => {
+                                                setQRScannerColor(e.target.value);
+                                                saveQRScannerSettings();
+                                            }}
+                                            className="w-12 h-12 rounded-lg cursor-pointer border-2 border-slate-600 hover:border-slate-500 transition-colors"
+                                            title="Click to change SCAN QR button color"
+                                        />
+                                        <div className="flex-1 space-y-1">
+                                            <div
+                                                className="w-full h-8 rounded-lg border-2 border-slate-600 shadow-md transition-all"
+                                                style={{ backgroundColor: qrScannerColor }}
+                                                title={`Current color: ${qrScannerColor}`}
+                                            />
+                                            <p className="text-[8px] text-slate-500 uppercase tracking-wider">
+                                                {qrScannerColor.toUpperCase()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
