@@ -524,12 +524,21 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                     }`}
                                 >
                                     <div className="flex items-start justify-between mb-2">
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors overflow-hidden ${
                                             isHovered
                                                 ? 'bg-orange-500 text-white'
                                                 : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
                                         } group-hover:scale-110 transition-transform`}>
-                                            <Icon className="w-4 h-4" />
+                                            {playground.iconUrl ? (
+                                                <img
+                                                    src={playground.iconUrl}
+                                                    alt={playground.title}
+                                                    className="w-full h-full object-cover"
+                                                    title="Custom playzone icon"
+                                                />
+                                            ) : (
+                                                <Icon className="w-4 h-4" />
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 mb-1">
