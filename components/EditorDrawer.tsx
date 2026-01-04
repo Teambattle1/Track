@@ -833,6 +833,13 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
             </div>
           </>
       )}
+
+      {/* Version Badge - Bottom Left */}
+      {version && (
+        <div className="absolute bottom-4 left-4 bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg transition-colors">
+          v{version}
+        </div>
+      )}
     </div>
   );
 };
