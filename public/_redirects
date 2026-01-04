@@ -1,0 +1,3 @@
+# Redirect all routes to index.html for client-side routing
+# This ensures /login and other routes work correctly after deployment
+/*    /index.html   200

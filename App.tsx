@@ -69,7 +69,10 @@ const GameApp: React.FC = () => {
 
   // CRITICAL NULL CHECK: Validate props before rendering
   // This prevents crashes from undefined game/playground states
-  const [showLogin, setShowLogin] = useState(false);
+  // Check if URL path is /login to show login page
+  const [showLogin, setShowLogin] = useState(() => {
+    return window.location.pathname === '/login';
+  });
 
   // --- DATA STATE ---
   const [games, setGames] = useState<Game[]>([]);
