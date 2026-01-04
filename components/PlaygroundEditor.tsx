@@ -1965,7 +1965,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         </div>
                     </div>
                     <button
-                        onClick={() => setDrawMode({ active: false, trigger: null, sourceTaskId: null, mousePosition: null })}
+                        onClick={() => {
+                            setDrawMode({ active: false, trigger: null, sourceTaskId: null, mousePosition: null });
+                            if (onDrawModeDeactivated) {
+                                onDrawModeDeactivated();
+                            }
+                        }}
                         className="px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-2 border-2 border-white/30"
                     >
                         <X className="w-5 h-5" /> EXIT DRAW MODE
