@@ -297,6 +297,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   
   const [showScoreAfter, setShowScoreAfter] = useState(baseGame?.designConfig?.showScoreAfter || '');
   const [hideScoreAfter, setHideScoreAfter] = useState(baseGame?.designConfig?.hideScoreAfter || '');
+  const [lockMapStyle, setLockMapStyle] = useState(baseGame?.designConfig?.lockMapStyle || false);
 
   // Task Configuration
   const [timeLimitMode, setTimeLimitMode] = useState<'none' | 'global' | 'task_specific'>(baseGame?.taskConfig?.timeLimitMode || 'task_specific');
