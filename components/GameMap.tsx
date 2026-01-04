@@ -243,8 +243,8 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string, className?:
   clean: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
   // Updated: Winter now uses OSM with a cold CSS filter for reliability
   winter: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors', className: 'map-filter-winter' },
-  // Updated: Ski uses OpenSkiMap but falls back gracefully if down
-  ski: { url: 'https://tiles.openskimap.org/map/{z}/{x}/{y}.png', attribution: '&copy; OpenSkiMap' },
+  // Updated: Ski uses OpenSnowMap (more reliable) with OSM fallback in case of errors
+  ski: { url: 'https://tiles.opensnowmap.org/base_snow_map/{z}/{x}/{y}.png', attribution: '&copy; OpenSnowMap', errorTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
   // Historic: Using OSM as base but we will apply CSS sepia filter in component
   historic: { url: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap', className: 'map-filter-historic' },
   // Treasure: Ancient treasure map style with strong sepia and vintage look
