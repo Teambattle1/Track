@@ -38,6 +38,7 @@ class TeamSyncService {
 
   private gameId: string | null = null;
   private teamKey: string | null = null;
+  private teamName: string | null = null;
 
   private lastLocationSentAt = 0;
   private lastLocationSent: Coordinate | null = null;
