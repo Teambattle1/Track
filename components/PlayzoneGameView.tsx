@@ -614,23 +614,18 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
 
           {/* Map Style Selector */}
           {!game.designConfig?.lockMapStyle ? (
-            <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 hover:bg-orange-700 rounded-xl transition-colors">
-              <Map className="w-5 h-5 text-white" />
-              <select
-                value={selectedMapStyle}
-                onChange={(e) => setSelectedMapStyle(e.target.value as 'standard' | 'satellite')}
-                className="bg-transparent text-white font-bold text-sm outline-none cursor-pointer"
-              >
-                <option value="standard">Standard</option>
-                <option value="satellite">Satellite</option>
-              </select>
-            </div>
+            <button
+              onClick={() => setSelectedMapStyle(selectedMapStyle === 'standard' ? 'satellite' : 'standard')}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-bold text-white transition-colors shadow-lg"
+              title="Toggle Map Style"
+            >
+              <Map className="w-5 h-5" />
+              <span>{selectedMapStyle === 'satellite' ? 'SATELLITE' : 'MAPSTYLE'}</span>
+            </button>
           ) : (
-            <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
-              <Map className="w-5 h-5 text-white" />
-              <span className="text-white font-bold text-sm">
-                {selectedMapStyle === 'satellite' ? 'Satellite' : 'Standard'}
-              </span>
+            <div className="flex items-center justify-center gap-2 px-6 py-3 bg-red-600 rounded-xl font-bold text-white shadow-lg">
+              <Map className="w-5 h-5" />
+              <span>{selectedMapStyle === 'satellite' ? 'SATELLITE' : 'MAPSTYLE'}</span>
             </div>
           )}
 
