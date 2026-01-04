@@ -1467,6 +1467,24 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   </div>
                               </div>
                           )}
+
+                          {/* Lock Map Style Setting */}
+                          <div className="mt-6 bg-slate-950 border border-slate-700 rounded-xl p-4 flex items-start gap-3">
+                              <input
+                                  type="checkbox"
+                                  checked={lockMapStyle}
+                                  onChange={(e) => setLockMapStyle(e.target.checked)}
+                                  className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-orange-600 focus:ring-orange-500 mt-1 flex-shrink-0"
+                              />
+                              <div className="flex-1">
+                                  <label className="block text-xs font-bold text-white uppercase mb-1">Lock Map Style for Players</label>
+                                  <p className="text-[11px] text-slate-400">
+                                    {lockMapStyle
+                                      ? '✓ Players cannot change the map style. They will always see the selected style.'
+                                      : 'Players can switch between Standard and Satellite map styles during gameplay.'}
+                                  </p>
+                              </div>
+                          </div>
                       </div>
 
                   </div>
