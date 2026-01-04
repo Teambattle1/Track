@@ -2471,6 +2471,7 @@ const GameApp: React.FC = () => {
             <div className="fixed inset-0 pointer-events-none z-[1000] flex flex-col">
                 {/* Top Header */}
                 <div className="h-16 bg-orange-600 border-b-2 border-orange-700 flex items-center justify-between px-6 shadow-lg pointer-events-auto">
+                    {/* Back Button */}
                     <button
                         onClick={() => { setShowLanding(true); setActiveGameId(null); }}
                         className="p-2 hover:bg-orange-700 rounded-lg transition-colors text-white hover:scale-110"
@@ -2479,7 +2480,10 @@ const GameApp: React.FC = () => {
                         <Home className="w-6 h-6" />
                     </button>
 
-                    {/* Team Info (Left-Center) */}
+                    {/* Divider */}
+                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+
+                    {/* Team Info */}
                     <div className="flex items-center gap-4">
                         <div className="flex flex-col">
                             <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Team</span>
@@ -2491,13 +2495,19 @@ const GameApp: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Center - Game Time */}
+                    {/* Divider */}
+                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+
+                    {/* Game Time */}
                     <div className="flex flex-col items-center">
                         <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Game Time</span>
                         <span className="text-3xl font-black text-white font-mono">--:--</span>
                     </div>
 
-                    {/* Task Progress + Score (Right) */}
+                    {/* Divider */}
+                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+
+                    {/* Task Progress + Score */}
                     <div className="flex items-center gap-3">
                         {/* Task Progress */}
                         <div className="flex items-center gap-2">
@@ -2516,6 +2526,37 @@ const GameApp: React.FC = () => {
                             <Trophy className="w-5 h-5 text-yellow-300" />
                             <span className="text-lg font-black text-white">{score}</span>
                         </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+
+                    {/* Map Controls (Right) */}
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => {
+                                if (mapRef.current) {
+                                    mapRef.current.jumpTo(userLocation || { lat: 0, lng: 0 });
+                                }
+                            }}
+                            className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
+                            title="Center on My Location"
+                            disabled={!userLocation}
+                        >
+                            <Compass className="w-5 h-5" />
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                if (mapRef.current && activeGame?.points && activeGame.points.length > 0) {
+                                    mapRef.current.fitBounds(activeGame.points);
+                                }
+                            }}
+                            className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
+                            title="Fit All Tasks on Screen"
+                        >
+                            <Maximize2 className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
 
