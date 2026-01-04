@@ -498,6 +498,10 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                 if (!updated) return;
                                 setLiveGame(updated);
                             }}
+                            showMapLayer={true}
+                            showZoneLayer={true}
+                            showTaskLayer={true}
+                            showLiveLayer={true}
                         />
                         
                         {/* Instructor Map Tools - Zoom / Locate */}
