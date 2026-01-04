@@ -510,8 +510,8 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
                 );
               })}
 
-              {/* QR Scanner Button */}
-              {showQRScanner && (
+              {/* QR Scanner Button - Hidden in gameplay mode, use bottom bar SCAN QR instead */}
+              {false && showQRScanner && (
                 <div
                   className="absolute"
                   style={{
