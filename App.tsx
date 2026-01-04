@@ -406,6 +406,44 @@ const GameApp: React.FC = () => {
       };
   }, [activeGameId, mode, activeTask, activeGame?.dbUpdatedAt]);
 
+  // --- CHAT NOTIFICATIONS ---
+  useEffect(() => {
+      if (!activeGameId) return;
+
+      // Subscribe to incoming chat messages
+      const unsubscribe = teamSync.subscribeToChat((message: ChatMessage) => {
+          // Add message to history
+          setChatHistory(prev => [...prev, message]);
+
+          // Only show notification if chat drawer is closed
+          if (!showChatDrawer) {
+              setUnreadMessageCount(prev => prev + 1);
+
+              // Play notification sound
+              const notificationSound = 'https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3';
+              playSound(notificationSound, 70);
+
+              // Vibrate device
+              vibrateChatNotification(message.isUrgent || false);
+
+              // Show popup notification for new message
+              setLatestMessage(message);
+          } else {
+              // Chat drawer is open - reset unread count
+              setUnreadMessageCount(0);
+          }
+      });
+
+      return () => unsubscribe?.();
+  }, [activeGameId, showChatDrawer]);
+
+  // Reset unread messages when chat drawer opens
+  useEffect(() => {
+      if (showChatDrawer) {
+          setUnreadMessageCount(0);
+      }
+  }, [showChatDrawer]);
+
   // --- GEOFENCING ENGINE ---
   useEffect(() => {
       if (!activeGame || mode !== GameMode.PLAY || !userLocation) return;
