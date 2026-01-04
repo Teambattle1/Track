@@ -556,28 +556,28 @@ const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }:
                 }
             `}</style>
 
-            {/* Draggable Center Marker - Available in EDIT and INSTRUCTOR modes */}
-            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
-                <Marker
-                    position={[zone.location.lat, zone.location.lng]}
-                    icon={dangerIcon}
-                    draggable={draggable}
-                    eventHandlers={{
-                        click: () => onClick && onClick(zone),
-                        dragend(e: any) {
-                            if (onMove) {
-                                const latlng = e.target.getLatLng();
-                                onMove(zone.id, { lat: latlng.lat, lng: latlng.lng });
-                            }
+            {/* Center Marker - Clickable in all modes, draggable in EDIT/INSTRUCTOR */}
+            <Marker
+                position={[zone.location.lat, zone.location.lng]}
+                icon={dangerIcon}
+                draggable={draggable}
+                eventHandlers={{
+                    click: () => onClick && onClick(zone),
+                    dragend(e: any) {
+                        if (onMove) {
+                            const latlng = e.target.getLatLng();
+                            onMove(zone.id, { lat: latlng.lat, lng: latlng.lng });
                         }
-                    }}
-                    zIndexOffset={200}
-                >
+                    }
+                }}
+                zIndexOffset={200}
+            >
+                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
                     <Tooltip permanent direction="top" offset={[0, -20]} className="custom-leaflet-tooltip font-bold text-xs text-red-500 bg-white px-2 py-1 rounded shadow-lg">
                         {zone.title || 'DANGER ZONE'}
                     </Tooltip>
-                </Marker>
-            )}
+                )}
+            </Marker>
         </React.Fragment>
     );
 });
