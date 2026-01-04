@@ -222,6 +222,8 @@ const GameManager: React.FC<GameManagerProps> = ({
   const [statusTab, setStatusTab] = useState<GameStatusTab>('TODAY');
   const [newName, setNewName] = useState('');
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; gameId?: string; isTemplate?: boolean }>({ isOpen: false });
+  const [gameIdSearch, setGameIdSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<Game[]>([]);
 
   const { todayGames, plannedGames, completedGames, templateList } = useMemo(() => {
     const now = new Date();
