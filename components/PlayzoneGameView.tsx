@@ -5,6 +5,7 @@ import { X, Home, QrCode, Trophy, Settings, MessageSquare, Users, Map, MapPin, I
 import { ICON_COMPONENTS } from '../utils/icons';
 import TaskModal from './TaskModal';
 import QRScannerModal from './QRScannerModal';
+import { teamSync } from '../services/teamSync';
 
 interface PlayzoneGameViewProps {
   game: Game;
