@@ -291,6 +291,34 @@ const GameManager: React.FC<GameManagerProps> = ({
     }
   };
 
+  // Handle Game ID search
+  const handleGameIdSearch = (value: string) => {
+    setGameIdSearch(value);
+
+    if (value.trim().length === 0) {
+      setSearchResults([]);
+      return;
+    }
+
+    // Search through all games (not just templates) by display ID
+    const results = games.filter(g => {
+      if (!g || g.isGameTemplate) return false;
+      const displayId = getGameDisplayId(g.id);
+      return displayId.includes(value);
+    });
+
+    setSearchResults(results);
+  };
+
+  // Handle pressing Enter on search
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, gameId?: string) => {
+    if (e.key === 'Enter' && gameId) {
+      primaryActionForGame(gameId);
+      setGameIdSearch('');
+      setSearchResults([]);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[5000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
       <div className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
