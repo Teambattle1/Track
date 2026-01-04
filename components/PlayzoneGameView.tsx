@@ -349,7 +349,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
       )}
 
       {/* Canvas Container */}
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
         {/* Device Frame Scaling Wrapper */}
         <div
           className="flex items-center justify-center"
