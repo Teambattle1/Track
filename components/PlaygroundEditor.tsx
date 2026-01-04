@@ -416,12 +416,15 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         const handleEscKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && drawMode.active) {
                 setDrawMode({ active: false, trigger: null, sourceTaskId: null, mousePosition: null });
+                if (onDrawModeDeactivated) {
+                    onDrawModeDeactivated();
+                }
             }
         };
 
         window.addEventListener('keydown', handleEscKey);
         return () => window.removeEventListener('keydown', handleEscKey);
-    }, [drawMode.active]);
+    }, [drawMode.active, onDrawModeDeactivated]);
 
     // Activate draw mode from pending request (when DRAW button is clicked from action modal)
     useEffect(() => {
