@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Game, Playground, GamePoint, DeviceType } from '../types';
 import { DEVICE_SPECS, getDeviceLayout } from '../utils/deviceUtils';
-import { X, Home, QrCode, Trophy, Settings, MessageSquare, Users } from 'lucide-react';
+import { X, Home, QrCode, Trophy, Settings, MessageSquare, Users, Map, MapPin, Info } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import TaskModal from './TaskModal';
 import QRScannerModal from './QRScannerModal';
