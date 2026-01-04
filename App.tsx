@@ -195,6 +195,9 @@ const GameApp: React.FC = () => {
   const [hoveredDangerZoneId, setHoveredDangerZoneId] = useState<string | null>(null); // List → Map
   const [mapHoveredPointId, setMapHoveredPointId] = useState<string | null>(null); // Map → List (reverse)
 
+  // --- TEAM VIEW TOOLTIP STATE ---
+  const [selectedPointForTooltip, setSelectedPointForTooltip] = useState<string | null>(null);
+
   // --- DRAWER & TOOLBAR STATE ---
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     mapmode: true,
@@ -2480,8 +2483,6 @@ const GameApp: React.FC = () => {
             const correctTasks = allTasks.filter(t => t.isCompleted && !t.isSectionHeader).length;
             const totalTasks = allTasks.filter(t => !t.isSectionHeader).length;
             const incorrectTasks = totalTasks - correctTasks;
-
-            const [selectedPointForTooltip, setSelectedPointForTooltip] = useState<string | null>(null);
 
             return (
             <div className="fixed inset-0 pointer-events-none z-[1000] flex flex-col">
