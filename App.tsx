@@ -2576,11 +2576,8 @@ const GameApp: React.FC = () => {
                             <button
                                 onClick={() => {
                                     if (mapRef.current && activeGame?.points && activeGame.points.length > 0) {
-                                        mapRef.current.setZoom(17);
-                                        if (activeGame.points.length > 0) {
-                                            const center = activeGame.points[0].location;
-                                            mapRef.current.jumpTo(center);
-                                        }
+                                        const center = activeGame.points[0].location;
+                                        mapRef.current.jumpTo(center, 17);
                                     }
                                 }}
                                 className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
