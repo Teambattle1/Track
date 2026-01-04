@@ -2477,6 +2477,7 @@ const GameApp: React.FC = () => {
                     </button>
 
                     <button
+                        onClick={() => setShowTeamViewQRScanner(true)}
                         className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
                         title="Scan QR Code"
                     >
