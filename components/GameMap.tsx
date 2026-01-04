@@ -269,6 +269,8 @@ const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.
           url={layer.url}
           attribution={layer.attribution}
           className={layer.className || ''}
+          errorTileUrl={layer.errorTileUrl}
+          detectRetina={true}
         />
       )}
       
