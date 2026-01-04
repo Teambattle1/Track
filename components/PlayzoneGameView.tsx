@@ -525,6 +525,56 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
             <MessageSquare className="w-5 h-5" />
             <span>CHAT</span>
           </button>
+
+          {/* Map Style Selector */}
+          {!game.designConfig?.lockMapStyle ? (
+            <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 hover:bg-orange-700 rounded-xl transition-colors">
+              <Map className="w-5 h-5 text-white" />
+              <select
+                value={selectedMapStyle}
+                onChange={(e) => setSelectedMapStyle(e.target.value as 'standard' | 'satellite')}
+                className="bg-transparent text-white font-bold text-sm outline-none cursor-pointer"
+              >
+                <option value="standard">Standard</option>
+                <option value="satellite">Satellite</option>
+              </select>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
+              <Map className="w-5 h-5 text-white" />
+              <span className="text-white font-bold text-sm">
+                {selectedMapStyle === 'satellite' ? 'Satellite' : 'Standard'}
+              </span>
+            </div>
+          )}
+
+          {/* Map Style Info Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMapStyleInfo(!showMapStyleInfo)}
+              className="p-2 bg-orange-700/50 hover:bg-orange-700 rounded-full transition-colors text-white"
+              title="Map Style Information"
+            >
+              <Info className="w-5 h-5" />
+            </button>
+
+            {/* Info Tooltip */}
+            {showMapStyleInfo && (
+              <div className="absolute bottom-full right-0 mb-3 bg-white rounded-lg shadow-2xl p-4 max-w-xs text-sm text-gray-800 animate-in fade-in slide-in-from-bottom-2 z-50">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-gray-900 mb-1">Map Style</p>
+                    <p className="text-gray-700">
+                      {game.designConfig?.lockMapStyle
+                        ? 'The map style is locked by the game administrator. You cannot change it.'
+                        : 'Choose between Standard and Satellite views. The map style has been selected by the game administrator.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
