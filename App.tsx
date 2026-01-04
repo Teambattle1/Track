@@ -1653,11 +1653,17 @@ const GameApp: React.FC = () => {
               />
           )}
           {showInstructorDashboard && activeGame && (
-              <InstructorDashboard 
+              <InstructorDashboard
                   game={activeGame}
                   onClose={() => setShowInstructorDashboard(false)}
                   onSetMode={setMode}
                   mode={mode}
+                  onOpenPlayground={(playgroundId) => {
+                      // Close instructor dashboard and open playzone in gameplay view
+                      setShowInstructorDashboard(false);
+                      setViewingPlaygroundId(playgroundId);
+                      // Mode is already INSTRUCTOR, so PlayzoneGameView will render
+                  }}
               />
           )}
           {showTeamDashboard && activeGameId && (
