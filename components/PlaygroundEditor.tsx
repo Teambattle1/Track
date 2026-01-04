@@ -50,6 +50,7 @@ interface PlaygroundEditorProps {
   pendingDrawTrigger?: 'onOpen' | 'onCorrect' | 'onIncorrect' | null; // NEW: Activate draw mode on mount
   activeTaskActionPoint?: GamePoint | null; // NEW: Task being edited for draw mode
   onDrawModeActivated?: () => void; // NEW: Callback when draw mode is activated from pendingDrawTrigger
+  onDrawModeDeactivated?: () => void; // NEW: Callback when draw mode is deactivated
 }
 
 const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
