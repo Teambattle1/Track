@@ -383,48 +383,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         <Maximize className="w-4 h-4" />
                                         FIT
                                     </button>
-                                    <div className="relative col-span-2">
-                                        <button
-                                            onClick={() => setShowMapStylesMenu(!showMapStylesMenu)}
-                                            className="w-full py-2 px-2 bg-green-700 hover:bg-green-800 text-green-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
-                                            title="Map Styles"
-                                        >
-                                            <Layers className="w-4 h-4" />
-                                            MAP STYLES
-                                        </button>
-
-                                        {showMapStylesMenu && (
-                                            <div className="absolute top-full mt-2 left-0 right-0 bg-slate-900 border-2 border-green-600 rounded-lg p-2 shadow-xl z-50 max-h-80 overflow-y-auto">
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {MAP_STYLES_LIST.map((style) => (
-                                                        <button
-                                                            key={style.id}
-                                                            onClick={() => {
-                                                                onSetMapStyle(style.id);
-                                                                setShowMapStylesMenu(false);
-                                                            }}
-                                                            className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${mapStyle === style.id ? 'bg-green-700 border-green-500 shadow-lg' : 'bg-slate-800 border-slate-700 hover:border-green-600'}`}
-                                                            title={style.label}
-                                                        >
-                                                            <div className="w-16 h-16 bg-slate-700 rounded border border-slate-600 overflow-hidden flex items-center justify-center">
-                                                                {style.preview ? (
-                                                                    <img
-                                                                        src={style.preview}
-                                                                        alt={style.label}
-                                                                        className={`w-full h-full object-cover ${style.className || ''}`}
-                                                                        loading="lazy"
-                                                                    />
-                                                                ) : (
-                                                                    <style.icon className="w-8 h-8 text-slate-400" />
-                                                                )}
-                                                            </div>
-                                                            <span className={`text-[9px] font-black uppercase tracking-wide ${mapStyle === style.id ? 'text-white' : 'text-slate-300'}`}>{style.label}</span>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                    {/* MAP STYLES button hidden */}
                                 </div>
                             </div>
                         )}
