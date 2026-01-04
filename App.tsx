@@ -97,6 +97,8 @@ const GameApp: React.FC = () => {
   const [showDatabaseTools, setShowDatabaseTools] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [showTeamsHub, setShowTeamsHub] = useState(false);
+  const [showTeamLobby, setShowTeamLobby] = useState(false);
+  const [showTeamViewQRScanner, setShowTeamViewQRScanner] = useState(false);
   const [showGameCreator, setShowGameCreator] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
   const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | null>(null);
