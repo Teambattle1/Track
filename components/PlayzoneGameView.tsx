@@ -488,6 +488,23 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Center Map Button (Right Side) */}
+        {!isInstructor && (
+          <button
+            onClick={() => {
+              // Center map functionality - scroll/pan to center
+              const canvas = document.querySelector('[style*="aspect-ratio"]');
+              if (canvas?.parentElement?.parentElement) {
+                canvas.parentElement.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+              }
+            }}
+            className="absolute right-6 bottom-24 p-3 bg-orange-600 hover:bg-orange-700 text-white rounded-full shadow-lg transition-all hover:scale-110 active:scale-95"
+            title="Center Map"
+          >
+            <MapPin className="w-6 h-6" />
+          </button>
+        )}
       </div>
 
       {/* Team View: Orange Toolbox (Bottom) */}
