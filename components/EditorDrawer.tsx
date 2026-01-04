@@ -9,6 +9,7 @@ import * as db from '../services/db';
 import { parseGPX } from '../utils/gpx';
 
 interface EditorDrawerProps {
+  version?: string;
   onClose: () => void;
   activeGame?: Game | null;
   activeGameName: string;
