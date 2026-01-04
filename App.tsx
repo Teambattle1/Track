@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Ruler, Crosshair, Navigation, Plus, Library, Home, Trophy, Users, MessageSquare, QrCode, CheckCircle, XCircle, Compass, Maximize2 } from 'lucide-react';
+import { Ruler, Crosshair, Navigation, Plus, Library, Home, Trophy, Users, MessageSquare, QrCode, CheckCircle, XCircle, Compass, Maximize2, X } from 'lucide-react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, PlaygroundTemplate } from './types';
 import { APP_VERSION } from './utils/version';
 import * as db from './services/db';
@@ -2339,9 +2339,23 @@ const GameApp: React.FC = () => {
                 measurePath={measurePath}
                 mode={mode}
                 mapStyle={localMapStyle || 'osm'}
-                onPointClick={handlePointClick}
+                onPointClick={(point) => {
+                    if (mode === GameMode.PLAY) {
+                        setSelectedPointForTooltip(point.id);
+                        setTimeout(() => setSelectedPointForTooltip(null), 3000);
+                    } else {
+                        handlePointClick(point);
+                    }
+                }}
                 onAreaColorClick={handleAreaColorClick}
-                onZoneClick={(z) => setActiveDangerZone(z)}
+                onZoneClick={(z) => {
+                    if (mode === GameMode.PLAY) {
+                        setSelectedPointForTooltip(z.id);
+                        setTimeout(() => setSelectedPointForTooltip(null), 3000);
+                    } else {
+                        setActiveDangerZone(z);
+                    }
+                }}
                 onZoneMove={async (zoneId, newLoc) => {
                     if (!activeGame) return;
                     const updatedZones = (activeGame.dangerZones || []).map(z =>
@@ -2467,6 +2481,8 @@ const GameApp: React.FC = () => {
             const totalTasks = allTasks.filter(t => !t.isSectionHeader).length;
             const incorrectTasks = totalTasks - correctTasks;
 
+            const [selectedPointForTooltip, setSelectedPointForTooltip] = useState<string | null>(null);
+
             return (
             <div className="fixed inset-0 pointer-events-none z-[1000] flex flex-col">
                 {/* Top Header */}
@@ -2576,28 +2592,54 @@ const GameApp: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Playzones Toolbar (if any playzones exist) */}
+                {/* Playzones Buttons - Bottom Center */}
                 {activeGame?.playgrounds && activeGame.playgrounds.length > 0 && (() => {
                     const visiblePlaygrounds = activeGame.playgrounds.filter(p => p.buttonVisible);
                     return visiblePlaygrounds.length > 0 ? (
-                        <div className="mt-auto mb-1 bg-orange-600/80 border-t-2 border-orange-700 flex items-center justify-center gap-3 px-6 py-2 shadow-lg pointer-events-auto">
-                            <span className="text-xs font-bold text-white/70 uppercase tracking-wide mr-2">Playzones:</span>
+                        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[1000] flex gap-4 pointer-events-auto items-end">
                             {visiblePlaygrounds.map(pg => (
                                 <button
                                     key={pg.id}
                                     onClick={() => setViewingPlaygroundId(pg.id)}
                                     title={pg.title || 'Playzone'}
-                                    className="relative flex-shrink-0 w-12 h-12 rounded-lg bg-orange-700 hover:bg-orange-800 transition-colors shadow-lg flex items-center justify-center overflow-hidden"
+                                    style={{ width: pg.buttonSize || 80, height: pg.buttonSize || 80 }}
+                                    className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'} shadow-2xl hover:scale-105`}
                                 >
                                     {pg.iconUrl ? (
                                         <img src={pg.iconUrl} alt={pg.title} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center text-white text-xs font-bold">
+                                        <div className="w-1/2 h-1/2 bg-white/20 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                             {pg.title?.charAt(0) || 'P'}
                                         </div>
                                     )}
                                 </button>
                             ))}
+                        </div>
+                    ) : null;
+                })()}
+
+                {/* Tooltip for clicked point or danger zone */}
+                {selectedPointForTooltip && (() => {
+                    const dangerZone = activeGame?.dangerZones?.find(dz => dz.id === selectedPointForTooltip);
+                    const point = activeGame?.points?.find(p => p.id === selectedPointForTooltip);
+
+                    const tooltipContent = dangerZone
+                        ? `⚠️ DANGER ZONE\n${dangerZone.name || 'Restricted Area'}\nPunishment: ${dangerZone.punishmentMessage || 'Score penalty'}`
+                        : point
+                        ? `📍 ${point.title || 'Task'}`
+                        : null;
+
+                    return tooltipContent ? (
+                        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900 border-2 border-orange-500 rounded-xl shadow-2xl p-4 animate-in fade-in duration-200 pointer-events-auto max-w-xs">
+                            <div className="flex justify-between items-start gap-3">
+                                <p className="text-sm font-bold text-white whitespace-pre-wrap">{tooltipContent}</p>
+                                <button
+                                    onClick={() => setSelectedPointForTooltip(null)}
+                                    className="flex-shrink-0 text-slate-400 hover:text-white"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     ) : null;
                 })()}
