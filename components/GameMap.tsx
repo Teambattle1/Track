@@ -255,7 +255,7 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string, className?:
   google_custom: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' }
 };
 
-const MapLayers: React.FC<{ mapStyle: string }> = React.memo(({ mapStyle }) => {
+const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.memo(({ mapStyle, showMapLayer = true }) => {
   if (mapStyle === 'none') {
       return null; // Return nothing so no tiles are rendered
   }
