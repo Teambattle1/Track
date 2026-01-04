@@ -308,7 +308,10 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
             <Settings className="w-6 h-6" />
           </button>
 
-          {/* Team Info (Left-Center) */}
+          {/* Divider */}
+          <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+
+          {/* Team Info */}
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
               <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Team</span>
@@ -320,13 +323,19 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
             </div>
           </div>
 
+          {/* Divider */}
+          <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+
           {/* Timer (Center) */}
           <div className="flex flex-col items-center">
             <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Game Time</span>
             <span className="text-3xl font-black text-white font-mono">{gameTime}</span>
           </div>
 
-          {/* Task Progress + Score (Right) */}
+          {/* Divider */}
+          <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+
+          {/* Task Progress + Score */}
           <div className="flex items-center gap-3">
             {/* Task Progress */}
             <div className="flex items-center gap-2">
