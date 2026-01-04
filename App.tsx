@@ -2405,7 +2405,8 @@ const GameApp: React.FC = () => {
         )}
 
         {(mode === GameMode.EDIT || playgroundTemplateToEdit) && (
-            <EditorDrawer 
+            <EditorDrawer
+                version={APP_VERSION}
                 onClose={() => setMode(GameMode.PLAY)}
                 activeGame={activeGame}
                 activeGameName={activeGame?.name || "No Game"}
