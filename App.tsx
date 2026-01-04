@@ -2459,7 +2459,15 @@ const GameApp: React.FC = () => {
         )}
 
         {/* Team View HUD - GPS Games in PLAY mode */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (() => {
+            const teamState = teamSync.getState();
+            const teamMembers = teamSync.getAllMembers();
+            const allTasks = activeGame?.points || [];
+            const correctTasks = allTasks.filter(t => t.isCompleted && !t.isSectionHeader).length;
+            const totalTasks = allTasks.filter(t => !t.isSectionHeader).length;
+            const incorrectTasks = totalTasks - correctTasks;
+
+            return (
             <div className="fixed inset-0 pointer-events-none z-[1000] flex flex-col">
                 {/* Top Header */}
                 <div className="h-16 bg-orange-600 border-b-2 border-orange-700 flex items-center justify-between px-6 shadow-lg pointer-events-auto">
@@ -2471,14 +2479,43 @@ const GameApp: React.FC = () => {
                         <Home className="w-6 h-6" />
                     </button>
 
+                    {/* Team Info (Left-Center) */}
+                    <div className="flex items-center gap-4">
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Team</span>
+                            <span className="text-lg font-black text-white">{teamState.teamName || 'Team'}</span>
+                        </div>
+                        <div className="flex items-center gap-1 px-3 py-1 bg-orange-700/50 rounded-lg">
+                            <Users className="w-4 h-4 text-yellow-300" />
+                            <span className="text-sm font-bold text-white">{teamMembers.length}</span>
+                        </div>
+                    </div>
+
+                    {/* Center - Game Time */}
                     <div className="flex flex-col items-center">
                         <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Game Time</span>
                         <span className="text-3xl font-black text-white font-mono">--:--</span>
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
-                        <Trophy className="w-5 h-5 text-yellow-300" />
-                        <span className="text-lg font-black text-white">{score}</span>
+                    {/* Task Progress + Score (Right) */}
+                    <div className="flex items-center gap-3">
+                        {/* Task Progress */}
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 px-2 py-1 bg-green-600/40 rounded-lg">
+                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                <span className="text-xs font-bold text-green-300">{correctTasks}</span>
+                            </div>
+                            <div className="flex items-center gap-1 px-2 py-1 bg-red-600/40 rounded-lg">
+                                <XCircle className="w-4 h-4 text-red-400" />
+                                <span className="text-xs font-bold text-red-300">{incorrectTasks}</span>
+                            </div>
+                        </div>
+
+                        {/* Score */}
+                        <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
+                            <Trophy className="w-5 h-5 text-yellow-300" />
+                            <span className="text-lg font-black text-white">{score}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -2521,7 +2558,8 @@ const GameApp: React.FC = () => {
                     </button>
                 </div>
             </div>
-        )}
+            );
+        })()}
 
         {/* GameHUD - Only show in non-PLAY modes */}
         {mode !== GameMode.PLAY && (
