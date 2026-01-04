@@ -803,7 +803,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
             </div>
 
             {/* Right Side Fields Column (OPERATOR, GAME ID, SESSION) */}
-            {(view === 'EDIT_MENU' || view === 'PLAY_MENU') && (
+            {/* HIDDEN: Game selector not needed on Edit/Play Center landing pages */}
+            {false && (view === 'EDIT_MENU' || view === 'PLAY_MENU') && (
                 <div
                   ref={fieldsContainerRef}
                   className="absolute flex flex-col gap-0 z-30 select-none"
