@@ -73,7 +73,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     onStartSimulation,
     onOpenGameSettings,
     onExportGameToLibrary,
-    isInstructorView = false // NEW: View as instructor (player perspective, read-only)
+    isInstructorView = false, // NEW: View as instructor (player perspective, read-only)
+    pendingDrawTrigger = null, // NEW: Activate draw mode on mount
+    onDrawModeActivated // NEW: Callback when draw mode is activated
 }) => {
     // State
     const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
