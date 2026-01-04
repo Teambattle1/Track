@@ -221,6 +221,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     mapmode: !allCollapsed,
                                     layers: !allCollapsed,
                                     location: !allCollapsed,
+                                    mapstyle: !allCollapsed,
                                     pins: !allCollapsed,
                                     show: !allCollapsed,
                                     tools: !allCollapsed,
