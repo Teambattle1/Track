@@ -2450,6 +2450,7 @@ const GameApp: React.FC = () => {
                 {/* Bottom Toolbox */}
                 <div className="mt-auto h-16 bg-orange-600 border-t-2 border-orange-700 flex items-center justify-center gap-4 px-6 shadow-lg pointer-events-auto">
                     <button
+                        onClick={() => setShowTeamLobby(true)}
                         className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
                         title="Team Lobby"
                     >
