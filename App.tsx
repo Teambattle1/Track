@@ -2457,11 +2457,20 @@ const GameApp: React.FC = () => {
 
                     <button
                         onClick={() => setShowChatDrawer(!showChatDrawer)}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
-                        title="Chat"
+                        className={`relative flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-colors shadow-lg ${
+                            unreadMessageCount > 0
+                                ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                                : 'bg-orange-700 hover:bg-orange-800'
+                        }`}
+                        title={unreadMessageCount > 0 ? `${unreadMessageCount} unread message${unreadMessageCount !== 1 ? 's' : ''}` : 'Chat'}
                     >
                         <MessageSquare className="w-5 h-5" />
                         <span>CHAT</span>
+                        {unreadMessageCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-yellow-400 text-red-600 font-black text-xs rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+                                {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                            </span>
+                        )}
                     </button>
 
                     <button
