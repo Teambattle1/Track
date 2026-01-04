@@ -1850,6 +1850,9 @@ const GameApp: React.FC = () => {
                               setViewingPlaygroundId(null);
                           }}
                           isInstructorView={false}
+                          pendingDrawTrigger={pendingDrawRequest}
+                          activeTaskActionPoint={activeTaskActionPoint}
+                          onDrawModeActivated={() => setPendingDrawRequest(null)}
                           onEditPoint={(p) => setActiveTask(p)}
                           onPointClick={(p) => {
                               mapRef.current?.jumpTo(p.location);
