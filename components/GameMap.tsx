@@ -264,6 +264,25 @@ const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.
 
   return (
     <>
+      {/* Global CSS Filters - Always Present */}
+      <style>{`
+          .map-filter-historic {
+              filter: sepia(0.6) contrast(1.1) brightness(0.9) hue-rotate(-15deg) !important;
+          }
+          .map-filter-treasure {
+              filter: sepia(0.9) contrast(1.1) brightness(0.95) hue-rotate(30deg) !important;
+          }
+          .map-filter-desert {
+              filter: saturate(1.5) hue-rotate(15deg) brightness(1.1) contrast(1.05) !important;
+          }
+          .map-filter-winter {
+              filter: brightness(1.2) hue-rotate(180deg) saturate(0.5) !important;
+          }
+          .map-filter-nordic {
+              filter: saturate(1.15) brightness(1.08) contrast(1.05) !important;
+          }
+      `}</style>
+
       {showMapLayer && (
         <TileLayer
           url={layer.url}
@@ -273,60 +292,15 @@ const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.
           detectRetina={true}
         />
       )}
-      
-      {/* Historic Filter CSS Injection */}
+
+      {/* Historic Texture Overlay */}
       {mapStyle === 'historic' && (
-          <>
-            <style>{`
-                .map-filter-historic {
-                    filter: sepia(0.6) contrast(1.1) brightness(0.9) hue-rotate(-15deg) !important;
-                }
-            `}</style>
-            {/* Paper Texture Overlay */}
-            <div className="absolute inset-0 z-[5] pointer-events-none opacity-20 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')]"></div>
-          </>
+          <div className="absolute inset-0 z-[5] pointer-events-none opacity-20 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')]"></div>
       )}
 
-      {/* Treasure Filter CSS Injection */}
+      {/* Treasure Texture Overlay */}
       {mapStyle === 'treasure' && (
-          <>
-            <style>{`
-                .map-filter-treasure {
-                    filter: sepia(0.9) contrast(1.1) brightness(0.95) hue-rotate(30deg) !important;
-                }
-            `}</style>
-            {/* Parchment Texture Overlay */}
-            <div className="absolute inset-0 z-[5] pointer-events-none opacity-25 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/old-map.png')]"></div>
-          </>
-      )}
-
-      {/* Desert Filter CSS Injection */}
-      {mapStyle === 'desert' && (
-          <>
-            <style>{`
-                .map-filter-desert {
-                    filter: saturate(1.5) hue-rotate(15deg) brightness(1.1) contrast(1.05) !important;
-                }
-            `}</style>
-          </>
-      )}
-
-      {/* Winter Filter CSS Injection */}
-      {mapStyle === 'winter' && (
-          <style>{`
-              .map-filter-winter {
-                  filter: brightness(1.2) hue-rotate(180deg) saturate(0.5) !important;
-              }
-          `}</style>
-      )}
-
-      {/* Nordic Filter CSS Injection */}
-      {mapStyle === 'norwegian' && (
-          <style>{`
-              .map-filter-nordic {
-                  filter: saturate(1.15) brightness(1.08) contrast(1.05) !important;
-              }
-          `}</style>
+          <div className="absolute inset-0 z-[5] pointer-events-none opacity-25 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/old-map.png')]"></div>
       )}
     </>
   );
