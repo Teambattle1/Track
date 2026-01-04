@@ -161,6 +161,7 @@ const GameApp: React.FC = () => {
   const [activeDangerZone, setActiveDangerZone] = useState<DangerZone | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [latestMessage, setLatestMessage] = useState<ChatMessage | null>(null);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   
   // --- MAP STATE ---
   const [localMapStyle, setLocalMapStyle] = useState<MapStyleId>('osm');
