@@ -261,6 +261,7 @@ const ZoneSection = ({
 };
 
 const EditorDrawer: React.FC<EditorDrawerProps> = ({
+  version,
   onClose,
   activeGame,
   activeGameName,
