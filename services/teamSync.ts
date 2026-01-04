@@ -73,6 +73,9 @@ class TeamSyncService {
         localStorage.setItem('geohunt_device_id', storedId);
     }
     this.deviceId = storedId;
+
+    // Detect device type on initialization
+    this.deviceType = detectDeviceTypeWithUA();
   }
 
   public getDeviceId() {
