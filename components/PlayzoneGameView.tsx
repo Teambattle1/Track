@@ -603,6 +603,15 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
             <span>SCAN QR</span>
           </button>
 
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-bold text-white transition-colors shadow-lg"
+            title="Return to Map Game"
+          >
+            <Map className="w-5 h-5" />
+            <span>BACK TO MAP</span>
+          </button>
+
           {/* Map Style Selector */}
           {!game.designConfig?.lockMapStyle ? (
             <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 hover:bg-orange-700 rounded-xl transition-colors">
