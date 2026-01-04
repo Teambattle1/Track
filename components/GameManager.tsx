@@ -279,8 +279,14 @@ const GameManager: React.FC<GameManagerProps> = ({
   };
 
   const primaryActionForGame = (gameId: string) => {
-    if (onEditGame) onEditGame(gameId);
-    else onSelectGame(gameId);
+    // Always call onEditGame if available to ensure mode is set to EDIT
+    // This guarantees game editor opens in EDIT mode, not PLAY or INSTRUCTOR
+    if (onEditGame) {
+      onEditGame(gameId);
+    } else {
+      // Fallback: select game and let parent handle mode change
+      onSelectGame(gameId);
+    }
   };
 
   return (
