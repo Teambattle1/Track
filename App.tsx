@@ -2669,16 +2669,41 @@ const GameApp: React.FC = () => {
                     if (!activeGame) return;
 
                     // Copy playzones from templates into the active game
-                    const newPlaygrounds = templates.map(tpl => ({
-                        id: `pg-${Date.now()}-${Math.random()}`,
-                        ...tpl.playgroundData,
-                        title: tpl.title,
-                        buttonVisible: true
-                    }));
+                    const timestamp = Date.now();
+                    const newPlaygrounds: any[] = [];
+                    const newTasks: GamePoint[] = [];
 
+                    templates.forEach((tpl, index) => {
+                        // Generate unique playground ID
+                        const newPlaygroundId = `pg-${timestamp}-${index}`;
+
+                        // Create the playground with settings
+                        newPlaygrounds.push({
+                            id: newPlaygroundId,
+                            ...tpl.playgroundData,
+                            title: tpl.title,
+                            buttonVisible: true
+                        });
+
+                        // ✅ CRITICAL FIX: Copy all tasks from template and assign to new playground
+                        if (tpl.tasks && tpl.tasks.length > 0) {
+                            const clonedTasks = tpl.tasks.map((task, taskIndex) => ({
+                                ...task,
+                                id: `p-${timestamp}-${index}-${taskIndex}`, // Generate new unique ID
+                                playgroundId: newPlaygroundId, // Assign to the new playground
+                                isUnlocked: task.isUnlocked ?? true, // Preserve unlock state
+                                isCompleted: false, // Reset completion status for new game
+                                order: (activeGame.points?.length || 0) + newTasks.length + taskIndex // Maintain order
+                            }));
+                            newTasks.push(...clonedTasks);
+                        }
+                    });
+
+                    // Update game with both playgrounds AND tasks
                     await updateActiveGame({
                         ...activeGame,
-                        playgrounds: [...(activeGame.playgrounds || []), ...newPlaygrounds]
+                        playgrounds: [...(activeGame.playgrounds || []), ...newPlaygrounds],
+                        points: [...(activeGame.points || []), ...newTasks]
                     });
                 }}
             />
