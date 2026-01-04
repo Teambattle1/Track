@@ -10,7 +10,7 @@ interface DevicePreviewModalProps {
 }
 
 const DevicePreviewModal: React.FC<DevicePreviewModalProps> = ({ point, onClose }) => {
-  const [activeDevice, setActiveDevice] = useState<'mobile' | 'tablet'>('mobile');
+  const [activeDevice, setActiveDevice] = useState<'mobile' | 'tablet'>('tablet');
   const [previewTeamName] = useState('Team Demo');
 
   // Replace placeholders with sample team name
