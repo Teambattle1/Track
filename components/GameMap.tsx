@@ -656,6 +656,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     fogOfWarEnabled = false, // Fog of War mode
     selectedTeamId = null, // Team ID for fog of war
     selectedTeamCompletedPointIds = [], // Completed points for selected team
+    showMapLayer = true, // Toggle map tile layer visibility
     showZoneLayer = true, // Toggle danger zones visibility
     showTaskLayer = true, // Toggle task pins visibility
     showLiveLayer = true // Toggle live team positions visibility
