@@ -32,6 +32,7 @@ class TeamSyncService {
   
   private deviceId: string = '';
   private userName: string = 'Anonymous';
+  private deviceType: DeviceType = 'mobile'; // Detect device type for responsive team view
   private userLocation: Coordinate | null = null; // Track local location
   private isSolving: boolean = false; // Track solving status locally
   private isRetired: boolean = false; // Track if user has retired from the team
