@@ -76,6 +76,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     onExportGameToLibrary,
     isInstructorView = false, // NEW: View as instructor (player perspective, read-only)
     pendingDrawTrigger = null, // NEW: Activate draw mode on mount
+    activeTaskActionPoint = null, // NEW: Task being edited for draw mode
     onDrawModeActivated // NEW: Callback when draw mode is activated
 }) => {
     // State
