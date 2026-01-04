@@ -243,8 +243,8 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string, className?:
   clean: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
   // Updated: Winter now uses OSM with a cold CSS filter for reliability
   winter: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors', className: 'map-filter-winter' },
-  // Updated: Ski uses OpenSnowMap pistes (cross-country skiing trails) with OSM fallback
-  ski: { url: 'https://tiles.opensnowmap.org/pistes/{z}/{x}/{y}.png', attribution: '&copy; OpenSnowMap &copy; OpenStreetMap contributors', errorTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
+  // Ski: Stamen Terrain shows elevation contours and hillshading - ideal for skiing/hiking
+  ski: { url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png', attribution: '&copy; Stamen Design &copy; OpenStreetMap contributors', errorTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
   // Historic: Using OSM as base but we will apply CSS sepia filter in component
   historic: { url: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap', className: 'map-filter-historic' },
   // Treasure: Ancient treasure map style with strong sepia and vintage look
