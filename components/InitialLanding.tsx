@@ -284,8 +284,17 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   React.useEffect(() => {
     const checkGeminiKey = () => {
       try {
-        const key = localStorage.getItem('GEMINI_API_KEY');
-        const hasKey = !!key && key.trim().length > 0;
+        // Check localStorage first (user-configured)
+        const localKey = localStorage.getItem('GEMINI_API_KEY');
+        if (localKey && localKey.trim().length > 0) {
+          setShowGeminiWarning(false);
+          setHasCheckedGeminiKey(true);
+          return;
+        }
+
+        // Check environment variables (configured at build time on deployment)
+        const envKey = process.env.VITE_API_KEY || process.env.VITE_GEMINI_API_KEY;
+        const hasKey = !!envKey && envKey.trim().length > 0;
         setShowGeminiWarning(!hasKey);
         setHasCheckedGeminiKey(true);
       } catch (e) {
