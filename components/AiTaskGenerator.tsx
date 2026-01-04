@@ -300,14 +300,20 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
       // 1. Add to Game (Map or Playground)
       if (targetMode === 'GAME') {
           if (destinationType === 'MAP') {
-              onAddTasks(finalTasks, null);
+              // For MAP mode: pass undefined (not null) to indicate map-level tasks
+              onAddTasks(finalTasks, undefined);
           } else {
-              // 'PLAYGROUND'
+              // 'PLAYGROUND' mode: pass the selected playground ID
               // selectedPlaygroundId could be 'CREATE_NEW' or an ID
               onAddTasks(finalTasks, selectedPlaygroundId);
           }
-      } 
-      // 2. Add to Library
+
+          // For GAME mode, always auto-save to library
+          if (onAddToLibrary) {
+              onAddToLibrary(finalTasks);
+          }
+      }
+      // 2. Add to Library only
       else if (targetMode === 'LIBRARY' && onAddToLibrary) {
           onAddToLibrary(finalTasks);
       }
@@ -324,8 +330,8 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
           }
       }
 
-      // Also save to library if checkbox checked (and we didn't just do it via LIBRARY mode)
-      if (saveToLibrary && targetMode !== 'LIBRARY' && onAddToLibrary) {
+      // Also save to library if checkbox checked (only if not already saved)
+      if (saveToLibrary && targetMode !== 'LIBRARY' && targetMode !== 'GAME' && onAddToLibrary) {
           onAddToLibrary(finalTasks);
       }
 
