@@ -447,6 +447,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
 
                         {isVisible('pins') && (
                             <div className="grid grid-cols-2 gap-2">
+                                {/* DANGER ZONE - Available to both EDIT and INSTRUCTOR */}
                                 <button
                                     onClick={onAddDangerZone}
                                     className="py-2 px-2 bg-yellow-700 hover:bg-yellow-800 text-yellow-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
@@ -455,22 +456,32 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     <SkullIcon className="w-4 h-4" />
                                     DANGER
                                 </button>
-                                <button
-                                    onClick={onToggleMeasure}
-                                    className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isMeasuring ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
-                                    title="Measure"
-                                >
-                                    <Ruler className="w-4 h-4" />
-                                    MEASURE
-                                </button>
-                                <button
-                                    onClick={onRelocateGame}
-                                    className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isRelocating ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
-                                    title="Relocate"
-                                >
-                                    <Crosshair className="w-4 h-4" />
-                                    RELOCATE
-                                </button>
+
+                                {/* MEASURE - EDIT mode only */}
+                                {mode === GameMode.EDIT && (
+                                    <button
+                                        onClick={onToggleMeasure}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isMeasuring ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
+                                        title="Measure"
+                                    >
+                                        <Ruler className="w-4 h-4" />
+                                        MEASURE
+                                    </button>
+                                )}
+
+                                {/* RELOCATE - EDIT mode only */}
+                                {mode === GameMode.EDIT && (
+                                    <button
+                                        onClick={onRelocateGame}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isRelocating ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
+                                        title="Relocate All Tasks"
+                                    >
+                                        <Crosshair className="w-4 h-4" />
+                                        RELOCATE
+                                    </button>
+                                )}
+
+                                {/* SNAP - EDIT mode only */}
                                 {mode === GameMode.EDIT && onToggleSnapToRoad && (
                                     <button
                                         onClick={onToggleSnapToRoad}
