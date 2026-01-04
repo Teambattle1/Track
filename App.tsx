@@ -126,10 +126,17 @@ const GameApp: React.FC = () => {
   const [locateFeedback, setLocateFeedback] = useState<string | null>(null);
   const [activeTaskModalId, setActiveTaskModalId] = useState<string | null>(null); // Storing ID instead of Object to prevent stale state
   const [score, setScore] = useState(0);
+  // Global display settings (used in EDIT mode and TEAMVIEW)
   const [showScores, setShowScores] = useState(true);
   const [showTaskId, setShowTaskId] = useState(true);
   const [showTaskTitle, setShowTaskTitle] = useState(true);
   const [showTaskActions, setShowTaskActions] = useState(true);
+
+  // Separate state for INSTRUCTOR mode display settings (doesn't affect player view)
+  const [instructorShowScores, setInstructorShowScores] = useState(true);
+  const [instructorShowTaskId, setInstructorShowTaskId] = useState(true);
+  const [instructorShowTaskTitle, setInstructorShowTaskTitle] = useState(true);
+  const [instructorShowTaskActions, setInstructorShowTaskActions] = useState(true);
   const [showTeamPaths, setShowTeamPaths] = useState(false);
   const [showTeamPathSelector, setShowTeamPathSelector] = useState(false);
   const [selectedTeamPaths, setSelectedTeamPaths] = useState<string[]>([]); // Array of team IDs to show paths for
