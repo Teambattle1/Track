@@ -536,13 +536,17 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
 });
 
 const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }: any) => {
-    const draggable = mode === GameMode.EDIT && !!onMove;
+    // Allow dragging in both EDIT and INSTRUCTOR modes
+    const draggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !!onMove;
 
     const dangerIcon = L.divIcon({
         className: 'custom-danger-icon',
-        html: `<div style="width: 32px; height: 32px; background-color: #ef4444; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5); cursor: ${draggable ? 'move' : 'pointer'};">⚠</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
+        html: `<div style="width: 48px; height: 48px; background-color: #ef4444; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5); cursor: ${draggable ? 'move' : 'pointer'}; position: relative;">
+            <span style="font-size: 20px; margin-top: 2px;">⚠</span>
+            <span style="position: absolute; font-size: 12px; bottom: 2px; right: 2px; background-color: white; color: #ef4444; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: black; line-height: 1;">✓</span>
+        </div>`,
+        iconSize: [48, 48],
+        iconAnchor: [24, 24]
     });
 
     return (
@@ -573,8 +577,8 @@ const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }:
                 }
             `}</style>
 
-            {/* Draggable Center Marker */}
-            {mode === GameMode.EDIT && (
+            {/* Draggable Center Marker - Available in EDIT and INSTRUCTOR modes */}
+            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
                 <Marker
                     position={[zone.location.lat, zone.location.lng]}
                     icon={dangerIcon}
