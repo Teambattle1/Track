@@ -633,7 +633,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowMapStyleInfo(!showMapStyleInfo)}
-              className="p-2 bg-orange-700/50 hover:bg-orange-700 rounded-full transition-colors text-white"
+              className="p-2 bg-red-600/50 hover:bg-red-700/50 rounded-full transition-colors text-white"
               title="Map Style Information"
             >
               <Info className="w-5 h-5" />
@@ -643,7 +643,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
             {showMapStyleInfo && (
               <div className="absolute bottom-full right-0 mb-3 bg-white rounded-lg shadow-2xl p-4 max-w-xs text-sm text-gray-800 animate-in fade-in slide-in-from-bottom-2 z-50">
                 <div className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <Info className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold text-gray-900 mb-1">Map Style</p>
                     <p className="text-gray-700">
