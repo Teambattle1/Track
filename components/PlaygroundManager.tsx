@@ -106,7 +106,13 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
               buttonVisible: true
           };
 
-          // Copy tasks from template and associate them with the new playground
+          // Copy ALL task properties from template (including logic, actions, feedback, settings, etc.)
+          // The spread operator (...task) copies:
+          // - Logic & Completion Rules (logic, completionLogic)
+          // - Settings & Feedback (settings, feedback)
+          // - Appearance (icons, colors, scales, etc.)
+          // - Advanced Features (timeBomb, proximityTrigger, multiTeam, QR codes, NFC, etc.)
+          // - All other properties
           const newPoints = selectedTemplateForGame.tasks?.map((task, index) => ({
               ...task,
               id: task.id, // Keep original task ID for library sync
