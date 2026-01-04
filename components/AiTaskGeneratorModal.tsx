@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GamePoint, TaskTemplate } from '../types';
 import { X, Wand2, Loader, Plus, CheckCircle } from 'lucide-react';
-import { generateAiTasks } from '../services/ai';
+import { generateAiTasks, hasApiKey } from '../services/ai';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
 
 interface AiTaskGeneratorModalProps {
@@ -26,6 +26,13 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
     const handleGenerate = async () => {
         if (!prompt.trim()) {
             setError('Please describe the task you want to create');
+            return;
+        }
+
+        // Check if API key is configured first
+        if (!hasApiKey()) {
+            setPendingPrompt(prompt);
+            setShowGeminiKeyModal(true);
             return;
         }
 

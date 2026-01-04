@@ -15,6 +15,12 @@ const getApiKey = (): string => {
     return envKey || '';
 };
 
+// Check if API key is available (exported for UI to check before showing modal)
+export const hasApiKey = (): boolean => {
+    const key = getApiKey();
+    return !!key && key.trim().length > 0;
+};
+
 // Check if key exists before making calls
 const ensureApiKey = () => {
     const key = getApiKey();
