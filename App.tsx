@@ -2003,6 +2003,7 @@ const GameApp: React.FC = () => {
                             case 'TEAM_LOBBY': setShowTeamsHub(true); break;
                             case 'DELETE_GAMES': setShowDeleteGames(true); break;
                             case 'PLAYGROUNDS': setShowPlaygroundManager(true); break;
+                            case 'TEMPLATES': setShowPlaygroundManager(true); break;
                             case 'DATABASE': setShowDatabaseTools(true); break;
                             case 'DIAGNOSTICS': setShowSupabaseDiagnostic(true); break;
                             case 'TRANSLATIONS': setShowTranslationsManager(true); break;
