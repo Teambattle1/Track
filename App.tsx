@@ -2332,14 +2332,15 @@ const GameApp: React.FC = () => {
             onLocateMe={handleLocateMe}
             onSearchLocation={(c) => mapRef.current?.jumpTo(c)}
             isDrawerExpanded={isEditorExpanded}
-            showScores={showScores}
-            onToggleScores={() => setShowScores(!showScores)}
-            showTaskId={showTaskId}
-            onToggleTaskId={() => setShowTaskId(!showTaskId)}
-            showTaskTitle={showTaskTitle}
-            onToggleTaskTitle={() => setShowTaskTitle(!showTaskTitle)}
-            showTaskActions={showTaskActions}
-            onToggleTaskActions={() => setShowTaskActions(!showTaskActions)}
+            // Use INSTRUCTOR-specific settings in INSTRUCTOR mode, global settings otherwise
+            showScores={mode === GameMode.INSTRUCTOR ? instructorShowScores : showScores}
+            onToggleScores={() => mode === GameMode.INSTRUCTOR ? setInstructorShowScores(!instructorShowScores) : setShowScores(!showScores)}
+            showTaskId={mode === GameMode.INSTRUCTOR ? instructorShowTaskId : showTaskId}
+            onToggleTaskId={() => mode === GameMode.INSTRUCTOR ? setInstructorShowTaskId(!instructorShowTaskId) : setShowTaskId(!showTaskId)}
+            showTaskTitle={mode === GameMode.INSTRUCTOR ? instructorShowTaskTitle : showTaskTitle}
+            onToggleTaskTitle={() => mode === GameMode.INSTRUCTOR ? setInstructorShowTaskTitle(!instructorShowTaskTitle) : setShowTaskTitle(!showTaskTitle)}
+            showTaskActions={mode === GameMode.INSTRUCTOR ? instructorShowTaskActions : showTaskActions}
+            onToggleTaskActions={() => mode === GameMode.INSTRUCTOR ? setInstructorShowTaskActions(!instructorShowTaskActions) : setShowTaskActions(!showTaskActions)}
             hiddenPlaygroundIds={[]}
             onToggleChat={() => setShowChatDrawer(!showChatDrawer)}
             unreadMessagesCount={0}
