@@ -16,13 +16,14 @@ interface InstructorDashboardProps {
   onClose: () => void;
   onSetMode: (mode: GameMode) => void;
   mode?: GameMode;
+  onOpenPlayground?: (playgroundId: string) => void; // NEW: Open playzone in App-level gameplay view
 }
 
 interface LocationHistoryItem extends Coordinate {
     timestamp: number;
 }
 
-const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose, onSetMode, mode }) => {
+const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose, onSetMode, mode, onOpenPlayground }) => {
   const [liveGame, setLiveGame] = useState<Game>(game);
 
   useEffect(() => {
