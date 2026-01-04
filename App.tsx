@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Ruler, Crosshair, Navigation, Plus, Library, Home, Trophy, Users, MessageSquare, QrCode } from 'lucide-react';
+import { Ruler, Crosshair, Navigation, Plus, Library, Home, Trophy, Users, MessageSquare, QrCode, CheckCircle, XCircle } from 'lucide-react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, PlaygroundTemplate } from './types';
 import { APP_VERSION } from './utils/version';
 import * as db from './services/db';
