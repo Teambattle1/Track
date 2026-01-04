@@ -442,22 +442,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     }, [pendingDrawTrigger, activeTaskActionPoint, onDrawModeActivated]);
 
-    // Add effect to notify parent when draw mode is deactivated so it can clear activeTaskActionPoint
-    const onDrawModeDeactivatedRef = useRef<(() => void) | null>(null);
-    useEffect(() => {
-        // Store callback for cleanup
-        onDrawModeDeactivatedRef.current = () => {
-            // Parent will clear activeTaskActionPoint when notified
-        };
-
-        // If draw mode becomes inactive after being active, notify parent
-        if (!drawMode.active && drawMode.trigger === null && drawMode.sourceTaskId === null) {
-            // Draw mode just deactivated - we could clear activeTaskActionPoint here
-            // But since we can't directly access parent state, the parent should handle it
-            // via a dependency on drawMode changes
-        }
-    }, [drawMode.active, drawMode.trigger, drawMode.sourceTaskId]);
-
     const didSeedEditorToolbarPositionsRef = useRef(false);
 
     // Load toolbar positions from game (device-aware)
