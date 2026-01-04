@@ -994,8 +994,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 </div>
             )}
 
-            {/* Gemini API Key Warning Banner */}
-            {view === 'HOME' && showGeminiWarning && hasCheckedGeminiKey && (
+            {/* Gemini API Key Warning Banner - Only show in EDIT mode when game is loaded */}
+            {view === 'EDIT' && showGeminiWarning && hasCheckedGeminiKey && (
                 <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 w-full max-w-2xl px-4 animate-in slide-in-from-top-4 fade-in duration-500">
                     <div className="bg-gradient-to-r from-yellow-900/90 to-orange-900/90 backdrop-blur-md border-2 border-yellow-500/60 rounded-xl p-4 shadow-2xl shadow-yellow-500/20">
                         <div className="flex items-start gap-3">
