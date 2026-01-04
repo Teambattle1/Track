@@ -766,7 +766,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
             zoomControl={false}
         >
             <MapController handleRef={ref as any} />
-            <MapLayers key={mapStyle} mapStyle={mapStyle} />
+            <MapLayers key={mapStyle} mapStyle={mapStyle} showMapLayer={showMapLayer} />
             <RecenterMap center={propLocation} points={mapPoints} mode={mode} />
             {onMapClick && <MapClickParams onClick={onMapClick} />}
             
