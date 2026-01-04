@@ -627,14 +627,42 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     )}
 
                                     {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onOpenRemoteOverride && (
-                                        <button
-                                            onClick={onOpenRemoteOverride}
-                                            className="py-2 px-2 bg-orange-700 hover:bg-orange-800 text-orange-200 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
-                                            title="Remote Override"
-                                        >
-                                            <Zap className="w-4 h-4" />
-                                            OVERRIDE
-                                        </button>
+                                        <div className="relative group">
+                                            <button
+                                                onClick={onOpenRemoteOverride}
+                                                className="py-2 px-2 bg-orange-700 hover:bg-orange-800 text-orange-200 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
+                                                title="Remote Override"
+                                            >
+                                                <Zap className="w-4 h-4" />
+                                                OVERRIDE
+                                            </button>
+                                            <div className="absolute -top-2 -right-2 z-40">
+                                                <InfoBox
+                                                    title="REMOTE OVERRIDE"
+                                                    className="left-full ml-2 -top-2 w-72"
+                                                >
+                                                    <div className="space-y-2">
+                                                        <p className="font-semibold text-blue-300">What it does:</p>
+                                                        <ul className="list-disc list-inside space-y-1 text-slate-300">
+                                                            <li><strong>Force Complete:</strong> Mark a task as completed for a specific team, even if they haven&apos;t solved it</li>
+                                                            <li><strong>Teleport Team:</strong> Instantly move a team to a different location on the map</li>
+                                                        </ul>
+                                                        <p className="font-semibold text-blue-300 mt-3">How to use:</p>
+                                                        <ol className="list-decimal list-inside space-y-1 text-slate-300">
+                                                            <li>Click the OVERRIDE button to open the modal</li>
+                                                            <li>Select a team from the dropdown</li>
+                                                            <li>Choose an action: Force Complete or Teleport</li>
+                                                            <li>For Force Complete: select the task to mark complete</li>
+                                                            <li>For Teleport: click on the map to choose destination</li>
+                                                            <li>Confirm to apply the override</li>
+                                                        </ol>
+                                                        <p className="text-slate-400 text-[10px] italic mt-3">
+                                                            Use this for emergency game management when teams are stuck or need redirection.
+                                                        </p>
+                                                    </div>
+                                                </InfoBox>
+                                            </div>
+                                        </div>
                                     )}
 
                                     {mode === GameMode.INSTRUCTOR && onOpenLiveApproval && (
