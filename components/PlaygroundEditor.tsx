@@ -2955,6 +2955,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             {!isTemplateMode && (
                                 <button
                                     onClick={addNewZone}
+                                    disabled={isInstructorView}
                                     className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
                                     title="Add a new zone to the game"
                                 >
