@@ -1794,6 +1794,10 @@ const GameApp: React.FC = () => {
                 showTaskTitle={showTaskTitle}
                 teams={mapTeams}
                 showUserLocation={currentGameObj?.showPlayerLocations ?? true}
+                showMapLayer={true}
+                showZoneLayer={true}
+                showTaskLayer={true}
+                showLiveLayer={true}
             />
         </div>
         )}
