@@ -213,15 +213,17 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                     <button
                         onClick={() => {
-                            const allCollapsed = Object.values(collapsedSections).every(v => v);
-                            setCollapsedSections({
-                                mapmode: !allCollapsed,
-                                layers: !allCollapsed,
-                                location: !allCollapsed,
-                                pins: !allCollapsed,
-                                show: !allCollapsed,
-                                tools: !allCollapsed,
-                            });
+                            if (onCollapsedSectionsChange) {
+                                const allCollapsed = Object.values(collapsedSectionsProp || {}).every(v => v);
+                                onCollapsedSectionsChange({
+                                    mapmode: !allCollapsed,
+                                    layers: !allCollapsed,
+                                    location: !allCollapsed,
+                                    pins: !allCollapsed,
+                                    show: !allCollapsed,
+                                    tools: !allCollapsed,
+                                });
+                            }
                         }}
                         className="p-1 hover:bg-orange-700 rounded-lg transition-colors flex-shrink-0"
                         title="Collapse all sections"
