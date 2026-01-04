@@ -65,6 +65,10 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [touchedTaskId, setTouchedTaskId] = useState<string | null>(null); // Visual feedback
 
+  // Double-tap tracking (only in instructor mode)
+  const lastTapRef = useRef<{ taskId: string; timestamp: number } | null>(null);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Get tasks for this playground
   const playgroundTasks = game.points?.filter(p => p.playgroundId === playgroundId) || [];
 
@@ -108,12 +112,48 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
     aspectRatio: `${specs.width} / ${specs.height}`
   } : { width: '100%', height: '100%', aspectRatio: 'auto' };
 
-  // Handle task click/tap
+  // Cleanup tap timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
+    };
+  }, []);
+
+  // Handle task click/tap with double-tap detection in instructor mode
   const handleTaskClick = (task: GamePoint) => {
     // Provide visual feedback
     setTouchedTaskId(task.id);
+
+    if (isInstructor) {
+      // Instructor mode: require double-tap to open task
+      const now = Date.now();
+      const isDoubleTap = lastTapRef.current &&
+                          lastTapRef.current.taskId === task.id &&
+                          now - lastTapRef.current.timestamp < 300;
+
+      if (isDoubleTap) {
+        // Double-tap detected: open task modal
+        if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
+        setActiveTaskId(task.id);
+        lastTapRef.current = null;
+      } else {
+        // First tap: record it and set timeout to reset
+        lastTapRef.current = { taskId: task.id, timestamp: now };
+
+        if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
+        tapTimeoutRef.current = setTimeout(() => {
+          lastTapRef.current = null;
+        }, 300);
+      }
+    } else {
+      // Non-instructor mode: single tap opens task
+      setTimeout(() => {
+        setActiveTaskId(task.id);
+        setTouchedTaskId(null);
+      }, 100);
+    }
+
     setTimeout(() => {
-      setActiveTaskId(task.id);
       setTouchedTaskId(null);
     }, 100);
   };
