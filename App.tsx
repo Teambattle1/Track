@@ -331,6 +331,15 @@ const GameApp: React.FC = () => {
       }
   }, [activeGameId, games]);
 
+  // --- ENSURE EDIT MODE WHEN GAME OPENED FROM MANAGER ---
+  useEffect(() => {
+      // When GameManager closes and a game is selected, ensure mode is EDIT
+      if (!showGameChooser && activeGameId && mode === GameMode.PLAY) {
+          console.log('[GameManager] Game selected, setting mode to EDIT');
+          setMode(GameMode.EDIT);
+      }
+  }, [showGameChooser, activeGameId]);
+
   // --- MULTI-USER EDIT SYNC (realtime with safe fallback) ---
   useEffect(() => {
       if (!activeGameId) return;
