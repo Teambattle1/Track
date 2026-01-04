@@ -1991,7 +1991,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     type="text"
                                     value={activePlayground.title}
                                     onChange={(e) => updatePlayground({ title: e.target.value })}
-                                    className="bg-transparent border-b border-slate-600 text-sm font-bold text-white uppercase focus:border-orange-500 outline-none pb-1 w-full"
+                                    disabled={isInstructorView}
+                                    className={`bg-transparent border-b border-slate-600 text-sm font-bold text-white uppercase focus:border-orange-500 outline-none pb-1 w-full ${isInstructorView ? 'opacity-50 cursor-not-allowed' : 'focus:border-orange-500'}`}
                                 />
                             </div>
                             {onOpenGameSettings && (
