@@ -525,7 +525,14 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                                     return (
                                         <button
                                             key={pg.id}
-                                            onClick={() => setActivePlaygroundId(pg.id)}
+                                            onClick={() => {
+                                                // Use App-level playzone opening if available, otherwise fallback to old modal
+                                                if (onOpenPlayground) {
+                                                    onOpenPlayground(pg.id);
+                                                } else {
+                                                    setActivePlaygroundId(pg.id);
+                                                }
+                                            }}
                                             style={{ width: pg.buttonSize || 80, height: pg.buttonSize || 80 }}
                                             className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'} shadow-2xl hover:scale-105`}
                                         >
@@ -573,8 +580,9 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
         </div>
 
         {/* ... (Team Control Modal and Playground Modal logic remains same) ... */}
-        {/* Instructor Playground Viewer */}
-        {activePlaygroundId && activePlayground && (
+        {/* Instructor Playground Viewer - Fallback for backward compatibility */}
+        {/* NOTE: This will only show if onOpenPlayground prop is not provided */}
+        {!onOpenPlayground && activePlaygroundId && activePlayground && (
             <PlaygroundModal
                 playground={activePlayground}
                 points={liveGame.points}
