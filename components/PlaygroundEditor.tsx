@@ -70,7 +70,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     isAdmin = false,
     onStartSimulation,
     onOpenGameSettings,
-    onExportGameToLibrary
+    onExportGameToLibrary,
+    isInstructorView = false // NEW: View as instructor (player perspective, read-only)
 }) => {
     // State
     const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
