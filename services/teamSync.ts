@@ -80,6 +80,16 @@ class TeamSyncService {
       return this.userName;
   }
 
+  public getState() {
+      return {
+          gameId: this.gameId,
+          teamId: this.teamKey,
+          teamName: this.teamKey?.replace(/_/g, ' ') || '',
+          userName: this.userName,
+          deviceId: this.deviceId
+      };
+  }
+
   public connect(gameId: string, teamName: string, userName: string) {
     if (this.channel) this.disconnect();
 
