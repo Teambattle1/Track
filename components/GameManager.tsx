@@ -332,6 +332,39 @@ const GameManager: React.FC<GameManagerProps> = ({
         </div>
 
         <div className="p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+          {/* Game ID Search */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search Game ID (e.g. 001, 123)..."
+              value={gameIdSearch}
+              onChange={(e) => handleGameIdSearch(e.target.value)}
+              onKeyDown={(e) => searchResults.length > 0 && handleSearchKeyDown(e, searchResults[0].id)}
+              className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-semibold text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            {/* Search Results Dropdown */}
+            {searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-orange-500 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                {searchResults.slice(0, 5).map((game) => (
+                  <button
+                    key={game.id}
+                    onClick={() => {
+                      primaryActionForGame(game.id);
+                      setGameIdSearch('');
+                      setSearchResults([]);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-orange-50 dark:hover:bg-orange-900/30 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-orange-600 dark:text-orange-400 font-black">[{getGameDisplayId(game.id)}]</span>
+                      <span className="text-gray-800 dark:text-white font-semibold">{game.name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Primary Tabs: GAMES vs TEMPLATES */}
           <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-3">
             <button
