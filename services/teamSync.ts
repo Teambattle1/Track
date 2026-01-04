@@ -85,7 +85,7 @@ class TeamSyncService {
       return {
           gameId: this.gameId,
           teamId: this.teamKey,
-          teamName: this.teamKey?.replace(/_/g, ' ') || '',
+          teamName: this.teamName || '',
           userName: this.userName,
           deviceId: this.deviceId
       };
@@ -96,6 +96,7 @@ class TeamSyncService {
 
     this.userName = userName;
     this.gameId = gameId;
+    this.teamName = teamName;
     this.teamKey = teamName.replace(/[^a-zA-Z0-9]/g, '_');
 
     // 1. Team-Specific Channel (For Voting & Presence)
