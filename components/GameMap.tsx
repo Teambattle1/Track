@@ -741,6 +741,27 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
       return undefined;
   };
 
+  // Apply CSS filters to Leaflet tile pane based on map style
+  useEffect(() => {
+      // Find the Leaflet tile pane container
+      const tilePane = document.querySelector('.leaflet-tile-pane') as HTMLElement | null;
+      if (!tilePane) return;
+
+      // Remove all filter classes first
+      tilePane.classList.remove('map-filter-historic', 'map-filter-treasure', 'map-filter-desert', 'map-filter-winter');
+
+      // Apply the appropriate filter class based on mapStyle
+      if (mapStyle === 'historic') {
+          tilePane.classList.add('map-filter-historic');
+      } else if (mapStyle === 'treasure') {
+          tilePane.classList.add('map-filter-treasure');
+      } else if (mapStyle === 'desert') {
+          tilePane.classList.add('map-filter-desert');
+      } else if (mapStyle === 'winter') {
+          tilePane.classList.add('map-filter-winter');
+      }
+  }, [mapStyle]);
+
   return (
     <div className="relative w-full h-full z-0 bg-slate-900">
         {isRelocating && (
