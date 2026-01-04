@@ -456,7 +456,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
 
   return (
     <div
-        className={`fixed top-0 right-0 bottom-0 z-[2100] w-full sm:w-[320px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col border-l border-gray-200 dark:border-gray-800 pointer-events-auto transition-transform duration-300 ease-in-out ${isExpanded ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 bottom-0 z-[2100] w-full sm:w-[320px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col border-l border-gray-200 dark:border-gray-800 pointer-events-auto transition-transform duration-300 ease-in-out relative ${isExpanded ? 'translate-x-0' : 'translate-x-full'}`}
     >
       {/* Toggle Button - Orange Arrow Handle */}
       <button
