@@ -626,6 +626,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     relocateScopeCenter,
     relocateAllTaskIds = [],
     onPointClick,
+    onAreaColorClick,
     onTeamClick,
     onMapClick,
     onPointMove,
