@@ -2309,6 +2309,12 @@ const GameApp: React.FC = () => {
                 showTaskLayer={showTaskLayer}
                 showLiveLayer={showLiveLayer}
             />
+
+            {/* Map Style Quick Selector - Top Right Corner */}
+            <MapStyleQuickSelector
+                currentStyle={localMapStyle || 'osm'}
+                onStyleChange={(styleId) => setLocalMapStyle(styleId)}
+            />
             </div>
         )}
 
