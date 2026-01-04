@@ -94,6 +94,10 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   const [settingsPasswordError, setSettingsPasswordError] = useState('');
   const [showRanking, setShowRanking] = useState(false);
   const [gameTime, setGameTime] = useState<string>('00:00');
+  const [selectedMapStyle, setSelectedMapStyle] = useState<'standard' | 'satellite'>(() => {
+    return game.defaultMapStyle === 'satellite' ? 'satellite' : 'standard';
+  });
+  const [showMapStyleInfo, setShowMapStyleInfo] = useState(false);
 
   // Timer for team view
   useEffect(() => {
