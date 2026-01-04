@@ -5964,6 +5964,138 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 </div>
             )}
 
+            {/* Title Text Editor Modal */}
+            {showTitleTextEditor && (
+                <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+                    <div className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-blue-500">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Type className="w-5 h-5 text-white" />
+                                <h3 className="text-lg font-black text-white uppercase tracking-widest">Title Text</h3>
+                            </div>
+                            <button
+                                onClick={() => setShowTitleTextEditor(false)}
+                                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                                title="Close"
+                                type="button"
+                            >
+                                <X className="w-5 h-5 text-white" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 space-y-5">
+                            {/* Text Input */}
+                            <div className="space-y-2">
+                                <label className="text-xs text-slate-400 font-bold uppercase">Title Text Content</label>
+                                <input
+                                    type="text"
+                                    value={titleTextContent}
+                                    onChange={(e) => setTitleTextContent(e.target.value)}
+                                    placeholder="Enter title text..."
+                                    className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-700 text-white rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                                />
+                            </div>
+
+                            {/* Font Size Slider */}
+                            <div className="space-y-2">
+                                <label className="text-xs text-slate-400 font-bold uppercase">Font Size: {titleTextFontSize}px</label>
+                                <input
+                                    type="range"
+                                    min="12"
+                                    max="64"
+                                    value={titleTextFontSize}
+                                    onChange={(e) => setTitleTextFontSize(parseInt(e.target.value))}
+                                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
+
+                            {/* Color Picker */}
+                            <div className="space-y-2">
+                                <label className="text-xs text-slate-400 font-bold uppercase">Text Color</label>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="color"
+                                        value={titleTextColor}
+                                        onChange={(e) => setTitleTextColor(e.target.value)}
+                                        className="w-12 h-12 bg-slate-800 border-2 border-slate-700 rounded-lg cursor-pointer hover:border-blue-500 transition-colors"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={titleTextColor}
+                                        onChange={(e) => setTitleTextColor(e.target.value)}
+                                        className="flex-1 px-3 py-2 bg-slate-800 border-2 border-slate-700 text-white rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-sm font-mono"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Color Presets */}
+                            <div className="space-y-2">
+                                <label className="text-xs text-slate-400 font-bold uppercase">Quick Presets</label>
+                                <div className="grid grid-cols-6 gap-2">
+                                    {[
+                                        { color: '#ffffff' },
+                                        { color: '#f0f0f0' },
+                                        { color: '#ff6b6b' },
+                                        { color: '#4ecdc4' },
+                                        { color: '#ffd93d' },
+                                        { color: '#6bcf7f' }
+                                    ].map((preset) => (
+                                        <button
+                                            key={preset.color}
+                                            onClick={() => setTitleTextColor(preset.color)}
+                                            className="w-10 h-10 rounded-lg border-2 border-slate-700 hover:border-blue-400 hover:scale-110 transition-all shadow-md"
+                                            style={{ backgroundColor: preset.color }}
+                                            type="button"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Toggle Visibility */}
+                            <div className="flex items-center justify-between bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+                                <span className="text-sm font-bold text-slate-300 uppercase">Show Title Text</span>
+                                <button
+                                    onClick={() => setShowTitleText(!showTitleText)}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                        showTitleText ? 'bg-blue-600' : 'bg-slate-600'
+                                    }`}
+                                    type="button"
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                            showTitleText ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    onClick={() => {
+                                        saveTitleTextSettings();
+                                        setShowTitleTextEditor(false);
+                                    }}
+                                    className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-black uppercase text-sm rounded-xl transition-all shadow-lg"
+                                    type="button"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    onClick={() => setShowTitleTextEditor(false)}
+                                    className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold uppercase text-sm rounded-xl transition-colors"
+                                    type="button"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Ranking Leaderboard - Draggable Popup */}
             {showRanking && (
                 <div
