@@ -855,7 +855,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           enableGameTime,
           hideScore,
           showScoreAfter: showScoreAfter || undefined,
-          hideScoreAfter: hideScoreAfter || undefined
+          hideScoreAfter: hideScoreAfter || undefined,
+          lockMapStyle
       };
 
       const taskConfig: GameTaskConfiguration = {
