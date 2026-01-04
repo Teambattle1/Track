@@ -1967,6 +1967,11 @@ const GameApp: React.FC = () => {
                         // Keep showLanding true so Access renders on top of landing page
                         return;
                     }
+                    if (action === 'ADMIN') {
+                        setShowDashboard(true);
+                        setDashboardTab('users');
+                        return;
+                    }
                     ensureSession(() => {
                         switch (action) {
                             case 'GAMES': setShowGameChooser(true); break;
