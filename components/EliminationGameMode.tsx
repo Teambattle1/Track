@@ -173,6 +173,10 @@ const EliminationGameMode: React.FC<EliminationGameModeProps> = ({
           }))}
           userLocation={userLocation}
           dangerZones={game.dangerZones}
+          showMapLayer={true}
+          showZoneLayer={true}
+          showTaskLayer={true}
+          showLiveLayer={true}
         />
       </div>
 
