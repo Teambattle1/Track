@@ -2235,10 +2235,10 @@ const GameApp: React.FC = () => {
                 selectedSnapTaskIds={selectedSnapTaskIds}
                 relocateScopeCenter={relocateScopeCenter}
                 relocateAllTaskIds={relocateAllTaskIds}
-                showScores={showScores}
-                showTaskId={showTaskId}
-                showTaskTitle={showTaskTitle}
-                showTaskActions={showTaskActions}
+                showScores={mode === GameMode.INSTRUCTOR ? instructorShowScores : showScores}
+                showTaskId={mode === GameMode.INSTRUCTOR ? instructorShowTaskId : showTaskId}
+                showTaskTitle={mode === GameMode.INSTRUCTOR ? instructorShowTaskTitle : showTaskTitle}
+                showTaskActions={mode === GameMode.INSTRUCTOR ? instructorShowTaskActions : showTaskActions}
                 measuredDistance={measuredDistance}
                 hoveredPointId={hoveredPointId}
                 hoveredDangerZoneId={hoveredDangerZoneId}
