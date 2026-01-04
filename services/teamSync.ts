@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
-import { TaskVote, TeamMember, ChatMessage, Coordinate } from '../types';
+import { TaskVote, TeamMember, ChatMessage, Coordinate, DeviceType } from '../types';
+import { detectDeviceTypeWithUA } from '../utils/deviceUtils';
 
 const roundCoord = (c: Coordinate, digits = 5): Coordinate => ({
     lat: Number(c.lat.toFixed(digits)),
