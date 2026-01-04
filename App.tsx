@@ -1998,7 +1998,8 @@ const GameApp: React.FC = () => {
                       // Set pending draw request and switch to EDIT mode
                       setPendingDrawRequest(trigger);
                       setMode(GameMode.EDIT);
-                      setActiveTaskActionPoint(null); // Close modal
+                      // Don't clear activeTaskActionPoint - PlaygroundEditor needs it to setup draw mode
+                      // It will be cleared later when draw mode exits
                   }}
               />
           )}
