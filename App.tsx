@@ -2459,7 +2459,7 @@ const GameApp: React.FC = () => {
                         onClick={() => setShowChatDrawer(!showChatDrawer)}
                         className={`relative flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-colors shadow-lg ${
                             unreadMessageCount > 0
-                                ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                                ? 'animate-chat-flash'
                                 : 'bg-orange-700 hover:bg-orange-800'
                         }`}
                         title={unreadMessageCount > 0 ? `${unreadMessageCount} unread message${unreadMessageCount !== 1 ? 's' : ''}` : 'Chat'}
