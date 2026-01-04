@@ -46,6 +46,7 @@ interface PlaygroundEditorProps {
   onUpdateTaskLibrary: (library: TaskTemplate[]) => void; // Update task library
   onOpenGameSettings?: () => void; // Open game settings
   onExportGameToLibrary?: () => void; // Export all tasks to library
+  isInstructorView?: boolean; // NEW: View as instructor (player perspective, read-only)
 }
 
 const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
