@@ -243,8 +243,8 @@ const MAP_LAYERS: Record<string, { url: string; attribution: string, className?:
   clean: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attribution: '&copy; CartoDB' },
   // Updated: Winter now uses OSM with a cold CSS filter for reliability
   winter: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap contributors', className: 'map-filter-winter' },
-  // Ski: Stamen Terrain via Stadia Maps - shows elevation contours and hillshading (ideal for skiing)
-  ski: { url: 'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', attribution: '&copy; Stadia Maps &copy; Stamen Design &copy; OpenStreetMap contributors', errorTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
+  // Ski: OpenTopoMap - free terrain map with contours, perfect for skiing/hiking (no auth required)
+  ski: { url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenTopoMap &copy; OpenStreetMap contributors', errorTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
   // Historic: Using OSM as base but we will apply CSS sepia filter in component
   historic: { url: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OpenStreetMap', className: 'map-filter-historic' },
   // Treasure: Ancient treasure map style with strong sepia and vintage look
