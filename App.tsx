@@ -2359,7 +2359,13 @@ const GameApp: React.FC = () => {
             measuredDistance={measuredDistance}
             measurePointsCount={measurePointsCount}
             playgrounds={activeGame?.playgrounds}
-            onOpenPlayground={(id) => setViewingPlaygroundId(id)}
+            onOpenPlayground={(id) => {
+                // When opening a playzone, maintain current mode context
+                // This ensures instructors see gameplay view, not editor
+                setViewingPlaygroundId(id);
+                // Note: mode is already set by the calling context (EDIT, INSTRUCTOR, or PLAY)
+                // No need to change it here - App.tsx will render the correct component based on mode
+            }}
             hoveredPlaygroundId={hoveredPlaygroundId}
             onHoverPlayground={setHoveredPlaygroundId}
             onOpenTeamDashboard={() => setShowTeamDashboard(true)}
