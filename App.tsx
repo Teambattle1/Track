@@ -123,6 +123,7 @@ const GameApp: React.FC = () => {
   const [viewingPlaygroundId, setViewingPlaygroundId] = useState<string | null>(null);
   const [playgroundTemplateToEdit, setPlaygroundTemplateToEdit] = useState<any>(null);
   const [activeTaskActionPoint, setActiveTaskActionPoint] = useState<GamePoint | null>(null);
+  const [pendingDrawRequest, setPendingDrawRequest] = useState<'onOpen' | 'onCorrect' | 'onIncorrect' | null>(null);
   
   // --- PLAY STATE (Location from Context) ---
   const { userLocation, gpsAccuracy, error: locationError } = useLocation();
