@@ -601,14 +601,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         <MessageSquare className="w-4 h-4" />
                                         CHAT
                                     </button>
-                                    <button
-                                        onClick={onEditGameSettings}
-                                        className="py-2 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
-                                        title="Settings"
-                                    >
-                                        <Settings className="w-4 h-4" />
-                                        SETTINGS
-                                    </button>
+                                    {/* SETTINGS button hidden */}
 
                                     {mode === GameMode.EDIT && timerConfig && (
                                         <button
