@@ -421,6 +421,22 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         return () => window.removeEventListener('keydown', handleEscKey);
     }, [drawMode.active]);
 
+    // Activate draw mode from pending request (when DRAW button is clicked from action modal)
+    useEffect(() => {
+        if (pendingDrawTrigger && activeTaskActionPoint && activeTaskActionPoint.id) {
+            setSelectedTaskId(activeTaskActionPoint.id);
+            setDrawMode({
+                active: true,
+                trigger: pendingDrawTrigger,
+                sourceTaskId: activeTaskActionPoint.id,
+                mousePosition: null
+            });
+            if (onDrawModeActivated) {
+                onDrawModeActivated();
+            }
+        }
+    }, [pendingDrawTrigger, activeTaskActionPoint, onDrawModeActivated]);
+
     const didSeedEditorToolbarPositionsRef = useRef(false);
 
     // Load toolbar positions from game (device-aware)
