@@ -494,6 +494,7 @@ export interface DesignConfig {
   hideScore?: boolean;
   showScoreAfter?: string; // HH:mm:ss
   hideScoreAfter?: string; // HH:mm:ss
+  lockMapStyle?: boolean; // If true, players cannot change map style between Standard and Satellite
 }
 
 export interface GameTaskConfiguration {
