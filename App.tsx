@@ -614,20 +614,38 @@ const GameApp: React.FC = () => {
       }
 
       try {
-          const taskTemplates = activeGame.points.map(point => ({
-              id: `template-${point.id}`,
-              title: point.title,
-              task: point.task,
-              feedback: point.feedback,
-              points: point.points,
-              tags: Array.isArray(point.tags) ? point.tags : [],
-              iconId: point.iconId,
-              iconUrl: point.iconUrl,
-              completedIconId: (point as any).completedIconId,
-              completedIconUrl: (point as any).completedIconUrl,
-              settings: point.settings,
-              logic: point.logic
-          }));
+          const isPlayzoneGame = activeGame.gameMode === 'playzone';
+
+          const taskTemplates = activeGame.points.map(point => {
+              // Get existing tags and ensure 'playzone' tag is added for playzone games
+              const existingTags = Array.isArray(point.tags) ? point.tags : [];
+              const tags = isPlayzoneGame || point.playgroundId
+                  ? [...new Set([...existingTags, 'playzone'])] // Add 'playzone' tag and remove duplicates
+                  : existingTags;
+
+              return {
+                  id: point.id, // Use original ID, not template-${point.id}
+                  title: point.title,
+                  task: point.task,
+                  feedback: point.feedback,
+                  points: point.points,
+                  tags: tags,
+                  iconId: point.iconId,
+                  iconUrl: point.iconUrl,
+                  completedIconId: (point as any).completedIconId,
+                  completedIconUrl: (point as any).completedIconUrl,
+                  settings: point.settings,
+                  logic: point.logic,
+                  activationTypes: point.activationTypes,
+                  qrCodeString: point.qrCodeString,
+                  nfcTagId: point.nfcTagId,
+                  ibeaconUUID: point.ibeaconUUID,
+                  colorScheme: point.colorScheme,
+                  isColorSchemeLocked: point.isColorSchemeLocked,
+                  createdAt: Date.now(),
+                  intro: point.shortIntro
+              } as TaskTemplate;
+          });
 
           const { ok } = await db.saveTemplates(taskTemplates);
 
@@ -636,8 +654,9 @@ const GameApp: React.FC = () => {
               const updatedLib = await db.fetchLibrary();
               setTaskLibrary(updatedLib);
 
-              alert(`✅ Exported ${taskTemplates.length} tasks to Global Library and synced to Supabase!`);
-              console.log('[Export] Tasks exported to library:', taskTemplates.length);
+              const playzoneCount = taskTemplates.filter(t => t.tags.includes('playzone')).length;
+              alert(`✅ Exported ${taskTemplates.length} tasks to Global Library and synced to Supabase!\n${playzoneCount > 0 ? `(${playzoneCount} tagged as PLAYZONE)` : ''}`);
+              console.log('[Export] Tasks exported to library:', taskTemplates.length, 'Playzone tasks:', playzoneCount);
           } else {
               alert('❌ Failed to export tasks to library');
           }
