@@ -30,6 +30,7 @@ import PlaygroundManager from './components/PlaygroundManager';
 import AdminModal from './components/AdminModal';
 import ChatDrawer from './components/ChatDrawer';
 import TeamsHubModal from './components/TeamsHubModal';
+import QRScannerModal from './components/QRScannerModal';
 import ClientSubmissionView from './components/ClientSubmissionView';
 import GameCreator from './components/GameCreator';
 import TaskActionModal from './components/TaskActionModal';
