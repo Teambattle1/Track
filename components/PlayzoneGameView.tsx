@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Game, Playground, GamePoint, DeviceType } from '../types';
 import { DEVICE_SPECS, getDeviceLayout } from '../utils/deviceUtils';
-import { X, Home, QrCode, Trophy } from 'lucide-react';
+import { X, Home, QrCode, Trophy, Settings, MessageSquare, Users } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
 import TaskModal from './TaskModal';
 import QRScannerModal from './QRScannerModal';
@@ -18,8 +18,11 @@ interface PlayzoneGameViewProps {
 
 /**
  * PlayzoneGameView - Canvas-only rendering for gameplay mode
- * Extracts and displays ONLY the interactive game canvas (content inside device borders)
- * Used in Instructor and Teamplay modes to provide a clean gameplay experience
+ * Team View features:
+ * - Orange header bar with timer (center), score (right), settings cogwheel (left)
+ * - Permanent orange toolbox with Team Lobby and Chat buttons
+ * - Lenovo Tab 8 landscape as default for tablets
+ * - Password-protected settings modal (code: 4027)
  */
 const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   game,
@@ -33,26 +36,41 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   // Find the active playground
   const activePlayground = game.playgrounds?.find(pg => pg.id === playgroundId);
   
-  // Auto-detect device type based on viewport
+  // For team view: default to tablet (Lenovo Tab 8), for instructor: auto-detect
   const [selectedDevice, setSelectedDevice] = useState<DeviceType>(() => {
+    if (isInstructor) {
+      const width = window.innerWidth;
+      if (width < 768) return 'mobile';
+      if (width < 1024) return 'tablet';
+      return 'desktop';
+    }
+    // Team view defaults to tablet (Lenovo Tab 8) but respects viewport
     const width = window.innerWidth;
     if (width < 768) return 'mobile';
-    if (width < 1024) return 'tablet';
+    if (width < 1440) return 'tablet'; // Wider range for tablet
     return 'desktop';
   });
 
   // Responsive device detection
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth;
-      if (width < 768) setSelectedDevice('mobile');
-      else if (width < 1024) setSelectedDevice('tablet');
-      else setSelectedDevice('desktop');
+      if (isInstructor) {
+        const width = window.innerWidth;
+        if (width < 768) setSelectedDevice('mobile');
+        else if (width < 1024) setSelectedDevice('tablet');
+        else setSelectedDevice('desktop');
+      } else {
+        // Team view
+        const width = window.innerWidth;
+        if (width < 768) setSelectedDevice('mobile');
+        else if (width < 1440) setSelectedDevice('tablet');
+        else setSelectedDevice('desktop');
+      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isInstructor]);
 
   // Get device layout for current device
   const deviceLayout = activePlayground?.deviceLayouts?.[selectedDevice] || null;
@@ -63,11 +81,50 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   
   // Task interaction state
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
-  const [touchedTaskId, setTouchedTaskId] = useState<string | null>(null); // Visual feedback
+  const [touchedTaskId, setTouchedTaskId] = useState<string | null>(null);
 
-  // Double-tap tracking (only in instructor mode)
+  // Double-tap tracking (instructor mode) and ranking reveal (team mode)
   const lastTapRef = useRef<{ taskId: string; timestamp: number } | null>(null);
   const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const scoreDoubleClickRef = useRef<number>(0);
+
+  // Team View state
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsPassword, setSettingsPassword] = useState('');
+  const [settingsPasswordError, setSettingsPasswordError] = useState('');
+  const [showRanking, setShowRanking] = useState(false);
+  const [gameTime, setGameTime] = useState<string>('00:00');
+
+  // Timer for team view
+  useEffect(() => {
+    if (isInstructor || !game.timerConfig || game.timerConfig.mode === 'none') {
+      return;
+    }
+
+    const updateTimer = () => {
+      let target: number | null = null;
+
+      if (game.timerConfig?.mode === 'scheduled_end' && game.timerConfig?.endTime) {
+        target = new Date(game.timerConfig.endTime).getTime();
+      }
+      
+      if (target) {
+        const now = Date.now();
+        const diff = target - now;
+        if (diff <= 0) {
+          setGameTime('00:00');
+        } else {
+          const m = Math.floor((diff % 3600000) / 60000);
+          const s = Math.floor((diff % 60000) / 1000);
+          setGameTime(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+        }
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [game.timerConfig, isInstructor]);
 
   // Get tasks for this playground
   const playgroundTasks = game.points?.filter(p => p.playgroundId === playgroundId) || [];
@@ -78,7 +135,6 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
     if (pos) {
       return { x: pos.x, y: pos.y };
     }
-    // Fallback to center
     return { x: 50, y: 50 };
   };
 
@@ -119,25 +175,51 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
     };
   }, []);
 
+  // Handle settings password submission
+  const handleSettingsPasswordSubmit = () => {
+    if (settingsPassword === '4027') {
+      setShowSettingsModal(false);
+      setSettingsPassword('');
+      setSettingsPasswordError('');
+      // Return to editor mode
+      onClose();
+    } else {
+      setSettingsPasswordError('Incorrect password');
+      setSettingsPassword('');
+    }
+  };
+
+  // Handle score double-click to reveal ranking
+  const handleScoreClick = () => {
+    if (!isInstructor) {
+      scoreDoubleClickRef.current += 1;
+      if (scoreDoubleClickRef.current >= 2) {
+        setShowRanking(true);
+        scoreDoubleClickRef.current = 0;
+        setTimeout(() => setShowRanking(false), 3000);
+      } else {
+        setTimeout(() => {
+          scoreDoubleClickRef.current = 0;
+        }, 300);
+      }
+    }
+  };
+
   // Handle task click/tap with double-tap detection in instructor mode
   const handleTaskClick = (task: GamePoint) => {
-    // Provide visual feedback
     setTouchedTaskId(task.id);
 
     if (isInstructor) {
-      // Instructor mode: require double-tap to open task
       const now = Date.now();
       const isDoubleTap = lastTapRef.current &&
                           lastTapRef.current.taskId === task.id &&
                           now - lastTapRef.current.timestamp < 300;
 
       if (isDoubleTap) {
-        // Double-tap detected: open task modal
         if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
         setActiveTaskId(task.id);
         lastTapRef.current = null;
       } else {
-        // First tap: record it and set timeout to reset
         lastTapRef.current = { taskId: task.id, timestamp: now };
 
         if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
@@ -146,7 +228,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
         }, 300);
       }
     } else {
-      // Non-instructor mode: single tap opens task
+      // Team mode: single tap opens task
       setTimeout(() => {
         setActiveTaskId(task.id);
         setTouchedTaskId(null);
@@ -170,7 +252,6 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   const handleQRScan = (value: string) => {
     setIsQRScannerActive(false);
     
-    // Find task with matching QR code
     const task = playgroundTasks.find(t => 
       t.qrCodeString === value || 
       t.nfcTagId === value || 
@@ -202,36 +283,66 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col">
-      {/* Top Bar - Minimal HUD */}
-      <div className="h-14 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4">
-        <div className="flex items-center gap-3">
+      {/* Team View: Orange Header Bar */}
+      {!isInstructor && (
+        <div className="h-16 bg-orange-600 border-b-2 border-orange-700 flex items-center justify-between px-6 shadow-lg">
+          {/* Settings Cogwheel (Left) */}
           <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
-            title="Back"
+            onClick={() => setShowSettingsModal(true)}
+            className="p-2 hover:bg-orange-700 rounded-lg transition-colors text-white hover:scale-110"
+            title="Settings"
           >
-            <Home className="w-5 h-5" />
+            <Settings className="w-6 h-6" />
           </button>
-          <span className="text-sm font-bold text-white truncate max-w-xs">
-            {activePlayground.title || 'Playzone'}
-          </span>
-        </div>
 
-        <div className="flex items-center gap-4">
-          {showScores && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-600/20 border border-orange-600/50 rounded-lg">
-              <Trophy className="w-4 h-4 text-orange-400" />
-              <span className="text-sm font-black text-orange-400">{currentScore}</span>
-            </div>
-          )}
-          
-          {isInstructor && (
+          {/* Timer (Center) */}
+          <div className="flex flex-col items-center">
+            <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Game Time</span>
+            <span className="text-3xl font-black text-white font-mono">{gameTime}</span>
+          </div>
+
+          {/* Score (Right) */}
+          <button
+            onClick={handleScoreClick}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 hover:bg-orange-700 rounded-xl transition-colors"
+            title={showRanking ? 'Ranking Revealed' : 'Double-click to see ranking'}
+          >
+            <Trophy className="w-5 h-5 text-yellow-300" />
+            <span className="text-lg font-black text-white">{currentScore}</span>
+          </button>
+        </div>
+      )}
+
+      {/* Instructor Header (Simpler) */}
+      {isInstructor && (
+        <div className="h-14 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
+              title="Back"
+            >
+              <Home className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-bold text-white truncate max-w-xs">
+              {activePlayground.title || 'Playzone'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {showScores && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-600/20 border border-orange-600/50 rounded-lg">
+                <Trophy className="w-4 h-4 text-orange-400" />
+                <span className="text-sm font-black text-orange-400">{currentScore}</span>
+              </div>
+            )}
+            
             <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">
               Instructor View
             </span>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Canvas Container */}
       <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
@@ -375,13 +486,34 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
         </div>
       </div>
 
+      {/* Team View: Orange Toolbox (Bottom) */}
+      {!isInstructor && (
+        <div className="h-16 bg-orange-600 border-t-2 border-orange-700 flex items-center justify-center gap-4 px-6 shadow-lg">
+          <button
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+            title="Team Lobby"
+          >
+            <Users className="w-5 h-5" />
+            <span>TEAM LOBBY</span>
+          </button>
+
+          <button
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+            title="Chat"
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span>CHAT</span>
+          </button>
+        </div>
+      )}
+
       {/* Task Modal */}
       {activeTask && (
         <TaskModal
           point={activeTask}
           onClose={(completed) => handleTaskClose(completed || false, activeTask.id)}
-          onEdit={() => {}} // No editing in gameplay mode
-          canEdit={false} // Disable editing
+          onEdit={() => {}}
+          canEdit={false}
         />
       )}
 
@@ -391,6 +523,83 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
           onScan={handleQRScan}
           onClose={() => setIsQRScannerActive(false)}
         />
+      )}
+
+      {/* Settings Password Modal (Team View Only) */}
+      {!isInstructor && showSettingsModal && (
+        <div className="fixed inset-0 z-[10000] bg-black/70 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-black text-gray-900">Settings</h2>
+              <button
+                onClick={() => {
+                  setShowSettingsModal(false);
+                  setSettingsPassword('');
+                  setSettingsPasswordError('');
+                }}
+                className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Enter Password
+                </label>
+                <input
+                  type="password"
+                  value={settingsPassword}
+                  onChange={(e) => {
+                    setSettingsPassword(e.target.value);
+                    if (settingsPasswordError) setSettingsPasswordError('');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSettingsPasswordSubmit();
+                  }}
+                  placeholder="****"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-600 font-mono text-lg tracking-widest"
+                  autoFocus
+                />
+                {settingsPasswordError && (
+                  <p className="text-red-600 text-sm font-bold mt-2">{settingsPasswordError}</p>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowSettingsModal(false);
+                    setSettingsPassword('');
+                    setSettingsPasswordError('');
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold text-gray-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSettingsPasswordSubmit}
+                  className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg font-bold text-white transition-colors"
+                >
+                  Enter Editor
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ranking Reveal Banner (Team View Only) */}
+      {!isInstructor && showRanking && (
+        <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center pointer-events-none animate-in fade-in duration-200">
+          <div className="bg-orange-600 rounded-2xl shadow-2xl p-8 text-center max-w-sm">
+            <Trophy className="w-16 h-16 text-yellow-300 mx-auto mb-4" />
+            <h2 className="text-3xl font-black text-white mb-2">Your Ranking</h2>
+            <p className="text-4xl font-black text-yellow-300">Coming Soon...</p>
+            <p className="text-white/80 text-sm mt-4">Ranking system will be available when the game master enables it</p>
+          </div>
+        </div>
       )}
     </div>
   );
