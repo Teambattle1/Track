@@ -287,7 +287,15 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   const activeTask = playgroundTasks.find(t => t.id === activeTaskId);
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col">
+    <div className="fixed inset-0 z-[9999] bg-[#050505] flex flex-col" style={{ aspectRatio: '16 / 9' }}>
+      {/* Force landscape orientation for team view */}
+      {!isInstructor && (
+        <style>{`
+          @media (orientation: portrait) {
+            body { writing-mode: sideways-lr; }
+          }
+        `}</style>
+      )}
       {/* Team View: Orange Header Bar */}
       {!isInstructor && (() => {
         const teamState = teamSync.getState();
