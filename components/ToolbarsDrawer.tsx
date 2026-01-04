@@ -395,6 +395,50 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
+                {/* MAPSTYLE Section - Blue */}
+                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
+                    <div className="bg-blue-600 border-2 border-blue-500 rounded-xl p-3 space-y-3">
+                        <button
+                            onClick={() => toggleSection('mapstyle')}
+                            className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Layers className="w-4 h-4" />
+                                MAPSTYLE
+                            </span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('mapstyle') ? '' : '-rotate-90'}`} />
+                        </button>
+
+                        {isVisible('mapstyle') && (
+                            <div className="grid grid-cols-3 gap-2">
+                                {MAP_STYLES_LIST.map((style) => {
+                                    const Icon = style.icon;
+                                    const isActive = mapStyle === style.id;
+
+                                    return (
+                                        <button
+                                            key={style.id}
+                                            onClick={() => onSetMapStyle(style.id)}
+                                            className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                                isActive
+                                                    ? 'bg-orange-600 text-white shadow-lg ring-2 ring-orange-400'
+                                                    : 'bg-blue-700 hover:bg-blue-800 text-blue-100'
+                                            }`}
+                                            title={style.label}
+                                        >
+                                            <Icon className="w-4 h-4" />
+                                            <span className="text-[9px] leading-tight text-center">{style.label}</span>
+                                            {isActive && (
+                                                <Check className="w-3 h-3 absolute top-1 right-1" />
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* PINS Section - Yellow */}
                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
                     <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl p-3 space-y-3">
