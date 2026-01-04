@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkles, AlertCircle, Ban, Edit2, Globe, Tag, Image as ImageIcon, Home, Search, Hash, Save, Library, Gamepad2, Map, LayoutGrid, ArrowRight, LayoutList, Settings2, Target, Circle, Palette, MapPin, Music, Play, Square } from 'lucide-react';
 import { TaskTemplate, Playground, TaskList, IconId } from '../types';
-import { generateAiTasks, generateAiImage, searchLogoUrl, generateMoodAudio } from '../services/ai';
+import { generateAiTasks, generateAiImage, searchLogoUrl, generateMoodAudio, hasApiKey } from '../services/ai';
 import { ICON_COMPONENTS } from '../utils/icons';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
 import { fetchUniqueTags } from '../services/db';
