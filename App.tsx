@@ -33,7 +33,6 @@ import GameCreator from './components/GameCreator';
 import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
 import PlayzoneGameView from './components/PlayzoneGameView';
-import MapStyleQuickSelector from './components/MapStyleQuickSelector';
 import GameStatsModal from './components/GameStatsModal';
 import MapStyleLibrary from './components/MapStyleLibrary';
 import QRCodesTool from './components/QRCodesTool';
@@ -2331,12 +2330,6 @@ const GameApp: React.FC = () => {
                 showZoneLayer={showZoneLayer}
                 showTaskLayer={showTaskLayer}
                 showLiveLayer={showLiveLayer}
-            />
-
-            {/* Map Style Quick Selector - Top Right Corner */}
-            <MapStyleQuickSelector
-                currentStyle={localMapStyle || 'osm'}
-                onStyleChange={(styleId) => setLocalMapStyle(styleId)}
             />
             </div>
         )}
