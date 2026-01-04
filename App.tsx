@@ -33,6 +33,7 @@ import GameCreator from './components/GameCreator';
 import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
 import PlayzoneGameView from './components/PlayzoneGameView';
+import MapStyleQuickSelector from './components/MapStyleQuickSelector';
 import GameStatsModal from './components/GameStatsModal';
 import MapStyleLibrary from './components/MapStyleLibrary';
 import QRCodesTool from './components/QRCodesTool';
