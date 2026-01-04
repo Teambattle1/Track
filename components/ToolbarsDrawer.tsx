@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Game, GameMode, LocationSearchProps, Coordinate, Team, MapStyleId } from '../types';
 import LocationSearch from './LocationSearch';
+import InfoBox from './InfoBox';
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
     { id: 'osm', label: 'Standard', icon: Globe, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png' },
