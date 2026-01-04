@@ -47,6 +47,8 @@ interface PlaygroundEditorProps {
   onOpenGameSettings?: () => void; // Open game settings
   onExportGameToLibrary?: () => void; // Export all tasks to library
   isInstructorView?: boolean; // NEW: View as instructor (player perspective, read-only)
+  pendingDrawTrigger?: 'onOpen' | 'onCorrect' | 'onIncorrect' | null; // NEW: Activate draw mode on mount
+  onDrawModeActivated?: () => void; // NEW: Callback when draw mode is activated from pendingDrawTrigger
 }
 
 const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
