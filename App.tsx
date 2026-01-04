@@ -1289,10 +1289,30 @@ const GameApp: React.FC = () => {
 
   if (showLogin) {
       return (
-          <LoginPage 
-              onLoginSuccess={(user) => { setAuthUser(user); setShowLogin(false); }}
-              onPlayAsGuest={() => { setAuthUser({ id: 'guest', name: 'Guest', email: '', role: 'Editor' }); setShowLogin(false); }}
-              onBack={() => setShowLogin(false)}
+          <LoginPage
+              onLoginSuccess={(user) => {
+                  setAuthUser(user);
+                  setShowLogin(false);
+                  // Navigate to home if we came from /login URL
+                  if (window.location.pathname === '/login') {
+                      window.history.pushState({}, '', '/');
+                  }
+              }}
+              onPlayAsGuest={() => {
+                  setAuthUser({ id: 'guest', name: 'Guest', email: '', role: 'Editor' });
+                  setShowLogin(false);
+                  // Navigate to home if we came from /login URL
+                  if (window.location.pathname === '/login') {
+                      window.history.pushState({}, '', '/');
+                  }
+              }}
+              onBack={() => {
+                  setShowLogin(false);
+                  // Navigate to home if we came from /login URL
+                  if (window.location.pathname === '/login') {
+                      window.history.pushState({}, '', '/');
+                  }
+              }}
           />
       );
   }
