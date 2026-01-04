@@ -2380,6 +2380,62 @@ const GameApp: React.FC = () => {
             </div>
         )}
 
+        {/* Team View HUD - GPS Games in PLAY mode */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (
+            <div className="fixed inset-0 pointer-events-none z-[1000] flex flex-col">
+                {/* Top Header */}
+                <div className="h-16 bg-orange-600 border-b-2 border-orange-700 flex items-center justify-between px-6 shadow-lg pointer-events-auto">
+                    <button
+                        onClick={() => { setShowLanding(true); setActiveGameId(null); }}
+                        className="p-2 hover:bg-orange-700 rounded-lg transition-colors text-white hover:scale-110"
+                        title="Back to Games"
+                    >
+                        <Home className="w-6 h-6" />
+                    </button>
+
+                    <div className="flex flex-col items-center">
+                        <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Game Time</span>
+                        <span className="text-3xl font-black text-white font-mono">--:--</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
+                        <Trophy className="w-5 h-5 text-yellow-300" />
+                        <span className="text-lg font-black text-white">{score}</span>
+                    </div>
+                </div>
+
+                {/* Bottom Toolbox */}
+                <div className="mt-auto h-16 bg-orange-600 border-t-2 border-orange-700 flex items-center justify-center gap-4 px-6 shadow-lg pointer-events-auto">
+                    <button
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+                        title="Team Lobby"
+                    >
+                        <Users className="w-5 h-5" />
+                        <span>TEAM LOBBY</span>
+                    </button>
+
+                    <button
+                        onClick={() => setShowChatDrawer(!showChatDrawer)}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+                        title="Chat"
+                    >
+                        <MessageSquare className="w-5 h-5" />
+                        <span>CHAT</span>
+                    </button>
+
+                    <button
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+                        title="Scan QR Code"
+                    >
+                        <QrCode className="w-5 h-5" />
+                        <span>SCAN QR</span>
+                    </button>
+                </div>
+            </div>
+        )}
+
+        {/* GameHUD - Only show in non-PLAY modes */}
+        {mode !== GameMode.PLAY && (
         <GameHUD
             accuracy={gpsAccuracy}
             mode={mode}
@@ -2476,6 +2532,7 @@ const GameApp: React.FC = () => {
             collapsedSections={collapsedSections}
             onCollapsedSectionsChange={setCollapsedSections}
         />
+        )}
 
         {/* Impossible Travel Warnings - EDIT and INSTRUCTOR modes only */}
         {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && activeGame && (
