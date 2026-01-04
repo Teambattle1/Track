@@ -32,6 +32,7 @@ import ClientSubmissionView from './components/ClientSubmissionView';
 import GameCreator from './components/GameCreator';
 import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
+import PlayzoneGameView from './components/PlayzoneGameView';
 import GameStatsModal from './components/GameStatsModal';
 import MapStyleLibrary from './components/MapStyleLibrary';
 import QRCodesTool from './components/QRCodesTool';
@@ -1807,93 +1808,135 @@ const GameApp: React.FC = () => {
               />
           )}
           {viewingPlaygroundId && activeGame && (
-              <PlaygroundEditor
-                  game={activeGame}
-                  onUpdateGame={(updatedGame) => {
-                      updateActiveGame(updatedGame);
-                  }}
-                  onClose={() => {
-                      setViewingPlaygroundId(null);
-                  }}
-                  isInstructorView={mode === GameMode.INSTRUCTOR}
-                  onEditPoint={(p) => setActiveTask(p)}
-                  onPointClick={(p) => {
-                      mapRef.current?.jumpTo(p.location);
-                  }}
-                  onAddTask={async (type, playgroundId) => {
-                      if (!activeGame) return;
+              <>
+                  {/* EDITOR MODE: Full authoring environment */}
+                  {mode === GameMode.EDIT && (
+                      <PlaygroundEditor
+                          game={activeGame}
+                          onUpdateGame={(updatedGame) => {
+                              updateActiveGame(updatedGame);
+                          }}
+                          onClose={() => {
+                              setViewingPlaygroundId(null);
+                          }}
+                          isInstructorView={false}
+                          onEditPoint={(p) => setActiveTask(p)}
+                          onPointClick={(p) => {
+                              mapRef.current?.jumpTo(p.location);
+                          }}
+                          onAddTask={async (type, playgroundId) => {
+                              if (!activeGame) return;
 
-                      if (type === 'MANUAL') {
-                          const center = mapRef.current?.getCenter() || { lat: 0, lng: 0 };
-                          const newPoint: GamePoint = {
-                              id: `p-${Date.now()}`,
-                              title: 'New Task',
-                              location: playgroundId ? { lat: 0, lng: 0 } : center,
-                              playgroundId: playgroundId,
-                              iconId: 'default',
-                              points: 100,
-                              radiusMeters: 30,
-                              activationTypes: ['radius'],
-                              isUnlocked: true,
-                              isCompleted: false,
-                              order: activeGame.points.length,
-                              task: { type: 'text', question: 'New Task Question' },
-                              tags: playgroundId ? ['playzone'] : []
-                          };
-                          await updateActiveGame({ ...activeGame, points: [...activeGame.points, newPoint] });
+                              if (type === 'MANUAL') {
+                                  const center = mapRef.current?.getCenter() || { lat: 0, lng: 0 };
+                                  const newPoint: GamePoint = {
+                                      id: `p-${Date.now()}`,
+                                      title: 'New Task',
+                                      location: playgroundId ? { lat: 0, lng: 0 } : center,
+                                      playgroundId: playgroundId,
+                                      iconId: 'default',
+                                      points: 100,
+                                      radiusMeters: 30,
+                                      activationTypes: ['radius'],
+                                      isUnlocked: true,
+                                      isCompleted: false,
+                                      order: activeGame.points.length,
+                                      task: { type: 'text', question: 'New Task Question' },
+                                      tags: playgroundId ? ['playzone'] : []
+                                  };
+                                  await updateActiveGame({ ...activeGame, points: [...activeGame.points, newPoint] });
 
-                          // Save to global library
-                          const template: TaskTemplate = {
-                              id: newPoint.id,
-                              title: newPoint.title,
-                              task: newPoint.task,
-                              tags: newPoint.tags || (playgroundId ? ['playzone'] : []),
-                              iconId: newPoint.iconId,
-                              createdAt: Date.now(),
-                              points: newPoint.points,
-                              activationTypes: newPoint.activationTypes
-                          };
-                          await db.saveTemplate(template);
-                      } else if (type === 'AI') {
-                          setTaskMasterInitialTab('LIBRARY');
-                          setTaskMasterInitialModal('AI');
-                          setShowTaskMaster(true);
-                      } else if (type === 'TASKLIST') {
-                          setTaskMasterInitialTab('LISTS');
-                          setTaskMasterInitialModal(null);
-                          setShowTaskMaster(true);
-                      } else if (type === 'LIBRARY') {
-                          setTaskMasterInitialTab('LIBRARY');
-                          setTaskMasterInitialModal(null);
-                          setShowTaskMaster(true);
-                      }
-                  }}
-                  onOpenLibrary={() => setShowTaskMaster(true)}
-                  showScores={showScores}
-                  onToggleScores={() => setShowScores(!showScores)}
-                  onHome={() => {
-                      setViewingPlaygroundId(null);
-                      // For PLAYZONE games, return to landing page instead of map view
-                      if (activeGame?.gameMode === 'playzone') {
-                          setShowLanding(true);
-                          setActiveGameId(null);
-                      }
-                  }}
-                  isTemplateMode={false}
-                  onAddZoneFromLibrary={() => setShowTaskMaster(true)}
-                  isAdmin={authUser?.role === 'Owner' || authUser?.role === 'Admin'}
-                  taskLists={taskLists}
-                  onUpdateTaskLists={setTaskLists}
-                  taskLibrary={taskLibrary}
-                  onUpdateTaskLibrary={setTaskLibrary}
-                  onOpenGameSettings={() => {
-                      if (activeGame) {
-                          setGameToEdit(activeGame);
-                          setShowGameCreator(true);
-                      }
-                  }}
-                  // onExportGameToLibrary removed - all tasks auto-sync now
-              />
+                                  // Save to global library
+                                  const template: TaskTemplate = {
+                                      id: newPoint.id,
+                                      title: newPoint.title,
+                                      task: newPoint.task,
+                                      tags: newPoint.tags || (playgroundId ? ['playzone'] : []),
+                                      iconId: newPoint.iconId,
+                                      createdAt: Date.now(),
+                                      points: newPoint.points,
+                                      activationTypes: newPoint.activationTypes
+                                  };
+                                  await db.saveTemplate(template);
+                              } else if (type === 'AI') {
+                                  setTaskMasterInitialTab('LIBRARY');
+                                  setTaskMasterInitialModal('AI');
+                                  setShowTaskMaster(true);
+                              } else if (type === 'TASKLIST') {
+                                  setTaskMasterInitialTab('LISTS');
+                                  setTaskMasterInitialModal(null);
+                                  setShowTaskMaster(true);
+                              } else if (type === 'LIBRARY') {
+                                  setTaskMasterInitialTab('LIBRARY');
+                                  setTaskMasterInitialModal(null);
+                                  setShowTaskMaster(true);
+                              }
+                          }}
+                          onOpenLibrary={() => setShowTaskMaster(true)}
+                          showScores={showScores}
+                          onToggleScores={() => setShowScores(!showScores)}
+                          onHome={() => {
+                              setViewingPlaygroundId(null);
+                              // For PLAYZONE games, return to landing page instead of map view
+                              if (activeGame?.gameMode === 'playzone') {
+                                  setShowLanding(true);
+                                  setActiveGameId(null);
+                              }
+                          }}
+                          isTemplateMode={false}
+                          onAddZoneFromLibrary={() => setShowTaskMaster(true)}
+                          isAdmin={authUser?.role === 'Owner' || authUser?.role === 'Admin'}
+                          taskLists={taskLists}
+                          onUpdateTaskLists={setTaskLists}
+                          taskLibrary={taskLibrary}
+                          onUpdateTaskLibrary={setTaskLibrary}
+                          onOpenGameSettings={() => {
+                              if (activeGame) {
+                                  setGameToEdit(activeGame);
+                                  setShowGameCreator(true);
+                              }
+                          }}
+                          // onExportGameToLibrary removed - all tasks auto-sync now
+                      />
+                  )}
+
+                  {/* INSTRUCTOR/TEAMPLAY MODE: Canvas-only gameplay view */}
+                  {(mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
+                      <PlayzoneGameView
+                          game={activeGame}
+                          playgroundId={viewingPlaygroundId}
+                          isInstructor={mode === GameMode.INSTRUCTOR}
+                          showScores={mode === GameMode.INSTRUCTOR ? instructorShowScores : showScores}
+                          currentScore={score}
+                          onTaskComplete={(taskId) => {
+                              // Award points and trigger actions
+                              const task = activeGame.points?.find(p => p.id === taskId);
+                              if (task?.points) {
+                                  setScore(prev => prev + task.points);
+                              }
+
+                              // Mark task as completed
+                              updateActiveGame({
+                                  ...activeGame,
+                                  points: activeGame.points.map(p =>
+                                      p.id === taskId ? { ...p, isCompleted: true } : p
+                                  )
+                              });
+                          }}
+                          onClose={() => {
+                              setViewingPlaygroundId(null);
+                              // For PLAYZONE games, return to appropriate view
+                              if (activeGame?.gameMode === 'playzone') {
+                                  if (mode === GameMode.INSTRUCTOR) {
+                                      setShowInstructorDashboard(true);
+                                  } else if (mode === GameMode.PLAY) {
+                                      setShowTeamDashboard(true);
+                                  }
+                              }
+                          }}
+                      />
+                  )}
+              </>
           )}
           {showChatDrawer && activeGameId && (
               <ChatDrawer 
