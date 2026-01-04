@@ -557,8 +557,8 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
           </div>
         </div>
 
-        {/* Center Map Button (Right Side) */}
-        {!isInstructor && (
+        {/* Center Map Button - Hidden in playzone gameplay mode */}
+        {false && !isInstructor && (
           <button
             onClick={() => {
               // Center map functionality - scroll/pan to center
