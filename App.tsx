@@ -1875,7 +1875,7 @@ const GameApp: React.FC = () => {
                           setShowGameCreator(true);
                       }
                   }}
-                  onExportGameToLibrary={handleExportGameToLibrary}
+                  // onExportGameToLibrary removed - all tasks auto-sync now
               />
           )}
           {showChatDrawer && activeGameId && (
