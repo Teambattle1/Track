@@ -2026,6 +2026,39 @@ const GameApp: React.FC = () => {
                   isInstructor={mode === GameMode.INSTRUCTOR}
               />
           )}
+
+          {/* Team View - Team Lobby Modal */}
+          {showTeamLobby && activeGame && (
+              <TeamLobbyPanel
+                  isOpen={showTeamLobby}
+                  onClose={() => setShowTeamLobby(false)}
+                  isCaptain={false}
+              />
+          )}
+
+          {/* Team View - QR Scanner Modal */}
+          {showTeamViewQRScanner && (
+              <QRScannerModal
+                  isOpen={showTeamViewQRScanner}
+                  onClose={() => setShowTeamViewQRScanner(false)}
+                  onScan={(data) => {
+                      // Handle QR code scan for task activation
+                      const task = activeGame?.points?.find(t =>
+                          t.qrCodeString === data ||
+                          t.nfcTagId === data ||
+                          t.ibeaconUUID === data
+                      );
+
+                      if (task) {
+                          // Open task modal
+                          setActiveTaskModalId(task.id);
+                      }
+
+                      setShowTeamViewQRScanner(false);
+                  }}
+              />
+          )}
+
           {activeTaskActionPoint && activeGame && (
               <TaskActionModal
                   point={activeTaskActionPoint}
