@@ -434,7 +434,8 @@ class TeamSyncService {
           lastSeen: now,
           location: shouldSendLocation && this.userLocation ? roundCoord(this.userLocation) : undefined,
           isSolving: this.isSolving,
-          isRetired: this.isRetired
+          isRetired: this.isRetired,
+          deviceType: this.deviceType
       };
 
       this.channel.send({
