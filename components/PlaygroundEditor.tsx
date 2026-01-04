@@ -5775,8 +5775,17 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     initialPlaygroundId={activePlayground?.id || null}
                     targetMode="GAME"
                     onAddTasks={(tasks, targetPlaygroundId) => {
-                        // If no specific playzone selected, show selector to choose MAP or PLAYZONE
-                        if (!targetPlaygroundId) {
+                        // If no specific playzone selected and targetPlaygroundId is undefined (MAP mode), add to map
+                        // If targetPlaygroundId is null, show selector to choose MAP or PLAYZONE
+                        if (targetPlaygroundId === null) {
+                            setPendingTasksToAdd(tasks);
+                            setIsAddingAITasks(true);
+                            setShowPlayzoneSelector(true);
+                            return;
+                        }
+
+                        if (!targetPlaygroundId && targetPlaygroundId !== undefined) {
+                            // Edge case: undefined but falsy, shouldn't happen but safety check
                             setPendingTasksToAdd(tasks);
                             setIsAddingAITasks(true);
                             setShowPlayzoneSelector(true);
