@@ -34,6 +34,7 @@ export interface TeamMember {
   role?: 'captain' | 'member';
   isSolving?: boolean; // New: Tracks if user is currently in a task modal
   isRetired?: boolean; // New: Tracks if captain has retired this member (votes don't count)
+  deviceType?: DeviceType; // Device type used for playing (mobile, tablet, desktop)
 }
 
 export interface Team {
