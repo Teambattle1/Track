@@ -121,6 +121,7 @@ interface GameMapProps {
   fogOfWarEnabled?: boolean; // NEW: Fog of War mode
   selectedTeamId?: string | null; // NEW: Team ID for fog of war perspective
   selectedTeamCompletedPointIds?: string[]; // NEW: Completed points for selected team
+  showMapLayer?: boolean; // NEW: Toggle map tile layer visibility
   showZoneLayer?: boolean; // NEW: Toggle danger zones visibility
   showTaskLayer?: boolean; // NEW: Toggle task pins visibility
   showLiveLayer?: boolean; // NEW: Toggle live team positions visibility
