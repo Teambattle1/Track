@@ -2470,110 +2470,152 @@ const GameApp: React.FC = () => {
             return (
             <div className="fixed inset-0 pointer-events-none z-[1000] flex flex-col">
                 {/* Top Header */}
-                <div className="h-16 bg-orange-600 border-b-2 border-orange-700 flex items-center justify-between px-6 shadow-lg pointer-events-auto">
+                <div className="bg-orange-600 border-b-2 border-orange-700 flex items-center justify-between px-6 shadow-lg pointer-events-auto py-3">
                     {/* Back Button */}
-                    <button
-                        onClick={() => { setShowLanding(true); setActiveGameId(null); }}
-                        className="p-2 hover:bg-orange-700 rounded-lg transition-colors text-white hover:scale-110"
-                        title="Back to Games"
-                    >
-                        <Home className="w-6 h-6" />
-                    </button>
+                    <div className="flex flex-col items-center gap-1">
+                        <button
+                            onClick={() => { setShowLanding(true); setActiveGameId(null); }}
+                            className="p-2 hover:bg-orange-700 rounded-lg transition-colors text-white hover:scale-110"
+                            title="Back to Games"
+                        >
+                            <Home className="w-6 h-6" />
+                        </button>
+                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide whitespace-nowrap">Back</span>
+                    </div>
 
                     {/* Divider */}
-                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
 
                     {/* Team Info */}
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col">
-                            <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Team</span>
-                            <span className="text-lg font-black text-white">{teamState.teamName || 'Team'}</span>
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-center">
+                                <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Team</span>
+                                <span className="text-lg font-black text-white">{teamState.teamName || 'Team'}</span>
+                            </div>
+                            <div className="flex items-center gap-1 px-3 py-1 bg-orange-700/50 rounded-lg">
+                                <Users className="w-4 h-4 text-yellow-300" />
+                                <span className="text-sm font-bold text-white">{teamMembers.length}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-1 px-3 py-1 bg-orange-700/50 rounded-lg">
-                            <Users className="w-4 h-4 text-yellow-300" />
-                            <span className="text-sm font-bold text-white">{teamMembers.length}</span>
-                        </div>
+                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Members</span>
                     </div>
 
                     {/* Divider */}
-                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
 
                     {/* Game Time */}
-                    <div className="flex flex-col items-center">
-                        <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Game Time</span>
-                        <span className="text-3xl font-black text-white font-mono">--:--</span>
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="text-3xl font-black text-white font-mono">--:--</div>
+                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Time</span>
                     </div>
 
                     {/* Divider */}
-                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
 
                     {/* Task Progress + Score */}
-                    <div className="flex items-center gap-3">
-                        {/* Task Progress */}
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1 px-2 py-1 bg-green-600/40 rounded-lg">
-                                <CheckCircle className="w-4 h-4 text-green-400" />
-                                <span className="text-xs font-bold text-green-300">{correctTasks}</span>
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-3">
+                            {/* Task Progress */}
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 px-2 py-1 bg-green-600/40 rounded-lg">
+                                    <CheckCircle className="w-4 h-4 text-green-400" />
+                                    <span className="text-xs font-bold text-green-300">{correctTasks}</span>
+                                </div>
+                                <div className="flex items-center gap-1 px-2 py-1 bg-red-600/40 rounded-lg">
+                                    <XCircle className="w-4 h-4 text-red-400" />
+                                    <span className="text-xs font-bold text-red-300">{incorrectTasks}</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1 px-2 py-1 bg-red-600/40 rounded-lg">
-                                <XCircle className="w-4 h-4 text-red-400" />
-                                <span className="text-xs font-bold text-red-300">{incorrectTasks}</span>
-                            </div>
-                        </div>
 
-                        {/* Score */}
-                        <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
-                            <Trophy className="w-5 h-5 text-yellow-300" />
-                            <span className="text-lg font-black text-white">{score}</span>
+                            {/* Score */}
+                            <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
+                                <Trophy className="w-5 h-5 text-yellow-300" />
+                                <span className="text-lg font-black text-white">{score}</span>
+                            </div>
                         </div>
+                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Tasks</span>
                     </div>
 
                     {/* Divider */}
-                    <div className="h-8 w-px bg-orange-700/60 mx-3"></div>
+                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
 
                     {/* Map Controls (Right) */}
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => {
-                                if (mapRef.current) {
-                                    mapRef.current.jumpTo(userLocation || { lat: 0, lng: 0 });
-                                }
-                            }}
-                            className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
-                            title="Center on My Location"
-                            disabled={!userLocation}
-                        >
-                            <Compass className="w-5 h-5" />
-                        </button>
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => {
+                                    if (mapRef.current) {
+                                        mapRef.current.jumpTo(userLocation || { lat: 0, lng: 0 });
+                                    }
+                                }}
+                                className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
+                                title="Center on My Location"
+                                disabled={!userLocation}
+                            >
+                                <Compass className="w-5 h-5" />
+                            </button>
 
-                        <button
-                            onClick={() => {
-                                if (mapRef.current && activeGame?.points && activeGame.points.length > 0) {
-                                    mapRef.current.fitBounds(activeGame.points);
-                                }
-                            }}
-                            className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
-                            title="Fit All Tasks on Screen"
-                        >
-                            <Maximize2 className="w-5 h-5" />
-                        </button>
+                            <button
+                                onClick={() => {
+                                    if (mapRef.current && activeGame?.points && activeGame.points.length > 0) {
+                                        mapRef.current.setZoom(17);
+                                        if (activeGame.points.length > 0) {
+                                            const center = activeGame.points[0].location;
+                                            mapRef.current.jumpTo(center);
+                                        }
+                                    }
+                                }}
+                                className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
+                                title="Fit All Tasks on Screen - Zoom Level 17"
+                            >
+                                <Maximize2 className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Map</span>
                     </div>
                 </div>
 
+                {/* Playzones Toolbar (if any playzones exist) */}
+                {activeGame?.playgrounds && activeGame.playgrounds.length > 0 && (() => {
+                    const visiblePlaygrounds = activeGame.playgrounds.filter(p => p.buttonVisible);
+                    return visiblePlaygrounds.length > 0 ? (
+                        <div className="mt-auto mb-1 bg-orange-600/80 border-t-2 border-orange-700 flex items-center justify-center gap-3 px-6 py-2 shadow-lg pointer-events-auto">
+                            <span className="text-xs font-bold text-white/70 uppercase tracking-wide mr-2">Playzones:</span>
+                            {visiblePlaygrounds.map(pg => (
+                                <button
+                                    key={pg.id}
+                                    onClick={() => setViewingPlaygroundId(pg.id)}
+                                    title={pg.title || 'Playzone'}
+                                    className="relative flex-shrink-0 w-12 h-12 rounded-lg bg-orange-700 hover:bg-orange-800 transition-colors shadow-lg flex items-center justify-center overflow-hidden"
+                                >
+                                    {pg.iconUrl ? (
+                                        <img src={pg.iconUrl} alt={pg.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center text-white text-xs font-bold">
+                                            {pg.title?.charAt(0) || 'P'}
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    ) : null;
+                })()}
+
                 {/* Bottom Toolbox */}
-                <div className="mt-auto h-16 bg-orange-600 border-t-2 border-orange-700 flex items-center justify-center gap-4 px-6 shadow-lg pointer-events-auto">
+                <div className="mt-auto bg-orange-600 border-t-2 border-orange-700 flex items-center justify-center gap-4 px-6 py-3 shadow-lg pointer-events-auto">
                     <button
                         onClick={() => setShowTeamLobby(true)}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+                        className="flex flex-col items-center justify-center gap-1 px-4 py-2 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
                         title="Team Lobby"
                     >
                         <Users className="w-5 h-5" />
-                        <span>TEAM LOBBY</span>
+                        <span className="text-xs font-bold uppercase">Lobby</span>
                     </button>
 
                     <button
                         onClick={() => setShowChatDrawer(!showChatDrawer)}
-                        className={`relative flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-colors shadow-lg ${
+                        className={`relative flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl font-bold text-white transition-colors shadow-lg ${
                             unreadMessageCount > 0
                                 ? 'animate-chat-flash'
                                 : 'bg-orange-700 hover:bg-orange-800'
@@ -2581,7 +2623,7 @@ const GameApp: React.FC = () => {
                         title={unreadMessageCount > 0 ? `${unreadMessageCount} unread message${unreadMessageCount !== 1 ? 's' : ''}` : 'Chat'}
                     >
                         <MessageSquare className="w-5 h-5" />
-                        <span>CHAT</span>
+                        <span className="text-xs font-bold uppercase">Chat</span>
                         {unreadMessageCount > 0 && (
                             <span className="absolute -top-2 -right-2 bg-yellow-400 text-red-600 font-black text-xs rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
                                 {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
@@ -2591,11 +2633,11 @@ const GameApp: React.FC = () => {
 
                     <button
                         onClick={() => setShowTeamViewQRScanner(true)}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+                        className="flex flex-col items-center justify-center gap-1 px-4 py-2 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
                         title="Scan QR Code"
                     >
                         <QrCode className="w-5 h-5" />
-                        <span>SCAN QR</span>
+                        <span className="text-xs font-bold uppercase">QR</span>
                     </button>
                 </div>
             </div>
