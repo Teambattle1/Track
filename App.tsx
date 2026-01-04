@@ -1815,6 +1815,7 @@ const GameApp: React.FC = () => {
                   onClose={() => {
                       setViewingPlaygroundId(null);
                   }}
+                  isInstructorView={mode === GameMode.INSTRUCTOR}
                   onEditPoint={(p) => setActiveTask(p)}
                   onPointClick={(p) => {
                       mapRef.current?.jumpTo(p.location);
