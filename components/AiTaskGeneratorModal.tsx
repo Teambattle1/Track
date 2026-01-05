@@ -17,6 +17,8 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
 }) => {
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [currentTaskCount, setCurrentTaskCount] = useState(0);
+    const [totalTaskCount, setTotalTaskCount] = useState(0);
     const [generatedTasks, setGeneratedTasks] = useState<TaskTemplate[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -38,10 +40,15 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
 
         setIsGenerating(true);
         setError(null);
+        setCurrentTaskCount(0);
+        setTotalTaskCount(3);
         setGeneratedTasks([]);
 
         try {
-            const tasks = await generateAiTasks(prompt, 3, 'English');
+            const tasks = await generateAiTasks(prompt, 3, 'English', undefined, (current, total) => {
+                setCurrentTaskCount(current);
+                setTotalTaskCount(total);
+            });
             setGeneratedTasks(tasks);
             if (tasks.length === 0) {
                 setError('No tasks were generated. Please try a different description.');
@@ -137,6 +144,18 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
                             </>
                         )}
                     </button>
+
+                    {/* Progress Bar */}
+                    {isGenerating && (
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between text-[10px] font-bold text-purple-400 uppercase tracking-wider">
+                                <span>Generating task {currentTaskCount}/{totalTaskCount}</span>
+                            </div>
+                            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div className="bg-purple-500 h-full transition-all duration-300 ease-out" style={{ width: `${(currentTaskCount / totalTaskCount) * 100}%` }} />
+                            </div>
+                        </div>
+                    )}
 
                     {/* Error Message */}
                     {error && (
