@@ -1356,17 +1356,6 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                       )}
                                   </div>
                               </div>
-                               <div>
-                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
-                                       POINTS
-                                       <InfoTooltip
-                                           title="Points"
-                                           description="How many points teams earn for completing this task correctly. This affects the leaderboard."
-                                           example="Set 100 for standard tasks, 200 for bonus challenges"
-                                       />
-                                   </label>
-                                   <input type="number" value={editedPoint.points} onChange={(e) => setEditedPoint({ ...editedPoint, points: parseInt(e.target.value) || 0 })} className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none transition-all text-sm"/>
-                               </div>
                            </div>
                            <div className="p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl border border-orange-100 dark:border-orange-900/30">
                                {renderTypeConfig()}
