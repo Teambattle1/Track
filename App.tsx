@@ -64,6 +64,7 @@ import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
 import { approveMediaSubmission, rejectMediaSubmission, subscribeToMediaSubmissions } from './services/mediaUpload';
 import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
+import { createTaskIdMap, remapTaskLogicTargets, validateTaskReferences } from './utils/taskIdRemapping';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
