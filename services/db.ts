@@ -1148,6 +1148,65 @@ export const deletePlaygroundTemplate = async (id: string) => {
     try { await supabase.from('playground_library').delete().eq('id', id); } catch (e) { logError('deletePlaygroundTemplate', e); }
 };
 
+/**
+ * Validates playground templates and logs diagnostic information
+ * Use this to identify broken templates (missing tasks)
+ */
+export const validatePlaygroundTemplates = async (): Promise<{
+    total: number;
+    valid: number;
+    broken: number;
+    brokenTemplates: Array<{ id: string; title: string; issue: string }>;
+}> => {
+    try {
+        console.log('[DB] Starting template validation...');
+
+        const templates = await fetchPlaygroundLibrary();
+
+        const broken: Array<{ id: string; title: string; issue: string }> = [];
+
+        templates.forEach((template: PlaygroundTemplate) => {
+            if (!template.tasks) {
+                broken.push({
+                    id: template.id,
+                    title: template.title,
+                    issue: 'Missing tasks array'
+                });
+            } else if (template.tasks.length === 0) {
+                broken.push({
+                    id: template.id,
+                    title: template.title,
+                    issue: 'Empty tasks array'
+                });
+            } else if (!template.playgroundData) {
+                broken.push({
+                    id: template.id,
+                    title: template.title,
+                    issue: 'Missing playgroundData'
+                });
+            }
+        });
+
+        const result = {
+            total: templates.length,
+            valid: templates.length - broken.length,
+            broken: broken.length,
+            brokenTemplates: broken
+        };
+
+        console.log('[DB] Template validation complete:', result);
+
+        if (broken.length > 0) {
+            console.warn('[DB] Found broken templates that should be deleted:', broken);
+        }
+
+        return result;
+    } catch (error) {
+        console.error('[DB] Template validation error:', error);
+        throw error;
+    }
+};
+
 // --- USERS ---
 export const fetchAccountUsers = async (): Promise<AccountUser[]> => {
     try {
