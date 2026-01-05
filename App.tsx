@@ -1563,7 +1563,14 @@ const GameApp: React.FC = () => {
                   onSelectGame={(id) => { setActiveGameId(id); setShowGameChooser(false); }}
                   onDeleteGame={handleDeleteGame}
                   onClose={() => setShowGameChooser(false)}
-                  onEditGame={(id) => { setActiveGameId(id); setMode(GameMode.EDIT); setShowGameChooser(false); setShowLanding(false); }}
+                  onEditGame={(id) => {
+                      console.log('[App.tsx] onEditGame called:', { id, currentActiveGameId: activeGameId, currentMode: mode });
+                      setActiveGameId(id);
+                      setMode(GameMode.EDIT);
+                      setShowGameChooser(false);
+                      setShowLanding(false);
+                      console.log('[App.tsx] onEditGame: state updates queued');
+                  }}
                   onEditGameSetup={(id) => {
                       const game = games.find(g => g.id === id);
                       if (game) {
