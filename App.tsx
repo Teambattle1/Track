@@ -2022,6 +2022,7 @@ const GameApp: React.FC = () => {
                   {mode === GameMode.EDIT && (
                       <PlaygroundEditor
                           game={activeGame}
+                          initialPlaygroundId={viewingPlaygroundId}
                           onUpdateGame={(updatedGame) => {
                               updateActiveGame(updatedGame);
                           }}
