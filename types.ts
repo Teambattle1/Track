@@ -272,6 +272,17 @@ export interface TaskLogic {
   onCorrect?: GameAction[];
   onIncorrect?: GameAction[];
 }
+
+export interface InstructorNotification {
+  id: string;
+  gameId: string;
+  teamName: string;
+  taskTitle: string;
+  taskId: string;
+  trigger: 'onOpen' | 'onCorrect' | 'onIncorrect';
+  timestamp: number;
+  read?: boolean;
+}
 // --------------------
 
 // Device-specific layout configuration for playgrounds
