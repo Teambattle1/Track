@@ -475,18 +475,30 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                     interactive={true}
                     eventHandlers={{
                         click: (e: any) => {
-                            e.originalEvent?.stopPropagation();
-                            if (onAreaColorClick) {
-                                onAreaColorClick(point);
-                            } else {
-                                onClick(point);
+                            try {
+                                e.originalEvent?.stopPropagation();
+                                if (onAreaColorClick && point) {
+                                    onAreaColorClick(point);
+                                } else if (onClick && point) {
+                                    onClick(point);
+                                }
+                            } catch (error) {
+                                console.error('[MapTaskMarker] Error handling area color click on iPad/mobile:', error, point);
                             }
                         },
                         mouseover: () => {
-                            if (onHover) onHover(point);
+                            try {
+                                if (onHover && point) onHover(point);
+                            } catch (error) {
+                                console.error('[MapTaskMarker] Error handling area mouseover:', error);
+                            }
                         },
                         mouseout: () => {
-                            if (onHover) onHover(null);
+                            try {
+                                if (onHover) onHover(null);
+                            } catch (error) {
+                                console.error('[MapTaskMarker] Error handling area mouseout:', error);
+                            }
                         }
                     }}
                 />
