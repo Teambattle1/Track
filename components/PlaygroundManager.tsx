@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlaygroundTemplate, Game } from '../types';
 import * as db from '../services/db';
-import { X, Plus, Globe, Trash2, Edit2, LayoutGrid, Image as ImageIcon, Loader2, PlayCircle, Copy, AlertTriangle, Check } from 'lucide-react';
+import { X, Plus, Globe, Trash2, Edit2, LayoutGrid, Image as ImageIcon, Loader2, PlayCircle, Copy, AlertTriangle, Check, CheckCircle } from 'lucide-react';
 
 interface PlaygroundManagerProps {
   onClose: () => void;
