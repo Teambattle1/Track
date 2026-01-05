@@ -142,7 +142,10 @@ const GameApp: React.FC = () => {
   const [playgroundTemplateToEdit, setPlaygroundTemplateToEdit] = useState<any>(null);
   const [activeTaskActionPoint, setActiveTaskActionPoint] = useState<GamePoint | null>(null);
   const [pendingDrawRequest, setPendingDrawRequest] = useState<'onOpen' | 'onCorrect' | 'onIncorrect' | null>(null);
-  
+
+  // --- INSTRUCTOR NOTIFICATION STATE ---
+  const [instructorNotifications, setInstructorNotifications] = useState<InstructorNotification[]>([]);
+
   // --- PLAY STATE (Location from Context) ---
   const { userLocation, gpsAccuracy, error: locationError } = useLocation();
   const [locateAttempt, setLocateAttempt] = useState(false);
