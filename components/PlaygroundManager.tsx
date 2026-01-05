@@ -234,16 +234,16 @@ Would you like to delete this broken template?`;
           });
 
           // Copy ALL task properties from template (including logic, actions, feedback, settings, etc.)
-          // The spread operator (...task) copies:
-          // - Logic & Completion Rules (logic, completionLogic)
-          // - Settings & Feedback (settings, feedback)
-          // - Appearance (icons, colors, scales, etc.)
-          // - Advanced Features (timeBomb, proximityTrigger, multiTeam, QR codes, NFC, etc.)
-          // - All other properties
+          // CRITICAL: Use JSON deep clone to preserve nested objects like logic.onOpen, logic.onCorrect, etc.
+          // The spread operator is shallow and won't clone nested objects properly!
           const newPoints = selectedTemplateForGame.tasks.map((task, index) => {
+              // Deep clone the entire task object to preserve nested structures
+              const clonedTask = JSON.parse(JSON.stringify(task));
+
+              // Override specific properties AFTER deep clone
               const newTask = {
-                  ...task, // Spread ALL properties first
-                  id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Then override with new ID
+                  ...clonedTask,
+                  id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Generate unique ID
                   playgroundId: newPlaygroundId, // Associate with new playground
                   order: index,
                   isCompleted: false, // Reset completion status
@@ -253,6 +253,12 @@ Would you like to delete this broken template?`;
               // VERIFICATION: Log if critical properties are preserved
               if (task.logic && !newTask.logic) {
                   console.error('[PlaygroundManager] ❌ LOGIC LOST during import for task:', task.title);
+              } else if (task.logic) {
+                  console.log('[PlaygroundManager] ✅ LOGIC preserved for task:', task.title, {
+                      onOpen: newTask.logic.onOpen?.length || 0,
+                      onCorrect: newTask.logic.onCorrect?.length || 0,
+                      onIncorrect: newTask.logic.onIncorrect?.length || 0
+                  });
               }
               if (task.settings && !newTask.settings) {
                   console.error('[PlaygroundManager] ❌ SETTINGS LOST during import for task:', task.title);
