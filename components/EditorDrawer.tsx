@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GamePoint, TaskList, Coordinate, Game, GameMode, GameRoute } from '../types';
 import { ICON_COMPONENTS } from '../utils/icons';
-import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, LayoutList, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw, Users, Shield, Route, Upload, EyeOff, Hash, PlayCircle, MapPin } from 'lucide-react';
+import { X, MousePointerClick, GripVertical, Edit2, Eraser, Save, Check, ChevronDown, Plus, Library, Trash2, ChevronRight, ChevronLeft, Maximize, Gamepad2, AlertCircle, LayoutGrid, LayoutList, Map, Wand2, ToggleLeft, ToggleRight, Radio, FilePlus, RefreshCw, Users, Shield, Route, Upload, EyeOff, Eye, Hash, PlayCircle, MapPin, Settings } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -313,6 +313,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isRoutesCollapsed, setIsRoutesCollapsed] = useState(true);
   const [isDangerZonesCollapsed, setIsDangerZonesCollapsed] = useState(true);
+  const [isPinsSettingsCollapsed, setIsPinsSettingsCollapsed] = useState(true); // Auto-collapsed by default
 
   const [collapsedZonesLocal, setCollapsedZonesLocal] = useState<Record<string, boolean>>({ 'map': false });
   const collapsedZones = collapsedZonesProp || collapsedZonesLocal;
@@ -743,6 +744,73 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* --- PIN SETTINGS --- */}
+                    <div className="mb-2 rounded-xl">
+                        <div
+                            onClick={() => setIsPinsSettingsCollapsed(!isPinsSettingsCollapsed)}
+                            className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors border-2 border-orange-200 dark:border-orange-700"
+                        >
+                            <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                                <span className="text-xs font-black uppercase text-orange-700 dark:text-orange-300 tracking-wide">PIN SETTINGS</span>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-orange-500 transition-transform ${isPinsSettingsCollapsed ? '-rotate-90' : ''}`} />
+                        </div>
+
+                        {!isPinsSettingsCollapsed && (
+                            <div className="mt-2 pl-2 border-l-2 border-orange-200 dark:border-orange-800 ml-3 space-y-3 p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-lg">
+                                {/* Pin Visibility Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Eye className="w-3 h-3 text-orange-600 dark:text-orange-400" />
+                                        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide">Show Task Pins</span>
+                                    </div>
+                                    <button
+                                        onClick={() => {/* TODO: Toggle pin visibility */}}
+                                        className="px-3 py-1 bg-orange-600 text-white rounded text-[10px] font-bold uppercase tracking-wide hover:bg-orange-700 transition-colors"
+                                    >
+                                        ON
+                                    </button>
+                                </div>
+
+                                {/* Pin Labels Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Hash className="w-3 h-3 text-orange-600 dark:text-orange-400" />
+                                        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide">Show Labels</span>
+                                    </div>
+                                    <button
+                                        onClick={() => {/* TODO: Toggle labels */}}
+                                        className="px-3 py-1 bg-orange-600 text-white rounded text-[10px] font-bold uppercase tracking-wide hover:bg-orange-700 transition-colors"
+                                    >
+                                        ON
+                                    </button>
+                                </div>
+
+                                {/* Pin Size Control */}
+                                <div className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide">Pin Size</span>
+                                        <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">100%</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="50"
+                                        max="150"
+                                        defaultValue="100"
+                                        className="w-full h-2 bg-orange-200 dark:bg-orange-800 rounded-lg appearance-none cursor-pointer accent-orange-600"
+                                        onChange={(e) => {/* TODO: Update pin size */}}
+                                    />
+                                </div>
+
+                                {/* Quick Info */}
+                                <div className="mt-3 p-2 bg-orange-100 dark:bg-orange-900/30 rounded text-[9px] text-orange-700 dark:text-orange-300 font-medium">
+                                    ℹ️ Control how task pins appear on the map
+                                </div>
                             </div>
                         )}
                     </div>
