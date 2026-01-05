@@ -164,6 +164,7 @@ const GameApp: React.FC = () => {
   const [fogOfWarEnabled, setFogOfWarEnabled] = useState(false);
   const [selectedTeamForFogOfWar, setSelectedTeamForFogOfWar] = useState<string | null>(null);
   const [teamsForFogOfWar, setTeamsForFogOfWar] = useState<Team[]>([]);
+  const [currentTeam, setCurrentTeam] = useState<Team | null>(null); // Current team when playing in PLAY mode
   const [showRemoteOverride, setShowRemoteOverride] = useState(false);
   const [hoveredPlaygroundId, setHoveredPlaygroundId] = useState<string | null>(null);
 
