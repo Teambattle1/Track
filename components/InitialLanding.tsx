@@ -194,7 +194,7 @@ const MapPinButton = ({
                 </div>
 
                 {/* Pulse Ring (behind) */}
-                <div className={`absolute inset-0 rounded-full rounded-br-none rotate-45 ${gradient} opacity-20 blur-xl group-hover:blur-2xl transition-all duration-500 -z-10`} />
+                <div className={`absolute inset-0 rounded-full rounded-br-none rotate-45 ${gradient} blur-xl group-hover:blur-2xl transition-all duration-500 -z-10 ${isBlinking ? 'opacity-40 animate-pulse' : 'opacity-20'}`} />
             </div>
 
             {/* Shadow Spot */}
