@@ -219,6 +219,8 @@ const GameApp: React.FC = () => {
     mapmode: true,
     layers: true,
     location: true,
+    mapstyle: true,
+    zonechange: true,
     pins: true,
     show: true,
     tools: true,
