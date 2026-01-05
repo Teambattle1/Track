@@ -187,11 +187,14 @@ Return JSON array with all fields properly filled.`,
         // Log to confirm NO language tags are added
         console.log(`[AI Task] "${item.title}" - Tags: [${tags.join(', ')}] (Language is "${normalizedLanguage}", NOT added to tags)`);
 
-        const baseTimestamp = Date.now();
-        const randomSuffix = Math.random().toString(36).substr(2, 9);
+        // Generate truly unique ID for each task
+        // Use current timestamp + index + two random suffixes for maximum uniqueness
+        const uniqueTimestamp = Date.now() + index; // Add index to timestamp to ensure uniqueness even in same millisecond
+        const randomSuffix1 = Math.random().toString(36).substring(2, 9);
+        const randomSuffix2 = Math.random().toString(36).substring(2, 6);
 
         return {
-            id: `ai-${baseTimestamp}-${index}-${randomSuffix}`,
+            id: `ai-${uniqueTimestamp}-${randomSuffix1}${randomSuffix2}`,
             title: item.title,
             iconId: (item.iconId as IconId) || 'default',
             tags: tags,
