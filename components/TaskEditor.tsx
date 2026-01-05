@@ -1304,7 +1304,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                   </div>
                               </div>
                                <div>
-                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">POINTS</label>
+                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
+                                       POINTS
+                                       <InfoTooltip
+                                           title="Points"
+                                           description="How many points teams earn for completing this task correctly. This affects the leaderboard."
+                                           example="Set 100 for standard tasks, 200 for bonus challenges"
+                                       />
+                                   </label>
                                    <input type="number" value={editedPoint.points} onChange={(e) => setEditedPoint({ ...editedPoint, points: parseInt(e.target.value) || 0 })} className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none transition-all text-sm"/>
                                </div>
                            </div>
@@ -1791,7 +1798,12 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                           <div className="grid grid-cols-2 gap-4">
                               <div>
                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
-                                      Max Attempts <Info className="w-3 h-3" title="Number of attempts allowed (0 = unlimited, default 1)" />
+                                      Max Attempts
+                                      <InfoTooltip
+                                          title="Max Attempts"
+                                          description="How many times a team can try to answer before the task locks. Set to 0 for unlimited attempts."
+                                          example="3 attempts = team gets 3 chances to answer correctly"
+                                      />
                                   </label>
                                   <div className="flex">
                                       <input
@@ -1810,7 +1822,12 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
                               <div>
                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
-                                      Match Tolerance <Info className="w-3 h-3" title="How close the text answer needs to be (0-100%, default 80%)" />
+                                      Match Tolerance
+                                      <InfoTooltip
+                                          title="Match Tolerance"
+                                          description="How closely the team's text answer must match the correct answer. 100% = exact match, 80% = allows minor typos and spacing differences."
+                                          example="'Copenhagen' matches 'copenhagen' at 80%, but needs 100% for exact case"
+                                      />
                                   </label>
                                   <div className="flex">
                                       <input
