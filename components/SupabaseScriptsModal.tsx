@@ -90,6 +90,7 @@ COMMENT ON COLUMN game_location_history.timestamp IS 'Unix timestamp of when thi
 const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedScript, setSelectedScript] = useState<SQLScript | null>(null);
+  const codeRef = React.useRef<HTMLElement>(null);
 
   const handleCopy = async (script: SQLScript) => {
     try {
