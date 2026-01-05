@@ -92,6 +92,40 @@ const TaskModal: React.FC<TaskModalProps> = ({
       return point?.logic?.onOpen?.some(action => action.type === 'double_trouble');
   }, [point]);
 
+  // Calculate Final Score with Time-Based Reduction
+  const calculateFinalScore = useCallback((baseScore: number): number => {
+    let finalScore = baseScore;
+
+    // Apply time-based score reduction if enabled
+    if (hasTimeLimit && point.settings?.scoreDependsOnSpeed && point.settings.timeLimitSeconds) {
+      const timeSpent = (Date.now() - taskStartTime) / 1000;
+      const timeLimit = point.settings.timeLimitSeconds;
+      const mode = point.settings.scoreReductionMode || 'linear';
+
+      if (timeSpent < timeLimit) {
+        const timeRatio = timeSpent / timeLimit;
+
+        if (mode === 'linear') {
+          // Linear reduction: 100% → 0% evenly
+          finalScore = Math.round(baseScore * (1 - timeRatio));
+        } else if (mode === 'exponential') {
+          // Exponential reduction: Faster drop near end
+          finalScore = Math.round(baseScore * Math.pow(1 - timeRatio, 2));
+        }
+      } else {
+        // Time expired = 0 points
+        finalScore = 0;
+      }
+    }
+
+    // Apply double trouble multiplier
+    if (isDoubleTrouble) {
+      finalScore = finalScore * 2;
+    }
+
+    return Math.max(0, finalScore); // Ensure non-negative
+  }, [hasTimeLimit, point.settings, taskStartTime, isDoubleTrouble]);
+
   // Logic Trigger: ON OPEN & Status Update
   useEffect(() => {
       if (point && !isEditMode && !isInstructor) {
