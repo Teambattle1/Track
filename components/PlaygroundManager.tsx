@@ -233,8 +233,7 @@ Would you like to delete this broken template?`;
       return games.filter(g => {
           const gameDate = new Date(g.createdAt);
           const now = new Date();
-          // Show if created today OR explicitly active OR has no state (old games)
-          return gameDate.toDateString() === now.toDateString() || g.state === 'active' || !g.state;
+          return gameDate.toDateString() === now.toDateString() || g.state === 'active';
       });
   };
 
@@ -242,31 +241,13 @@ Would you like to delete this broken template?`;
       return games.filter(g => {
           const gameDate = new Date(g.createdAt);
           const now = new Date();
-          // Show if created in future AND (not active AND not ended)
           return gameDate.toDateString() !== now.toDateString() && gameDate > now && g.state !== 'active' && g.state !== 'ended' && g.state !== 'ending';
       });
   };
 
   const getCompletedGames = () => {
-      // Include games that are ended, ending, OR old games that were modified more than 1 day ago (likely completed)
-      const oneDay = 24 * 60 * 60 * 1000;
-      const now = Date.now();
-
-      const completed = games.filter(g => {
-          // Explicitly ended or ending
-          if (g.state === 'ended' || g.state === 'ending') return true;
-
-          // Old games (no state) - show them in completed if they haven't been played/active today
-          if (!g.state) {
-              const gameDate = new Date(g.createdAt);
-              const isOldGame = now - gameDate.getTime() > oneDay;
-              return isOldGame;
-          }
-
-          return false;
-      });
-
-      return completed;
+      // Show games that are ended/ending, or old games without a state field
+      return games.filter(g => g.state === 'ended' || g.state === 'ending' || !g.state);
   };
 
   const getActiveTabGames = () => {
