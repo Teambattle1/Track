@@ -151,16 +151,19 @@ Both dashboards now fill the tablet frame's screen area instead of taking over t
 ## User Experience
 
 ### Before
-- Team view adapted to full desktop screen
+- Team and instructor views adapted to full desktop screen
 - Dimensions didn't match actual tablet gameplay
-- Difficult to preview exact team experience
+- Difficult to preview exact gameplay experience
 - No visual indication of device constraints
+- Inconsistent sizing between different views
 
 ### After
-- Team view shown at exact tablet dimensions
-- Realistic device frame provides context
-- Instructors see exactly what teams see
-- Easy comparison between instructor and team views
+- **Team View**: Shown at exact tablet dimensions (1024×768)
+- **Instructor View**: Shown at exact tablet dimensions (1024×768)
+- Realistic device frame provides context for both views
+- Instructors and admins see exactly what teams see
+- Consistent experience across all dashboard views
+- Easy to understand actual device constraints
 
 ## Testing
 
