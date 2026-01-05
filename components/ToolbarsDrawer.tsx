@@ -404,8 +404,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
-                {/* MAPSTYLE Section - Blue */}
-                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
+                {/* MAPSTYLE Section - Blue - Hidden in Instructor Mode */}
+                {mode !== GameMode.INSTRUCTOR && (mode === GameMode.EDIT || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
                     <div className="bg-blue-600 border-2 border-blue-500 rounded-xl p-3 space-y-3">
                         <button
                             onClick={() => toggleSection('mapstyle')}
@@ -508,8 +508,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
-                {/* PINS Section - Yellow */}
-                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
+                {/* PINS Section - Yellow - Hidden in Instructor Mode */}
+                {mode !== GameMode.INSTRUCTOR && (mode === GameMode.EDIT || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
                     <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl p-3 space-y-3">
                         <button
                             onClick={() => toggleSection('pins')}
