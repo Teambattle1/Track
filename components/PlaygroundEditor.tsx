@@ -2970,7 +2970,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             )}
 
                             {/* Zone Tabs */}
-                            {game.playgrounds?.map((pg, index) => {
+                            {uniquePlaygrounds.map((pg, index) => {
                                 const TabIcon = ICON_COMPONENTS[pg.iconId || 'default'] || ICON_COMPONENTS.default;
                                 return (
                                 <button
@@ -5648,8 +5648,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                           <div>
                             <h3 className="text-xs font-black text-slate-300 uppercase tracking-widest mb-3 pb-2 border-b border-slate-700">PLAYZONES</h3>
                             <div className="space-y-3">
-                              {game.playgrounds && game.playgrounds.length > 0 ? (
-                                game.playgrounds.map((playzone) => (
+                              {uniquePlaygrounds && uniquePlaygrounds.length > 0 ? (
+                                uniquePlaygrounds.map((playzone) => (
                                   <button
                                     key={playzone.id}
                                     onClick={() => {
