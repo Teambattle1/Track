@@ -161,8 +161,10 @@ const PlayzoneSelector: React.FC<PlayzoneSelectorProps> = ({ onClose, onAddToGam
                             <ImageIcon className="w-12 h-12 text-slate-500" />
                           </div>
                         )}
-                        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-white/10 shadow-md">
-                          {tpl.tasks.length} TASKS
+                        <div className={`absolute top-3 left-3 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border shadow-md ${
+                          (!tpl.tasks || tpl.tasks.length === 0) ? 'bg-red-600/80 border-red-400/30' : 'bg-black/60 border-white/10'
+                        }`}>
+                          {tpl.tasks?.length || 0} TASKS {(!tpl.tasks || tpl.tasks.length === 0) && '⚠️'}
                         </div>
 
                         {/* Selection Checkbox */}
