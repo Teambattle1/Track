@@ -11,6 +11,7 @@ import { TagColorsProvider } from './contexts/TagColorsContext';
 import { haversineMeters, isWithinRadius, isValidCoordinate } from './utils/geo';
 import { snapPointsToRoad, isPointInBox } from './utils/mapbox';
 import { playSound } from './utils/sounds';
+import { filterTasksBySchedule } from './utils/taskScheduling';
 import { vibrateChatNotification } from './utils/vibration';
 import { generateDemoTeamHistory } from './services/teamHistoryDemo';
 import GameMap, { GameMapHandle } from './components/GameMap';
