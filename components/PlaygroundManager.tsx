@@ -212,7 +212,11 @@ Would you like to delete this broken template?`;
 
           setShowGameSelector(false);
           setSelectedTemplateForGame(null);
-          alert(`✅ SUCCESS!\n\nPlayzone "${selectedTemplateForGame.title}" with ${newPoints.length} task(s) added to "${game.name}"!\n\nGo to the Game Editor to see the imported tasks.`);
+          setSuccessMessage({
+              template: selectedTemplateForGame.title,
+              game: game.name,
+              taskCount: newPoints.length
+          });
       } catch (error) {
           console.error('[PlaygroundManager] Error adding playzone to game:', error);
           alert(`❌ Failed to add playzone to game:\n\n${error}`);
