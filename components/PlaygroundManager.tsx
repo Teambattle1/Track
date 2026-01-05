@@ -225,6 +225,15 @@ Would you like to delete this broken template?`;
               pointCount: updatedGame.points.length
           });
 
+          // CRITICAL FIX: Update the local games state with the fresh data
+          // This ensures that if the user opens the game editor immediately,
+          // they will see the newly imported playzone and tasks
+          setGames(prevGames => prevGames.map(g =>
+              g.id === updatedGame.id ? updatedGame : g
+          ));
+
+          console.log('[PlaygroundManager] ✅ Local games state updated with imported tasks');
+
           setShowGameSelector(false);
           setSelectedTemplateForGame(null);
           setSuccessMessage({
