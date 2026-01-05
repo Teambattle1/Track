@@ -98,6 +98,10 @@ interface ToolbarsDrawerProps {
     // ZONE CHANGES
     zoneChanges?: any[];
     onAdjustZoneChange?: (zoneChangeId: string) => void;
+
+    // INSTRUCTOR FEATURES
+    onShowRanking?: () => void;
+    onOpenTeams?: () => void;
 }
 
 const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
