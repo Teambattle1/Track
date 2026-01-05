@@ -10,26 +10,11 @@ interface AdminModalProps {
   onLibraryUpdated?: () => void;
 }
 
-const AdminModal: React.FC<AdminModalProps> = ({ onClose, onLibraryUpdated }) => {
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-
+const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
   const [geminiKey, setGeminiKey] = useState('');
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [geminiSaved, setGeminiSaved] = useState(false);
   const [hasStoredGeminiKey, setHasStoredGeminiKey] = useState(false);
-
-  const [isMigratingGps, setIsMigratingGps] = useState(false);
-  const [gpsMigrationResult, setGpsMigrationResult] = useState<any | null>(null);
-
-  // Sound Settings State
-  const [correctSoundUrl, setCorrectSoundUrl] = useState(getGlobalCorrectSound());
-  const [incorrectSoundUrl, setIncorrectSoundUrl] = useState(getGlobalIncorrectSound());
-  const [volume, setVolume] = useState(getGlobalVolume());
-  const [soundsSaved, setSoundsSaved] = useState(false);
-  const [isUploadingCorrect, setIsUploadingCorrect] = useState(false);
-  const [isUploadingIncorrect, setIsUploadingIncorrect] = useState(false);
-  const correctSoundInputRef = useRef<HTMLInputElement>(null);
-  const incorrectSoundInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
       try {
@@ -44,88 +29,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose, onLibraryUpdated }) =>
       if (geminiSaved) return 'SAVED';
       return hasStoredGeminiKey ? 'KEY SET' : 'NOT SET';
   }, [geminiSaved, hasStoredGeminiKey]);
-
-  // Sound Upload Handlers
-  const handleUploadCorrectSound = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      // Validate audio file
-      if (!file.type.startsWith('audio/')) {
-          alert('Please upload an audio file (MP3, WAV, etc.)');
-          return;
-      }
-
-      setIsUploadingCorrect(true);
-      try {
-          const url = await uploadImage(file, 'game-assets');
-          if (url) {
-              setCorrectSoundUrl(url);
-          } else {
-              alert('Failed to upload sound file');
-          }
-      } catch (error) {
-          console.error('Upload error:', error);
-          alert('Failed to upload sound file');
-      } finally {
-          setIsUploadingCorrect(false);
-          if (correctSoundInputRef.current) {
-              correctSoundInputRef.current.value = '';
-          }
-      }
-  };
-
-  const handleUploadIncorrectSound = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      // Validate audio file
-      if (!file.type.startsWith('audio/')) {
-          alert('Please upload an audio file (MP3, WAV, etc.)');
-          return;
-      }
-
-      setIsUploadingIncorrect(true);
-      try {
-          const url = await uploadImage(file, 'game-assets');
-          if (url) {
-              setIncorrectSoundUrl(url);
-          } else {
-              alert('Failed to upload sound file');
-          }
-      } catch (error) {
-          console.error('Upload error:', error);
-          alert('Failed to upload sound file');
-      } finally {
-          setIsUploadingIncorrect(false);
-          if (incorrectSoundInputRef.current) {
-              incorrectSoundInputRef.current.value = '';
-          }
-      }
-  };
-
-  // NOTE: Supabase setup SQL was moved to the SUPABASE module (System Tools).
-
-  const handleMigrateGpsActivation = async () => {
-      setIsMigratingGps(true);
-      try {
-          const result = await migrateAllTasksToGpsEnabled();
-          setGpsMigrationResult(result);
-          console.log('GPS Migration Result:', result);
-
-          // Notify parent to reload the library
-          if (onLibraryUpdated) {
-              onLibraryUpdated();
-          }
-      } catch (error) {
-          console.error('Migration failed:', error);
-          setGpsMigrationResult({
-              error: error instanceof Error ? error.message : 'Unknown error'
-          });
-      } finally {
-          setIsMigratingGps(false);
-      }
-  };
 
   return (
     <div className="fixed inset-0 z-[6000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
