@@ -23,6 +23,7 @@ import {
   ListOrdered, Wifi, Users
 } from 'lucide-react';
 import DevicePreviewModal from './DevicePreviewModal';
+import InfoTooltip from './InfoTooltip';
 
 interface TaskEditorProps {
   point: GamePoint;
