@@ -3018,6 +3018,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     tasksWithLogic: zoneTasks.filter(t => t.logic && (t.logic.onOpen?.length || t.logic.onCorrect?.length || t.logic.onIncorrect?.length)).length,
                                     tasksWithSettings: zoneTasks.filter(t => t.settings).length,
                                     tasksWithFeedback: zoneTasks.filter(t => t.feedback).length,
+                                    tasksWithDevicePositions: zoneTasks.filter(t => t.devicePositions).length,
+                                    tasksWithPlaygroundPosition: zoneTasks.filter(t => t.playgroundPosition).length,
                                     playgroundVisibilitySettings: {
                                         showTaskScores: activePlayground.showTaskScores,
                                         showTaskOrder: activePlayground.showTaskOrder,
@@ -3038,7 +3040,29 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         hasFeedback: !!zoneTasks[0].feedback,
                                         feedback: zoneTasks[0].feedback,
                                         colorScheme: zoneTasks[0].colorScheme,
+                                        devicePositions: zoneTasks[0].devicePositions,
+                                        playgroundPosition: zoneTasks[0].playgroundPosition,
                                         allKeys: Object.keys(zoneTasks[0])
+                                    } : null
+                                });
+
+                                // CRITICAL DEBUG: Check first 3 source tasks for position data
+                                console.log('[PlaygroundEditor] 🔍 SOURCE POSITION DATA (zoneTasks BEFORE JSON.stringify):', {
+                                    task0: zoneTasks[0] ? {
+                                        title: zoneTasks[0].title,
+                                        devicePositions: zoneTasks[0].devicePositions,
+                                        playgroundPosition: zoneTasks[0].playgroundPosition,
+                                        devicePositionsJSON: JSON.stringify(zoneTasks[0].devicePositions || null)
+                                    } : null,
+                                    task1: zoneTasks[1] ? {
+                                        title: zoneTasks[1].title,
+                                        devicePositions: zoneTasks[1].devicePositions,
+                                        playgroundPosition: zoneTasks[1].playgroundPosition
+                                    } : null,
+                                    task2: zoneTasks[2] ? {
+                                        title: zoneTasks[2].title,
+                                        devicePositions: zoneTasks[2].devicePositions,
+                                        playgroundPosition: zoneTasks[2].playgroundPosition
                                     } : null
                                 });
 
