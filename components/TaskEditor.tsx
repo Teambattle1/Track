@@ -1921,7 +1921,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                               <Zap className="w-6 h-6" />
                                           </div>
                                           <div>
-                                              <h3 className="text-sm font-black text-purple-900 dark:text-purple-100 uppercase tracking-wider">Score Depends on Speed</h3>
+                                              <h3 className="text-sm font-black text-purple-900 dark:text-purple-100 uppercase tracking-wider flex items-center gap-2">
+                                                  Score Depends on Speed
+                                                  <InfoTooltip
+                                                      title="Score Depends on Speed"
+                                                      description="Rewards faster teams with more points. Full points awarded if completed within 50% of time limit, decreasing linearly until timeout."
+                                                      example="60 second limit: Answer in 30s = 100 points, 45s = 75 points, 60s = 50 points"
+                                                  />
+                                              </h3>
                                               <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">Award more points for faster completion</p>
                                           </div>
                                       </div>
@@ -1954,7 +1961,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                       <Clock className="w-6 h-6" />
                                   </div>
                                   <div className="flex-1">
-                                      <h3 className="text-sm font-black text-amber-900 dark:text-amber-100 uppercase tracking-wider">Scheduled Visibility</h3>
+                                      <h3 className="text-sm font-black text-amber-900 dark:text-amber-100 uppercase tracking-wider flex items-center gap-2">
+                                          Scheduled Visibility
+                                          <InfoTooltip
+                                              title="Scheduled Visibility"
+                                              description="Control when this task appears on the map. Choose to show it after the game starts, before it ends, or at specific date/times."
+                                              example="Show bonus task only in the final 10 minutes of the game"
+                                          />
+                                      </h3>
                                       <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">Control when this task appears on the map</p>
                                   </div>
                               </div>
