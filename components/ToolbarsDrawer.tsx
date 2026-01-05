@@ -7,7 +7,7 @@ import {
     Skull as SkullIcon, Ruler, Crosshair, Navigation,
     Hash, Type, Trophy, GitBranch, RouteIcon,
     MessageSquare, Settings, Clock, Play, Zap, Eye,
-    GripHorizontal, ScrollText, Mountain, Snowflake, Check
+    GripHorizontal, ScrollText, Mountain, Snowflake, Check, MapPin, AlertTriangle
 } from 'lucide-react';
 import { Game, GameMode, LocationSearchProps, Coordinate, Team, MapStyleId } from '../types';
 import LocationSearch from './LocationSearch';
@@ -92,6 +92,10 @@ interface ToolbarsDrawerProps {
     onOpenRemoteOverride?: () => void;
     onOpenLiveApproval?: () => void;
     pendingApprovalsCount?: number;
+
+    // ZONE CHANGES
+    zoneChanges?: any[];
+    onAdjustZoneChange?: (zoneChangeId: string) => void;
 }
 
 const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
@@ -149,6 +153,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     onOpenRemoteOverride,
     onOpenLiveApproval,
     pendingApprovalsCount = 0,
+    zoneChanges = [],
+    onAdjustZoneChange,
 }) => {
     const [collapsedSectionsLocal, setCollapsedSectionsLocal] = useState<Record<string, boolean>>({
         mapmode: true,
