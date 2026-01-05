@@ -233,6 +233,22 @@ export interface InfoTaskSettings {
   autoCloseAfterSeconds?: number; // Auto-close after X seconds (0 = manual close)
 }
 
+// Zone Change Event (Multiple zone changes support)
+export interface ZoneChangeEvent {
+  id: string; // Unique identifier (e.g., "zc-1234567890")
+  title: string; // e.g., "Switch to Park Zone", "Move to Downtown"
+  enabled: boolean;
+  targetTime?: number; // Unix timestamp for countdown target
+  showOnTeamView: boolean; // Show countdown in team dashboard
+  message: string; // HTML formatted popup message
+  imageUrl?: string; // Optional popup image
+  requireCode: boolean; // Require code "4027" to dismiss popup
+  hasTriggered: boolean; // Track if popup has been shown
+  startedAt?: number; // Timestamp when countdown started
+  order: number; // Display order (0, 1, 2, ...)
+  createdAt: number; // Creation timestamp
+}
+
 export type PointCompletionLogic = 
   | 'remove_any'
   | 'keep_until_correct'
