@@ -748,32 +748,50 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
 
                       {/* Instructions */}
                       <div className="mt-6 bg-blue-900/20 border border-blue-700 rounded-lg p-4">
-                        <h4 className="text-sm font-black text-blue-400 uppercase tracking-wide mb-2 flex items-center gap-2">
+                        <h4 className="text-sm font-black text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
                           <Database className="w-4 h-4" />
                           How to Run This Script
                         </h4>
-                        <ol className="text-xs text-slate-300 space-y-2 leading-relaxed">
-                          <li className="flex gap-2">
-                            <span className="font-black text-blue-400 shrink-0">1.</span>
-                            <span>Open your <strong className="text-white">Supabase Dashboard</strong></span>
-                          </li>
-                          <li className="flex gap-2">
-                            <span className="font-black text-blue-400 shrink-0">2.</span>
-                            <span>Navigate to <strong className="text-white">SQL Editor</strong> (in the left sidebar)</span>
-                          </li>
-                          <li className="flex gap-2">
-                            <span className="font-black text-blue-400 shrink-0">3.</span>
-                            <span>Click <strong className="text-white">"COPY SQL"</strong> button above</span>
-                          </li>
-                          <li className="flex gap-2">
-                            <span className="font-black text-blue-400 shrink-0">4.</span>
-                            <span>Paste the SQL into the editor</span>
-                          </li>
-                          <li className="flex gap-2">
-                            <span className="font-black text-blue-400 shrink-0">5.</span>
-                            <span>Click <strong className="text-white">"Run"</strong> to execute the script</span>
-                          </li>
-                        </ol>
+
+                        {/* Quick Action Button */}
+                        <button
+                          onClick={() => {
+                            handleCopy(selectedScript);
+                            setTimeout(() => {
+                              window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/5f49e3d9-339b-4fd1-ac3b-8f368f6d6eb9', '_blank');
+                            }, 100);
+                          }}
+                          className="w-full mb-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-black uppercase text-xs flex items-center justify-center gap-2 transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Copy & Open SQL Editor
+                        </button>
+
+                        <div className="border-t border-blue-700/30 pt-3">
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-3">Manual Steps:</p>
+                          <ol className="text-xs text-slate-300 space-y-2 leading-relaxed">
+                            <li className="flex gap-2">
+                              <span className="font-black text-blue-400 shrink-0">1.</span>
+                              <span>Open your <strong className="text-white">Supabase Dashboard</strong></span>
+                            </li>
+                            <li className="flex gap-2">
+                              <span className="font-black text-blue-400 shrink-0">2.</span>
+                              <span>Navigate to <strong className="text-white">SQL Editor</strong> (in the left sidebar)</span>
+                            </li>
+                            <li className="flex gap-2">
+                              <span className="font-black text-blue-400 shrink-0">3.</span>
+                              <span>Click <strong className="text-white">"COPY SQL"</strong> button above</span>
+                            </li>
+                            <li className="flex gap-2">
+                              <span className="font-black text-blue-400 shrink-0">4.</span>
+                              <span>Paste the SQL into the editor</span>
+                            </li>
+                            <li className="flex gap-2">
+                              <span className="font-black text-blue-400 shrink-0">5.</span>
+                              <span>Click <strong className="text-white">"Run"</strong> to execute the script</span>
+                            </li>
+                          </ol>
+                        </div>
                       </div>
                     </div>
                   </>
