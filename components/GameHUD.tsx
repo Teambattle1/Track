@@ -908,6 +908,32 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
         })
     }), [locationToolboxPos, topToolbarPos, viewSwitcherPos, pinsToolboxPos, showToolboxPos, qrScannerPos]);
 
+    // Reset all toolbar positions to defaults
+    const resetToolbarPositions = () => {
+        setLocationToolboxPos(DEFAULT_POSITIONS.location);
+        setTopToolbarPos(DEFAULT_POSITIONS.tools);
+        setViewSwitcherPos(DEFAULT_POSITIONS.mapmode);
+        setPinsToolboxPos(DEFAULT_POSITIONS.pins);
+        setShowToolboxPos(DEFAULT_POSITIONS.show);
+        setLayersToolboxPos({ x: 20, y: window.innerHeight - 200 });
+        setQRScannerPos(DEFAULT_POSITIONS.qr);
+
+        // Save to user settings if admin
+        if (isAdminRef.current && authUser?.id) {
+            db.updateUserSettings(authUser.id, {
+                toolbarPositions: {
+                    locationToolboxPos: DEFAULT_POSITIONS.location,
+                    topToolbarPos: DEFAULT_POSITIONS.tools,
+                    viewSwitcherPos: DEFAULT_POSITIONS.mapmode,
+                    pinsToolboxPos: DEFAULT_POSITIONS.pins,
+                    showToolboxPos: DEFAULT_POSITIONS.show,
+                    qrScannerPos: DEFAULT_POSITIONS.qr,
+                },
+                toolbarPositionsVersion: DEFAULT_POSITIONS_VERSION,
+            });
+        }
+    };
+
     return (
         <>
             {/* TOOLBARS DRAWER */}
