@@ -2757,19 +2757,69 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 )
                             ) : (
                                 <>
-                                    {/* Create New Tasklist Button */}
-                                    <button
-                                        onClick={() => {
-                                            setShowCreateNewTasklistInput(true);
-                                            setNewTasklistName('');
-                                        }}
-                                        className="w-full px-5 py-4 bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 rounded-xl transition-all border-2 border-green-500 hover:border-green-400 group shadow-lg"
-                                    >
-                                        <div className="flex items-center justify-center gap-3">
-                                            <Plus className="w-5 h-5 text-white" />
-                                            <div className="font-bold text-white text-sm">CREATE NEW TASKLIST</div>
+                                    {/* Create New Tasklist - Show input field or button */}
+                                    {showCreateNewTasklistInput ? (
+                                        <div className="bg-slate-800 border-2 border-green-500 rounded-xl p-5 space-y-4">
+                                            <div className="flex items-center gap-2 text-green-400">
+                                                <Plus className="w-5 h-5" />
+                                                <h4 className="font-bold text-sm uppercase">Create New Tasklist</h4>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={newTasklistName}
+                                                onChange={(e) => setNewTasklistName(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleCreateNewTasklistWithTasks();
+                                                    } else if (e.key === 'Escape') {
+                                                        setShowCreateNewTasklistInput(false);
+                                                        setNewTasklistName('');
+                                                    }
+                                                }}
+                                                placeholder="Enter tasklist name..."
+                                                autoFocus
+                                                className="w-full px-4 py-3 bg-slate-900 border border-slate-600 focus:border-green-500 rounded-lg text-white placeholder-slate-500 outline-none transition-colors"
+                                            />
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={handleCreateNewTasklistWithTasks}
+                                                    disabled={!newTasklistName.trim()}
+                                                    className={`flex-1 px-4 py-3 rounded-lg font-bold uppercase text-xs transition-all ${
+                                                        newTasklistName.trim()
+                                                            ? 'bg-green-600 hover:bg-green-500 text-white'
+                                                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <Save className="w-4 h-4" />
+                                                        CREATE
+                                                    </div>
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowCreateNewTasklistInput(false);
+                                                        setNewTasklistName('');
+                                                    }}
+                                                    className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold uppercase text-xs transition-all"
+                                                >
+                                                    CANCEL
+                                                </button>
+                                            </div>
                                         </div>
-                                    </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                setShowCreateNewTasklistInput(true);
+                                                setNewTasklistName('');
+                                            }}
+                                            className="w-full px-5 py-4 bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 rounded-xl transition-all border-2 border-green-500 hover:border-green-400 group shadow-lg"
+                                        >
+                                            <div className="flex items-center justify-center gap-3">
+                                                <Plus className="w-5 h-5 text-white" />
+                                                <div className="font-bold text-white text-sm">CREATE NEW TASKLIST</div>
+                                            </div>
+                                        </button>
+                                    )}
 
                                     {/* Existing Tasklists */}
                                     {taskLists.length === 0 ? (
