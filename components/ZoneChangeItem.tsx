@@ -26,23 +26,29 @@ const ZoneChangeItem: React.FC<ZoneChangeItemProps> = ({
 }) => {
     const [countdown, setCountdown] = useState('');
     const isActive = enabled && !hasTriggered;
-    const hasTime = targetTime && targetTime > Date.now();
 
     useEffect(() => {
-        if (!hasTime) {
-            setCountdown('');
+        // If no targetTime set, show "Not set"
+        if (!targetTime) {
+            setCountdown('NOT SET');
             return;
         }
 
         const updateCountdown = () => {
             const now = Date.now();
-            const remaining = targetTime! - now;
+            const remaining = targetTime - now;
 
+            // If time has passed
             if (remaining <= 0) {
-                setCountdown('00:00:00');
+                if (hasTriggered) {
+                    setCountdown('TRIGGERED');
+                } else {
+                    setCountdown('00:00:00');
+                }
                 return;
             }
 
+            // Calculate time remaining
             const hours = Math.floor(remaining / (1000 * 60 * 60));
             const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
@@ -54,7 +60,7 @@ const ZoneChangeItem: React.FC<ZoneChangeItemProps> = ({
         const interval = setInterval(updateCountdown, 1000);
 
         return () => clearInterval(interval);
-    }, [hasTime, targetTime]);
+    }, [targetTime, hasTriggered]);
 
     return (
         <button
@@ -86,11 +92,9 @@ const ZoneChangeItem: React.FC<ZoneChangeItemProps> = ({
                     <Clock className="w-3 h-3" />
                 </span>
             </span>
-            {countdown && (
-                <span className="text-red-500 font-mono text-sm font-black tracking-wider">
-                    {countdown}
-                </span>
-            )}
+            <span className="text-red-500 font-mono text-sm font-black tracking-wider">
+                {countdown || 'NOT SET'}
+            </span>
         </button>
     );
 };
