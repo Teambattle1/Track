@@ -412,11 +412,24 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                 <div className="lg:col-span-8 flex flex-col gap-4">
                     <div className="bg-[#141414] border border-white/5 rounded-2xl shadow-xl overflow-hidden">
                         <div className="p-6 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#0a0a0a]">
-                            <h2 className="text-xl font-black text-white tracking-tight uppercase">MANAGEMENT REGISTRY</h2>
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-xl font-black text-white tracking-tight uppercase">MANAGEMENT REGISTRY</h2>
+                                <button
+                                    onClick={() => {
+                                        setBulkSelectionMode(!bulkSelectionMode);
+                                        if (bulkSelectionMode) {
+                                            setSelectedTagsForBulk(new Set());
+                                        }
+                                    }}
+                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${bulkSelectionMode ? 'bg-orange-600 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                                >
+                                    {bulkSelectionMode ? '✓ BULK MODE' : '+ ADD/REMOVE TAGS'}
+                                </button>
+                            </div>
                             <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="FILTER SYSTEM TAGS..."
@@ -424,6 +437,28 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                                 />
                             </div>
                         </div>
+
+                        {bulkSelectionMode && selectedTagsForBulk.size > 0 && (
+                            <div className="px-6 py-4 bg-orange-900/20 border-b border-orange-500/20 flex items-center justify-between">
+                                <span className="text-[10px] font-black text-orange-300 uppercase tracking-widest">
+                                    {selectedTagsForBulk.size} TAG{selectedTagsForBulk.size !== 1 ? 'S' : ''} SELECTED
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleDeselectAllTags}
+                                        className="px-3 py-1.5 bg-orange-950 hover:bg-orange-900 text-orange-400 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
+                                    >
+                                        DESELECT ALL
+                                    </button>
+                                    <button
+                                        onClick={handleStartBulkDelete}
+                                        className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                                    >
+                                        <Trash2 className="w-3 h-3" /> DELETE {selectedTagsForBulk.size}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="divide-y divide-white/5 min-h-[400px]">
                             {displayTags.length === 0 ? (
