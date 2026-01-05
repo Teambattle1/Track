@@ -54,12 +54,24 @@ return {
 
 ## Testing the Fix
 
-1. **Dev Server Restart**: ✅ Already restarted
-2. **Clear Browser State**: If you still see old errors:
-   - Hard refresh: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
-   - Or clear browser cache
-3. **Generate New Tasks**: Create a new batch of AI tasks
-4. **Verify Console**: No duplicate key warnings should appear
+### Step 1: Clear Old Cached Tasks ⚠️ IMPORTANT
+**If you see duplicate key errors for old tasks (e.g., `ai-1767644047664-0`):**
+
+1. **Open AI Task Generator**
+2. **Look for yellow warning banner** that says "OLD CACHED TASKS DETECTED"
+3. **Click "CLEAR ALL TASKS"** button to remove stale data
+4. **Close and reopen** the AI Generator modal
+
+### Step 2: Verify the Fix
+1. **Dev Server**: ✅ Already restarted
+2. **Hard Refresh Browser**: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
+3. **Generate NEW Tasks**: Create a fresh batch of AI tasks
+4. **Check Console**: No duplicate key warnings should appear for NEW tasks
+
+### Step 3: Verify New ID Format
+New tasks should have IDs like:
+- ✅ `ai-1767644047664-f7g8h9i2j3k4` (long random suffix)
+- ❌ `ai-1767644047664-0` (old short index)
 
 ## Expected Behavior
 
