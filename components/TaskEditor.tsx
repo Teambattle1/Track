@@ -2188,7 +2188,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        <Users className="w-6 h-6" />
                                    </div>
                                    <div className="flex-1">
-                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1">Multi-Team Challenge</h3>
+                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1 flex items-center gap-2">
+                                           Multi-Team Challenge
+                                           <InfoTooltip
+                                               title="Multi-Team Challenge"
+                                               description="Forces collaboration between multiple teams. All required teams must be within the specified radius to unlock or complete the task. Great for team-building!"
+                                               example="Require 3 teams within 50 meters to solve together"
+                                           />
+                                       </h3>
                                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Require multiple teams to be in proximity to activate or complete this task together.</p>
 
                                        <label className="flex items-center gap-3 cursor-pointer" onClick={() => {
