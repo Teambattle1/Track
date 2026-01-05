@@ -215,12 +215,14 @@ Both dashboards now fill the tablet frame's screen area instead of taking over t
 
 ## Files Modified
 1. **`components/TabletFrame.tsx`** - New tablet frame wrapper component
-2. **`App.tsx`** - Import and wrap TeamDashboard
-3. **`components/TeamDashboard.tsx`** - Remove fullscreen wrapper
-4. **`TABLET_FRAME_TEAM_VIEW.md`** - This documentation
+2. **`App.tsx`** - Import and wrap both InstructorDashboard and TeamDashboard
+3. **`components/InstructorDashboard.tsx`** - Remove fullscreen wrapper
+4. **`components/TeamDashboard.tsx`** - Remove fullscreen wrapper
+5. **`TABLET_FRAME_TEAM_VIEW.md`** - This documentation
 
 ## Related Components
-- `components/TeamDashboard.tsx` - Team view content
-- `components/InstructorDashboard.tsx` - Instructor view (not framed)
+- `components/TeamDashboard.tsx` - Team view content (wrapped in frame)
+- `components/InstructorDashboard.tsx` - Instructor view content (wrapped in frame)
+- `components/TabletFrame.tsx` - Reusable tablet frame wrapper
 - `components/PlayzoneGameView.tsx` - Playzone view for teams
 - `App.tsx` - Main app routing and state management
