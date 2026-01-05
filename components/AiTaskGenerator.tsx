@@ -808,6 +808,27 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                             </div>
                         )}
 
+                        {/* Warning for stale cached data */}
+                        {!isGenerating && (generatedBuffer.length > 0 || approvedTasks.length > 0) && !batchFinished && (
+                            <div className="p-3 bg-yellow-900/20 border border-yellow-500/30 rounded-xl">
+                                <div className="flex items-start gap-3 mb-2">
+                                    <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-xs text-yellow-300 font-bold leading-tight mb-1">OLD CACHED TASKS DETECTED</p>
+                                        <p className="text-[10px] text-yellow-400/70 leading-tight">
+                                            These tasks may have duplicate IDs. Clear them and regenerate with the new fix.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleClearAll}
+                                    className="w-full py-2 bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 rounded-lg text-[10px] font-bold uppercase transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <X className="w-3 h-3" /> CLEAR ALL TASKS
+                                </button>
+                            </div>
+                        )}
+
                         {error && !error.includes("logo") && (
                             <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-xl flex items-start gap-3">
                                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
