@@ -1206,6 +1206,59 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">TASK DESCRIPTION</label>
                                <RichTextEditor value={editedPoint.task.question} onChange={(html) => setEditedPoint({ ...editedPoint, task: { ...editedPoint.task, question: html } })} />
                            </div>
+                           {/* POINTS SECTION */}
+                           <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-4 rounded-2xl border-2 border-emerald-200 dark:border-emerald-800 space-y-4">
+                               <div>
+                                   <label className="block text-[10px] font-black text-emerald-700 dark:text-emerald-300 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
+                                       BASE POINTS
+                                       <InfoTooltip
+                                           title="Base Points"
+                                           description="Default point value for this task. Can be overridden by specific correct/incorrect point settings below."
+                                           example="Set 100 for standard tasks, 200 for bonus challenges"
+                                       />
+                                   </label>
+                                   <input type="number" value={editedPoint.points} onChange={(e) => setEditedPoint({ ...editedPoint, points: parseInt(e.target.value) || 0 })} className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-emerald-500 outline-none transition-all text-sm"/>
+                               </div>
+
+                               <div className="grid grid-cols-2 gap-4">
+                                   <div>
+                                       <label className="block text-[10px] font-black text-green-700 dark:text-green-300 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
+                                           CORRECT ANSWER
+                                           <InfoTooltip
+                                               title="Points on Correct Answer"
+                                               description="Points awarded when teams answer correctly. Leave empty to use base points."
+                                               example="Set 150 for bonus correct answers, or match base points"
+                                           />
+                                       </label>
+                                       <input
+                                           type="number"
+                                           value={editedPoint.pointsOnCorrect ?? ''}
+                                           onChange={(e) => setEditedPoint({ ...editedPoint, pointsOnCorrect: e.target.value ? parseInt(e.target.value) : undefined })}
+                                           placeholder="Use base"
+                                           className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-green-500 outline-none transition-all text-sm"
+                                       />
+                                   </div>
+
+                                   <div>
+                                       <label className="block text-[10px] font-black text-red-700 dark:text-red-300 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
+                                           INCORRECT ANSWER
+                                           <InfoTooltip
+                                               title="Points on Incorrect Answer"
+                                               description="Points awarded (or deducted) when teams answer incorrectly. Use negative values for penalties."
+                                               example="Set 0 for no penalty, -50 to deduct points"
+                                           />
+                                       </label>
+                                       <input
+                                           type="number"
+                                           value={editedPoint.pointsOnIncorrect ?? ''}
+                                           onChange={(e) => setEditedPoint({ ...editedPoint, pointsOnIncorrect: e.target.value ? parseInt(e.target.value) : undefined })}
+                                           placeholder="0"
+                                           className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-red-500 outline-none transition-all text-sm"
+                                       />
+                                   </div>
+                               </div>
+                           </div>
+
                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
