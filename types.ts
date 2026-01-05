@@ -547,9 +547,11 @@ export type TimerMode = 'none' | 'countdown' | 'countup' | 'scheduled_end';
 
 export interface TimerConfig {
   mode: TimerMode;
-  durationMinutes?: number; 
-  endTime?: string; 
-  title?: string; 
+  durationMinutes?: number;
+  endTime?: string;
+  title?: string;
+  startTime?: string; // ISO string or HH:mm format for game start time
+  lobbyOpenTime?: string; // ISO string or HH:mm format when teams can join (default: startTime - 15 minutes)
 }
 
 export interface DesignConfig {
