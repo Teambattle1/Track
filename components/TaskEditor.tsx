@@ -1325,7 +1325,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                        <div className="space-y-6">
                            <div>
                                <div className="flex justify-between items-center mb-3">
-                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">COVER IMAGE</label>
+                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] flex items-center gap-1">
+                                       COVER IMAGE
+                                       <InfoTooltip
+                                           title="Cover Image"
+                                           description="Upload or AI-generate an image to display in the task. This helps teams visualize the challenge and makes tasks more engaging."
+                                           example="A photo of the location, a relevant illustration, or AI-generated art"
+                                       />
+                                   </label>
                                    <div className="flex gap-2">
                                         <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[10px] font-black px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-orange-500 hover:text-white transition-all uppercase tracking-wide flex items-center gap-1"><Upload className="w-3 h-3" /> UPLOAD</button>
                                         <button type="button" onClick={handleGenerateImage} disabled={isGeneratingImage} className="text-[10px] font-black px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all uppercase tracking-wide flex items-center gap-1 shadow-md disabled:opacity-50">{isGeneratingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />} AI GEN</button>
@@ -1364,7 +1371,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
                           {/* YOUTUBE VIDEO */}
                           <div>
-                              <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3">YOUTUBE VIDEO</label>
+                              <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-1">
+                                  YOUTUBE VIDEO
+                                  <InfoTooltip
+                                      title="YouTube Video"
+                                      description="Embed a YouTube video directly in the task. Players can watch it without leaving the game. Perfect for tutorial videos or location introductions."
+                                      example="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                                  />
+                              </label>
                               <div className="space-y-3">
                                   <div className="flex gap-2">
                                       <input
@@ -1689,7 +1703,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                            {/* MAP ICON */}
                            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                                <div className="flex justify-between items-center mb-3">
-                                   <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">MAP PIN ICON</label>
+                                   <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                                       MAP PIN ICON
+                                       <InfoTooltip
+                                           title="Map Pin Icon"
+                                           description="Choose the icon that appears on the map for this task. Use different icons to categorize tasks or indicate difficulty."
+                                           example="Star for bonus tasks, Flag for checkpoints, Trophy for final challenges"
+                                       />
+                                   </label>
                                    <div className="flex gap-2">
                                        <button 
                                            type="button" 
@@ -1738,7 +1759,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                            
                            {/* ... Area Color ... */}
                            <div>
-                               <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 mb-3 block uppercase tracking-widest">AREA COLOR (GEOFENCE)</label>
+                               <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 mb-3 block uppercase tracking-widest flex items-center gap-1">
+                                   AREA COLOR (GEOFENCE)
+                                   <InfoTooltip
+                                       title="Area Color"
+                                       description="Set a color for the geofence radius circle around this task. Helps teams identify task zones on the map visually."
+                                       example="Blue for water activities, Green for park areas, Red for challenges"
+                                   />
+                               </label>
                                <div className="flex flex-wrap gap-3">
                                    <button 
                                        type="button"
