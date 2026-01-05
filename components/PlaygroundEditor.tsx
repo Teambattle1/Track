@@ -1142,22 +1142,29 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         };
 
         // CRITICAL: Import all tasks from template with EXACT SAME POSITIONS
-        // Preserve playgroundX and playgroundY coordinates from the template
+        // Preserve playgroundPosition and devicePositions from the template
         // DO NOT modify positions - they are carefully designed in the template
         const newTasks: GamePoint[] = (template.tasks || []).map((task, index) => {
             // Generate unique ID with timestamp, index, and random string
             const uniqueId = `task-${baseTimestamp}-${index}-${Math.random().toString(36).substr(2, 9)}`;
 
-            // PRESERVE EXACT POSITIONS from template
-            const preservedX = task.playgroundX ?? 0;
-            const preservedY = task.playgroundY ?? 0;
+            // PRESERVE EXACT POSITIONS from template (both legacy and device-specific)
+            const preservedPosition = task.playgroundPosition ? { ...task.playgroundPosition } : undefined;
+            const preservedDevicePositions = task.devicePositions ? { ...task.devicePositions } : undefined;
+
+            console.log(`[PlaygroundEditor] Importing task "${task.title}":`, {
+                hasPlaygroundPosition: !!preservedPosition,
+                playgroundPosition: preservedPosition,
+                hasDevicePositions: !!preservedDevicePositions,
+                devicePositions: preservedDevicePositions
+            });
 
             return {
                 ...task,
                 id: uniqueId,
                 playgroundId: newPlaygroundId,
-                playgroundX: preservedX, // EXACT position from template
-                playgroundY: preservedY, // EXACT position from template
+                playgroundPosition: preservedPosition, // EXACT position from template
+                devicePositions: preservedDevicePositions, // EXACT device-specific positions from template
                 order: index,
                 isCompleted: false,
                 isUnlocked: true
@@ -1168,7 +1175,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             playgroundId: newPlaygroundId,
             taskCount: newTasks.length,
             positionsPreserved: true,
-            taskPositions: newTasks.map(t => ({ id: t.id, x: t.playgroundX, y: t.playgroundY }))
+            sampleTaskPosition: newTasks[0]?.playgroundPosition,
+            sampleDevicePositions: newTasks[0]?.devicePositions
         });
 
         // Update game with new playground and tasks
