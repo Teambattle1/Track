@@ -1336,7 +1336,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                            example="Set 100 for standard tasks, 200 for bonus challenges"
                                        />
                                    </label>
-                                   <input type="number" value={editedPoint.points} onChange={(e) => setEditedPoint({ ...editedPoint, points: parseInt(e.target.value) || 0 })} className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-emerald-500 outline-none transition-all text-sm"/>
+                                   <input type="number" value={editedPoint.points} onChange={(e) => setEditedPoint(prev => ({ ...prev, points: parseInt(e.target.value) || 0 }))} className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-emerald-500 outline-none transition-all text-sm"/>
                                </div>
 
                                <div className="grid grid-cols-2 gap-4">
@@ -1352,7 +1352,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        <input
                                            type="number"
                                            value={editedPoint.pointsOnCorrect ?? ''}
-                                           onChange={(e) => setEditedPoint({ ...editedPoint, pointsOnCorrect: e.target.value ? parseInt(e.target.value) : undefined })}
+                                           onChange={(e) => setEditedPoint(prev => ({ ...prev, pointsOnCorrect: e.target.value ? parseInt(e.target.value) : undefined }))}
                                            placeholder="Use base"
                                            className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-green-500 outline-none transition-all text-sm"
                                        />
@@ -1370,7 +1370,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        <input
                                            type="number"
                                            value={editedPoint.pointsOnIncorrect ?? ''}
-                                           onChange={(e) => setEditedPoint({ ...editedPoint, pointsOnIncorrect: e.target.value ? parseInt(e.target.value) : undefined })}
+                                           onChange={(e) => setEditedPoint(prev => ({ ...prev, pointsOnIncorrect: e.target.value ? parseInt(e.target.value) : undefined }))}
                                            placeholder="0"
                                            className="w-full px-4 py-2 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-red-500 outline-none transition-all text-sm"
                                        />
@@ -1391,7 +1391,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                   <div className="relative group">
                                       <select
                                           value={editedPoint.task.type}
-                                          onChange={(e) => setEditedPoint({ ...editedPoint, task: { ...editedPoint.task, type: e.target.value as any } })}
+                                          onChange={(e) => setEditedPoint(prev => ({ ...prev, task: { ...prev.task, type: e.target.value as any } }))}
                                           onMouseEnter={() => setShowTaskTypeTooltip(true)}
                                           onMouseLeave={() => setShowTaskTypeTooltip(false)}
                                           className="w-full px-4 py-2.5 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none appearance-none cursor-pointer text-sm"
