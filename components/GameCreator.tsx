@@ -2570,6 +2570,95 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                       </div>
                   </div>
               );
+          case 'ZONECHANGE':
+              return (
+                  <div className="space-y-6 max-w-4xl animate-in fade-in slide-in-from-bottom-2">
+                      {/* Header */}
+                      <div className="bg-gradient-to-br from-orange-900 to-red-900 p-6 rounded-2xl border border-orange-700">
+                          <div className="flex items-center gap-3 mb-3">
+                              <MapPin className="w-8 h-8 text-orange-300" />
+                              <div>
+                                  <h2 className="text-xl font-black text-white uppercase">Zone Change Events</h2>
+                                  <p className="text-sm text-orange-200">
+                                      Schedule automatic zone changes with countdown timers and custom messages
+                                  </p>
+                              </div>
+                          </div>
+
+                          {/* Info Box */}
+                          <div className="bg-orange-950/50 border border-orange-800 rounded-xl p-4 mt-4">
+                              <p className="text-xs text-orange-200">
+                                  <strong>How it works:</strong> Create countdown events that trigger automatic
+                                  notifications to teams. Perfect for scheduled zone transitions, time-based
+                                  challenges, or multi-stage games. Each event can have its own time, message, and settings.
+                              </p>
+                          </div>
+                      </div>
+
+                      {/* Zone Changes List */}
+                      <div className="space-y-4">
+                          {zoneChanges.length === 0 ? (
+                              <div className="bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl p-12 text-center">
+                                  <MapPin className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+                                  <h3 className="text-lg font-bold text-slate-300 mb-2">No Zone Changes Yet</h3>
+                                  <p className="text-sm text-slate-500 mb-6">
+                                      Create your first zone change event to get started
+                                  </p>
+                                  <button
+                                      type="button"
+                                      onClick={handleAddZoneChange}
+                                      className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold uppercase tracking-wide transition-all flex items-center gap-2 mx-auto"
+                                  >
+                                      <Plus className="w-5 h-5" />
+                                      Create First Zone Change
+                                  </button>
+                              </div>
+                          ) : (
+                              <>
+                                  {/* Active Zone Changes Count */}
+                                  <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
+                                      <div className="flex items-center gap-3">
+                                          <div className="w-10 h-10 rounded-lg bg-orange-600 flex items-center justify-center">
+                                              <MapPin className="w-5 h-5 text-white" />
+                                          </div>
+                                          <div>
+                                              <p className="text-sm font-bold text-white">
+                                                  {zoneChanges.filter(zc => zc.enabled).length} Active Zone Change{zoneChanges.filter(zc => zc.enabled).length !== 1 ? 's' : ''}
+                                              </p>
+                                              <p className="text-xs text-slate-500">
+                                                  {zoneChanges.length} total event{zoneChanges.length !== 1 ? 's' : ''}
+                                              </p>
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  {/* Existing Zone Changes */}
+                                  {zoneChanges.map((zc, index) => (
+                                      <ZoneChangeCard
+                                          key={zc.id}
+                                          zoneChange={zc}
+                                          index={index}
+                                          onUpdate={(updates) => handleUpdateZoneChange(zc.id, updates)}
+                                          onDelete={() => handleDeleteZoneChange(zc.id)}
+                                          onMoveUp={index > 0 ? () => handleMoveZoneChange(index, -1) : undefined}
+                                          onMoveDown={index < zoneChanges.length - 1 ? () => handleMoveZoneChange(index, 1) : undefined}
+                                      />
+                                  ))}
+
+                                  {/* Add More Button */}
+                                  <button
+                                      type="button"
+                                      onClick={handleAddZoneChange}
+                                      className="w-full py-4 border-2 border-dashed border-orange-600 hover:border-orange-500 hover:bg-orange-950/30 rounded-xl text-orange-400 hover:text-orange-300 font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2"
+                                  >
+                                      <Plus className="w-5 h-5" />
+                                      Add Another Zone Change
+                                  </button>
+                              </>
+                          )}
+                      </div>
+                  </div>
+              );
           case 'PLAYGROUNDS':
               const gamePlaygrounds = baseGame?.playgrounds || [];
               return (
