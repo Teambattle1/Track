@@ -227,6 +227,16 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, tot
               <button onClick={onClose} className="w-full py-4 bg-white text-slate-900 hover:bg-slate-200 font-black rounded-xl uppercase tracking-widest text-sm transition-colors">RETURN TO MAP</button>
           </div>
       </div>
+
+      {/* Change Zone Popup */}
+      {showChangeZonePopup && game?.changeZone && (
+          <ChangeZonePopup
+              message={game.changeZone.message}
+              imageUrl={game.changeZone.imageUrl}
+              requireCode={game.changeZone.requireCode}
+              onClose={() => setShowChangeZonePopup(false)}
+          />
+      )}
     </div>
   );
 };
