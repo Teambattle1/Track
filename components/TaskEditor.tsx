@@ -1074,6 +1074,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                       {id: 'ANSWER', label: 'Answer', icon: MessageSquare},
                       {id: 'IMAGE', label: 'Image', icon: ImageIcon},
                       {id: 'MEDIA', label: 'Media', icon: MonitorPlay},
+                      {id: 'TIMER', label: 'Timer', icon: Clock},
                       {id: 'SETTINGS', label: 'Config', icon: SlidersHorizontal},
                       {id: 'ADDONS', label: 'ADD-ons', icon: Zap},
                       {id: 'ACTIVATION', label: 'Activation', icon: Lock},
