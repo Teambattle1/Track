@@ -7,11 +7,12 @@ import {
     Skull as SkullIcon, Ruler, Crosshair, Navigation,
     Hash, Type, Trophy, GitBranch, RouteIcon,
     MessageSquare, Settings, Clock, Play, Zap, Eye,
-    GripHorizontal, ScrollText, Mountain, Snowflake, Check, MapPin, AlertTriangle
+    GripHorizontal, ScrollText, Mountain, Snowflake, Check, MapPin
 } from 'lucide-react';
 import { Game, GameMode, LocationSearchProps, Coordinate, Team, MapStyleId } from '../types';
 import LocationSearch from './LocationSearch';
 import InfoBox from './InfoBox';
+import ZoneChangeItem from './ZoneChangeItem';
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
     { id: 'osm', label: 'Standard', icon: Globe, preview: 'https://a.tile.openstreetmap.org/13/4285/2722.png' },
