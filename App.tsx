@@ -255,7 +255,10 @@ const GameApp: React.FC = () => {
   // --- INITIALIZATION ---
   useEffect(() => {
     const init = async () => {
-      setShowLogin(false);
+      // Only hide login if we're NOT at the /login route
+      if (window.location.pathname !== '/login') {
+        setShowLogin(false);
+      }
       const user = authService.getCurrentUser();
       if (user) {
         setAuthUser(user);
