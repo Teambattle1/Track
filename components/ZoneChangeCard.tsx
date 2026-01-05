@@ -1,0 +1,342 @@
+import React, { useState } from 'react';
+import { ZoneChangeEvent } from '../types';
+import { 
+    MapPin, Clock, ChevronUp, ChevronDown, Trash2, 
+    Eye, EyeOff, Upload, Image as ImageIcon,
+    Check, Code as CodeIcon, ChevronRight
+} from 'lucide-react';
+import { uploadImage } from '../services/storage';
+import DOMPurify from 'dompurify';
+
+interface ZoneChangeCardProps {
+    zoneChange: ZoneChangeEvent;
+    index: number;
+    onUpdate: (updates: Partial<ZoneChangeEvent>) => void;
+    onDelete: () => void;
+    onMoveUp?: () => void;
+    onMoveDown?: () => void;
+}
+
+const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
+    zoneChange,
+    index,
+    onUpdate,
+    onDelete,
+    onMoveUp,
+    onMoveDown
+}) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleTimeChange = (timeString: string) => {
+        if (!timeString) {
+            onUpdate({ targetTime: undefined });
+            return;
+        }
+
+        const [hours, minutes] = timeString.split(':').map(Number);
+        const now = new Date();
+        const target = new Date(now);
+        target.setHours(hours, minutes, 0, 0);
+        
+        // If time is in the past, assume next day
+        if (target.getTime() < now.getTime()) {
+            target.setDate(target.getDate() + 1);
+        }
+        
+        onUpdate({ targetTime: target.getTime() });
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        setIsUploading(true);
+        try {
+            const url = await uploadImage(file);
+            if (url) onUpdate({ imageUrl: url });
+        } catch (error) {
+            console.error('Image upload failed:', error);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const getTimeString = () => {
+        if (!zoneChange.targetTime) return '';
+        const date = new Date(zoneChange.targetTime);
+        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    };
+
+    const getTimeRemaining = () => {
+        if (!zoneChange.targetTime) return 'Not set';
+        const now = Date.now();
+        const diff = zoneChange.targetTime - now;
+        if (diff < 0) return 'Passed';
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hours}h ${minutes}m`;
+    };
+
+    return (
+        <div className={`bg-slate-900 border-2 rounded-2xl overflow-hidden transition-all ${
+            zoneChange.enabled 
+                ? 'border-orange-500 shadow-lg shadow-orange-500/20' 
+                : 'border-slate-700'
+        }`}>
+            {/* Header */}
+            <div className="p-4 flex items-center gap-3">
+                {/* Order Controls */}
+                <div className="flex flex-col gap-1">
+                    <button
+                        type="button"
+                        onClick={onMoveUp}
+                        disabled={!onMoveUp}
+                        className="p-1 hover:bg-slate-700 rounded disabled:opacity-30 disabled:cursor-not-allowed text-slate-400"
+                        title="Move Up"
+                    >
+                        <ChevronUp className="w-4 h-4" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onMoveDown}
+                        disabled={!onMoveDown}
+                        className="p-1 hover:bg-slate-700 rounded disabled:opacity-30 disabled:cursor-not-allowed text-slate-400"
+                        title="Move Down"
+                    >
+                        <ChevronDown className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Number Badge */}
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0 ${
+                    zoneChange.enabled 
+                        ? 'bg-orange-600 text-white' 
+                        : 'bg-slate-800 text-slate-500'
+                }`}>
+                    {index + 1}
+                </div>
+
+                {/* Title & Time */}
+                <div className="flex-1 min-w-0">
+                    <input
+                        type="text"
+                        value={zoneChange.title}
+                        onChange={(e) => onUpdate({ title: e.target.value })}
+                        placeholder="e.g., Switch to Park Zone"
+                        className="w-full bg-transparent border-none text-white font-bold text-lg outline-none focus:ring-2 focus:ring-orange-500 rounded px-2 py-1"
+                    />
+                    <p className="text-xs text-slate-500 px-2">
+                        {zoneChange.targetTime ? (
+                            <>Time: {getTimeString()} • {getTimeRemaining()} remaining</>
+                        ) : (
+                            'No time set'
+                        )}
+                    </p>
+                </div>
+
+                {/* Status Indicators */}
+                <div className="flex items-center gap-2 shrink-0">
+                    {zoneChange.hasTriggered && (
+                        <div className="px-3 py-1 bg-green-900 border border-green-700 rounded-lg text-xs font-bold text-green-300">
+                            TRIGGERED
+                        </div>
+                    )}
+                    {zoneChange.showOnTeamView && (
+                        <Eye className="w-4 h-4 text-blue-400" title="Visible to teams" />
+                    )}
+                </div>
+
+                {/* Toggle Enable */}
+                <label 
+                    className="flex items-center gap-2 cursor-pointer shrink-0"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onUpdate({ enabled: !zoneChange.enabled });
+                    }}
+                >
+                    <div className={`w-12 h-7 rounded-full transition-all ${
+                        zoneChange.enabled ? 'bg-orange-600' : 'bg-slate-700'
+                    }`}>
+                        <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${
+                            zoneChange.enabled ? 'translate-x-6' : 'translate-x-0.5'
+                        } translate-y-0.5`} />
+                    </div>
+                </label>
+
+                {/* Expand/Collapse */}
+                <button
+                    type="button"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 shrink-0"
+                    title={isExpanded ? "Collapse" : "Expand"}
+                >
+                    <ChevronRight className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                </button>
+
+                {/* Delete */}
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (confirm(`Delete "${zoneChange.title}"?`)) {
+                            onDelete();
+                        }
+                    }}
+                    className="p-2 hover:bg-red-900 rounded-lg text-red-400 hover:text-red-300 shrink-0"
+                    title="Delete"
+                >
+                    <Trash2 className="w-5 h-5" />
+                </button>
+            </div>
+
+            {/* Expanded Configuration */}
+            {isExpanded && (
+                <div className="border-t border-slate-700 p-6 space-y-6 bg-slate-950">
+                    {/* Time Configuration */}
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            Countdown Target Time
+                        </label>
+                        <input
+                            type="time"
+                            value={getTimeString()}
+                            onChange={(e) => handleTimeChange(e.target.value)}
+                            className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:ring-2 focus:ring-orange-500 outline-none"
+                        />
+                        <p className="text-xs text-slate-500 mt-2">
+                            Countdown will reach 00:00 at this time. If time is in the past, assumes next day.
+                        </p>
+                    </div>
+
+                    {/* Show on Team View */}
+                    <div className="flex items-center justify-between p-4 bg-slate-900 rounded-xl border border-slate-700">
+                        <div>
+                            <label className="text-sm font-bold text-white">Show Countdown to Teams</label>
+                            <p className="text-xs text-slate-500 mt-1">
+                                Display countdown timer in team dashboard topbar
+                            </p>
+                        </div>
+                        <label 
+                            className="flex items-center gap-2 cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onUpdate({ showOnTeamView: !zoneChange.showOnTeamView });
+                            }}
+                        >
+                            <div className={`w-12 h-7 rounded-full transition-all ${
+                                zoneChange.showOnTeamView ? 'bg-blue-600' : 'bg-slate-700'
+                            }`}>
+                                <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${
+                                    zoneChange.showOnTeamView ? 'translate-x-6' : 'translate-x-0.5'
+                                } translate-y-0.5`} />
+                            </div>
+                        </label>
+                    </div>
+
+                    {/* Message */}
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                            Popup Message (HTML)
+                        </label>
+                        <textarea
+                            value={zoneChange.message}
+                            onChange={(e) => onUpdate({ message: e.target.value })}
+                            rows={5}
+                            placeholder="<h2>Time to Move!</h2><p>Head to the park zone now.</p>"
+                            className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                        />
+                        <p className="text-xs text-slate-500 mt-2">
+                            Use HTML for formatting (e.g., &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;)
+                        </p>
+                        
+                        {/* Preview */}
+                        {zoneChange.message && (
+                            <div className="mt-3 p-4 bg-slate-800 border border-slate-600 rounded-xl">
+                                <p className="text-xs font-bold text-slate-400 uppercase mb-2">Preview:</p>
+                                <div 
+                                    className="text-sm text-slate-200 prose prose-invert max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(zoneChange.message) }}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Image Upload */}
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4" />
+                            Popup Image (Optional)
+                        </label>
+                        
+                        {zoneChange.imageUrl ? (
+                            <div className="relative group">
+                                <img 
+                                    src={zoneChange.imageUrl} 
+                                    alt="Zone Change" 
+                                    className="w-full h-48 object-cover rounded-xl border-2 border-slate-700"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => onUpdate({ imageUrl: undefined })}
+                                    className="absolute top-2 right-2 p-2 bg-red-600 hover:bg-red-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Trash2 className="w-4 h-4 text-white" />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className="block w-full p-8 border-2 border-dashed border-slate-700 hover:border-orange-500 rounded-xl cursor-pointer transition-all text-center bg-slate-900">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                />
+                                {isUploading ? (
+                                    <p className="text-sm text-slate-400">Uploading...</p>
+                                ) : (
+                                    <>
+                                        <Upload className="w-8 h-8 mx-auto mb-2 text-slate-600" />
+                                        <p className="text-sm text-slate-400">Click to upload image</p>
+                                        <p className="text-xs text-slate-600 mt-1">JPG, PNG or GIF</p>
+                                    </>
+                                )}
+                            </label>
+                        )}
+                    </div>
+
+                    {/* Require Code */}
+                    <div className="flex items-center justify-between p-4 bg-slate-900 rounded-xl border border-slate-700">
+                        <div>
+                            <label className="text-sm font-bold text-white flex items-center gap-2">
+                                <CodeIcon className="w-4 h-4" />
+                                Require Code to Dismiss
+                            </label>
+                            <p className="text-xs text-slate-500 mt-1">
+                                Teams must enter code <code className="px-1 py-0.5 bg-slate-800 rounded font-mono text-orange-400">4027</code> to close the popup
+                            </p>
+                        </div>
+                        <label 
+                            className="flex items-center gap-2 cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onUpdate({ requireCode: !zoneChange.requireCode });
+                            }}
+                        >
+                            <div className={`w-12 h-7 rounded-full transition-all ${
+                                zoneChange.requireCode ? 'bg-purple-600' : 'bg-slate-700'
+                            }`}>
+                                <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${
+                                    zoneChange.requireCode ? 'translate-x-6' : 'translate-x-0.5'
+                                } translate-y-0.5`} />
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default ZoneChangeCard;
