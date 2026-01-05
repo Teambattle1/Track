@@ -100,6 +100,7 @@ const GameApp: React.FC = () => {
   const [taskMasterInitialModal, setTaskMasterInitialModal] = useState<'AI' | 'LOQUIZ' | null>(null);
   const [showTeamsModal, setShowTeamsModal] = useState(false);
   const [showInstructorDashboard, setShowInstructorDashboard] = useState(false);
+  const [showRankingModal, setShowRankingModal] = useState(false);
   const [showTeamDashboard, setShowTeamDashboard] = useState(false);
   const [showDeleteGames, setShowDeleteGames] = useState(false);
   const [showPlaygroundManager, setShowPlaygroundManager] = useState(false);
