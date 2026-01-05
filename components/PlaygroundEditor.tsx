@@ -1407,11 +1407,31 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             const updates = { ...pendingUpdatesRef.current };
             pendingUpdatesRef.current = {};
 
+            // Update deviceLayouts.iconPositions for the active playground
+            let updatedPlaygrounds = game.playgrounds;
+            if (activePlayground) {
+                updatedPlaygrounds = game.playgrounds?.map(pg => {
+                    if (pg.id === activePlayground.id) {
+                        const newLayouts = { ...pg.deviceLayouts };
+                        newLayouts[selectedDevice] = {
+                            ...newLayouts[selectedDevice],
+                            iconPositions: {
+                                ...newLayouts[selectedDevice]?.iconPositions,
+                                ...updates
+                            }
+                        };
+                        return { ...pg, deviceLayouts: newLayouts };
+                    }
+                    return pg;
+                });
+            }
+
             onUpdateGame({
                 ...game,
+                playgrounds: updatedPlaygrounds,
                 points: game.points?.map(p => {
                     if (updates[p.id]) {
-                        // Store in device-specific position
+                        // Also store in device-specific position for backward compatibility
                         return { ...p, ...setDevicePosition(p, updates[p.id]) };
                     }
                     return p;
