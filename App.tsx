@@ -29,6 +29,7 @@ import TaskModal from './components/TaskModal';
 import DeleteGamesModal from './components/DeleteGamesModal';
 import PlaygroundManager from './components/PlaygroundManager';
 import AdminModal from './components/AdminModal';
+import DatabaseToolsModal from './components/DatabaseToolsModal';
 import ChatDrawer from './components/ChatDrawer';
 import TeamsHubModal from './components/TeamsHubModal';
 import TeamLobbyPanel from './components/TeamLobbyPanel';
@@ -100,6 +101,7 @@ const GameApp: React.FC = () => {
   const [showDeleteGames, setShowDeleteGames] = useState(false);
   const [showPlaygroundManager, setShowPlaygroundManager] = useState(false);
   const [showDatabaseTools, setShowDatabaseTools] = useState(false);
+  const [showDatabaseToolsModal, setShowDatabaseToolsModal] = useState(false);
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [showTeamsHub, setShowTeamsHub] = useState(false);
   const [showTeamLobby, setShowTeamLobby] = useState(false);
@@ -2320,6 +2322,7 @@ const GameApp: React.FC = () => {
                             case 'PLAYGROUNDS': setShowPlaygroundManager(true); break;
                             case 'TEMPLATES': setShowPlaygroundManager(true); break;
                             case 'DATABASE': setShowDatabaseTools(true); break;
+                            case 'DATABASE_TOOLS': setShowDatabaseToolsModal(true); break;
                             case 'DIAGNOSTICS': setShowSupabaseDiagnostic(true); break;
                             case 'TRANSLATIONS': setShowTranslationsManager(true); break;
                             case 'MEDIA': setShowMediaManager(true); break;
