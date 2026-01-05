@@ -31,7 +31,15 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
 
     // Edit / Rename State
     const [editingOldName, setEditingOldName] = useState<string | null>(null);
-    
+
+    // Bulk Selection State
+    const [bulkSelectionMode, setBulkSelectionMode] = useState(false);
+    const [selectedTagsForBulk, setSelectedTagsForBulk] = useState<Set<string>>(new Set());
+    const [bulkDeleteTarget, setBulkDeleteTarget] = useState<string[] | null>(null);
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+    const [bulkDeleteProgress, setBulkDeleteProgress] = useState(0);
+    const [bulkDeleteLabel, setBulkDeleteLabel] = useState('');
+
     // Actions State
     const [purgeTarget, setPurgeTarget] = useState<string | null>(null);
     const [isPurging, setIsPurging] = useState(false);
