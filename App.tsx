@@ -2940,6 +2940,7 @@ const GameApp: React.FC = () => {
             onToggleLiveLayer={() => setShowLiveLayer(!showLiveLayer)}
             collapsedSections={collapsedSections}
             onCollapsedSectionsChange={setCollapsedSections}
+            userAccessMode={userAccessMode}
         />
         )}
 
