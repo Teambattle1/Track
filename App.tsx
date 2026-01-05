@@ -3310,6 +3310,15 @@ const GameApp: React.FC = () => {
                 onClose={() => setRejectedSubmission(null)}
             />
         )}
+
+        {/* Ranking Modal - INSTRUCTOR mode */}
+        {showRankingModal && activeGame && (
+            <RankingModal
+                isOpen={showRankingModal}
+                onClose={() => setShowRankingModal(false)}
+                teams={teamsForFogOfWar}
+            />
+        )}
     </div>
   );
 };
