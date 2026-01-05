@@ -10,7 +10,6 @@ import LocationSearch from './LocationSearch';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { haversineMeters } from '../utils/geo';
 import { getGameDisplayId } from '../utils/gameIdUtils';
-import ChangeZonePanel from './ChangeZonePanel';
 import ChangeZoneCountdown from './ChangeZoneCountdown';
 import ChangeZonePopup from './ChangeZonePopup';
 
@@ -80,7 +79,6 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
 
   // Change Zone State
   const [showChangeZonePopup, setShowChangeZonePopup] = useState(false);
-  const [showChangeZonePanel, setShowChangeZonePanel] = useState(false);
 
   const handleChangeZoneTrigger = async () => {
     if (liveGame.changeZone && !liveGame.changeZone.hasTriggered) {
@@ -628,26 +626,6 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                 taskCooldowns={new Map()}
             />
         )}
-
-        {/* Change Zone Panel (Floating Sidebar) */}
-        {showChangeZonePanel && (
-            <div className="fixed top-20 right-4 z-[2100] w-96 max-h-[calc(100vh-6rem)] overflow-y-auto animate-in slide-in-from-right-4">
-                <ChangeZonePanel game={liveGame} onUpdateGame={handleUpdateGame} />
-            </div>
-        )}
-
-        {/* Change Zone Toggle Button */}
-        <button
-            onClick={() => setShowChangeZonePanel(!showChangeZonePanel)}
-            className={`fixed bottom-6 right-6 z-[2050] w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
-                showChangeZonePanel
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-slate-800 text-orange-500 hover:bg-slate-700'
-            }`}
-            title="CHANGEZONE Controls"
-        >
-            <AlertTriangle className="w-6 h-6" />
-        </button>
 
         {/* Change Zone Popup */}
         {showChangeZonePopup && liveGame.changeZone && (
