@@ -1506,11 +1506,11 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 )}
                             </div>
                             <div className="flex gap-1 text-center">
-                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">DANGER</div>
-                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">MEASURE</div>
-                                <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">RELOCATE</div>
+                                <div className="flex-1 text-[7px] font-black text-pink-100 uppercase tracking-widest leading-tight">DANGER</div>
+                                <div className="flex-1 text-[7px] font-black text-pink-100 uppercase tracking-widest leading-tight">MEASURE</div>
+                                <div className="flex-1 text-[7px] font-black text-pink-100 uppercase tracking-widest leading-tight">RELOCATE</div>
                                 {mode === GameMode.EDIT && onToggleSnapToRoad && (
-                                    <div className="flex-1 text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight">SNAP</div>
+                                    <div className="flex-1 text-[7px] font-black text-pink-100 uppercase tracking-widest leading-tight">SNAP</div>
                                 )}
                             </div>
                         </div>
