@@ -3403,6 +3403,15 @@ const GameApp: React.FC = () => {
                 teams={teamsForFogOfWar}
             />
         )}
+
+        {/* Instructor Notifications - EDIT and INSTRUCTOR modes */}
+        {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && instructorNotifications.length > 0 && (
+            <InstructorNotificationPopup
+                notifications={instructorNotifications}
+                onDismiss={dismissNotification}
+                onDismissAll={dismissAllNotifications}
+            />
+        )}
     </div>
   );
 };
