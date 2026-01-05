@@ -7,6 +7,8 @@ import { isAnswerAcceptable, getAttemptMessage } from '../utils/stringMatch';
 import { playSound, getGlobalCorrectSound, getGlobalIncorrectSound, getGlobalVolume } from '../utils/sounds';
 import { uploadMediaFile, createMediaSubmission } from '../services/mediaUpload';
 import { replacePlaceholders } from '../utils/placeholders';
+import TaskCountdownTimer from './TaskCountdownTimer';
+import TimesUpPopup from './TimesUpPopup';
 
 interface TaskModalProps {
   point: GamePoint | null;
