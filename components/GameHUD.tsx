@@ -1017,6 +1017,45 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                     {timeLeft}
                                 </div>
                             </button>
+
+                            {/* Zone Change Countdowns - Below Game Timer */}
+                            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && activeGame?.zoneChanges && activeGame.zoneChanges.length > 0 && (
+                                <div className="flex flex-col gap-2 w-full">
+                                    {activeGame.zoneChanges
+                                        .filter(zc => zc.enabled && zc.targetTime && !zc.hasTriggered)
+                                        .map((zc, index) => {
+                                            const now = Date.now();
+                                            const remaining = zc.targetTime! - now;
+                                            if (remaining < 0) return null;
+
+                                            const hours = Math.floor(remaining / (1000 * 60 * 60));
+                                            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                                            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                                            const timeStr = hours > 0
+                                                ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+                                                : `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                                            return (
+                                                <button
+                                                    key={zc.id}
+                                                    onClick={() => {
+                                                        // TODO: Open zone change adjustment modal
+                                                        setShowAdjustGameTime(true);
+                                                    }}
+                                                    className="px-4 py-2 rounded-xl font-bold text-sm shadow-lg flex flex-col items-center gap-1 border transition-all bg-orange-700 border-orange-600 text-white hover:bg-orange-800 cursor-pointer"
+                                                    title={`Click to adjust: ${zc.title}`}
+                                                >
+                                                    <span className="text-[8px] font-black uppercase tracking-widest opacity-90">{zc.title}</span>
+                                                    <div className="flex items-center gap-2 font-mono text-base">
+                                                        <MapPin className="w-4 h-4" />
+                                                        {timeStr}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })
+                                    }
+                                </div>
+                            )}
                         </div>
                     )}
 
