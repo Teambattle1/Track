@@ -1182,56 +1182,62 @@ const GameApp: React.FC = () => {
       setMode(GameMode.PLAY);
   };
 
-  const handleToggleSnapToRoad = async () => {
+  const handleSelectSnapTools = () => {
       if (snapToRoadMode) {
-          // Deactivating - perform the snap
-          console.log('[Snap to Road] Deactivating - performing snap');
-
-          if (!activeGame || selectedSnapTaskIds.length === 0) {
-              console.log('[Snap to Road] No tasks selected or no active game');
-              setSnapToRoadMode(false);
-              setSnapSelectionStart(null);
-              setSnapSelectionEnd(null);
-              setSelectedSnapTaskIds([]);
-              return;
-          }
-
-          // Get coordinates of selected tasks
-          const tasksToSnap = activeGame.points.filter(p => selectedSnapTaskIds.includes(p.id) && p.location);
-          const coordinates = tasksToSnap.map(p => p.location!);
-
-          console.log('[Snap to Road] Snapping', tasksToSnap.length, 'tasks to roads');
-
-          // Call Mapbox API to snap to roads
-          const snappedCoordinates = await snapPointsToRoad(coordinates);
-
-          // Update tasks with snapped coordinates
-          const updatedPoints = activeGame.points.map(p => {
-              const taskIndex = tasksToSnap.findIndex(t => t.id === p.id);
-              if (taskIndex !== -1 && snappedCoordinates[taskIndex]) {
-                  return { ...p, location: snappedCoordinates[taskIndex] };
-              }
-              return p;
-          });
-
-          await updateActiveGame({ ...activeGame, points: updatedPoints });
-
-          console.log('[Snap to Road] Successfully snapped', tasksToSnap.length, 'tasks');
-
-          // Clear selection
+          // Exiting selection mode - clear everything
+          console.log('[Snap to Road] Exiting selection mode');
           setSnapToRoadMode(false);
           setSnapSelectionStart(null);
           setSnapSelectionEnd(null);
           setSelectedSnapTaskIds([]);
       } else {
-          // Activating - enter selection mode
-          console.log('[Snap to Road] Activating - draw rectangle to select tasks');
+          // Entering selection mode - draw rectangle to select tasks
+          console.log('[Snap to Road] Entering selection mode - draw rectangle to select tasks');
           setSnapToRoadMode(true);
           setSnapSelectionStart(null);
           setSnapSelectionEnd(null);
           setSelectedSnapTaskIds([]);
       }
   };
+
+  const handleExecuteSnap = async () => {
+      console.log('[Snap to Road] Executing snap action');
+
+      if (!activeGame || selectedSnapTaskIds.length === 0) {
+          console.log('[Snap to Road] No tasks selected or no active game');
+          return;
+      }
+
+      // Get coordinates of selected tasks
+      const tasksToSnap = activeGame.points.filter(p => selectedSnapTaskIds.includes(p.id) && p.location);
+      const coordinates = tasksToSnap.map(p => p.location!);
+
+      console.log('[Snap to Road] Snapping', tasksToSnap.length, 'tasks to roads');
+
+      // Call Mapbox API to snap to roads
+      const snappedCoordinates = await snapPointsToRoad(coordinates);
+
+      // Update tasks with snapped coordinates
+      const updatedPoints = activeGame.points.map(p => {
+          const taskIndex = tasksToSnap.findIndex(t => t.id === p.id);
+          if (taskIndex !== -1 && snappedCoordinates[taskIndex]) {
+              return { ...p, location: snappedCoordinates[taskIndex] };
+          }
+          return p;
+      });
+
+      await updateActiveGame({ ...activeGame, points: updatedPoints });
+
+      console.log('[Snap to Road] Successfully snapped', tasksToSnap.length, 'tasks');
+
+      // Clear selection and exit selection mode
+      setSnapToRoadMode(false);
+      setSnapSelectionStart(null);
+      setSnapSelectionEnd(null);
+      setSelectedSnapTaskIds([]);
+  };
+
+  const handleToggleSnapToRoad = handleSelectSnapTools;
 
   const handleAddDangerZone = () => {
       if (!activeGame || !mapRef.current) return;
