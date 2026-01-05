@@ -326,27 +326,27 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
     return () => clearInterval(interval);
   }, []);
 
-  // Random blink animation for main pins
+  // Random slow pulsate animation for main pins
   useEffect(() => {
     if (view !== 'HOME') return;
 
     const pins: ('CREATE' | 'EDIT' | 'PLAY')[] = ['CREATE', 'EDIT', 'PLAY'];
 
-    const randomBlink = () => {
+    const randomPulsate = () => {
       const randomPin = pins[Math.floor(Math.random() * pins.length)];
       setBlinkingPin(randomPin);
 
-      // Clear after blink animation completes
-      setTimeout(() => setBlinkingPin(null), 2000);
+      // Clear after pulsate animation completes (slower now)
+      setTimeout(() => setBlinkingPin(null), 4000);
     };
 
-    // Initial random blink after 1 second
-    const initialTimeout = setTimeout(randomBlink, 1000);
+    // Initial random pulsate after 2 seconds
+    const initialTimeout = setTimeout(randomPulsate, 2000);
 
-    // Random blink every 5-8 seconds
+    // Random pulsate every 8-15 seconds (much slower)
     const interval = setInterval(() => {
-      randomBlink();
-    }, Math.random() * 3000 + 5000); // 5-8 seconds
+      randomPulsate();
+    }, Math.random() * 7000 + 8000); // 8-15 seconds
 
     return () => {
       clearTimeout(initialTimeout);
