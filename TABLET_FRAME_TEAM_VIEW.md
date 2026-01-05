@@ -167,11 +167,18 @@ Both dashboards now fill the tablet frame's screen area instead of taking over t
 
 ## Testing
 
-✅ **Verify Tablet Frame**:
-1. Click "Show Team Dashboard" from instructor view
+✅ **Verify Tablet Frame - Team View**:
+1. Click "Show Team Dashboard" from HUD
 2. Confirm tablet frame appears centered on screen
-3. Check dimensions label shows "1024×768"
+3. Check dimensions label shows "TEAM VIEW - TABLET LANDSCAPE (1024×768)"
 4. Verify content is contained within screen area
+
+✅ **Verify Tablet Frame - Instructor View**:
+1. Open game in INSTRUCTOR mode
+2. Click "INSTRUCTOR DASHBOARD" button
+3. Confirm tablet frame appears centered on screen
+4. Check dimensions label shows "TEAM VIEW - TABLET LANDSCAPE (1024×768)"
+5. Verify map, teams, and controls fit within tablet screen
 
 ✅ **Verify Scaling**:
 1. Resize browser window
