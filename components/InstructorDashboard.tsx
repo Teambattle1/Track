@@ -489,12 +489,23 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
             </div>
         )}
 
-        {/* Change Zone Countdown Banner */}
-        {liveGame.changeZone?.enabled && liveGame.changeZone?.targetTime && (
+        {/* Change Zone Countdown Banner(s) */}
+        {/* Support new zoneChanges array */}
+        {liveGame.zoneChanges?.filter(event => event.enabled && event.targetTime && !event.hasTriggered).map((event, index) => (
+            <div key={event.id} style={{ top: `${4 + index * 5}rem` }} className="absolute left-1/2 -translate-x-1/2 z-[3000]">
+                <ChangeZoneCountdown
+                    targetTime={event.targetTime!}
+                    variant="instructor"
+                    onTrigger={() => handleChangeZoneTrigger(event.id)}
+                />
+            </div>
+        ))}
+        {/* Backward compatibility with old changeZone format */}
+        {!liveGame.zoneChanges && liveGame.changeZone?.enabled && liveGame.changeZone?.targetTime && (
             <ChangeZoneCountdown
                 targetTime={liveGame.changeZone.targetTime}
                 variant="instructor"
-                onTrigger={handleChangeZoneTrigger}
+                onTrigger={() => handleChangeZoneTrigger()}
             />
         )}
 
