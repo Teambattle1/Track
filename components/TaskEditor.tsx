@@ -1748,23 +1748,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                </div>
                            </div>
 
-                           <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
-                                      Time limit <Info className="w-3 h-3" />
-                                  </label>
-                                  <div className="flex">
-                                      <input 
-                                           type="number" 
-                                           value={editedPoint.settings?.timeLimitSeconds || ''}
-                                           onChange={(e) => setEditedPoint({...editedPoint, settings: {...editedPoint.settings, timeLimitSeconds: parseInt(e.target.value) || undefined }})}
-                                           className="w-full px-4 py-3 border-2 border-r-0 dark:border-gray-700 rounded-l-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-orange-500 transition-all text-sm"
-                                           placeholder="∞"
-                                      />
-                                      <span className="bg-gray-100 dark:bg-gray-700 border-2 dark:border-gray-700 border-l-0 rounded-r-xl px-3 flex items-center text-[10px] font-bold text-gray-500 uppercase">SEC</span>
-                                  </div>
-                              </div>
-
+                           <div>
                               <div>
                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">LANGUAGE</label>
                                   <div className="flex gap-2">
