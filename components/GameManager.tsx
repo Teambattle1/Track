@@ -71,7 +71,7 @@ const isGameCompleted = (game: Game) => {
     console.error('[isGameCompleted] Received undefined game');
     return false;
   }
-  if (game.state === 'ended') return true;
+  if (game.state === 'ended' || game.state === 'ending') return true;
 
   const points = game.points || [];
   const playablePoints = points.filter(p => !p.isSectionHeader);
