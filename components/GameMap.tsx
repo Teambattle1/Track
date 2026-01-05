@@ -362,6 +362,14 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
         [point, onClick, onMove, onDragStart, onDragEnd, onHover, isMeasuring, isRelocating, mode]
     );
 
+    // Determine if completion badge should be shown
+    const shouldShowBadge = point.showBadgeOnGrayedTask && isCompleted &&
+                            (point.keepOnScreenOnCorrect || point.keepOnScreenOnIncorrect);
+
+    // Assume correct answer if keepOnScreenOnCorrect is enabled, incorrect if keepOnScreenOnIncorrect
+    // In real gameplay, this would be determined by team-specific completion data
+    const wasCorrect = point.keepOnScreenOnCorrect ? true : false;
+
     const icon = getLeafletIcon(
         point.iconId,
         isUnlocked,
@@ -371,7 +379,10 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
         point.areaColor, // New: Override color if zone color set
         mode === GameMode.EDIT && point.isHiddenBeforeScan,
         showScore ? point.points : undefined,
-        point.iconUrl
+        point.iconUrl,
+        false, // isPlaygroundActivator
+        shouldShowBadge,
+        wasCorrect
     );
 
     // Only render markers for points with valid map locations (not playground-only points)
