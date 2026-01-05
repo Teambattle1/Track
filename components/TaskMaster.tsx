@@ -1053,6 +1053,37 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         setBulkSelectionMode(false);
     };
 
+    const handleCreateNewTasklistWithTasks = async () => {
+        if (!newTasklistName.trim()) {
+            setNotification({ message: '⚠️ Please enter a tasklist name', type: 'warning' });
+            return;
+        }
+
+        // Create a new list with selected tasks
+        const newList: TaskList = {
+            id: `list_${Date.now()}`,
+            name: newTasklistName.trim(),
+            description: `Created with ${addToTasksSelection.length} task${addToTasksSelection.length !== 1 ? 's' : ''}`,
+            tasks: addToTasksSelection,
+            imageUrl: '',
+            createdAt: new Date().toISOString()
+        };
+
+        await db.saveTaskList(newList);
+        onUpdateTaskLists([...taskLists, newList]);
+        setNotification({ message: `✓ New tasklist "${newList.name}" created with ${addToTasksSelection.length} task${addToTasksSelection.length !== 1 ? 's' : ''}!`, type: 'success' });
+
+        // Reset all states
+        setShowAddToModal(false);
+        setAddToTasksSelection([]);
+        setAddToDestinationType(null);
+        setShowDestinationSelector(false);
+        setShowCreateNewTasklistInput(false);
+        setNewTasklistName('');
+        setSelectedTemplateIds([]);
+        setBulkSelectionMode(false);
+    };
+
     const renderLibraryGrid = (selectionMode = false) => {
         const filtered = getFilteredAndSortedLibrary();
 
