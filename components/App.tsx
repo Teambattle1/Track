@@ -1500,7 +1500,7 @@ const GameApp: React.FC = () => {
                       points: playgroundTemplateToEdit.tasks,
                       playgrounds: [playgroundTemplateToEdit.playgroundData]
                   } as Game : (currentGameObj || { id: 'temp', name: 'Temp', points: [], createdAt: 0 } as any)}
-
+                  initialPlaygroundId={viewingPlaygroundId || undefined}
                   onUpdateGame={(updatedGame) => {
                       if (playgroundTemplateToEdit) {
                           setPlaygroundTemplateToEdit({
