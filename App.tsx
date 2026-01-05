@@ -660,13 +660,18 @@ const GameApp: React.FC = () => {
       if (!activeGame?.points) return [];
 
       // Determine team start time for schedule calculations
-      // Priority: 1) Fog of War selected team, 2) First team in list, 3) undefined
+      // Priority: 1) Current team (in PLAY mode), 2) Fog of War selected team, 3) First team in list, 4) undefined
       let teamStartTime: number | undefined = undefined;
 
-      if (selectedTeamForFogOfWar) {
+      if (mode === GameMode.PLAY && currentTeam?.startedAt) {
+          // Use current team's start time when playing
+          teamStartTime = currentTeam.startedAt;
+      } else if (selectedTeamForFogOfWar) {
+          // Use selected team for fog of war in INSTRUCTOR mode
           const team = teamsForFogOfWar.find(t => t.id === selectedTeamForFogOfWar);
           teamStartTime = team?.startedAt;
       } else if (teamsForFogOfWar.length > 0) {
+          // Fallback to first team
           teamStartTime = teamsForFogOfWar[0]?.startedAt;
       }
 
@@ -682,7 +687,7 @@ const GameApp: React.FC = () => {
           teamStartTime,
           activeGame.timerConfig
       );
-  }, [activeGame, mode, selectedTeamForFogOfWar, teamsForFogOfWar]);
+  }, [activeGame, mode, currentTeam, selectedTeamForFogOfWar, teamsForFogOfWar]);
 
 
   const ensureSession = (callback: () => void) => {
