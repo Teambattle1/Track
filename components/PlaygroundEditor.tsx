@@ -53,6 +53,7 @@ interface PlaygroundEditorProps {
   activeTaskActionPoint?: GamePoint | null; // NEW: Task being edited for draw mode
   onDrawModeActivated?: () => void; // NEW: Callback when draw mode is activated from pendingDrawTrigger
   onDrawModeDeactivated?: () => void; // NEW: Callback when draw mode is deactivated
+  initialPlaygroundId?: string; // NEW: Initial playground to open (if not provided, defaults to first)
 }
 
 const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
@@ -81,10 +82,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     pendingDrawTrigger = null, // NEW: Activate draw mode on mount
     activeTaskActionPoint = null, // NEW: Task being edited for draw mode
     onDrawModeActivated, // NEW: Callback when draw mode is activated
-    onDrawModeDeactivated // NEW: Callback when draw mode is deactivated
+    onDrawModeDeactivated, // NEW: Callback when draw mode is deactivated
+    initialPlaygroundId // NEW: Initial playground to open
 }) => {
-    // State
-    const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(null);
+    // State - Initialize with the specific playground ID if provided
+    const [activePlaygroundId, setActivePlaygroundId] = useState<string | null>(initialPlaygroundId || null);
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
@@ -369,11 +371,17 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     // Initialize active playground
     useEffect(() => {
-        // Set active playground to first one if none selected and playgrounds exist
+        // Priority:
+        // 1. Use initialPlaygroundId if provided and it exists
+        // 2. Otherwise, default to first playground if none selected
         if (!activePlaygroundId && uniquePlaygrounds && uniquePlaygrounds.length > 0) {
-            setActivePlaygroundId(uniquePlaygrounds[0].id);
+            if (initialPlaygroundId && uniquePlaygrounds.some(pg => pg.id === initialPlaygroundId)) {
+                setActivePlaygroundId(initialPlaygroundId);
+            } else {
+                setActivePlaygroundId(uniquePlaygrounds[0].id);
+            }
         }
-    }, [uniquePlaygrounds, activePlaygroundId]);
+    }, [uniquePlaygrounds, activePlaygroundId, initialPlaygroundId]);
 
     // ESC key listener for draw mode
     useEffect(() => {
