@@ -2009,14 +2009,16 @@ const GameApp: React.FC = () => {
               />
           )}
           {showTeamDashboard && activeGameId && (
-              <TeamDashboard
-                  gameId={activeGameId}
-                  game={activeGame || undefined}
-                  totalMapPoints={activeGame?.points.length || 0}
-                  onOpenAgents={() => {}}
-                  onClose={() => setShowTeamDashboard(false)}
-                  chatHistory={chatHistory}
-              />
+              <TabletFrame onClose={() => setShowTeamDashboard(false)}>
+                  <TeamDashboard
+                      gameId={activeGameId}
+                      game={activeGame || undefined}
+                      totalMapPoints={activeGame?.points.length || 0}
+                      onOpenAgents={() => {}}
+                      onClose={() => setShowTeamDashboard(false)}
+                      chatHistory={chatHistory}
+                  />
+              </TabletFrame>
           )}
           {showDeleteGames && (
               <DeleteGamesModal 
