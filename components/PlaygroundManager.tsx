@@ -180,6 +180,25 @@ Would you like to delete this broken template?`;
               buttonVisible: true
           };
 
+          // CRITICAL: Log template tasks BEFORE import to verify data integrity
+          console.log('[PlaygroundManager] 🔍 TEMPLATE TASKS ANALYSIS (BEFORE IMPORT):', {
+              taskCount: selectedTemplateForGame.tasks.length,
+              tasksWithLogic: selectedTemplateForGame.tasks.filter(t => t.logic && (t.logic.onOpen?.length || t.logic.onCorrect?.length || t.logic.onIncorrect?.length)).length,
+              tasksWithSettings: selectedTemplateForGame.tasks.filter(t => t.settings).length,
+              tasksWithFeedback: selectedTemplateForGame.tasks.filter(t => t.feedback).length,
+              sampleTask: selectedTemplateForGame.tasks[0] ? {
+                  id: selectedTemplateForGame.tasks[0].id,
+                  title: selectedTemplateForGame.tasks[0].title,
+                  hasLogic: !!selectedTemplateForGame.tasks[0].logic,
+                  logic: selectedTemplateForGame.tasks[0].logic,
+                  hasSettings: !!selectedTemplateForGame.tasks[0].settings,
+                  settings: selectedTemplateForGame.tasks[0].settings,
+                  hasFeedback: !!selectedTemplateForGame.tasks[0].feedback,
+                  colorScheme: selectedTemplateForGame.tasks[0].colorScheme,
+                  allKeys: Object.keys(selectedTemplateForGame.tasks[0])
+              } : null
+          });
+
           // Copy ALL task properties from template (including logic, actions, feedback, settings, etc.)
           // The spread operator (...task) copies:
           // - Logic & Completion Rules (logic, completionLogic)
@@ -187,19 +206,45 @@ Would you like to delete this broken template?`;
           // - Appearance (icons, colors, scales, etc.)
           // - Advanced Features (timeBomb, proximityTrigger, multiTeam, QR codes, NFC, etc.)
           // - All other properties
-          const newPoints = selectedTemplateForGame.tasks.map((task, index) => ({
-              ...task,
-              id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Generate unique ID for each game import
-              playgroundId: newPlaygroundId, // Associate with new playground
-              order: index,
-              isCompleted: false, // Reset completion status
-              isUnlocked: true // Unlock by default
-          }));
+          const newPoints = selectedTemplateForGame.tasks.map((task, index) => {
+              const newTask = {
+                  ...task, // Spread ALL properties first
+                  id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Then override with new ID
+                  playgroundId: newPlaygroundId, // Associate with new playground
+                  order: index,
+                  isCompleted: false, // Reset completion status
+                  isUnlocked: true // Unlock by default
+              };
 
-          console.log('[PlaygroundManager] Imported tasks:', {
+              // VERIFICATION: Log if critical properties are preserved
+              if (task.logic && !newTask.logic) {
+                  console.error('[PlaygroundManager] ❌ LOGIC LOST during import for task:', task.title);
+              }
+              if (task.settings && !newTask.settings) {
+                  console.error('[PlaygroundManager] ❌ SETTINGS LOST during import for task:', task.title);
+              }
+
+              return newTask;
+          });
+
+          // CRITICAL: Log imported tasks AFTER processing to verify all properties are preserved
+          console.log('[PlaygroundManager] ✅ IMPORTED TASKS ANALYSIS (AFTER IMPORT):', {
               count: newPoints.length,
-              firstTask: newPoints[0],
-              lastTask: newPoints[newPoints.length - 1]
+              tasksWithLogic: newPoints.filter(t => t.logic && (t.logic.onOpen?.length || t.logic.onCorrect?.length || t.logic.onIncorrect?.length)).length,
+              tasksWithSettings: newPoints.filter(t => t.settings).length,
+              tasksWithFeedback: newPoints.filter(t => t.feedback).length,
+              firstTask: newPoints[0] ? {
+                  id: newPoints[0].id,
+                  title: newPoints[0].title,
+                  hasLogic: !!newPoints[0].logic,
+                  logic: newPoints[0].logic,
+                  hasSettings: !!newPoints[0].settings,
+                  settings: newPoints[0].settings,
+                  hasFeedback: !!newPoints[0].feedback,
+                  colorScheme: newPoints[0].colorScheme,
+                  allKeys: Object.keys(newPoints[0])
+              } : null,
+              logicComparison: selectedTemplateForGame.tasks[0]?.logic === newPoints[0]?.logic ? '✅ Same object' : '⚠️ Different objects (expected due to spread)'
           });
 
           const updatedGame = {
