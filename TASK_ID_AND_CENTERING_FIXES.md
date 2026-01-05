@@ -67,9 +67,10 @@ Misunderstanding of requirements - playzone templates are carefully designed lay
 
 2. **Test TASK 2 Fix**:
    - Import "TEAMCHALLENGE 2.0" template to a game
-   - Verify tasks are spread out in a spiral pattern
-   - Confirm spacing is approximately 80px between adjacent tasks
-   - Check that first task is at center and others radiate outward
+   - Verify tasks appear in EXACT same positions as in the template
+   - Confirm NO tasks are centered, spread, or randomized
+   - Check that layout matches original template design perfectly
+   - Test on multiple devices to verify device-specific positions are preserved
 
 ## Console Output
 
