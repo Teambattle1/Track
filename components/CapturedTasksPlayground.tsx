@@ -105,7 +105,7 @@ const CapturedTasksPlayground: React.FC<CapturedTasksPlaygroundProps> = ({
                   <div className="space-y-2">
                     {capturedTasks.map((task, index) => (
                       <div
-                        key={task.id}
+                        key={getUniqueTaskKey(task.id, index)}
                         className="flex items-start gap-3 p-3 rounded-lg bg-slate-800 border border-slate-700"
                       >
                         <div
