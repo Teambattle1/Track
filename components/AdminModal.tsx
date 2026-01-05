@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Game } from '../types';
-import { X, KeyRound, Eye, EyeOff, Trash2, Check } from 'lucide-react';
+import { X, KeyRound, Eye, EyeOff, Trash2, Check, Database } from 'lucide-react';
+import AiTaskIdMigrationTool from './AiTaskIdMigrationTool';
 
 interface AdminModalProps {
   games: Game[];
