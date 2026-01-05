@@ -27,6 +27,7 @@ const ACTION_TYPES: { id: ActionType; label: string; icon: any; description: str
     { id: 'double_trouble', label: 'Double Trouble', icon: Skull, description: 'Next task has 2x points but high risk.' },
     { id: 'open_playground', label: 'Open Playground', icon: LayoutGrid, description: 'Enter a specific virtual sub-zone.' },
     { id: 'cooldown', label: 'Cooldown/Retry', icon: Clock, description: 'Make task unclickable for X seconds with countdown timer.' },
+    { id: 'notify_instructor', label: 'Notify Instructor', icon: Bell, description: 'Send a notification to the instructor when this event occurs.' },
 ];
 
 const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, playgrounds, onSave, onClose, onStartDrawMode }) => {
