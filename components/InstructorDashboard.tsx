@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { Game, Team, TeamMember, Coordinate, GameMode, TeamStatus } from '../types';
-import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, AlertTriangle, Loader2, BookOpen, CheckCircle, Monitor, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { X, Users, Eye, EyeOff, ToggleLeft, ToggleRight, Edit2, Gamepad2, Shield, User, Power, Loader2, BookOpen, CheckCircle, Monitor, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import GameMap, { GameMapHandle } from './GameMap';
