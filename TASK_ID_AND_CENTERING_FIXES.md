@@ -25,33 +25,36 @@
    - Wrapped rendered items in divs with composite keys including action index
    - Format: `${targetTask.id}-nested-${sourceTask.id}-${actionType}-${actionIndex}`
 
-### TASK 2: Tasks Centering When Importing Templates
-**Problem**: When importing templates like "TEAMCHALLENGE 2.0", all tasks appeared stacked in the center of the playzone instead of being spread out.
+### TASK 2: Tasks Must Preserve Exact Template Positions
+**Problem**: Initial fix incorrectly applied spiral placement to playzone templates, but user requires exact position preservation from template design.
 
 **Root Cause**:
-Template tasks were imported with their original positions (usually centered at 0,0), without applying any spacing logic.
+Misunderstanding of requirements - playzone templates are carefully designed layouts that must be preserved exactly, not randomized or spread out.
 
 **Fix Applied**:
-**`components/PlaygroundEditor.tsx`** (Line 1144-1189):
-- Implemented spiral placement algorithm for playzone template imports
-- Tasks are now arranged in concentric circles with 80px spacing
-- First task at center (0,0)
-- Subsequent tasks spread in rings of 6 tasks each
-- Algorithm:
+**`components/PlaygroundEditor.tsx`** (Line 1144-1180):
+- **REMOVED** spiral placement algorithm
+- **PRESERVED** exact positions from template using `playgroundPosition` and `devicePositions`
+- Tasks now appear exactly where the designer placed them in the template
+- Both legacy shared positions and device-specific positions are maintained
+- Implementation:
   ```typescript
-  const getPlayzoneOffset = (index: number): { x: number; y: number } => {
-      if (index === 0) return { x: 0, y: 0 };
-      const radiusPixels = 80;
-      const tasksPerRing = 6;
-      const ring = Math.floor((index - 1) / tasksPerRing) + 1;
-      const posInRing = (index - 1) % tasksPerRing;
-      const angle = (posInRing / tasksPerRing) * 2 * Math.PI;
-      const offsetPixels = radiusPixels * ring;
+  const newTasks: GamePoint[] = (template.tasks || []).map((task, index) => {
+      // PRESERVE EXACT POSITIONS from template (both legacy and device-specific)
+      const preservedPosition = task.playgroundPosition ? { ...task.playgroundPosition } : undefined;
+      const preservedDevicePositions = task.devicePositions ? { ...task.devicePositions } : undefined;
+
       return {
-          x: offsetPixels * Math.cos(angle),
-          y: offsetPixels * Math.sin(angle)
+          ...task,
+          id: uniqueId,
+          playgroundId: newPlaygroundId,
+          playgroundPosition: preservedPosition, // EXACT position from template
+          devicePositions: preservedDevicePositions, // EXACT device-specific positions
+          order: index,
+          isCompleted: false,
+          isUnlocked: true
       };
-  };
+  });
   ```
 
 ## Testing Recommendations
