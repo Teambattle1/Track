@@ -207,12 +207,22 @@ Would you like to delete this broken template?`;
               points: [...(game.points || []), ...newPoints] // Add the imported tasks to game points
           };
 
+          console.log('[PlaygroundManager] BEFORE SAVE - Updated game:', {
+              gameId: game.id,
+              originalPlaygroundCount: game.playgrounds?.length || 0,
+              originalPointCount: game.points?.length || 0,
+              newPlaygroundCount: updatedGame.playgrounds.length,
+              newPointCount: updatedGame.points.length,
+              newPointsArray: newPoints.map(p => ({ id: p.id, title: p.title, playgroundId: p.playgroundId })),
+              newPlaygroundId: newPlayground.id
+          });
+
           await db.saveGame(updatedGame);
 
-          console.log('[PlaygroundManager] Game updated successfully', {
+          console.log('[PlaygroundManager] AFTER SAVE - Game saved successfully', {
               gameId: game.id,
-              newPlaygroundCount: updatedGame.playgrounds.length,
-              newPointCount: updatedGame.points.length
+              playgroundCount: updatedGame.playgrounds.length,
+              pointCount: updatedGame.points.length
           });
 
           setShowGameSelector(false);
