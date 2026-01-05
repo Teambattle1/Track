@@ -3,6 +3,7 @@ import { Game, Team, GamePoint } from '../types';
 import { CheckCircle, Trophy, Users, MapPin, Clock } from 'lucide-react';
 import { getTeamCapturedTasks } from '../utils/eliminationLogic';
 import { formatDateTime } from '../utils/date';
+import { getUniqueTaskKey } from '../utils/taskKeyUtils';
 
 interface CapturedTasksPlaygroundProps {
   game: Game;
