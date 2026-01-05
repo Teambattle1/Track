@@ -1567,8 +1567,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                         <GitBranch className="w-4 h-4" />
                                     </button>
 
-                                    {/* Team Paths Button - EDIT MODE ONLY */}
-                                    {mode === GameMode.EDIT && onToggleTeamPathSelector && (
+                                    {/* Team Paths Button - EDIT AND INSTRUCTOR MODE */}
+                                    {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onToggleTeamPathSelector && (
                                         <div className="relative">
                                             <button
                                                 onClick={onToggleTeamPathSelector}
