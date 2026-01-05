@@ -21,6 +21,7 @@ import TaskMaster from './components/TaskMaster';
 import TeamsModal from './components/TeamsModal';
 import InstructorDashboard from './components/InstructorDashboard';
 import TeamDashboard from './components/TeamDashboard';
+import TabletFrame from './components/TabletFrame';
 import WelcomeScreen from './components/WelcomeScreen';
 import InitialLanding from './components/InitialLanding';
 import LoginPage from './components/LoginPage';
