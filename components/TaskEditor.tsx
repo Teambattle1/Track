@@ -1791,7 +1791,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
                            <div>
                               <div>
-                                  <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">LANGUAGE</label>
+                                  <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
+                                      LANGUAGE
+                                      <InfoTooltip
+                                          title="Task Language"
+                                          description="Set the primary language for this task's question and answers. You can add translations in the LANGUAGES tab."
+                                          example="English for international games, Danish for local events"
+                                      />
+                                  </label>
                                   <div className="flex gap-2">
                                       <select
                                        value={normalizeLanguage(editedPoint.settings?.language)}
@@ -2392,7 +2399,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        <div className="flex-1">
                                            <div className="flex items-center gap-2 mb-2">
                                                <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                                               <label className="text-xs font-bold text-purple-900 dark:text-purple-100">Show Visual Mark on Task Icon</label>
+                                               <label className="text-xs font-bold text-purple-900 dark:text-purple-100 flex items-center gap-1.5">
+                                                   Show Visual Mark on Task Icon
+                                                   <InfoTooltip
+                                                       title="Visual Mark"
+                                                       description="Display a green checkmark (✓) or red X (✗) badge on the task icon when teams complete it. Only works when 'Keep on Screen' is enabled."
+                                                       example="Show ✓ on completed checkpoints, ✗ on failed challenges"
+                                                   />
+                                               </label>
                                            </div>
                                            <p className="text-[10px] text-purple-700 dark:text-purple-300 leading-relaxed">
                                                When enabled, completed tasks will display a <span className="font-bold text-green-600">✓ green checkmark</span> (if correct) or <span className="font-bold text-red-600">✗ red X</span> (if incorrect) across the task icon on the map.
