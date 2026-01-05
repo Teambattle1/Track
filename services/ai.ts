@@ -203,7 +203,7 @@ Return JSON array with all fields properly filled.`,
             feedback: {
                 correctMessage: 'Correct!', showCorrectMessage: true,
                 incorrectMessage: 'Try again!', showIncorrectMessage: true,
-                hint: item.hint || '', hintCost: 10
+                hint: item.hint || '', hintCost: -50
             },
             settings: {
                 scoreDependsOnSpeed: false, language: normalizedLanguage, showAnswerStatus: true, showCorrectAnswerOnMiss: false
