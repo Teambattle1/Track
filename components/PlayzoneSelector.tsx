@@ -21,9 +21,25 @@ const PlayzoneSelector: React.FC<PlayzoneSelectorProps> = ({ onClose, onAddToGam
 
   const loadTemplates = async () => {
     setLoading(true);
-    const data = await db.fetchPlaygroundLibrary();
-    setTemplates(data);
-    setLoading(false);
+    try {
+      const data = await db.fetchPlaygroundLibrary();
+
+      console.log('[PlayzoneSelector] Loaded templates:', {
+          total: data.length,
+          withTasks: data.filter(t => t.tasks && t.tasks.length > 0).length,
+          templates: data.map(t => ({
+              id: t.id,
+              title: t.title,
+              tasks: t.tasks?.length || 0
+          }))
+      });
+
+      setTemplates(data);
+    } catch (error) {
+      console.error('[PlayzoneSelector] Error loading templates:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleSelection = (id: string) => {
