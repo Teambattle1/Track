@@ -2943,6 +2943,8 @@ const GameApp: React.FC = () => {
             collapsedSections={collapsedSections}
             onCollapsedSectionsChange={setCollapsedSections}
             userAccessMode={userAccessMode}
+            onShowRanking={() => setShowRankingModal(true)}
+            onOpenTeams={() => setShowTeamsHub(true)}
         />
         )}
 
