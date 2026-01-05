@@ -1995,10 +1995,280 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                )}
                            </div>
                        </div>
-                   )}
+                  )}
 
-                   {activeTab === 'ANSWER' && (
-                       <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                  {activeTab === 'ADDONS' && (
+                      <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
+                          {/* TASK VISIBILITY AFTER COMPLETION */}
+                          <div className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900/20 dark:to-gray-900/20 p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-800">
+                              <div className="flex items-start gap-4 mb-4">
+                                  <div className="w-12 h-12 bg-slate-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                      <Eye className="w-6 h-6" />
+                                  </div>
+                                  <div className="flex-1">
+                                      <h3 className="font-black text-sm uppercase tracking-wide mb-1">Task Visibility After Completion</h3>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Control whether task stays visible on the screen after being answered correctly or incorrectly.</p>
+                                  </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                  {/* Keep on Screen When Correct */}
+                                  <div className="flex items-center justify-between p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                                      <div className="flex-1">
+                                          <label className="block text-sm font-bold text-green-900 dark:text-green-100">Keep on Screen When Correct</label>
+                                          <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                                              Task remains visible (grayed out) after answering correctly
+                                          </p>
+                                      </div>
+                                      <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                          setEditedPoint({...editedPoint, keepOnScreenOnCorrect: !editedPoint.keepOnScreenOnCorrect});
+                                      }}>
+                                          <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.keepOnScreenOnCorrect ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                              <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.keepOnScreenOnCorrect ? 'translate-x-6' : 'translate-x-0'}`} />
+                                          </div>
+                                      </label>
+                                  </div>
+
+                                  {/* Keep on Screen When Incorrect */}
+                                  <div className="flex items-center justify-between p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                                      <div className="flex-1">
+                                          <label className="block text-sm font-bold text-red-900 dark:text-red-100">Keep on Screen When Incorrect</label>
+                                          <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                                              Task remains visible (grayed out) after answering incorrectly
+                                          </p>
+                                      </div>
+                                      <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                          setEditedPoint({...editedPoint, keepOnScreenOnIncorrect: !editedPoint.keepOnScreenOnIncorrect});
+                                      }}>
+                                          <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.keepOnScreenOnIncorrect ? 'bg-red-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                              <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.keepOnScreenOnIncorrect ? 'translate-x-6' : 'translate-x-0'}`} />
+                                          </div>
+                                      </label>
+                                  </div>
+
+                                  {/* Show Badge on Grayed Task */}
+                                  {(editedPoint.keepOnScreenOnCorrect || editedPoint.keepOnScreenOnIncorrect) && (
+                                      <div className="flex items-center justify-between p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                          <div className="flex-1">
+                                              <label className="block text-sm font-bold text-blue-900 dark:text-blue-100">Show Badge on Grayed Task</label>
+                                              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                                  Display ✓/✗ badge on the task icon when grayed out
+                                              </p>
+                                          </div>
+                                          <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                              setEditedPoint({...editedPoint, showBadgeOnGrayedTask: !editedPoint.showBadgeOnGrayedTask});
+                                          }}>
+                                              <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.showBadgeOnGrayedTask ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                                  <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.showBadgeOnGrayedTask ? 'translate-x-6' : 'translate-x-0'}`} />
+                                              </div>
+                                          </label>
+                                      </div>
+                                  )}
+                              </div>
+                          </div>
+
+                          {/* TIME-BOMB CONFIGURATION */}
+                          <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 p-6 rounded-2xl border-2 border-red-200 dark:border-red-800">
+                              <div className="flex items-start gap-4 mb-4">
+                                   <div className="w-12 h-12 bg-red-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                       <Clock className="w-6 h-6" />
+                                   </div>
+                                   <div className="flex-1">
+                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1">Time-Bomb Mode</h3>
+                                       <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Add countdown timer that penalizes or auto-fails the task if not completed in time.</p>
+
+                                       <label className="flex items-center gap-3 cursor-pointer" onClick={() => {
+                                           setEditedPoint({...editedPoint, timeBombEnabled: !editedPoint.timeBombEnabled});
+                                       }}>
+                                           <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.timeBombEnabled ? 'bg-red-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                               <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.timeBombEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                           </div>
+                                           <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                               {editedPoint.timeBombEnabled ? 'ENABLED' : 'DISABLED'}
+                                           </span>
+                                       </label>
+                                   </div>
+                               </div>
+
+                               {editedPoint.timeBombEnabled && (
+                                   <div className="space-y-4 pt-4 border-t border-red-200 dark:border-red-700">
+                                       {/* Duration */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Countdown Duration (seconds)
+                                           </label>
+                                           <input
+                                               type="number"
+                                               min="10"
+                                               max="3600"
+                                               step="10"
+                                               value={editedPoint.timeBombDuration || 300}
+                                               onChange={(e) => setEditedPoint({...editedPoint, timeBombDuration: parseInt(e.target.value) || 300})}
+                                               className="w-full px-4 py-3 border-2 border-red-300 dark:border-red-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                                           />
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               = {Math.floor((editedPoint.timeBombDuration || 300) / 60)} minutes {(editedPoint.timeBombDuration || 300) % 60} seconds
+                                           </p>
+                                       </div>
+
+                                       {/* Start Trigger */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Timer Starts When
+                                           </label>
+                                           <select
+                                               value={editedPoint.timeBombStartTrigger || 'onUnlock'}
+                                               onChange={(e) => setEditedPoint({...editedPoint, timeBombStartTrigger: e.target.value as any})}
+                                               className="w-full px-4 py-3 border-2 border-red-300 dark:border-red-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                                           >
+                                               <option value="onUnlock">Task is Unlocked</option>
+                                               <option value="onActivate">Task is Opened/Activated</option>
+                                               <option value="manual">Manual Start (GM Control)</option>
+                                           </select>
+                                       </div>
+
+                                       {/* Penalty */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Score Penalty (if timer expires)
+                                           </label>
+                                           <input
+                                               type="number"
+                                               min="-1000"
+                                               max="0"
+                                               step="10"
+                                               value={editedPoint.timeBombPenalty || -100}
+                                               onChange={(e) => setEditedPoint({...editedPoint, timeBombPenalty: parseInt(e.target.value) || -100})}
+                                               className="w-full px-4 py-3 border-2 border-red-300 dark:border-red-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                                           />
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               Negative points applied when time runs out
+                                           </p>
+                                       </div>
+
+                                       {/* Auto-Fail Option */}
+                                       <div className="flex items-center gap-3 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                                           <label className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => {
+                                               setEditedPoint({...editedPoint, timeBombAutoFail: !editedPoint.timeBombAutoFail});
+                                           }}>
+                                               <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.timeBombAutoFail ? 'bg-red-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                                   <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.timeBombAutoFail ? 'translate-x-6' : 'translate-x-0'}`} />
+                                               </div>
+                                               <div>
+                                                   <span className="text-xs font-bold text-red-900 dark:text-red-100 block">Auto-Fail on Expiry</span>
+                                                   <span className="text-[9px] text-red-700 dark:text-red-300">
+                                                       Task becomes impossible to complete after timer expires
+                                                   </span>
+                                               </div>
+                                           </label>
+                                       </div>
+
+                                       {/* Preview */}
+                                       <div className="bg-red-600/10 border border-red-600/30 rounded-lg p-3">
+                                           <p className="text-xs text-red-900 dark:text-red-200 font-bold">
+                                               💣 <strong>Preview:</strong> Teams will have {Math.floor((editedPoint.timeBombDuration || 300) / 60)}:{((editedPoint.timeBombDuration || 300) % 60).toString().padStart(2, '0')} to complete this task or face {editedPoint.timeBombAutoFail ? 'automatic failure' : `a ${editedPoint.timeBombPenalty || -100} point penalty`}.
+                                           </p>
+                                       </div>
+                                   </div>
+                               )}
+                           </div>
+
+                           {/* MULTI-TEAM COLLABORATION CONFIGURATION */}
+                           <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-6 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
+                               <div className="flex items-start gap-4 mb-4">
+                                   <div className="w-12 h-12 bg-purple-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                       <Users className="w-6 h-6" />
+                                   </div>
+                                   <div className="flex-1">
+                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1">Multi-Team Challenge</h3>
+                                       <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Require multiple teams to be in proximity to activate or complete this task together.</p>
+
+                                       <label className="flex items-center gap-3 cursor-pointer" onClick={() => {
+                                           setEditedPoint({...editedPoint, multiTeamEnabled: !editedPoint.multiTeamEnabled});
+                                       }}>
+                                           <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.multiTeamEnabled ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                               <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.multiTeamEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                           </div>
+                                           <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                               {editedPoint.multiTeamEnabled ? 'ENABLED' : 'DISABLED'}
+                                           </span>
+                                       </label>
+                                   </div>
+                               </div>
+
+                               {editedPoint.multiTeamEnabled && (
+                                   <div className="space-y-4 pt-4 border-t border-purple-200 dark:border-purple-700">
+                                       {/* Required Team Count */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Required Teams
+                                           </label>
+                                           <input
+                                               type="number"
+                                               min="2"
+                                               max="10"
+                                               value={editedPoint.multiTeamRequiredCount || 2}
+                                               onChange={(e) => setEditedPoint({...editedPoint, multiTeamRequiredCount: parseInt(e.target.value) || 2})}
+                                               className="w-full px-4 py-3 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           />
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               Number of teams that must be present (minimum 2)
+                                           </p>
+                                       </div>
+
+                                       {/* Proximity Radius */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Proximity Radius (meters)
+                                           </label>
+                                           <input
+                                               type="number"
+                                               min="10"
+                                               max="200"
+                                               step="5"
+                                               value={editedPoint.multiTeamRadius || 50}
+                                               onChange={(e) => setEditedPoint({...editedPoint, multiTeamRadius: parseInt(e.target.value) || 50})}
+                                               className="w-full px-4 py-3 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           />
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               All teams must be within this distance of the task
+                                           </p>
+                                       </div>
+
+                                       {/* Completion Mode */}
+                                       <div>
+                                           <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                               Completion Mode
+                                           </label>
+                                           <select
+                                               value={editedPoint.multiTeamCompletionMode || 'all'}
+                                               onChange={(e) => setEditedPoint({...editedPoint, multiTeamCompletionMode: e.target.value as any})}
+                                               className="w-full px-4 py-3 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           >
+                                               <option value="all">All Teams Complete Together</option>
+                                               <option value="first">First Team Triggers for All</option>
+                                           </select>
+                                           <p className="text-[9px] text-gray-500 mt-1">
+                                               {editedPoint.multiTeamCompletionMode === 'all'
+                                                 ? 'Teams must solve together and share points'
+                                                 : 'First team to solve triggers completion for all nearby teams'}
+                                           </p>
+                                       </div>
+
+                                       {/* Preview */}
+                                       <div className="bg-purple-600/10 border border-purple-600/30 rounded-lg p-3">
+                                           <p className="text-xs text-purple-900 dark:text-purple-200 font-bold">
+                                               🤝 <strong>Preview:</strong> This task requires {editedPoint.multiTeamRequiredCount || 2} teams within {editedPoint.multiTeamRadius || 50}m to {editedPoint.multiTeamCompletionMode === 'all' ? 'collaborate and complete together' : 'trigger activation'}.
+                                           </p>
+                                       </div>
+                                   </div>
+                               )}
+                           </div>
+                      </div>
+                  )}
+
+                  {activeTab === 'ANSWER' && (
+                      <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
                            {/* FEEDBACK MESSAGES */}
                            <div className="grid grid-cols-1 gap-4">
                                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border-2 border-green-200 dark:border-green-700">
