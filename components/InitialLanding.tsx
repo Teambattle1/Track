@@ -511,26 +511,29 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
   const renderHome = () => (
       <div className="flex flex-col md:flex-row gap-12 md:gap-20 items-center justify-center w-full px-4 pb-12 pt-8">
-          <MapPinButton 
-              title="CREATE" 
-              icon={Plus} 
-              gradient="bg-gradient-to-br from-orange-600 to-red-600" 
-              onClick={() => setView('CREATE')} 
+          <MapPinButton
+              title="CREATE"
+              icon={Plus}
+              gradient="bg-gradient-to-br from-orange-600 to-red-600"
+              onClick={() => setView('CREATE')}
               delay={0}
+              isBlinking={blinkingPin === 'CREATE'}
           />
-          <MapPinButton 
-              title="EDIT" 
-              icon={Edit2} 
-              gradient="bg-gradient-to-br from-blue-600 to-indigo-600" 
-              onClick={() => setView('EDIT_MENU')} 
+          <MapPinButton
+              title="EDIT"
+              icon={Edit2}
+              gradient="bg-gradient-to-br from-blue-600 to-indigo-600"
+              onClick={() => setView('EDIT_MENU')}
               delay={100}
+              isBlinking={blinkingPin === 'EDIT'}
           />
-          <MapPinButton 
-              title="PLAY" 
-              icon={Play} 
-              gradient="bg-gradient-to-br from-emerald-600 to-teal-600" 
-              onClick={() => setView('PLAY_MENU')} 
+          <MapPinButton
+              title="PLAY"
+              icon={Play}
+              gradient="bg-gradient-to-br from-emerald-600 to-teal-600"
+              onClick={() => setView('PLAY_MENU')}
               delay={200}
+              isBlinking={blinkingPin === 'PLAY'}
           />
       </div>
   );
