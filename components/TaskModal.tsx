@@ -1262,7 +1262,18 @@ const TaskModal: React.FC<TaskModalProps> = ({
               )}
 
               {!point.isCompleted && !isEditMode ? (
-                point.task.type === 'timeline' ? renderTimelineGame() : (
+                point.task.type === 'info' ? (
+                  // INFO TASK - Just show dismiss button
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-blue-600/20"
+                    >
+                      OK
+                    </button>
+                  </div>
+                ) : point.task.type === 'timeline' ? renderTimelineGame() : (
                     isInstructor ? (
                         <div className="opacity-80 pointer-events-none">
                             {renderInput()}
