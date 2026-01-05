@@ -1293,8 +1293,63 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        }
                                    }} />
                                </div>
-                           </div>
-                       </div>
+                          </div>
+
+                          {/* YOUTUBE VIDEO */}
+                          <div>
+                              <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3">YOUTUBE VIDEO</label>
+                              <div className="space-y-3">
+                                  <div className="flex gap-2">
+                                      <input
+                                          type="text"
+                                          value={editedPoint.task.youtubeUrl || ''}
+                                          onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, youtubeUrl: e.target.value}})}
+                                          placeholder="https://www.youtube.com/watch?v=..."
+                                          className="flex-1 px-4 py-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-orange-500 transition-all"
+                                      />
+                                      {editedPoint.task.youtubeUrl && (
+                                          <button
+                                              type="button"
+                                              onClick={() => {
+                                                  const youtubeId = editedPoint.task.youtubeUrl?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1];
+                                                  if (youtubeId) {
+                                                      window.open(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank', 'width=800,height=600');
+                                                  } else {
+                                                      alert('Invalid YouTube URL');
+                                                  }
+                                              }}
+                                              className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2"
+                                          >
+                                              <MonitorPlay className="w-4 h-4" />
+                                              TEST
+                                          </button>
+                                      )}
+                                      {editedPoint.task.youtubeUrl && (
+                                          <button
+                                              type="button"
+                                              onClick={() => setEditedPoint({...editedPoint, task: {...editedPoint.task, youtubeUrl: undefined}})}
+                                              className="p-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl transition-all"
+                                          >
+                                              <Trash2 className="w-4 h-4" />
+                                          </button>
+                                      )}
+                                  </div>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                      Paste a YouTube URL to embed a video player in the task. The video will play directly in the task modal.
+                                  </p>
+                                  {editedPoint.task.youtubeUrl && (
+                                      <div className="w-full aspect-video bg-black rounded-xl overflow-hidden">
+                                          <iframe
+                                              src={`https://www.youtube.com/embed/${editedPoint.task.youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1]}`}
+                                              className="w-full h-full"
+                                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                              allowFullScreen
+                                          />
+                                      </div>
+                                  )}
+                              </div>
+                          </div>
+                      </div>
                    )}
 
                    {/* MEDIA TAB - Photo/Video Task Settings */}
