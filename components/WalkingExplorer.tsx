@@ -11,8 +11,20 @@ const WalkingExplorer: React.FC = () => {
     const [isWalking, setIsWalking] = useState(true);
     const [direction, setDirection] = useState<'right' | 'left'>('right');
     const [currentPath, setCurrentPath] = useState(0);
+    const [hasSeenExplorer, setHasSeenExplorer] = useState(false);
+    const [shouldShow, setShouldShow] = useState(false);
 
-    // Define walking paths across the screen
+    // Check if user has seen explorer before
+    useEffect(() => {
+        const seen = sessionStorage.getItem('explorerSeen');
+        if (!seen) {
+            setShouldShow(true);
+        } else {
+            setHasSeenExplorer(true);
+        }
+    }, []);
+
+    // Define walking paths across the screen (one-time journey)
     const paths = [
         { start: { x: -10, y: 70 }, end: { x: 30, y: 65 }, direction: 'right' as const },
         { start: { x: 30, y: 65 }, end: { x: 50, y: 70 }, direction: 'right' as const },
