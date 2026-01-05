@@ -3,6 +3,7 @@ import { Game, Playground, GamePoint, DeviceType } from '../types';
 import { DEVICE_SPECS, getDeviceLayout } from '../utils/deviceUtils';
 import { X, Home, QrCode, Trophy, Settings, MessageSquare, Users, Map, MapPin, CheckCircle, XCircle, Compass, Maximize2 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
+import { getUniqueTaskKey } from '../utils/taskKeyUtils';
 import TaskModal from './TaskModal';
 import QRScannerModal from './QRScannerModal';
 import { teamSync } from '../services/teamSync';
@@ -460,7 +461,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
               )}
 
               {/* Tasks on Canvas */}
-              {playgroundTasks.map((task) => {
+              {playgroundTasks.map((task, taskIndex) => {
                 const Icon = ICON_COMPONENTS[task.iconId] || ICON_COMPONENTS.default;
                 const displaySize = (task.playgroundScale || 1) * 48;
                 const position = getTaskPosition(task);
@@ -468,7 +469,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
 
                 return (
                   <div
-                    key={task.id}
+                    key={getUniqueTaskKey(task.id, taskIndex)}
                     className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
                     style={{
                       left: `${position.x}%`,
