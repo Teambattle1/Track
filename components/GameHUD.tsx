@@ -158,7 +158,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     isDrawerExpanded, showScores, onToggleScores, showTaskId, onToggleTaskId, showTaskTitle, onToggleTaskTitle, showTaskActions, onToggleTaskActions, hiddenPlaygroundIds, onToggleChat, unreadMessagesCount,
     targetPlaygroundId, onAddDangerZone, activeDangerZone, onEditGameSettings, onOpenGameChooser,
     routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true, locateFeedback, userAccessMode,
-    authUser, activeGame, onUpdateGame, onStartSimulation, onToggleSnapToRoad, snapToRoadMode,
+    authUser, activeGame, onUpdateGame, onStartSimulation, onToggleSnapToRoad, snapToRoadMode, onExecuteSnap, selectedSnapTaskCount = 0,
     showTeamPaths, onToggleTeamPaths, showTeamPathSelector, selectedTeamPaths = [], onToggleTeamPathSelector, onSelectTeamPath,
     fogOfWarEnabled, selectedTeamForFogOfWar, onToggleFogOfWar, onSelectTeamForFogOfWar, teams,
     onOpenRemoteOverride,
