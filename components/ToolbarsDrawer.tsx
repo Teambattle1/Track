@@ -797,7 +797,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         </button>
                                     )}
 
-                                    {mode === GameMode.EDIT && onStartSimulation && activeGame?.gameMode !== 'playzone' && (
+                                    {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onStartSimulation && activeGame?.gameMode !== 'playzone' && (
                                         <button
                                             onClick={onStartSimulation}
                                             className="py-2 px-2 bg-green-700 hover:bg-green-800 text-green-200 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
