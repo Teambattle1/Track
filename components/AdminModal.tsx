@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Game } from '../types';
-import { X, KeyRound, Eye, EyeOff, Trash2, AlertTriangle, CheckCircle, Check } from 'lucide-react';
-import { fixDuplicatePlayzones } from '../utils/fixDuplicatePlayzones';
+import { X, KeyRound, Eye, EyeOff, Trash2, Check } from 'lucide-react';
 
 interface AdminModalProps {
   games: Game[];
@@ -16,8 +15,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [geminiSaved, setGeminiSaved] = useState(false);
   const [hasStoredGeminiKey, setHasStoredGeminiKey] = useState(false);
-  const [isFixingPlayzones, setIsFixingPlayzones] = useState(false);
-  const [playzoneFixResult, setPlayzoneFixResult] = useState<string | null>(null);
 
   useEffect(() => {
       try {
@@ -42,7 +39,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
             <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
               <KeyRound className="w-5 h-5 text-indigo-500"/> AI SETTINGS
             </h2>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">AI KEY • EXPORTS • MIGRATIONS</p>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">GEMINI API KEY MANAGEMENT</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
             <X className="w-6 h-6" />
@@ -130,66 +127,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                   >
                       <Trash2 className="w-4 h-4" />
                   </button>
-              </div>
-          </div>
-
-          {/* Database Maintenance */}
-          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
-              <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                          <AlertTriangle className="w-5 h-5 text-orange-400" />
-                      </div>
-                      <div>
-                          <p className="text-xs font-black uppercase tracking-widest text-white">DATABASE MAINTENANCE</p>
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">
-                              Fix duplicate playzones in Game 174
-                          </p>
-                          <p className="text-[10px] text-slate-600 font-bold mt-2 leading-snug">
-                              Removes duplicate playground IDs that cause "same key" errors when importing playzones.
-                          </p>
-                      </div>
-                  </div>
-              </div>
-
-              <div className="mt-4">
-                  <button
-                      type="button"
-                      onClick={async () => {
-                          setIsFixingPlayzones(true);
-                          setPlayzoneFixResult(null);
-                          try {
-                              const result = await fixDuplicatePlayzones('game-1766964495140');
-                              if (result.success) {
-                                  setPlayzoneFixResult(`✅ Fixed! Removed ${result.removed?.playgrounds || 0} duplicate playgrounds and ${result.removed?.tasks || 0} tasks. Final: ${result.final?.playgrounds || 0} playgrounds, ${result.final?.tasks || 0} tasks.`);
-                              } else {
-                                  setPlayzoneFixResult(`❌ Error: ${result.error || 'Unknown error'}`);
-                              }
-                          } catch (error: any) {
-                              setPlayzoneFixResult(`❌ Error: ${error.message || 'Unknown error'}`);
-                          } finally {
-                              setIsFixingPlayzones(false);
-                          }
-                      }}
-                      disabled={isFixingPlayzones}
-                      className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors"
-                  >
-                      {isFixingPlayzones ? (
-                          <>⏳ FIXING...</>
-                      ) : (
-                          <>🔧 FIX GAME 174 DUPLICATES</>
-                      )}
-                  </button>
-
-                  {playzoneFixResult && (
-                      <div className={`mt-3 p-3 rounded-xl border text-[10px] font-bold ${
-                          playzoneFixResult.startsWith('✅')
-                              ? 'bg-green-500/10 border-green-500/20 text-green-400'
-                              : 'bg-red-500/10 border-red-500/20 text-red-400'
-                      }`}>
-                          {playzoneFixResult}
-                      </div>
-                  )}
               </div>
           </div>
         </div>
