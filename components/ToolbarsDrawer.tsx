@@ -520,6 +520,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                                 hasTriggered={zc.hasTriggered}
                                                 targetTime={zc.targetTime}
                                                 hasActiveZoneChanges={hasActiveZoneChanges}
+                                                isGameEnded={isGameEnded}
                                                 onClick={() => {
                                                     if (onAdjustZoneChange) {
                                                         onAdjustZoneChange(zc.id);

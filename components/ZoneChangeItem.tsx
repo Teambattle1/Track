@@ -9,6 +9,7 @@ interface ZoneChangeItemProps {
     hasTriggered: boolean;
     targetTime?: number;
     hasActiveZoneChanges: boolean;
+    isGameEnded?: boolean;
     onClick: () => void;
 }
 
@@ -20,6 +21,7 @@ const ZoneChangeItem: React.FC<ZoneChangeItemProps> = ({
     hasTriggered,
     targetTime,
     hasActiveZoneChanges,
+    isGameEnded,
     onClick,
 }) => {
     const [countdown, setCountdown] = useState('');
@@ -75,8 +77,11 @@ const ZoneChangeItem: React.FC<ZoneChangeItemProps> = ({
                     <span className="truncate">{title}</span>
                 </span>
                 <span className="flex items-center gap-1 flex-shrink-0 ml-2">
-                    {hasTime && (
+                    {hasTime && !isGameEnded && (
                         <AlertTriangle className="w-3 h-3 animate-pulse" />
+                    )}
+                    {hasTime && isGameEnded && (
+                        <AlertTriangle className="w-3 h-3" />
                     )}
                     <Clock className="w-3 h-3" />
                 </span>
