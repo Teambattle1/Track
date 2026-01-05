@@ -1141,44 +1141,23 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             buttonVisible: true
         };
 
-        // Helper function to calculate spiral placement with 50m spacing in playzone coordinates
-        const getPlayzoneOffset = (index: number): { x: number; y: number } => {
-            if (index === 0) return { x: 0, y: 0 }; // First task at center
-
-            // Spiral placement: tasks arranged in a circle pattern
-            const radiusPixels = 80; // 80px spacing (adjusted for playzone coordinates)
-            const tasksPerRing = 6; // 6 tasks per ring
-            const ring = Math.floor((index - 1) / tasksPerRing) + 1;
-            const posInRing = (index - 1) % tasksPerRing;
-            const angle = (posInRing / tasksPerRing) * 2 * Math.PI;
-
-            // Calculate offset in pixels
-            const offsetPixels = radiusPixels * ring;
-
-            return {
-                x: offsetPixels * Math.cos(angle),
-                y: offsetPixels * Math.sin(angle)
-            };
-        };
-
-        // Import all tasks from template with new IDs and spiral placement
+        // CRITICAL: Import all tasks from template with EXACT SAME POSITIONS
+        // Preserve playgroundX and playgroundY coordinates from the template
+        // DO NOT modify positions - they are carefully designed in the template
         const newTasks: GamePoint[] = (template.tasks || []).map((task, index) => {
             // Generate unique ID with timestamp, index, and random string
             const uniqueId = `task-${baseTimestamp}-${index}-${Math.random().toString(36).substr(2, 9)}`;
 
-            // Calculate spiral offset
-            const offset = getPlayzoneOffset(index);
-
-            // Get original position or default to center
-            const originalX = task.playgroundX ?? 0;
-            const originalY = task.playgroundY ?? 0;
+            // PRESERVE EXACT POSITIONS from template
+            const preservedX = task.playgroundX ?? 0;
+            const preservedY = task.playgroundY ?? 0;
 
             return {
                 ...task,
                 id: uniqueId,
                 playgroundId: newPlaygroundId,
-                playgroundX: originalX + offset.x, // Apply spiral offset
-                playgroundY: originalY + offset.y, // Apply spiral offset
+                playgroundX: preservedX, // EXACT position from template
+                playgroundY: preservedY, // EXACT position from template
                 order: index,
                 isCompleted: false,
                 isUnlocked: true
@@ -1188,7 +1167,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         console.log('[PlaygroundEditor] Created playground and tasks:', {
             playgroundId: newPlaygroundId,
             taskCount: newTasks.length,
-            appliedSpiralPlacement: true
+            positionsPreserved: true,
+            taskPositions: newTasks.map(t => ({ id: t.id, x: t.playgroundX, y: t.playgroundY }))
         });
 
         // Update game with new playground and tasks
