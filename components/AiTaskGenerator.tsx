@@ -3,6 +3,7 @@ import { Wand2, X, Plus, Check, RefreshCw, ThumbsUp, ThumbsDown, Loader2, Sparkl
 import { TaskTemplate, Playground, TaskList, IconId } from '../types';
 import { generateAiTasks, generateAiImage, searchLogoUrl, generateMoodAudio, hasApiKey } from '../services/ai';
 import { ICON_COMPONENTS } from '../utils/icons';
+import { getUniqueTaskKey } from '../utils/taskKeyUtils';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
 import { fetchUniqueTags } from '../services/db';
 
