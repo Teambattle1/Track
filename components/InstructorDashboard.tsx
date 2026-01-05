@@ -422,6 +422,25 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                             REVEAL RANKING
                         </button>
 
+                        {/* Zone Change Status Indicator */}
+                        {liveGame.zoneChanges && liveGame.zoneChanges.length > 0 && (
+                            <>
+                                <div className="h-6 w-px bg-slate-700 mx-2"></div>
+                                <div
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-orange-900/30 border-orange-500 text-orange-400"
+                                    title={`${liveGame.zoneChanges.filter(zc => zc.enabled).length} active zone change event(s) configured`}
+                                >
+                                    <MapPin className="w-4 h-4" />
+                                    <span className="text-xs font-bold uppercase">
+                                        {liveGame.zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length} ZONE CHANGE{liveGame.zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length !== 1 ? 'S' : ''}
+                                    </span>
+                                    {liveGame.zoneChanges.some(zc => zc.enabled && zc.targetTime && !zc.hasTriggered) && (
+                                        <AlertTriangle className="w-3 h-3 animate-pulse" />
+                                    )}
+                                </div>
+                            </>
+                        )}
+
                         <div className="h-6 w-px bg-slate-700 mx-2"></div>
 
                         <a
