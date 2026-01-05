@@ -3162,6 +3162,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 onClick={() => {
                                     if (!activePlayground) return;
 
+                                    console.log('[PlaygroundEditor] 🧹 BEFORE CLEAR:', {
+                                        playgroundId: activePlayground.id,
+                                        deviceLayouts: activePlayground.deviceLayouts,
+                                        tabletIconPositions: activePlayground.deviceLayouts?.tablet?.iconPositions
+                                    });
+
                                     // Clear iconPositions from all device layouts
                                     const clearedDeviceLayouts = activePlayground.deviceLayouts ? {
                                         ...activePlayground.deviceLayouts
@@ -3176,6 +3182,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         });
                                     }
 
+                                    console.log('[PlaygroundEditor] 🧹 AFTER CLEAR:', {
+                                        clearedDeviceLayouts,
+                                        tabletIconPositions: clearedDeviceLayouts?.tablet?.iconPositions
+                                    });
+
                                     // Update playground
                                     const updated = game.playgrounds?.map(p =>
                                         p.id === activePlayground.id
@@ -3185,8 +3196,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                                     onUpdateGame({ ...game, playgrounds: updated });
 
-                                    console.log('[PlaygroundEditor] ✅ Layout overrides cleared! Tasks will now use their own positions.');
-                                    alert('Layout overrides cleared! Tasks should now display in their designed positions.');
+                                    console.log('[PlaygroundEditor] ✅ Layout overrides cleared! Game updated.');
+                                    alert('Layout overrides cleared! Check console for details. Refresh if needed.');
                                 }}
                                 className="flex-1 py-4 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 border-2 border-yellow-500 shadow-lg shadow-yellow-500/20"
                                 title="Clear layout overrides to let tasks use their template positions"
