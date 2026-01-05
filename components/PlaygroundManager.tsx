@@ -250,11 +250,31 @@ Would you like to delete this broken template?`;
               // Deep clone the entire task object to preserve nested structures
               const clonedTask = JSON.parse(JSON.stringify(task));
 
+              // CRITICAL: Explicitly preserve position data from template
+              const preservedPlaygroundPosition = clonedTask.playgroundPosition ? { ...clonedTask.playgroundPosition } : undefined;
+              const preservedDevicePositions = clonedTask.devicePositions ? { ...clonedTask.devicePositions } : undefined;
+
+              // Log position data for first task to verify preservation
+              if (index === 0) {
+                  console.log('[PlaygroundManager] 🔍 POSITION DATA CHECK (Task #0):', {
+                      taskTitle: task.title,
+                      hasPlaygroundPosition: !!preservedPlaygroundPosition,
+                      playgroundPosition: preservedPlaygroundPosition,
+                      hasDevicePositions: !!preservedDevicePositions,
+                      devicePositions: preservedDevicePositions,
+                      rawTaskKeys: Object.keys(task),
+                      clonedTaskKeys: Object.keys(clonedTask)
+                  });
+              }
+
               // Override specific properties AFTER deep clone
+              // CRITICAL: Explicitly include position data to ensure it's preserved
               return {
                   ...clonedTask,
                   id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Generate unique ID
                   playgroundId: newPlaygroundId, // Associate with new playground
+                  playgroundPosition: preservedPlaygroundPosition, // EXPLICIT: Preserve legacy position
+                  devicePositions: preservedDevicePositions, // EXPLICIT: Preserve device-specific positions
                   order: index,
                   isCompleted: false, // Reset completion status
                   isUnlocked: true // Unlock by default
