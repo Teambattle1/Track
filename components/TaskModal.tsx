@@ -1180,7 +1180,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 )}
               </div>
 
-              {(isInstructor || isEditMode) && point.task.type !== 'timeline' && (
+              {(isInstructor || isEditMode) && point.task.type !== 'timeline' && point.task.type !== 'info' && (
                 <>
                   {/* Question Type Badge */}
                   <div className="mb-4 flex gap-2 items-center flex-wrap">
