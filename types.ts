@@ -204,6 +204,34 @@ export interface TaskColorScheme {
 
 export type PointActivationType = 'radius' | 'nfc' | 'qr' | 'click' | 'ibeacon';
 
+// Task Scheduling (Timed Visibility)
+export type TaskScheduleType = 'datetime' | 'game_start_offset' | 'game_end_offset';
+
+export interface TaskSchedule {
+  enabled: boolean;
+  scheduleType: TaskScheduleType;
+
+  // For 'datetime' mode
+  showAtDateTime?: number; // Unix timestamp
+  hideAtDateTime?: number; // Optional: auto-hide after this time
+
+  // For 'game_start_offset' mode
+  showAfterMinutes?: number; // Minutes after game starts
+
+  // For 'game_end_offset' mode
+  showBeforeEndMinutes?: number; // Minutes before game ends
+
+  // Visual indicator
+  isScheduled: boolean; // Flag to show clock icon on pin
+}
+
+// Info Task Settings (Tasks without questions - just title, image, text)
+export interface InfoTaskSettings {
+  allowMultipleActivations: boolean; // true = can re-activate, false = one-time only
+  showDismissButton: boolean; // Show "OK" button to close
+  autoCloseAfterSeconds?: number; // Auto-close after X seconds (0 = manual close)
+}
+
 export type PointCompletionLogic = 
   | 'remove_any'
   | 'keep_until_correct'
