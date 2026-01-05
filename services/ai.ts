@@ -129,6 +129,52 @@ Return JSON array with all fields properly filled.`,
             }
         }
 
+        // Validate and ensure options exist for choice-based tasks
+        let taskOptions = item.options;
+        let taskCorrectAnswers = item.correctAnswers;
+
+        // For multiple_choice tasks, ensure we have options and correct answers
+        if (taskType === 'multiple_choice') {
+            // If no options provided, create default ones
+            if (!taskOptions || !Array.isArray(taskOptions) || taskOptions.length < 2) {
+                console.warn(`[AI] multiple_choice task "${item.title}" missing options, adding defaults`);
+                taskOptions = ['Option A', 'Option B', 'Option C', 'Option D'];
+            }
+
+            // Ensure at least one correct answer is marked
+            if (!taskCorrectAnswers || !Array.isArray(taskCorrectAnswers) || taskCorrectAnswers.length === 0) {
+                console.warn(`[AI] multiple_choice task "${item.title}" missing correct answer, defaulting to first option`);
+                taskCorrectAnswers = [taskOptions[0]];
+            }
+        }
+
+        // For checkbox tasks (multi-select), ensure options and multiple correct answers
+        if (taskType === 'checkbox') {
+            if (!taskOptions || !Array.isArray(taskOptions) || taskOptions.length < 3) {
+                console.warn(`[AI] checkbox task "${item.title}" missing options, adding defaults`);
+                taskOptions = ['Option A', 'Option B', 'Option C', 'Option D', 'Option E'];
+            }
+
+            // Ensure at least 2 correct answers for checkbox
+            if (!taskCorrectAnswers || !Array.isArray(taskCorrectAnswers) || taskCorrectAnswers.length < 2) {
+                console.warn(`[AI] checkbox task "${item.title}" missing correct answers, defaulting to first two`);
+                taskCorrectAnswers = [taskOptions[0], taskOptions[1]];
+            }
+        }
+
+        // For dropdown tasks, ensure options and one correct answer
+        if (taskType === 'dropdown') {
+            if (!taskOptions || !Array.isArray(taskOptions) || taskOptions.length < 2) {
+                console.warn(`[AI] dropdown task "${item.title}" missing options, adding defaults`);
+                taskOptions = ['Option A', 'Option B', 'Option C', 'Option D'];
+            }
+
+            if (!taskCorrectAnswers || !Array.isArray(taskCorrectAnswers) || taskCorrectAnswers.length === 0) {
+                console.warn(`[AI] dropdown task "${item.title}" missing correct answer, defaulting to first option`);
+                taskCorrectAnswers = [taskOptions[0]];
+            }
+        }
+
         // Build tags array - DO NOT include language tags
         // Language is already shown as a flag in the UI based on settings
         const tags = ['AI'];
@@ -150,8 +196,8 @@ Return JSON array with all fields properly filled.`,
                 type: taskType,
                 question: item.question,
                 answer: taskAnswer,
-                options: item.options,
-                correctAnswers: item.correctAnswers,
+                options: taskOptions,
+                correctAnswers: taskCorrectAnswers,
                 range: item.numericRange ? { ...item.numericRange, step: 1, tolerance: 0 } : undefined
             },
             feedback: {
