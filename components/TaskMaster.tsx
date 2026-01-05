@@ -1277,8 +1277,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     >
                                         <div className="flex items-center gap-2">
                                             {!hasValidAnswers(task) && (
-                                                <span className="text-red-500 flex-shrink-0" title="Invalid or missing answer">
-                                                    <AlertCircle className="w-4 h-4" />
+                                                <span className="px-2 py-1 rounded text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/40 whitespace-nowrap flex-shrink-0 flex items-center gap-1 uppercase tracking-widest" title="No correct answer defined">
+                                                    <AlertCircle className="w-3 h-3" /> NO ANSWER
                                                 </span>
                                             )}
                                             <span className="truncate">{task.title}</span>
