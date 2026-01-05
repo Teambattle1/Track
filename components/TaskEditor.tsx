@@ -1008,6 +1008,79 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
             </div>
         );
     }
+
+    if (type === 'slider') {
+        const range = editedPoint.task.range || { min: 0, max: 100, correctValue: 50, step: 1, tolerance: 0 };
+        return (
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase flex items-center gap-2">
+                        Slider Range
+                        <span className="text-[10px] text-gray-400 font-normal">Set min, max and correct value</span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div>
+                            <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">MIN</label>
+                            <input
+                                type="number"
+                                value={range.min}
+                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, min: parseInt(e.target.value) || 0}}})}
+                                className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">MAX</label>
+                            <input
+                                type="number"
+                                value={range.max}
+                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, max: parseInt(e.target.value) || 100}}})}
+                                className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">STEP</label>
+                            <input
+                                type="number"
+                                value={range.step || 1}
+                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, step: parseInt(e.target.value) || 1}}})}
+                                className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase flex items-center gap-2">
+                        Correct Answer
+                        <span className="text-red-500 text-[10px] font-black">REQUIRED</span>
+                    </label>
+                    <div className="space-y-2">
+                        <div>
+                            <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Correct Value</label>
+                            <input
+                                type="number"
+                                value={range.correctValue || 50}
+                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, correctValue: parseInt(e.target.value) || 50}}})}
+                                min={range.min}
+                                max={range.max}
+                                className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm border-green-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Tolerance (±)</label>
+                            <input
+                                type="number"
+                                value={range.tolerance || 0}
+                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, tolerance: parseInt(e.target.value) || 0}}})}
+                                className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
+                            />
+                            <p className="text-[10px] text-gray-400 mt-1">How many points away from correct value is acceptable</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return <p className="text-xs text-gray-500 uppercase italic">No specific settings needed for this type.</p>;
   };
 
