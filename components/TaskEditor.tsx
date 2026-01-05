@@ -2084,6 +2084,121 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                   )}
                               </div>
                           </div>
+
+                          {/* TIME-BOMB MODE */}
+                          <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 p-6 rounded-2xl border-2 border-red-200 dark:border-red-800">
+                              <div className="flex items-start gap-4 mb-4">
+                                   <div className="w-12 h-12 bg-red-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                       <Clock className="w-6 h-6" />
+                                   </div>
+                                   <div className="flex-1">
+                                       <h3 className="text-sm font-black text-red-900 dark:text-red-100 uppercase tracking-wider flex items-center gap-2">
+                                           Time-Bomb Mode
+                                           <InfoTooltip
+                                               title="Time-Bomb Mode"
+                                               description="Creates a high-pressure countdown that starts when the task unlocks or activates. Teams must complete it before time expires or face penalties/auto-fail."
+                                               example="300 second timer, -100 point penalty if expired"
+                                           />
+                                       </h3>
+                                       <p className="text-xs text-red-700 dark:text-red-300 mt-1">Add countdown timer that penalizes or auto-fails the task if not completed in time.</p>
+                                   </div>
+                              </div>
+
+                              <div className="flex items-center justify-between">
+                                  <label className="text-xs font-bold text-red-900 dark:text-red-100">Enable Time-Bomb</label>
+                                  <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                      setEditedPoint({...editedPoint, timeBombEnabled: !editedPoint.timeBombEnabled});
+                                  }}>
+                                      <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.timeBombEnabled ? 'bg-red-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                          <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.timeBombEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                      </div>
+                                  </label>
+                              </div>
+
+                              {editedPoint.timeBombEnabled && (
+                                  <div className="space-y-4 pt-4 mt-4 border-t border-red-200 dark:border-red-700">
+                                      {/* Duration */}
+                                      <div>
+                                          <label className="block text-[10px] font-black text-red-700 dark:text-red-300 mb-2 uppercase tracking-wider">
+                                              Countdown Duration (seconds)
+                                          </label>
+                                          <input
+                                              type="number"
+                                              min="10"
+                                              max="3600"
+                                              step="10"
+                                              value={editedPoint.timeBombDuration || 300}
+                                              onChange={(e) => setEditedPoint({...editedPoint, timeBombDuration: parseInt(e.target.value) || 300})}
+                                              className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-red-500 transition-all text-sm"
+                                          />
+                                          <p className="text-[9px] text-red-600 dark:text-red-400 mt-1 italic">
+                                              = {Math.floor((editedPoint.timeBombDuration || 300) / 60)} minutes {(editedPoint.timeBombDuration || 300) % 60} seconds
+                                          </p>
+                                      </div>
+
+                                      {/* Start Trigger */}
+                                      <div>
+                                          <label className="block text-[10px] font-black text-red-700 dark:text-red-300 mb-2 uppercase tracking-wider">
+                                              Timer Starts When
+                                          </label>
+                                          <select
+                                              value={editedPoint.timeBombStartTrigger || 'onUnlock'}
+                                              onChange={(e) => setEditedPoint({...editedPoint, timeBombStartTrigger: e.target.value as any})}
+                                              className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-red-500 text-sm"
+                                          >
+                                              <option value="onUnlock">Task is Unlocked</option>
+                                              <option value="onActivate">Task is Opened/Activated</option>
+                                              <option value="manual">Manual Start (GM Control)</option>
+                                          </select>
+                                      </div>
+
+                                      {/* Penalty */}
+                                      <div>
+                                          <label className="block text-[10px] font-black text-red-700 dark:text-red-300 mb-2 uppercase tracking-wider">
+                                              Score Penalty (if timer expires)
+                                          </label>
+                                          <input
+                                              type="number"
+                                              min="-1000"
+                                              max="0"
+                                              step="10"
+                                              value={editedPoint.timeBombPenalty || -100}
+                                              onChange={(e) => setEditedPoint({...editedPoint, timeBombPenalty: parseInt(e.target.value) || -100})}
+                                              className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-red-500 transition-all text-sm"
+                                          />
+                                          <p className="text-[9px] text-red-600 dark:text-red-400 mt-1 italic">
+                                              Negative points applied when time runs out
+                                          </p>
+                                      </div>
+
+                                      {/* Auto-Fail Option */}
+                                      <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg">
+                                          <div className="flex items-center justify-between">
+                                              <div className="flex-1">
+                                                  <label className="block text-xs font-bold text-red-900 dark:text-red-100">Auto-Fail on Expiry</label>
+                                                  <p className="text-[10px] text-red-700 dark:text-red-300 mt-1">
+                                                      Task becomes impossible to complete after timer expires
+                                                  </p>
+                                              </div>
+                                              <label className="flex items-center gap-2 cursor-pointer ml-3" onClick={() => {
+                                                  setEditedPoint({...editedPoint, timeBombAutoFail: !editedPoint.timeBombAutoFail});
+                                              }}>
+                                                  <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.timeBombAutoFail ? 'bg-red-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                                      <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.timeBombAutoFail ? 'translate-x-6' : 'translate-x-0'}`} />
+                                                  </div>
+                                              </label>
+                                          </div>
+                                      </div>
+
+                                      {/* Preview */}
+                                      <div className="bg-red-600/10 border border-red-600/30 rounded-lg p-3">
+                                          <p className="text-xs text-red-900 dark:text-red-200 font-bold">
+                                              💣 <strong>Preview:</strong> Teams will have {Math.floor((editedPoint.timeBombDuration || 300) / 60)}:{((editedPoint.timeBombDuration || 300) % 60).toString().padStart(2, '0')} to complete this task or face {editedPoint.timeBombAutoFail ? 'automatic failure' : `a ${editedPoint.timeBombPenalty || -100} point penalty`}.
+                                          </p>
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
                       </div>
                   )}
 
