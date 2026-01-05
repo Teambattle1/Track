@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { GamePoint, TaskVote, GameMode, TimelineItem, Game } from '../types';
 import { X, CheckCircle, Lock, MapPin, Glasses, AlertCircle, ChevronDown, ChevronsUpDown, Users, AlertTriangle, Loader2, ThumbsUp, Zap, Edit2, Skull, ArrowRight, ArrowDown, Lightbulb, Shield, Camera, Video, Upload } from 'lucide-react';
 import { teamSync } from '../services/teamSync';
