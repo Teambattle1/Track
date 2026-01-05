@@ -2307,6 +2307,7 @@ const GameApp: React.FC = () => {
                             case 'DIAGNOSTICS': setShowSupabaseDiagnostic(true); break;
                             case 'TRANSLATIONS': setShowTranslationsManager(true); break;
                             case 'MEDIA': setShowMediaManager(true); break;
+                            case 'SYSTEM_SOUNDS': setShowSystemSounds(true); break;
                             case 'GAMESTATS':
                                 setShowGameStats(true);
                                 break;
