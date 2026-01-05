@@ -134,6 +134,25 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   // Get tasks for this playground
   const playgroundTasks = game.points?.filter(p => p.playgroundId === playgroundId) || [];
 
+  // DEBUG: Log position data for first task
+  useEffect(() => {
+    if (playgroundTasks.length > 0) {
+      const firstTask = playgroundTasks[0];
+      console.log('[PlayzoneGameView] 🔍 POSITION DEBUG:', {
+        taskCount: playgroundTasks.length,
+        selectedDevice,
+        firstTaskTitle: firstTask.title,
+        hasDeviceLayout: !!deviceLayout,
+        hasIconPositions: !!deviceLayout?.iconPositions,
+        firstTaskInLayout: !!deviceLayout?.iconPositions?.[firstTask.id],
+        firstTaskDevicePositions: firstTask.devicePositions,
+        firstTaskSelectedDevicePos: firstTask.devicePositions?.[selectedDevice],
+        firstTaskPlaygroundPosition: firstTask.playgroundPosition,
+        calculatedPosition: getTaskPosition(firstTask)
+      });
+    }
+  }, [playgroundTasks.length, selectedDevice]);
+
   // Get position for a task from device layout or task's own devicePositions
   const getTaskPosition = (task: GamePoint) => {
     // PRIORITY 1: Check deviceLayout.iconPositions (editor-managed positions)
