@@ -112,19 +112,9 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
           const gamesList = await db.fetchGames();
           const nonTemplateGames = gamesList.filter(g => !g.isGameTemplate);
 
-          // DEBUG: Log all games and their states
           console.log('[PlaygroundManager] Fetched games:', {
               total: gamesList.length,
-              nonTemplate: nonTemplateGames.length,
-              games: nonTemplateGames.map(g => ({
-                  id: g.id,
-                  name: g.name,
-                  state: g.state,
-                  stateType: typeof g.state,
-                  stateUndefined: g.state === undefined,
-                  isGameTemplate: g.isGameTemplate,
-                  createdAt: g.createdAt
-              }))
+              nonTemplate: nonTemplateGames.length
           });
 
           setGames(nonTemplateGames);
