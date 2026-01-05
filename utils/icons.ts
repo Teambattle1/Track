@@ -39,16 +39,18 @@ const ICON_COLORS: Record<IconId, string> = {
  * We use SVGs as strings because Leaflet doesn't render React components directly easily.
  */
 export const getLeafletIcon = (
-    iconId: IconId, 
-    isUnlocked: boolean, 
-    isCompleted: boolean, 
-    label?: string, 
-    hasActions?: boolean, 
-    forcedColor?: string, 
+    iconId: IconId,
+    isUnlocked: boolean,
+    isCompleted: boolean,
+    label?: string,
+    hasActions?: boolean,
+    forcedColor?: string,
     isHidden?: boolean,
     score?: number, // New: Score display
     iconUrl?: string, // New: Custom Icon URL
-    isPlaygroundActivator?: boolean // New: Glow effect for playground activators
+    isPlaygroundActivator?: boolean, // New: Glow effect for playground activators
+    showCompletionBadge?: boolean, // New: Show green check or red X on completed tasks
+    wasAnsweredCorrectly?: boolean // New: True = green check, False = red X
 ) => {
   const color = forcedColor || (isCompleted ? '#22c55e' : (isUnlocked ? '#eab308' : ICON_COLORS[iconId] || '#3b82f6'));
   const size = isUnlocked ? 40 : 32;
