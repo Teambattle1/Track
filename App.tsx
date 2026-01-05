@@ -149,6 +149,14 @@ const GameApp: React.FC = () => {
   const [instructorShowTaskId, setInstructorShowTaskId] = useState(true);
   const [instructorShowTaskTitle, setInstructorShowTaskTitle] = useState(true);
   const [instructorShowTaskActions, setInstructorShowTaskActions] = useState(true);
+
+  // Media rejection notification for teams
+  const [rejectedSubmission, setRejectedSubmission] = useState<{
+    taskTitle: string;
+    reviewerName: string;
+    message: string;
+    allowMultipleSubmissions: boolean;
+  } | null>(null);
   const [showTeamPaths, setShowTeamPaths] = useState(false);
   const [showTeamPathSelector, setShowTeamPathSelector] = useState(false);
   const [selectedTeamPaths, setSelectedTeamPaths] = useState<string[]>([]); // Array of team IDs to show paths for
