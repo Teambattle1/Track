@@ -70,6 +70,7 @@ import { createTaskIdMap, remapTaskLogicTargets, validateTaskReferences } from '
 const GameApp: React.FC = () => {
   // --- AUTH & USER STATE ---
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [userAccessMode, setUserAccessMode] = useState<'EDITOR' | 'INSTRUCTOR' | 'TEAM' | null>(null);
 
   // --- SUPABASE DIAGNOSTIC ---
   const [showSupabaseDiagnostic, setShowSupabaseDiagnostic] = useState(false);
@@ -1455,9 +1456,18 @@ const GameApp: React.FC = () => {
   if (showLogin) {
       return (
           <LoginPage
-              onLoginSuccess={(user) => {
+              onLoginSuccess={(user, mode) => {
                   setAuthUser(user);
+                  setUserAccessMode(mode);
                   setShowLogin(false);
+
+                  // For INSTRUCTOR mode, go directly to game chooser in instructor mode
+                  if (mode === 'INSTRUCTOR') {
+                      setShowLanding(false);
+                      setShowGameChooser(true);
+                      setMode(GameMode.INSTRUCTOR);
+                  }
+
                   // Navigate to home if we came from /login URL
                   if (window.location.pathname === '/login') {
                       window.history.pushState({}, '', '/');
@@ -1465,6 +1475,7 @@ const GameApp: React.FC = () => {
               }}
               onPlayAsGuest={() => {
                   setAuthUser({ id: 'guest', name: 'Guest', email: '', role: 'Editor' });
+                  setUserAccessMode('TEAM');
                   setShowLogin(false);
                   // Navigate to home if we came from /login URL
                   if (window.location.pathname === '/login') {
