@@ -13,6 +13,7 @@ import QRCodeLib from 'qrcode';
 import ActivityNotificationModal from './ActivityNotificationModal';
 import SupabaseScriptsModal from './SupabaseScriptsModal';
 import { getActivitySinceLastLogin, getLastLogin, updateLastLogin, ActivitySummary, getPendingMediaCount } from '../services/activityTracker';
+import WalkingExplorer from './WalkingExplorer';
 import './InitialLandingStyles.css';
 
 interface InitialLandingProps {
