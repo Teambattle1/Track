@@ -66,6 +66,7 @@ import RankingModal from './components/RankingModal';
 import { approveMediaSubmission, rejectMediaSubmission, subscribeToMediaSubmissions } from './services/mediaUpload';
 import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
 import { createTaskIdMap, remapTaskLogicTargets, validateTaskReferences } from './utils/taskIdRemapping';
+import { setupFullscreenOnInteraction } from './utils/fullscreen';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
