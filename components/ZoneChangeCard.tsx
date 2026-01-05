@@ -97,10 +97,23 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
         const now = Date.now();
         const diff = zoneChange.targetTime - now;
         if (diff < 0) return 'Passed';
-        
-        const hours = Math.floor(diff / (1000 * 60 * 60));
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (days > 0) {
+            return `${days}d ${hours}h ${minutes}m`;
+        }
         return `${hours}h ${minutes}m`;
+    };
+
+    const getFormattedDateTime = () => {
+        if (!zoneChange.targetTime) return 'No date/time set';
+        const date = new Date(zoneChange.targetTime);
+        const dateStr = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        return `${dateStr} at ${timeStr}`;
     };
 
     return (
@@ -153,9 +166,9 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
                     />
                     <p className="text-xs text-slate-500 px-2">
                         {zoneChange.targetTime ? (
-                            <>Time: {getTimeString()} • {getTimeRemaining()} remaining</>
+                            <>{getFormattedDateTime()} • {getTimeRemaining()} remaining</>
                         ) : (
-                            'No time set'
+                            'No date/time set'
                         )}
                     </p>
                 </div>
