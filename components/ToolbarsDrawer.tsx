@@ -175,6 +175,22 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     const [showMapStylesMenu, setShowMapStylesMenu] = useState(false);
     const [showToolbarsMenu, setShowToolbarsMenu] = useState(false);
 
+    // Auto-collapse Zone Change section when game ends
+    React.useEffect(() => {
+        const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending';
+        if (isGameEnded && zoneChanges && zoneChanges.length > 0) {
+            const newState = {
+                ...collapsedSections,
+                zonechange: true
+            };
+            if (onCollapsedSectionsChange) {
+                onCollapsedSectionsChange(newState);
+            } else {
+                setCollapsedSectionsLocal(newState);
+            }
+        }
+    }, [activeGame?.state]);
+
     // Use prop if provided, otherwise use local state
     const collapsedSections = collapsedSectionsProp || collapsedSectionsLocal;
     const visibleToolbars = visibleToolbarsProp || {
