@@ -6454,6 +6454,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     setDeleteZoneConfirm({ isOpen: false, zoneName: '', taskCount: 0 });
                 }}
             />
+
+            {/* Playground Library Modal - Import Templates */}
+            {showPlaygroundLibrary && (
+                <PlaygroundLibraryModal
+                    onClose={() => setShowPlaygroundLibrary(false)}
+                    onImport={handleImportTemplate}
+                />
+            )}
         </div>
     );
 };
