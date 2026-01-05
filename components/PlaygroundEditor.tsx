@@ -1060,6 +1060,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     };
 
     const addNewZone = () => {
+        setShowAddNewMenu(false); // Close menu if it was open
+
         const existingZones = uniquePlaygrounds || [];
         const zoneNumber = existingZones.length + 1;
 
@@ -1110,6 +1112,50 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         // Open drawers by default for new zones
         setIsDrawerOpen(true);
         setIsTasksDrawerOpen(true);
+    };
+
+    const handleImportTemplate = (template: PlaygroundTemplate) => {
+        console.log('[PlaygroundEditor] Importing template:', template.title, { taskCount: template.tasks?.length || 0 });
+
+        // Create new playground ID
+        const newPlaygroundId = `pg-${Date.now()}`;
+
+        // Create new playground from template data
+        const newPlayground: Playground = {
+            ...template.playgroundData,
+            id: newPlaygroundId, // Override with new unique ID
+            title: template.title,
+            buttonVisible: true
+        };
+
+        // Import all tasks from template with new IDs
+        const newTasks: GamePoint[] = (template.tasks || []).map((task, index) => ({
+            ...task,
+            id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+            playgroundId: newPlaygroundId,
+            order: index,
+            isCompleted: false,
+            isUnlocked: true
+        }));
+
+        console.log('[PlaygroundEditor] Created playground and tasks:', {
+            playgroundId: newPlaygroundId,
+            taskCount: newTasks.length
+        });
+
+        // Update game with new playground and tasks
+        const updatedGame = {
+            ...game,
+            playgrounds: [...(game.playgrounds || []), newPlayground],
+            points: [...(game.points || []), ...newTasks]
+        };
+
+        onUpdateGame(updatedGame);
+        setActivePlaygroundId(newPlaygroundId);
+        setShowPlaygroundLibrary(false);
+        setShowAddNewMenu(false);
+
+        console.log('[PlaygroundEditor] ✅ Template imported successfully');
     };
 
     const handleResetBackground = () => {
