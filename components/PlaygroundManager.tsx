@@ -262,8 +262,8 @@ Would you like to delete this broken template?`;
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar relative z-0">
             <div className="max-w-[1920px] mx-auto">
-                <div className="mb-8">
-                    <button 
+                <div className="mb-8 space-y-4">
+                    <button
                         onClick={onCreate}
                         className="w-full py-4 border-2 border-dashed border-slate-700 rounded-2xl flex items-center justify-center gap-3 text-slate-500 hover:text-indigo-500 hover:border-indigo-500 hover:bg-indigo-500/5 transition-all group hover:scale-[1.01]"
                     >
@@ -271,6 +271,38 @@ Would you like to delete this broken template?`;
                             <Plus className="w-5 h-5" />
                         </div>
                         <span className="font-black uppercase tracking-widest text-sm">CREATE NEW TEMPLATE</span>
+                    </button>
+
+                    {/* Template Validation Button */}
+                    <button
+                        onClick={async () => {
+                            const validation = await db.validatePlaygroundTemplates();
+
+                            if (validation.broken === 0) {
+                                alert(`✅ ALL TEMPLATES VALID!\n\n${validation.total} template(s) checked.\nAll templates have tasks and playground data.`);
+                            } else {
+                                const brokenList = validation.brokenTemplates.map(t => `• ${t.title} - ${t.issue}`).join('\n');
+                                const confirmDelete = window.confirm(
+                                    `⚠️ FOUND ${validation.broken} BROKEN TEMPLATE(S):\n\n${brokenList}\n\n` +
+                                    `Valid templates: ${validation.valid}\n` +
+                                    `Broken templates: ${validation.broken}\n\n` +
+                                    `Would you like to DELETE all broken templates?\n\n` +
+                                    `(This cannot be undone)`
+                                );
+
+                                if (confirmDelete) {
+                                    for (const broken of validation.brokenTemplates) {
+                                        await db.deletePlaygroundTemplate(broken.id);
+                                    }
+                                    await loadTemplates();
+                                    alert(`✅ Deleted ${validation.broken} broken template(s).`);
+                                }
+                            }
+                        }}
+                        className="w-full py-3 bg-yellow-600/10 border border-yellow-600/30 hover:border-yellow-500 rounded-xl flex items-center justify-center gap-3 text-yellow-500 hover:bg-yellow-600/20 transition-all group"
+                    >
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="font-bold uppercase tracking-widest text-xs">VALIDATE TEMPLATES</span>
                     </button>
                 </div>
 
