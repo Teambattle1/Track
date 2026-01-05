@@ -625,11 +625,11 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     </button>
                                 </div>
 
-                                {mode === GameMode.EDIT && onToggleTeamPathSelector && (
+                                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onToggleTeamPathSelector && (
                                     <button
                                         onClick={onToggleTeamPathSelector}
                                         className={`w-full py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-between transition-all ${showTeamPathSelector || selectedTeamPaths.length > 0 ? 'bg-black text-white' : 'bg-purple-700 hover:bg-purple-800 text-purple-100'}`}
-                                        title="Select Teams"
+                                        title="Select Teams to Track - Shows historic path as dotted lines"
                                     >
                                         <span className="flex items-center gap-2">
                                             <RouteIcon className="w-4 h-4" />
