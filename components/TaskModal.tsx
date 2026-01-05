@@ -1146,10 +1146,23 @@ const TaskModal: React.FC<TaskModalProps> = ({
               <div className="prose prose-sm mb-6 dark:prose-invert">
                 {/* SAFE HTML RENDERING */}
                 <p className="text-gray-800 dark:text-gray-100 text-lg leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: sanitizedQuestion }} />
-                
+
                 {point.task.imageUrl && (
                   <div className="mt-4 rounded-lg overflow-hidden shadow-sm">
                     <img src={point.task.imageUrl} alt="Task" className="w-full h-auto object-cover max-h-60" />
+                  </div>
+                )}
+
+                {/* YouTube Video Embed */}
+                {point.task.youtubeUrl && (
+                  <div className="mt-4 w-full aspect-video rounded-lg overflow-hidden shadow-lg">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${point.task.youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1]}`}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="YouTube video"
+                    />
                   </div>
                 )}
 
