@@ -578,6 +578,38 @@ Would you like to delete this broken template?`;
                 </div>
             </div>
         )}
+
+        {/* SUCCESS MODAL */}
+        {successMessage && (
+            <div className="fixed inset-0 z-[5000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto animate-in fade-in">
+                <div className="bg-slate-900 border-2 border-green-600 rounded-2xl shadow-2xl p-8 max-w-md w-full animate-in zoom-in-95">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 bg-green-600/20 border border-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <CheckCircle className="w-6 h-6 text-green-500" />
+                        </div>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight">SUCCESS!</h2>
+                    </div>
+
+                    <div className="space-y-4 mb-6">
+                        <div className="bg-green-600/10 border border-green-600/30 rounded-lg p-4">
+                            <p className="text-sm text-green-200 mb-3">
+                                Playzone <span className="font-bold text-green-100">"{successMessage.template}"</span> with <span className="font-bold text-green-100">{successMessage.taskCount} task{successMessage.taskCount !== 1 ? 's' : ''}</span> added to <span className="font-bold text-green-100">"{successMessage.game}"</span>!
+                            </p>
+                            <p className="text-xs text-green-300/80">
+                                Go to the Game Editor to see the imported tasks.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => setSuccessMessage(null)}
+                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg uppercase tracking-widest text-sm transition-colors shadow-lg shadow-green-600/50 active:scale-95"
+                    >
+                        OK
+                    </button>
+                </div>
+            </div>
+        )}
     </div>
   );
 };
