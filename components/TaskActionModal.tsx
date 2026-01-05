@@ -209,6 +209,12 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
                           </div>
                       </div>
                   )}
+
+                  {action.type === 'notify_instructor' && (
+                      <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded text-xs text-indigo-800 dark:text-indigo-200 font-bold">
+                          🔔 Instructor will receive a notification when this event occurs
+                      </div>
+                  )}
               </div>
           </div>
       );
