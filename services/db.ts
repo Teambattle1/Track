@@ -1096,16 +1096,52 @@ export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> =>
 
 export const savePlaygroundTemplate = async (template: PlaygroundTemplate) => {
     try {
-        await retryWithBackoff(
+        // CRITICAL: Validate template has tasks before saving
+        console.log('[DB] savePlaygroundTemplate - validating template:', {
+            id: template.id,
+            title: template.title,
+            hasPlaygroundData: !!template.playgroundData,
+            hasTasks: !!template.tasks,
+            taskCount: template.tasks?.length || 0,
+            taskIds: template.tasks?.map((t: any) => t.id) || []
+        });
+
+        if (!template.tasks || template.tasks.length === 0) {
+            console.error('[DB] WARNING: Attempting to save template without tasks!', {
+                id: template.id,
+                title: template.title,
+                templateKeys: Object.keys(template)
+            });
+        }
+
+        const result = await retryWithBackoff(
             () => supabase.from('playground_library').upsert({
-                id: template.id, title: template.title, is_global: template.isGlobal, data: template, updated_at: new Date().toISOString()
+                id: template.id,
+                title: template.title,
+                is_global: template.isGlobal,
+                data: template,
+                updated_at: new Date().toISOString()
             }).then(result => {
                 if (result.error) throw result.error;
                 return result;
             }),
             'savePlaygroundTemplate'
         );
-    } catch (e) { logError('savePlaygroundTemplate', e); }
+
+        console.log('[DB] savePlaygroundTemplate - SUCCESS:', {
+            id: template.id,
+            title: template.title,
+            tasksIncluded: template.tasks?.length || 0
+        });
+
+        return result;
+    } catch (e) {
+        console.error('[DB] savePlaygroundTemplate - ERROR:', {
+            error: e,
+            template: { id: template.id, title: template.title }
+        });
+        logError('savePlaygroundTemplate', e);
+    }
 };
 
 export const deletePlaygroundTemplate = async (id: string) => {
