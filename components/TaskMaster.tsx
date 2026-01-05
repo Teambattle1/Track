@@ -2660,6 +2660,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 setShowAddToModal(false);
                                 setAddToTasksSelection([]);
                                 setAddToDestinationType(null);
+                                setShowCreateNewTasklistInput(false);
+                                setNewTasklistName('');
                             }} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
