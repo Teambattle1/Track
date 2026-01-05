@@ -460,6 +460,43 @@ const GameApp: React.FC = () => {
       }
   }, [showChatDrawer]);
 
+  // --- MEDIA REJECTION NOTIFICATIONS (for team players) ---
+  useEffect(() => {
+      if (!activeGameId || !activeGame) return;
+
+      // Only subscribe when in team mode (when teamSync is connected)
+      const teamState = teamSync.getState();
+      if (!teamState.teamId) return; // Not in team mode
+
+      console.log('[Media Rejection] Setting up subscription for team:', teamState.teamId);
+
+      const unsubscribe = subscribeToMediaSubmissions(activeGameId, (submission) => {
+          // Only handle rejections for this team
+          if (submission.status !== 'rejected') return;
+          if (submission.teamId !== teamState.teamId) return;
+
+          console.log('[Media Rejection] Received rejection for team:', submission);
+
+          // Find the task to check if multiple submissions are allowed
+          const task = activeGame.points.find(p => p.id === submission.pointId);
+          const allowMultipleSubmissions = task?.task?.requireMedia?.allowMultipleSubmissions ?? false;
+
+          // Set the rejection data to show popup
+          setRejectedSubmission({
+              taskTitle: submission.pointTitle || 'Unknown Task',
+              reviewerName: submission.reviewedBy || 'Instructor',
+              message: submission.reviewComment || 'Your submission did not meet the requirements.',
+              allowMultipleSubmissions
+          });
+
+          // Play error sound and vibrate
+          playSound('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3', 80);
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      });
+
+      return () => unsubscribe?.();
+  }, [activeGameId, activeGame]);
+
   // --- GEOFENCING ENGINE ---
   useEffect(() => {
       if (!activeGame || mode !== GameMode.PLAY || !userLocation) return;
