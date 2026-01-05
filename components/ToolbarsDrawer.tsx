@@ -535,9 +535,9 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     );
                 })()}
 
-                {/* PINS Section - Yellow - Hidden in Instructor Mode */}
+                {/* PINS Section - Pink - Hidden in Instructor Mode */}
                 {mode !== GameMode.INSTRUCTOR && (mode === GameMode.EDIT || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
-                    <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl p-3 space-y-3">
+                    <div className="bg-pink-600 border-2 border-pink-500 rounded-xl p-3 space-y-3">
                         <button
                             onClick={() => toggleSection('pins')}
                             className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
@@ -554,7 +554,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                 {/* DANGER ZONE - Available to both EDIT and INSTRUCTOR */}
                                 <button
                                     onClick={onAddDangerZone}
-                                    className="py-2 px-2 bg-yellow-700 hover:bg-yellow-800 text-yellow-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
+                                    className="py-2 px-2 bg-pink-700 hover:bg-pink-800 text-pink-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
                                     title="Danger Zone"
                                 >
                                     <SkullIcon className="w-4 h-4" />
@@ -565,7 +565,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                 {mode === GameMode.EDIT && (
                                     <button
                                         onClick={onToggleMeasure}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isMeasuring ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isMeasuring ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
                                         title="Measure"
                                     >
                                         <Ruler className="w-4 h-4" />
@@ -577,7 +577,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                 {mode === GameMode.EDIT && (
                                     <button
                                         onClick={onRelocateGame}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isRelocating ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isRelocating ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
                                         title="Relocate All Tasks"
                                     >
                                         <Crosshair className="w-4 h-4" />
@@ -589,7 +589,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                 {mode === GameMode.EDIT && onToggleSnapToRoad && (
                                     <button
                                         onClick={onToggleSnapToRoad}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${snapToRoadMode ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${snapToRoadMode ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
                                         title="Snap to Road"
                                     >
                                         <Navigation className="w-4 h-4" />
