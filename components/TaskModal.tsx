@@ -77,6 +77,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
+  // Countdown Timer State
+  const [showTimesUpPopup, setShowTimesUpPopup] = useState(false);
+  const [taskStartTime] = useState(Date.now());
+  const hasTimeLimit = !!point.settings?.timeLimitSeconds;
+
   const isEditMode = mode === GameMode.EDIT;
   const isInstructor = isInstructorMode || mode === GameMode.INSTRUCTOR;
   const isSimulation = mode === GameMode.SIMULATION;
