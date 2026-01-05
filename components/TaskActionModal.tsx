@@ -252,7 +252,11 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
             <button
                 onClick={() => {
                     onSave({ ...point, logic });
-                    onStartDrawMode(activeTrigger);
+                    onClose(); // Close modal before activating draw mode
+                    // Use setTimeout to ensure state updates complete before activating draw mode
+                    setTimeout(() => {
+                        onStartDrawMode(activeTrigger);
+                    }, 100);
                 }}
                 className={`w-full mb-4 py-3 text-white rounded-xl font-bold uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg transition-all ${
                     activeTrigger === 'onCorrect'
