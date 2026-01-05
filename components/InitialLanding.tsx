@@ -842,6 +842,9 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
           </svg>
           <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(#fff_1px,transparent_1px),linear-gradient(90deg,#fff_1px,transparent_1px)] bg-[length:100px_100px]" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+
+          {/* Animated Explorer Character */}
+          {view === 'HOME' && <WalkingExplorer />}
       </div>
 
       {/* Main Container */}
