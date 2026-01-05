@@ -641,6 +641,18 @@ export interface Game {
 
   // Client-side mirror of DB updated_at (used for multi-user syncing)
   dbUpdatedAt?: string;
+
+  // Change Zone Countdown Feature
+  changeZone?: {
+    enabled: boolean;
+    targetTime?: number; // Unix timestamp for when countdown reaches 00:00
+    showOnTeamView: boolean; // Show countdown in team view topbar
+    message: string; // HTML formatted message for popup
+    imageUrl?: string; // Optional image to show in popup
+    requireCode: boolean; // false = OK button, true = code "4027" required
+    hasTriggered: boolean; // Track if popup has already been shown
+    startedAt?: number; // Timestamp when countdown was activated
+  };
 }
 
 export interface GameState {
