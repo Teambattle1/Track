@@ -823,17 +823,35 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                     {/* SQL Content */}
                     <div className="flex-1 overflow-y-auto p-6 bg-slate-950">
                       <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
-                        <div className="bg-slate-950/50 border-b border-slate-800 px-4 py-2 flex items-center justify-between">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                            SQL Script
+                        <button
+                          onClick={() => toggleScriptCollapse(selectedScript.id)}
+                          className="w-full bg-slate-950/50 border-b border-slate-800 px-4 py-2 flex items-center justify-between hover:bg-slate-900/50 transition-colors"
+                        >
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <ChevronDown className={`w-4 h-4 transition-transform ${
+                              collapsedScripts.has(selectedScript.id) ? '-rotate-90' : ''
+                            }`} />
+                            SQL Script {collapsedScripts.has(selectedScript.id) ? '(Collapsed)' : ''}
                           </span>
                           <span className="text-[9px] text-slate-600 font-mono">
                             {selectedScript.sql.split('\n').length} lines
                           </span>
-                        </div>
-                        <pre className="p-4 overflow-x-auto text-xs text-green-400 font-mono leading-relaxed">
-                          <code ref={codeRef}>{selectedScript.sql}</code>
-                        </pre>
+                        </button>
+                        {!collapsedScripts.has(selectedScript.id) && (
+                          <pre className="p-4 overflow-x-auto text-xs text-green-400 font-mono leading-relaxed">
+                            <code ref={codeRef}>{selectedScript.sql}</code>
+                          </pre>
+                        )}
+                        {collapsedScripts.has(selectedScript.id) && (
+                          <div className="p-4 text-center">
+                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider">
+                              Script collapsed
+                            </p>
+                            <p className="text-xs text-slate-600 mt-1">
+                              Click the header above to expand
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Instructions */}
