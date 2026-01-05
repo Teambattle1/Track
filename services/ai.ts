@@ -187,12 +187,15 @@ Return JSON array with all fields properly filled.`,
         // Log to confirm NO language tags are added
         console.log(`[AI Task] "${item.title}" - Tags: [${tags.join(', ')}] (Language is "${normalizedLanguage}", NOT added to tags)`);
 
+        const baseTimestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substr(2, 9);
+
         return {
-            id: `ai-${Date.now()}-${index}`,
+            id: `ai-${baseTimestamp}-${index}-${randomSuffix}`,
             title: item.title,
             iconId: (item.iconId as IconId) || 'default',
             tags: tags,
-            createdAt: Date.now(),
+            createdAt: baseTimestamp,
             points: 100,
             activationTypes: ['click'], // Default to click activation for all AI tasks
             task: {
