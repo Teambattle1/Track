@@ -379,6 +379,18 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
               <Trophy className="w-5 h-5 text-yellow-300" />
               <span className="text-lg font-black text-white">{currentScore}</span>
             </button>
+
+            {/* Map Style Toggle Button (Right side) */}
+            {!game.designConfig?.lockMapStyle && (
+              <button
+                onClick={() => setSelectedMapStyle(selectedMapStyle === 'standard' ? 'satellite' : 'standard')}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-xl transition-colors"
+                title="Toggle Map Style"
+              >
+                <Map className="w-5 h-5 text-white" />
+                <span className="text-xs font-bold text-white uppercase">{selectedMapStyle === 'satellite' ? 'SAT' : 'MAP'}</span>
+              </button>
+            )}
           </div>
         </div>
         );
