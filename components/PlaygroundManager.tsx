@@ -119,8 +119,11 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
               games: nonTemplateGames.map(g => ({
                   id: g.id,
                   name: g.name,
-                  state: g.state || 'undefined',
-                  isGameTemplate: g.isGameTemplate
+                  state: g.state,
+                  stateType: typeof g.state,
+                  stateUndefined: g.state === undefined,
+                  isGameTemplate: g.isGameTemplate,
+                  createdAt: g.createdAt
               }))
           });
 
