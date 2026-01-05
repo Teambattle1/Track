@@ -1847,10 +1847,36 @@ const GameApp: React.FC = () => {
                           }
 
                           const mapCenter = mapRef.current?.getCenter();
+
+                          // Helper function to calculate spiral placement with 50m spacing
+                          const getOffsetLocation = (center: Coordinate | null | undefined, index: number): Coordinate | null => {
+                              if (!center) return null;
+                              if (index === 0) return center; // First task at center
+
+                              // Spiral placement: tasks arranged in a circle pattern
+                              const radiusMeters = 50; // 50m spacing
+                              const tasksPerRing = 6; // 6 tasks per ring
+                              const ring = Math.floor((index - 1) / tasksPerRing) + 1;
+                              const posInRing = (index - 1) % tasksPerRing;
+                              const angle = (posInRing / tasksPerRing) * 2 * Math.PI;
+
+                              // Calculate offset in meters
+                              const offsetMeters = radiusMeters * ring;
+
+                              // Convert meters to degrees (approximate)
+                              const latOffset = (offsetMeters * Math.cos(angle)) / 111320; // 1 degree latitude ≈ 111.32 km
+                              const lngOffset = (offsetMeters * Math.sin(angle)) / (111320 * Math.cos(center.lat * Math.PI / 180));
+
+                              return {
+                                  lat: center.lat + latOffset,
+                                  lng: center.lng + lngOffset
+                              };
+                          };
+
                           const newPoints = list.tasks.map((t, idx) => ({
                               ...t,
                               id: t.id || `p-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
-                              location: mapCenter || null,
+                              location: getOffsetLocation(mapCenter, idx),
                               radiusMeters: 30,
                               activationTypes: ['radius'],
                               isUnlocked: true,
