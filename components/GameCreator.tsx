@@ -1000,10 +1000,14 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
   // Zone Change Handlers
   const handleAddZoneChange = () => {
+      // Set default targetTime to 1 hour from now
+      const defaultTargetTime = Date.now() + (60 * 60 * 1000);
+
       const newZoneChange: ZoneChangeEvent = {
           id: `zc-${Date.now()}`,
           title: `Zone Change ${zoneChanges.length + 1}`,
           enabled: true,
+          targetTime: defaultTargetTime,
           showOnTeamView: true,
           message: '<h2>Zone Change!</h2><p>Please move to the new zone.</p>',
           requireCode: false,
