@@ -1129,6 +1129,27 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const handleImportTemplate = (template: PlaygroundTemplate) => {
         console.log('[PlaygroundEditor] Importing template:', template.title, { taskCount: template.tasks?.length || 0 });
 
+        // PREVENT DUPLICATE: Check if this template already exists in the game
+        const existingPlayground = game.playgrounds?.find(pg =>
+            pg.title === template.title &&
+            pg.id.startsWith('pg-') // Only check user-created playgrounds
+        );
+
+        if (existingPlayground) {
+            const confirmImport = window.confirm(
+                `⚠️ DUPLICATE TEMPLATE DETECTED\n\n` +
+                `A playzone named "${template.title}" already exists in this game.\n\n` +
+                `Importing again will create duplicate tasks with different IDs, which may cause confusion.\n\n` +
+                `Do you want to import it anyway?`
+            );
+
+            if (!confirmImport) {
+                console.log('[PlaygroundEditor] ❌ Import cancelled - duplicate template');
+                setShowPlaygroundLibrary(false);
+                return;
+            }
+        }
+
         // Create new playground ID
         const newPlaygroundId = `pg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const baseTimestamp = Date.now();
@@ -1152,11 +1173,19 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             const preservedPosition = task.playgroundPosition ? { ...task.playgroundPosition } : undefined;
             const preservedDevicePositions = task.devicePositions ? { ...task.devicePositions } : undefined;
 
-            console.log(`[PlaygroundEditor] Importing task "${task.title}":`, {
+            // CRITICAL DEBUG: Log EVERY detail about position data
+            console.log(`[PlaygroundEditor] 🔍 IMPORTING TASK #${index} "${task.title}":`, {
+                taskId: task.id,
                 hasPlaygroundPosition: !!preservedPosition,
                 playgroundPosition: preservedPosition,
                 hasDevicePositions: !!preservedDevicePositions,
-                devicePositions: preservedDevicePositions
+                devicePositions: preservedDevicePositions,
+                deviceKeys: preservedDevicePositions ? Object.keys(preservedDevicePositions) : [],
+                desktopPosition: preservedDevicePositions?.desktop,
+                tabletPosition: preservedDevicePositions?.tablet,
+                mobilePosition: preservedDevicePositions?.mobile,
+                allTaskKeys: Object.keys(task),
+                rawTask: task
             });
 
             return {
@@ -1171,13 +1200,41 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             };
         });
 
-        console.log('[PlaygroundEditor] Created playground and tasks:', {
+        // VERIFICATION: Log final result to verify positions were preserved
+        console.log('[PlaygroundEditor] ✅ TEMPLATE IMPORT SUMMARY:', {
+            templateName: template.title,
             playgroundId: newPlaygroundId,
             taskCount: newTasks.length,
             positionsPreserved: true,
-            sampleTaskPosition: newTasks[0]?.playgroundPosition,
-            sampleDevicePositions: newTasks[0]?.devicePositions
+            tasksWithPlaygroundPosition: newTasks.filter(t => t.playgroundPosition).length,
+            tasksWithDevicePositions: newTasks.filter(t => t.devicePositions).length,
+            sampleTask: newTasks[0] ? {
+                id: newTasks[0].id,
+                title: newTasks[0].title,
+                playgroundPosition: newTasks[0].playgroundPosition,
+                devicePositions: newTasks[0].devicePositions,
+                hasPlaygroundPosition: !!newTasks[0].playgroundPosition,
+                hasDevicePositions: !!newTasks[0].devicePositions
+            } : null,
+            allNewTasks: newTasks.map(t => ({
+                id: t.id,
+                title: t.title,
+                playgroundPosition: t.playgroundPosition,
+                devicePositions: t.devicePositions
+            }))
         });
+
+        // CRITICAL: Check if template tasks actually HAD position data
+        const templateTasksWithPositions = (template.tasks || []).filter(t => t.playgroundPosition || t.devicePositions);
+        if (templateTasksWithPositions.length === 0) {
+            console.warn('[PlaygroundEditor] ⚠️ WARNING: Template has NO position data! Tasks will be placed in grid.');
+            alert(
+                `⚠️ POSITION DATA MISSING\n\n` +
+                `The template "${template.title}" does not contain position data.\n\n` +
+                `Tasks will be placed in a default grid layout.\n\n` +
+                `This may happen if the template was created before position tracking was implemented.`
+            );
+        }
 
         // Update game with new playground and tasks
         const updatedGame = {
