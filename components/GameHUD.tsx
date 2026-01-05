@@ -164,7 +164,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     showMapLayer, showZoneLayer, showTaskLayer, showLiveLayer,
     onToggleMapLayer, onToggleZoneLayer, onToggleTaskLayer, onToggleLiveLayer,
     hoveredPlaygroundId, onHoverPlayground,
-    collapsedSections, onCollapsedSectionsChange
+    collapsedSections, onCollapsedSectionsChange,
+    onShowRanking, onOpenTeams
 }, ref) => {
     // Device detection for multi-device layout support
     const [detectedDevice, setDetectedDevice] = useState<DeviceType>('desktop');
@@ -1008,6 +1009,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     setShowAdjustGameTime(true);
                 }}
                 onResetToolbarPositions={resetToolbarPositions}
+                onShowRanking={onShowRanking}
+                onOpenTeams={onOpenTeams}
             />
             <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-[1000]">
             {/* COUNTDOWN OVERLAY */}
