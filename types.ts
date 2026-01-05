@@ -399,6 +399,8 @@ export interface GamePoint {
 
   // Logic & Scoring
   points: number;
+  pointsOnCorrect?: number; // Optional: Points to award for correct answer (overrides default points)
+  pointsOnIncorrect?: number; // Optional: Points to award for incorrect answer (typically negative or 0)
   isUnlocked: boolean;
   isCompleted: boolean;
   order: number;
