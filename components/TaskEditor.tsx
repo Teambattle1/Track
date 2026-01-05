@@ -913,6 +913,24 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
         }
     };
 
+    // Info tasks don't need answer configuration
+    if (type === 'info') {
+        return (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <p className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-1">Info Task - No Answer Required</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                            This task will display content (title, image, description, video) without requiring an answer.
+                            Players can simply view the information and dismiss the task.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (type === 'timeline') {
         return renderTimelineConfig();
     }
