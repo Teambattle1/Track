@@ -89,7 +89,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onPlayAsGuest, on
                         <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl flex items-center justify-center mx-auto mb-6 border-4 border-white/10 shadow-2xl">
                             <Shield className="w-10 h-10 text-white" />
                         </div>
-                        <h1 className="text-5xl font-black text-white uppercase tracking-widest mb-2">Team Challenge</h1>
+                        <h1 className="text-5xl font-black text-white uppercase tracking-widest mb-2">TeamAction</h1>
                         <p className="text-lg text-slate-500 font-bold uppercase tracking-wider">Select Your Access Level</p>
                     </div>
 
@@ -131,7 +131,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onPlayAsGuest, on
 
                     {/* Footer */}
                     <div className="text-center">
-                        <p className="text-xs text-slate-600 font-bold uppercase tracking-widest">Powered by Teambattle</p>
+                        <p className="text-xs text-slate-600 font-bold uppercase tracking-widest">Powered by TeamAction</p>
                     </div>
                 </div>
             </div>
