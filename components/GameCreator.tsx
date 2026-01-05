@@ -994,6 +994,48 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       </label>
   );
 
+  // Zone Change Handlers
+  const handleAddZoneChange = () => {
+      const newZoneChange: ZoneChangeEvent = {
+          id: `zc-${Date.now()}`,
+          title: `Zone Change ${zoneChanges.length + 1}`,
+          enabled: true,
+          showOnTeamView: true,
+          message: '<h2>Zone Change!</h2><p>Please move to the new zone.</p>',
+          requireCode: false,
+          hasTriggered: false,
+          order: zoneChanges.length,
+          createdAt: Date.now()
+      };
+      setZoneChanges([...zoneChanges, newZoneChange]);
+  };
+
+  const handleUpdateZoneChange = (id: string, updates: Partial<ZoneChangeEvent>) => {
+      setZoneChanges(zoneChanges.map(zc =>
+          zc.id === id ? { ...zc, ...updates } : zc
+      ));
+  };
+
+  const handleDeleteZoneChange = (id: string) => {
+      setZoneChanges(zoneChanges.filter(zc => zc.id !== id));
+  };
+
+  const handleMoveZoneChange = (currentIndex: number, direction: number) => {
+      const newIndex = currentIndex + direction;
+      if (newIndex < 0 || newIndex >= zoneChanges.length) return;
+
+      const newZoneChanges = [...zoneChanges];
+      const [moved] = newZoneChanges.splice(currentIndex, 1);
+      newZoneChanges.splice(newIndex, 0, moved);
+
+      // Update order values
+      newZoneChanges.forEach((zc, idx) => {
+          zc.order = idx;
+      });
+
+      setZoneChanges(newZoneChanges);
+  };
+
   const renderContent = () => {
       // Prevent MAP tab for playzone mode only (elimination is GPS-based and needs map style selection)
       const effectiveTab = gameMode === 'playzone' && activeTab === 'MAP' ? 'GAME' : activeTab;
