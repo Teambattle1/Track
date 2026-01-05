@@ -2358,6 +2358,11 @@ const GameApp: React.FC = () => {
                     }}
                 />
             )}
+            {showDatabaseToolsModal && (
+                <DatabaseToolsModal
+                    onClose={() => setShowDatabaseToolsModal(false)}
+                />
+            )}
             {showGameStats && (
                 <GameStatsTool
                     games={playableGames}
