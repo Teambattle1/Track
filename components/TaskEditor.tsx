@@ -1052,16 +1052,17 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                {/* ... Tab Navigation (Same as before) ... */}
                <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0 overflow-x-auto">
                    {[
-                       {id: 'GENERAL', label: 'General', icon: AlignLeft},
-                       {id: 'ANSWER', label: 'Answer', icon: MessageSquare},
-                       {id: 'IMAGE', label: 'Image', icon: ImageIcon},
-                       {id: 'MEDIA', label: 'Media', icon: MonitorPlay},
-                       {id: 'SETTINGS', label: 'Config', icon: SlidersHorizontal},
-                       {id: 'ACTIVATION', label: 'Activation', icon: Lock},
-                       {id: 'TAGS', label: 'Tags', icon: Tag},
-                       {id: 'LANGUAGES', label: 'Languages', icon: Globe},
-                       {id: 'VIEW', label: 'View', icon: Eye},
-                   ].map(tab => {
+                      {id: 'GENERAL', label: 'General', icon: AlignLeft},
+                      {id: 'ANSWER', label: 'Answer', icon: MessageSquare},
+                      {id: 'IMAGE', label: 'Image', icon: ImageIcon},
+                      {id: 'MEDIA', label: 'Media', icon: MonitorPlay},
+                      {id: 'SETTINGS', label: 'Config', icon: SlidersHorizontal},
+                      {id: 'ADDONS', label: 'ADD-ons', icon: Zap},
+                      {id: 'ACTIVATION', label: 'Activation', icon: Lock},
+                      {id: 'TAGS', label: 'Tags', icon: Tag},
+                      {id: 'LANGUAGES', label: 'Languages', icon: Globe},
+                      {id: 'VIEW', label: 'View', icon: Eye},
+                  ].map(tab => {
                        // Count unapproved translations for Languages tab badge
                        let unapprovedCount = 0;
                        if (tab.id === 'LANGUAGES' && editedPoint.task.translations) {
