@@ -479,75 +479,24 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                             {isVisible('zonechange') && (
                                 <div className="space-y-2">
                                     {zoneChanges.map((zc, index) => {
-                                        const isActive = zc.enabled && !zc.hasTriggered;
-                                        const hasTime = zc.targetTime && zc.targetTime > Date.now();
-                                        const [countdown, setCountdown] = React.useState('');
-
-                                        React.useEffect(() => {
-                                            if (!hasTime) {
-                                                setCountdown('');
-                                                return;
-                                            }
-
-                                            const updateCountdown = () => {
-                                                const now = Date.now();
-                                                const remaining = zc.targetTime! - now;
-
-                                                if (remaining <= 0) {
-                                                    setCountdown('00:00:00');
-                                                    return;
-                                                }
-
-                                                const hours = Math.floor(remaining / (1000 * 60 * 60));
-                                                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                                                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-
-                                                setCountdown(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-                                            };
-
-                                            updateCountdown();
-                                            const interval = setInterval(updateCountdown, 1000);
-
-                                            return () => clearInterval(interval);
-                                        }, [hasTime, zc.targetTime]);
+                                        const hasActiveZoneChanges = zoneChanges.some(zc => zc.enabled && !zc.hasTriggered);
 
                                         return (
-                                            <button
+                                            <ZoneChangeItem
                                                 key={zc.id}
+                                                id={zc.id}
+                                                index={index}
+                                                title={zc.title}
+                                                enabled={zc.enabled}
+                                                hasTriggered={zc.hasTriggered}
+                                                targetTime={zc.targetTime}
+                                                hasActiveZoneChanges={hasActiveZoneChanges}
                                                 onClick={() => {
                                                     if (onAdjustZoneChange) {
                                                         onAdjustZoneChange(zc.id);
                                                     }
                                                 }}
-                                                className={`w-full py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col gap-1 transition-all ${
-                                                    isActive
-                                                        ? hasActiveZoneChanges
-                                                            ? 'bg-yellow-700 hover:bg-yellow-800 text-white border-2 border-yellow-500'
-                                                            : 'bg-orange-700 hover:bg-orange-800 text-white border-2 border-orange-500'
-                                                        : 'bg-orange-800/50 text-orange-200 border-2 border-orange-700/50'
-                                                }`}
-                                                title={`Click to adjust zone change time: ${zc.title}`}
-                                            >
-                                                <span className="flex items-center justify-between w-full">
-                                                    <span className="flex items-center gap-2 flex-1 min-w-0">
-                                                        <span className={`flex-shrink-0 w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-black ${hasActiveZoneChanges ? 'bg-yellow-800' : 'bg-orange-800'}`}>
-                                                            {index + 1}
-                                                        </span>
-                                                        <span className="truncate">{zc.title}</span>
-                                                    </span>
-                                                    <span className="flex items-center gap-1 flex-shrink-0 ml-2">
-                                                        {hasTime && (
-                                                            <AlertTriangle className="w-3 h-3 animate-pulse" />
-                                                        )}
-                                                        <Clock className="w-3 h-3" />
-                                                    </span>
-                                                </span>
-                                                {countdown && (
-                                                    <span className="text-red-500 font-mono text-sm font-black tracking-wider">
-                                                        {countdown}
-                                                    </span>
-                                                )}
-                                            </button>
+                                            />
                                         );
                                     })}
                                 </div>
