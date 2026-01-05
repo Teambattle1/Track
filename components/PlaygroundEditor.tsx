@@ -2993,50 +2993,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         <span>SAVE AS TEMPLATE</span>
                     </button>
 
-                    {/* SYNC FROM LIBRARY Button */}
-                    {SHOW_SYNC_FROM_LIBRARY && (
-                    <button
-                        onClick={async () => {
-                            const taskCount = game.points.length;
-                            const confirm = window.confirm(
-                                `🔄 SYNC FROM GLOBAL LIBRARY\n\n` +
-                                `This will update all ${taskCount} tasks with the latest data from the global library.\n\n` +
-                                `Any changes made in the library (titles, questions, points, etc.) will be applied here.\n\n` +
-                                `Game-specific settings (positions, unlock status, etc.) will be preserved.\n\n` +
-                                `Continue?`
-                            );
-
-                            if (!confirm) return;
-
-                            try {
-                                // Sync all game points with library
-                                const { tasks: syncedTasks, syncedCount } = await db.syncTasksFromLibrary(game.points);
-
-                                if (syncedCount === 0) {
-                                    alert('ℹ️ No tasks were synced.\n\nThis could mean:\n• Tasks don\'t exist in the library\n• Tasks are already up to date');
-                                    return;
-                                }
-
-                                // Update the game with synced tasks
-                                onUpdateGame({
-                                    ...game,
-                                    points: syncedTasks
-                                });
-
-                                alert(`✅ Successfully synced ${syncedCount} task${syncedCount !== 1 ? 's' : ''} from the global library!`);
-                            } catch (error) {
-                                console.error('Failed to sync from library:', error);
-                                alert('❌ Failed to sync from library. Please try again.');
-                            }
-                        }}
-                        className="w-full px-4 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
-                        title="Update all tasks with the latest data from the global library"
-                        type="button"
-                    >
-                        <Repeat className="w-5 h-5" />
-                        <span>SYNC FROM LIBRARY</span>
-                    </button>
-                    )}
 
                     {/* Orange Divider */}
                     <div className="h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30" />
