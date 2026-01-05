@@ -173,12 +173,46 @@ Would you like to delete this broken template?`;
           }
 
           const newPlaygroundId = `pg-${Date.now()}`;
+
+          // CRITICAL: Log playground data BEFORE import
+          console.log('[PlaygroundManager] 🔍 PLAYGROUND DATA ANALYSIS (BEFORE IMPORT):', {
+              hasPlaygroundData: !!selectedTemplateForGame.playgroundData,
+              playgroundKeys: selectedTemplateForGame.playgroundData ? Object.keys(selectedTemplateForGame.playgroundData) : [],
+              visibilitySettings: {
+                  showTaskScores: selectedTemplateForGame.playgroundData?.showTaskScores,
+                  showTaskOrder: selectedTemplateForGame.playgroundData?.showTaskOrder,
+                  showTaskActions: selectedTemplateForGame.playgroundData?.showTaskActions,
+                  showTaskNames: selectedTemplateForGame.playgroundData?.showTaskNames,
+                  showTaskStatus: selectedTemplateForGame.playgroundData?.showTaskStatus,
+                  showBackground: selectedTemplateForGame.playgroundData?.showBackground,
+                  showQRScanner: selectedTemplateForGame.playgroundData?.showQRScanner,
+                  showTitleText: selectedTemplateForGame.playgroundData?.showTitleText
+              },
+              fullPlaygroundData: selectedTemplateForGame.playgroundData
+          });
+
           const newPlayground = {
               ...selectedTemplateForGame.playgroundData,  // Spread template data first
               id: newPlaygroundId,  // Then override with new unique ID (CRITICAL: must be after spread!)
               title: selectedTemplateForGame.title,
               buttonVisible: true
           };
+
+          // VERIFICATION: Log playground after spread to verify properties are preserved
+          console.log('[PlaygroundManager] ✅ PLAYGROUND DATA ANALYSIS (AFTER SPREAD):', {
+              playgroundId: newPlayground.id,
+              playgroundKeys: Object.keys(newPlayground),
+              visibilitySettings: {
+                  showTaskScores: newPlayground.showTaskScores,
+                  showTaskOrder: newPlayground.showTaskOrder,
+                  showTaskActions: newPlayground.showTaskActions,
+                  showTaskNames: newPlayground.showTaskNames,
+                  showTaskStatus: newPlayground.showTaskStatus,
+                  showBackground: newPlayground.showBackground,
+                  showQRScanner: newPlayground.showQRScanner,
+                  showTitleText: newPlayground.showTitleText
+              }
+          });
 
           // CRITICAL: Log template tasks BEFORE import to verify data integrity
           console.log('[PlaygroundManager] 🔍 TEMPLATE TASKS ANALYSIS (BEFORE IMPORT):', {
