@@ -174,8 +174,8 @@ Would you like to delete this broken template?`;
 
           const newPlaygroundId = `pg-${Date.now()}`;
           const newPlayground = {
-              id: newPlaygroundId,
-              ...selectedTemplateForGame.playgroundData,
+              ...selectedTemplateForGame.playgroundData,  // Spread template data first
+              id: newPlaygroundId,  // Then override with new unique ID (CRITICAL: must be after spread!)
               title: selectedTemplateForGame.title,
               buttonVisible: true
           };
