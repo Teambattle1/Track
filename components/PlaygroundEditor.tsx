@@ -5966,7 +5966,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             {/* Advanced AI Task Generator (TaskMaster version) */}
             {showAiTaskGenerator && (
                 <AiTaskGenerator
-                    onClose={() => setShowAiTaskGenerator(false)}
+                    onClose={() => {
+                        setShowAiTaskGenerator(false);
+                        // Stay in game editor view - don't navigate away
+                    }}
                     playgrounds={uniquePlaygrounds || []}
                     initialPlaygroundId={activePlayground?.id || null}
                     targetMode="GAME"
