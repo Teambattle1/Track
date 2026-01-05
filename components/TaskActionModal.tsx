@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GamePoint, GameAction, TaskLogic, ActionType, Playground } from '../types';
-import { X, Plus, Trash2, Zap, CheckCircle, XCircle, Unlock, Lock, Eye, MessageSquare, Music, Coins, Save, ArrowRight, Skull, PenTool, LayoutGrid, Info, Clock } from 'lucide-react';
+import { X, Plus, Trash2, Zap, CheckCircle, XCircle, Unlock, Lock, Eye, MessageSquare, Music, Coins, Save, ArrowRight, Skull, PenTool, LayoutGrid, Info, Clock, Bell } from 'lucide-react';
 
 interface TaskActionModalProps {
   point: GamePoint;
