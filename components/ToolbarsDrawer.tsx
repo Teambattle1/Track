@@ -448,6 +448,66 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
+                {/* ZONE CHANGE Section - Orange */}
+                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (
+                    <div className="bg-orange-600 border-2 border-orange-500 rounded-xl p-3 space-y-3">
+                        <button
+                            onClick={() => toggleSection('zonechange')}
+                            className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                        >
+                            <span className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                ZONE CHANGE
+                                {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length > 0 && (
+                                    <span className="ml-1 bg-orange-700 px-2 py-0.5 rounded-full text-[9px] font-black">
+                                        {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length}
+                                    </span>
+                                )}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('zonechange') ? '' : '-rotate-90'}`} />
+                        </button>
+
+                        {isVisible('zonechange') && (
+                            <div className="space-y-2">
+                                {zoneChanges.map((zc, index) => {
+                                    const isActive = zc.enabled && !zc.hasTriggered;
+                                    const hasTime = zc.targetTime && zc.targetTime > Date.now();
+
+                                    return (
+                                        <button
+                                            key={zc.id}
+                                            onClick={() => {
+                                                if (onAdjustZoneChange) {
+                                                    onAdjustZoneChange(zc.id);
+                                                }
+                                            }}
+                                            className={`w-full py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-between transition-all ${
+                                                isActive
+                                                    ? 'bg-orange-700 hover:bg-orange-800 text-white border-2 border-orange-500'
+                                                    : 'bg-orange-800/50 text-orange-200 border-2 border-orange-700/50'
+                                            }`}
+                                            title={`Click to adjust zone change time: ${zc.title}`}
+                                        >
+                                            <span className="flex items-center gap-2 flex-1 min-w-0">
+                                                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-800 text-white flex items-center justify-center text-[10px] font-black">
+                                                    {index + 1}
+                                                </span>
+                                                <span className="truncate">{zc.title}</span>
+                                            </span>
+                                            <span className="flex items-center gap-1 flex-shrink-0 ml-2">
+                                                {hasTime && (
+                                                    <AlertTriangle className="w-3 h-3 animate-pulse" />
+                                                )}
+                                                <Clock className="w-3 h-3" />
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* PINS Section - Yellow */}
                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
                     <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl p-3 space-y-3">
