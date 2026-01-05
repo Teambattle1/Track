@@ -360,10 +360,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     // Initialize active playground
     useEffect(() => {
         // Set active playground to first one if none selected and playgrounds exist
-        if (!activePlaygroundId && game.playgrounds && game.playgrounds.length > 0) {
-            setActivePlaygroundId(game.playgrounds[0].id);
+        if (!activePlaygroundId && uniquePlaygrounds && uniquePlaygrounds.length > 0) {
+            setActivePlaygroundId(uniquePlaygrounds[0].id);
         }
-    }, [game.playgrounds, activePlaygroundId]);
+    }, [uniquePlaygrounds, activePlaygroundId]);
 
     // ESC key listener for draw mode
     useEffect(() => {
@@ -1057,7 +1057,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     };
 
     const addNewZone = () => {
-        const existingZones = game.playgrounds || [];
+        const existingZones = uniquePlaygrounds || [];
         const zoneNumber = existingZones.length + 1;
 
         // Initialize device layouts with default configurations
