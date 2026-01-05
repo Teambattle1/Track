@@ -384,7 +384,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   const activePlayground = liveGame.playgrounds?.find(p => p.id === activePlaygroundId);
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-slate-900 text-white flex flex-col animate-in fade-in duration-300">
+    <div className="w-full h-full bg-slate-900 text-white flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center shadow-lg z-10">
             <div>
