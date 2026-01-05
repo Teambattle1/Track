@@ -302,6 +302,13 @@ const GameApp: React.FC = () => {
     init();
   }, []);
 
+  // --- FULLSCREEN MODE ON MOBILE/TABLET ---
+  useEffect(() => {
+    // Setup fullscreen on mobile/tablet devices
+    // Will trigger on first user interaction (click, touch, or keyboard)
+    setupFullscreenOnInteraction();
+  }, []);
+
   // --- PERSIST ACTIVE GAME TO LOCALSTORAGE ---
   useEffect(() => {
     if (activeGameId) {
