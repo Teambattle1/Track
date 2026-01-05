@@ -1056,8 +1056,42 @@ export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> =>
             CHUNK_SIZE,
             FETCH_TIMEOUT_MS
         );
-        return rows.map((row: any) => ({ ...row.data, id: row.id, title: row.title, isGlobal: row.is_global }));
-    } catch (e) { logError('fetchPlaygroundLibrary', e); return []; }
+
+        const templates = rows.map((row: any) => {
+            const template = { ...row.data, id: row.id, title: row.title, isGlobal: row.is_global };
+
+            // CRITICAL: Validate template structure
+            if (!template.tasks) {
+                console.warn('[DB] Template loaded without tasks:', {
+                    id: template.id,
+                    title: template.title,
+                    dataKeys: Object.keys(row.data || {}),
+                    fullData: row.data
+                });
+            } else {
+                console.log('[DB] Template loaded with tasks:', {
+                    id: template.id,
+                    title: template.title,
+                    taskCount: template.tasks.length,
+                    playgroundDataPresent: !!template.playgroundData
+                });
+            }
+
+            return template;
+        });
+
+        console.log('[DB] fetchPlaygroundLibrary completed:', {
+            totalTemplates: templates.length,
+            withTasks: templates.filter(t => t.tasks && t.tasks.length > 0).length,
+            withoutTasks: templates.filter(t => !t.tasks || t.tasks.length === 0).length
+        });
+
+        return templates;
+    } catch (e) {
+        logError('fetchPlaygroundLibrary', e);
+        console.error('[DB] fetchPlaygroundLibrary error details:', e);
+        return [];
+    }
 };
 
 export const savePlaygroundTemplate = async (template: PlaygroundTemplate) => {
