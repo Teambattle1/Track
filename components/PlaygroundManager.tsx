@@ -229,7 +229,7 @@ Would you like to delete this broken template?`;
   };
 
   const getCompletedGames = () => {
-      return games.filter(g => g.state === 'ended');
+      return games.filter(g => g.state === 'ended' || g.state === 'ending');
   };
 
   const getActiveTabGames = () => {
