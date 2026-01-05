@@ -3060,6 +3060,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     tasksWithLogic: template.tasks.filter(t => t.logic && (t.logic.onOpen?.length || t.logic.onCorrect?.length || t.logic.onIncorrect?.length)).length,
                                     tasksWithSettings: template.tasks.filter(t => t.settings).length,
                                     tasksWithFeedback: template.tasks.filter(t => t.feedback).length,
+                                    tasksWithDevicePositions: template.tasks.filter(t => t.devicePositions).length,
+                                    tasksWithPlaygroundPosition: template.tasks.filter(t => t.playgroundPosition).length,
                                     playgroundVisibilitySettings: {
                                         showTaskScores: template.playgroundData.showTaskScores,
                                         showTaskOrder: template.playgroundData.showTaskOrder,
@@ -3080,9 +3082,31 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         hasFeedback: !!template.tasks[0].feedback,
                                         feedback: template.tasks[0].feedback,
                                         colorScheme: template.tasks[0].colorScheme,
+                                        devicePositions: template.tasks[0].devicePositions,
+                                        playgroundPosition: template.tasks[0].playgroundPosition,
                                         allKeys: Object.keys(template.tasks[0])
                                     } : null,
                                     fullTemplate: template
+                                });
+
+                                // CRITICAL DEBUG: Check first 3 tasks for position data
+                                console.log('[PlaygroundEditor] 🔍 POSITION DATA CHECK (BEFORE SAVE):', {
+                                    task0: template.tasks[0] ? {
+                                        title: template.tasks[0].title,
+                                        devicePositions: template.tasks[0].devicePositions,
+                                        playgroundPosition: template.tasks[0].playgroundPosition,
+                                        devicePositionsJSON: JSON.stringify(template.tasks[0].devicePositions || null)
+                                    } : null,
+                                    task1: template.tasks[1] ? {
+                                        title: template.tasks[1].title,
+                                        devicePositions: template.tasks[1].devicePositions,
+                                        playgroundPosition: template.tasks[1].playgroundPosition
+                                    } : null,
+                                    task2: template.tasks[2] ? {
+                                        title: template.tasks[2].title,
+                                        devicePositions: template.tasks[2].devicePositions,
+                                        playgroundPosition: template.tasks[2].playgroundPosition
+                                    } : null
                                 });
 
                                 await db.savePlaygroundTemplate(template);
