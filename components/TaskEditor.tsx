@@ -2485,7 +2485,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                    <div className="flex-1">
                                        <div className="flex items-center justify-between">
                                            <div className="flex items-center gap-2">
-                                               <h3 className="font-black text-sm uppercase tracking-wide">GPS Geofence Location</h3>
+                                               <h3 className="font-black text-sm uppercase tracking-wide flex items-center gap-2">
+                                                   GPS Geofence Location
+                                                   <InfoTooltip
+                                                       title="GPS Geofence"
+                                                       description="Teams must physically be within the specified radius of the task location to activate it. The primary activation method for outdoor games."
+                                                       example="30 meter radius around a statue - teams unlock when they get close"
+                                                   />
+                                               </h3>
                                                <span className="bg-green-600 text-white text-[8px] px-2 py-1 rounded font-bold">PRIMARY</span>
                                            </div>
                                            <ChevronDown className={`w-5 h-5 text-green-600 transition-transform ${expandedActivations.location ? 'rotate-180' : ''}`} />
