@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import { Game, TimerConfig, TimerMode, MapStyleId, Language, DesignConfig, GameTaskConfiguration, MapConfiguration, TaskColorScheme } from '../types';
+import { Game, TimerConfig, TimerMode, MapStyleId, Language, DesignConfig, GameTaskConfiguration, MapConfiguration, TaskColorScheme, ZoneChangeEvent } from '../types';
 import {
     X, Gamepad2, Calendar, Building2, Upload, Search, Loader2, Clock, Hourglass,
     StopCircle, CheckCircle, Image as ImageIcon, Save, Edit, Map as MapIcon,
