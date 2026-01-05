@@ -1050,11 +1050,16 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 hasDeviceLayout: !!deviceLayout,
                 hasIconPositions: !!deviceLayout?.iconPositions,
                 iconPositionsCount: deviceLayout?.iconPositions ? Object.keys(deviceLayout.iconPositions).length : 0,
+                iconPositionForThisTask: deviceLayout?.iconPositions?.[point.id],
                 hasTaskDevicePositions: !!point.devicePositions,
                 taskDevicePositions: point.devicePositions,
                 taskDevicePositionForDevice: point.devicePositions?.[selectedDevice],
                 hasPlaygroundPosition: !!point.playgroundPosition,
-                playgroundPosition: point.playgroundPosition
+                playgroundPosition: point.playgroundPosition,
+                WILL_USE: deviceLayout?.iconPositions?.[point.id] ? 'iconPositions (OVERRIDE)' :
+                         point.devicePositions?.[selectedDevice] ? 'task.devicePositions' :
+                         point.playgroundPosition ? 'playgroundPosition (LEGACY)' :
+                         'DEFAULT (50, 50) ← STACKING!'
             });
         }
 
