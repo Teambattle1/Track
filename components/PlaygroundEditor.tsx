@@ -1042,24 +1042,25 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         // Priority: deviceLayouts[selectedDevice].iconPositions > devicePositions[selectedDevice] > playgroundPosition > default
         const deviceLayout = activePlayground?.deviceLayouts?.[selectedDevice];
 
-        // DEBUG: Log first 3 tasks to see what's happening
-        if (uniquePlaygroundPoints.indexOf(point) < 3) {
-            console.log(`[PlaygroundEditor] Position lookup for "${point.title}":`, {
-                taskId: point.id,
+        // DEBUG: Log first 5 tasks to see what's happening
+        const taskIndex = uniquePlaygroundPoints.indexOf(point);
+        if (taskIndex < 5) {
+            const finalPos = deviceLayout?.iconPositions?.[point.id] ||
+                           point.devicePositions?.[selectedDevice] ||
+                           point.playgroundPosition ||
+                           { x: 50, y: 50 };
+
+            console.log(`[PlaygroundEditor] 🔍 Task #${taskIndex}: "${point.title}"`, {
+                FINAL_POSITION: finalPos,
                 selectedDevice,
-                hasDeviceLayout: !!deviceLayout,
-                hasIconPositions: !!deviceLayout?.iconPositions,
-                iconPositionsCount: deviceLayout?.iconPositions ? Object.keys(deviceLayout.iconPositions).length : 0,
-                iconPositionForThisTask: deviceLayout?.iconPositions?.[point.id],
-                hasTaskDevicePositions: !!point.devicePositions,
-                taskDevicePositions: point.devicePositions,
-                taskDevicePositionForDevice: point.devicePositions?.[selectedDevice],
-                hasPlaygroundPosition: !!point.playgroundPosition,
-                playgroundPosition: point.playgroundPosition,
-                WILL_USE: deviceLayout?.iconPositions?.[point.id] ? 'iconPositions (OVERRIDE)' :
-                         point.devicePositions?.[selectedDevice] ? 'task.devicePositions' :
-                         point.playgroundPosition ? 'playgroundPosition (LEGACY)' :
-                         'DEFAULT (50, 50) ← STACKING!'
+                iconPositions_value: deviceLayout?.iconPositions?.[point.id] || null,
+                taskDevicePositions_value: point.devicePositions?.[selectedDevice] || null,
+                playgroundPosition_value: point.playgroundPosition || null,
+                ALL_devicePositions: point.devicePositions,
+                SOURCE: deviceLayout?.iconPositions?.[point.id] ? '❌ OVERRIDE (blocking!)' :
+                       point.devicePositions?.[selectedDevice] ? '✅ task.devicePositions' :
+                       point.playgroundPosition ? '⚠️ legacy playgroundPosition' :
+                       '🔴 DEFAULT (50,50) - STACKING!'
             });
         }
 
