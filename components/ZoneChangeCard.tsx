@@ -25,7 +25,7 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
     onMoveUp,
     onMoveDown
 }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
 
     const handleTimeChange = (timeString: string) => {
