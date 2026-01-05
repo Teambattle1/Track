@@ -15,6 +15,7 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [geminiSaved, setGeminiSaved] = useState(false);
   const [hasStoredGeminiKey, setHasStoredGeminiKey] = useState(false);
+  const [showMigrationTool, setShowMigrationTool] = useState(false);
 
   useEffect(() => {
       try {
