@@ -2412,7 +2412,7 @@ const GameApp: React.FC = () => {
             <div className="absolute inset-0 z-0">
                 <GameMap
                 ref={mapRef}
-                points={activeGame?.points || []}
+                points={visiblePoints}
                 routes={activeGame?.routes || []}
                 dangerZones={activeGame?.dangerZones || []}
                 logicLinks={logicLinks} // Pass Logic Links!
