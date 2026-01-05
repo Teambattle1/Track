@@ -833,10 +833,10 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         <button
                                             onClick={onAdjustGameTime}
                                             className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showAdjustGameTime ? 'bg-cyan-700 text-cyan-200' : 'bg-slate-800 hover:bg-slate-700 text-slate-200'}`}
-                                            title="Adjust Game Time"
+                                            title="Set Game Time"
                                         >
                                             <Clock className="w-4 h-4" />
-                                            TIME
+                                            SET TIME
                                         </button>
                                     )}
 
@@ -844,10 +844,10 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         <button
                                             onClick={onStartSimulation}
                                             className="py-2 px-2 bg-green-700 hover:bg-green-800 text-green-200 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
-                                            title="Start Simulation"
+                                            title="Start Simulator"
                                         >
                                             <Play className="w-4 h-4" />
-                                            PLAY
+                                            SIMULATOR
                                         </button>
                                     )}
 
