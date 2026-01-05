@@ -1083,38 +1083,40 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                     <div className="text-[7px] font-black text-green-100 uppercase tracking-widest leading-tight whitespace-nowrap">FIT</div>
                                 </div>
 
-                                {/* MAPSTYLE Button */}
-                                <div className="flex flex-col items-center gap-0.5">
-                                    <div className="relative">
-                                        <button
-                                            onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
-                                            className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-green-700 text-green-100 border-green-600 hover:bg-green-800 hover:text-white"
-                                            title="Map Styles"
-                                        >
-                                            <Layers className="w-4 h-4" />
-                                            {showLocationMapStyles && <div className="absolute top-0 right-0 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>}
-                                        </button>
-                                        {showLocationMapStyles && (
-                                            <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-slate-900 border-2 border-slate-700 rounded-xl p-2 shadow-xl animate-in slide-in-from-top-2 pointer-events-auto z-[3001] flex gap-2 flex-wrap max-w-[300px]">
-                                                {MAP_STYLES_LIST.map((style) => (
-                                                    <div key={style.id} className="relative">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); onSetMapStyle(style.id); setShowLocationMapStyles(false); }}
-                                                            onMouseEnter={() => setHoveredMapStyle(style.id)}
-                                                            onMouseLeave={() => setHoveredMapStyle(null)}
-                                                            className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all border-2 ${mapStyle === style.id ? 'bg-slate-700 border-slate-500 shadow-lg shadow-slate-500/50' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-slate-600'}`}
-                                                            title={style.label}
-                                                        >
-                                                            <style.icon className={`w-4 h-4 ${mapStyle === style.id ? 'text-white' : 'text-slate-300'}`} />
-                                                            <span className={`text-[7px] font-black uppercase tracking-widest ${mapStyle === style.id ? 'text-white' : 'text-slate-400'}`}>{style.label}</span>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                {/* MAPSTYLE Button - Hidden in Instructor Mode */}
+                                {mode !== GameMode.INSTRUCTOR && (
+                                    <div className="flex flex-col items-center gap-0.5">
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
+                                                className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-green-700 text-green-100 border-green-600 hover:bg-green-800 hover:text-white"
+                                                title="Map Styles"
+                                            >
+                                                <Layers className="w-4 h-4" />
+                                                {showLocationMapStyles && <div className="absolute top-0 right-0 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>}
+                                            </button>
+                                            {showLocationMapStyles && (
+                                                <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-slate-900 border-2 border-slate-700 rounded-xl p-2 shadow-xl animate-in slide-in-from-top-2 pointer-events-auto z-[3001] flex gap-2 flex-wrap max-w-[300px]">
+                                                    {MAP_STYLES_LIST.map((style) => (
+                                                        <div key={style.id} className="relative">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); onSetMapStyle(style.id); setShowLocationMapStyles(false); }}
+                                                                onMouseEnter={() => setHoveredMapStyle(style.id)}
+                                                                onMouseLeave={() => setHoveredMapStyle(null)}
+                                                                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all border-2 ${mapStyle === style.id ? 'bg-slate-700 border-slate-500 shadow-lg shadow-slate-500/50' : 'bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-slate-600'}`}
+                                                                title={style.label}
+                                                            >
+                                                                <style.icon className={`w-4 h-4 ${mapStyle === style.id ? 'text-white' : 'text-slate-300'}`} />
+                                                                <span className={`text-[7px] font-black uppercase tracking-widest ${mapStyle === style.id ? 'text-white' : 'text-slate-400'}`}>{style.label}</span>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="text-[7px] font-black text-green-100 uppercase tracking-widest leading-tight whitespace-nowrap">MAP</div>
                                     </div>
-                                    <div className="text-[7px] font-black text-green-100 uppercase tracking-widest leading-tight whitespace-nowrap">MAP</div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1192,6 +1194,20 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                             <Play className="w-4 h-4" />
                                         </button>
                                         <div className="text-[8px] font-black text-green-400 uppercase tracking-widest leading-tight whitespace-nowrap">PLAY</div>
+                                    </div>
+                                )}
+
+                                {/* Danger Zone Button - INSTRUCTOR mode only */}
+                                {mode === GameMode.INSTRUCTOR && onAddDangerZone && (
+                                    <div className="flex flex-col items-center gap-0.5">
+                                        <button
+                                            onClick={onAddDangerZone}
+                                            className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white"
+                                            title="Danger Zone"
+                                        >
+                                            <Skull className="w-4 h-4" />
+                                        </button>
+                                        <div className="text-[7px] font-black text-yellow-100 uppercase tracking-widest leading-tight whitespace-nowrap">DANGER</div>
                                     </div>
                                 )}
 
@@ -1351,8 +1367,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 </div>
             )}
 
-            {/* Draggable PINS Toolbar (Measure, Scores, Relocate) - Only for GPS-based games */}
-            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && visibleToolbars['pins'] && (
+            {/* Draggable PINS Toolbar (Measure, Scores, Relocate) - Only for GPS-based games - Hidden in Instructor Mode */}
+            {mode !== GameMode.INSTRUCTOR && (mode === GameMode.EDIT || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && visibleToolbars['pins'] && (
                 <div
                     className="absolute z-[1100] pointer-events-auto touch-none"
                     style={{ left: pinsToolboxPos.x, top: pinsToolboxPos.y }}
