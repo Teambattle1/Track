@@ -97,6 +97,8 @@ interface GameHUDProps {
     // Snap to Road Props
     onToggleSnapToRoad?: () => void;
     snapToRoadMode?: boolean;
+    onExecuteSnap?: () => void;
+    selectedSnapTaskCount?: number;
     // Team History Props
     showTeamPaths?: boolean;
     onToggleTeamPaths?: () => void;
