@@ -61,6 +61,20 @@ const LANGUAGES = [
 
 // --- ENHANCED RICH TEXT EDITOR COMPONENT ---
 const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder?: string }) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const previousValueRef = useRef<string>(value);
+
+  // Update innerHTML only when value changes from outside (not from user typing)
+  useEffect(() => {
+    if (editorRef.current && value !== previousValueRef.current) {
+      // Only update if the editor is not currently focused
+      if (document.activeElement !== editorRef.current) {
+        editorRef.current.innerHTML = DOMPurify.sanitize(value);
+      }
+      previousValueRef.current = value;
+    }
+  }, [value]);
+
   const handleCommand = (command: string, val?: string) => {
     document.execCommand(command, false, val || '');
   };
@@ -139,11 +153,13 @@ const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onCha
         <button type="button" onClick={() => handleCommand('foreColor', '#f59e0b')} className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-amber-500 font-bold" title="Amber Color">A</button>
       </div>
       <div
+        ref={editorRef}
         className="p-3 min-h-[120px] outline-none text-sm text-gray-900 dark:text-white prose dark:prose-invert max-w-none"
         contentEditable
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
+        onBlur={(e) => previousValueRef.current = e.currentTarget.innerHTML}
         onPaste={handlePaste}
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
+        suppressContentEditableWarning
         style={{ whiteSpace: 'pre-wrap' }}
         data-placeholder={placeholder}
       />
