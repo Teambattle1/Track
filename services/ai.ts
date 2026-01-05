@@ -65,7 +65,13 @@ async function makeRequestWithRetry<T>(requestFn: () => Promise<T>, maxRetries =
   throw new Error("AI Request Failed");
 }
 
-export const generateAiTasks = async (topic: string, count: number = 5, language: string = 'English', additionalTag?: string): Promise<TaskTemplate[]> => {
+export const generateAiTasks = async (
+  topic: string,
+  count: number = 5,
+  language: string = 'English',
+  additionalTag?: string,
+  onProgress?: (current: number, total: number) => void
+): Promise<TaskTemplate[]> => {
   const key = ensureApiKey();
   const ai = new GoogleGenAI({ apiKey: key });
 
@@ -95,6 +101,11 @@ Return JSON array.`,
     if (!Array.isArray(rawData)) rawData = [];
 
     return rawData.map((item: any, index: number) => {
+        // Report progress if callback provided
+        if (onProgress) {
+            onProgress(index + 1, rawData.length);
+        }
+
         const taskType = (item.type as TaskType) || 'text';
 
         // For boolean tasks, ensure answer is valid YES or NO
@@ -109,11 +120,25 @@ Return JSON array.`,
             }
         }
 
+        // Build tags array - exclude language tag if it's the same as additional tag
+        // Also don't add language as tag if it's Danish (already in settings)
+        const tags = ['AI'];
+
+        // Only add language tag if it's NOT Danish (to avoid redundancy)
+        if (normalizedLanguage.toLowerCase() !== 'danish') {
+            tags.push(normalizedLanguage);
+        }
+
+        // Add additional tag if provided and not duplicate
+        if (additionalTag && !tags.includes(additionalTag)) {
+            tags.push(additionalTag);
+        }
+
         return {
             id: `ai-${Date.now()}-${index}`,
             title: item.title,
             iconId: (item.iconId as IconId) || 'default',
-            tags: ['AI', normalizedLanguage, ...(additionalTag ? [additionalTag] : [])],
+            tags: tags,
             createdAt: Date.now(),
             points: 100,
             activationTypes: ['click'], // Default to click activation for all AI tasks
