@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Team, Game, ChatMessage } from '../types';
 import * as db from '../services/db';
 import { X, Trophy, Target, CheckCircle, Users, ChevronUp, ChevronDown, AlertCircle, MessageSquare, Radio, Siren } from 'lucide-react';
+import ChangeZoneCountdown from './ChangeZoneCountdown';
+import ChangeZonePopup from './ChangeZonePopup';
 
 interface TeamDashboardProps {
   teamId?: string;
