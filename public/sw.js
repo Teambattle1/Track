@@ -7,7 +7,7 @@
  * - Background sync for failed requests
  */
 
-const CACHE_NAME = 'teamchallenge-v1';
+const CACHE_NAME = 'teamaction-v1';
 const STATIC_CACHE = 'static-v1';
 const DYNAMIC_CACHE = 'dynamic-v1';
 
@@ -169,6 +169,6 @@ self.addEventListener('push', (event) => {
   };
   
   event.waitUntil(
-    self.registration.showNotification('Team Challenge', options)
+    self.registration.showNotification('TeamAction', options)
   );
 });
