@@ -120,14 +120,9 @@ Return JSON array.`,
             }
         }
 
-        // Build tags array - exclude language tag if it's the same as additional tag
-        // Also don't add language as tag if it's Danish (already in settings)
+        // Build tags array - DO NOT include language tags
+        // Language is already shown as a flag in the UI based on settings
         const tags = ['AI'];
-
-        // Only add language tag if it's NOT Danish (to avoid redundancy)
-        if (normalizedLanguage.toLowerCase() !== 'danish') {
-            tags.push(normalizedLanguage);
-        }
 
         // Add additional tag if provided and not duplicate
         if (additionalTag && !tags.includes(additionalTag)) {
