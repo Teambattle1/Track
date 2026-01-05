@@ -5323,7 +5323,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 <TaskActionModal
                     point={selectedTask}
                     allPoints={uniquePlaygroundPoints}
-                    playgrounds={game.playgrounds}
+                    playgrounds={uniquePlaygrounds}
                     onClose={() => setShowActionModal(false)}
                     onSave={(updatedPoint) => {
                         onUpdateGame({
@@ -5782,7 +5782,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             {showAiTaskGenerator && (
                 <AiTaskGenerator
                     onClose={() => setShowAiTaskGenerator(false)}
-                    playgrounds={game.playgrounds || []}
+                    playgrounds={uniquePlaygrounds || []}
                     initialPlaygroundId={activePlayground?.id || null}
                     targetMode="GAME"
                     onAddTasks={(tasks, targetPlaygroundId) => {
