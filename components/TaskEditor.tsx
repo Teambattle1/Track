@@ -1189,7 +1189,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
-                                      TYPE <Info className="w-3 h-3 text-blue-500" title="Hover over type for info" />
+                                      TYPE <Info className="w-3 h-3 text-blue-500" title="Hover over dropdown to see descriptions" />
                                   </label>
                                   <div className="relative group">
                                       <select
@@ -1199,6 +1199,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                           onMouseLeave={() => setShowTaskTypeTooltip(false)}
                                           className="w-full px-4 py-2.5 border-2 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold focus:border-orange-500 outline-none appearance-none cursor-pointer text-sm"
                                       >
+                                          <option value="info">ℹ️ INFO</option>
                                           <option value="text">TEXT INPUT</option>
                                           <option value="multiple_choice">QUIZ (MC)</option>
                                           <option value="boolean">YES / NO</option>
@@ -1211,34 +1212,68 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                       </select>
                                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                       {showTaskTypeTooltip && (
-                                          <div className="absolute left-0 top-full mt-2 w-72 bg-blue-900 border-2 border-blue-500 rounded-xl p-3 shadow-2xl z-50 text-xs text-blue-100 space-y-2">
-                                              {editedPoint.task.type === 'text' && (
-                                                  <><p className="font-bold text-blue-200">📝 TEXT INPUT</p><p className="text-blue-300/80">Players type their answer</p><p className="italic text-blue-400">Ex: "Capital of Denmark?"</p></>
-                                              )}
-                                              {editedPoint.task.type === 'multiple_choice' && (
-                                                  <><p className="font-bold text-blue-200">✅ QUIZ (MC)</p><p className="text-blue-300/80">Select from options</p><p className="italic text-blue-400">Ex: A) Paris B) Copenhagen</p></>
-                                              )}
-                                              {editedPoint.task.type === 'boolean' && (
-                                                  <><p className="font-bold text-blue-200">✔️ YES / NO</p><p className="text-blue-300/80">True or false question</p><p className="italic text-blue-400">Ex: "Is this correct?"</p></>
-                                              )}
-                                              {editedPoint.task.type === 'slider' && (
-                                                  <><p className="font-bold text-blue-200">🎚️ SLIDER</p><p className="text-blue-300/80">Select number on scale</p><p className="italic text-blue-400">Ex: "How tall? (1-100m)"</p></>
-                                              )}
-                                              {editedPoint.task.type === 'checkbox' && (
-                                                  <><p className="font-bold text-blue-200">☑️ CHECKBOXES</p><p className="text-blue-300/80">Multiple correct answers</p><p className="italic text-blue-400">Ex: "Nordic countries?"</p></>
-                                              )}
-                                              {editedPoint.task.type === 'dropdown' && (
-                                                  <><p className="font-bold text-blue-200">📋 DROPDOWN</p><p className="text-blue-300/80">Pick from menu</p><p className="italic text-blue-400">Ex: "Select the year"</p></>
-                                              )}
-                                              {editedPoint.task.type === 'timeline' && (
-                                                  <><p className="font-bold text-blue-200">📅 TIMELINE</p><p className="text-blue-300/80">Arrange in order</p><p className="italic text-blue-400">Ex: "Sort by date"</p></>
-                                              )}
-                                              {editedPoint.task.type === 'photo' && (
-                                                  <><p className="font-bold text-blue-200">📸 PHOTO</p><p className="text-blue-300/80">Teams upload a photo</p><p className="italic text-blue-400">Ex: "Take a selfie at the statue"</p></>
-                                              )}
-                                              {editedPoint.task.type === 'video' && (
-                                                  <><p className="font-bold text-blue-200">🎥 VIDEO</p><p className="text-blue-300/80">Teams record a video</p><p className="italic text-blue-400">Ex: "Record your team's challenge"</p></>
-                                              )}
+                                          <div className="absolute left-0 top-full mt-2 w-80 bg-gradient-to-br from-blue-900 to-blue-950 border-2 border-blue-500 rounded-xl p-4 shadow-2xl z-50 text-xs text-blue-100 space-y-3 max-h-96 overflow-y-auto">
+                                              <p className="font-black text-blue-200 text-sm uppercase tracking-wider mb-3">📚 Task Type Reference</p>
+
+                                              <div className={editedPoint.task.type === 'info' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">ℹ️ INFO</p>
+                                                  <p className="text-blue-300/80">Display information only, no answer required</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "Welcome to the museum! Explore..."</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'text' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">📝 TEXT INPUT</p>
+                                                  <p className="text-blue-300/80">Players type their answer</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "What is the capital of Denmark?"</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'multiple_choice' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">✅ QUIZ (MC)</p>
+                                                  <p className="text-blue-300/80">Select from multiple choice options</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: A) Paris B) Copenhagen C) Berlin</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'boolean' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">✔️ YES / NO</p>
+                                                  <p className="text-blue-300/80">True or false question</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "Is Copenhagen the capital?"</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'slider' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">🎚️ SLIDER</p>
+                                                  <p className="text-blue-300/80">Select a number on a scale</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "How tall is the tower? (1-100m)"</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'checkbox' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">☑️ CHECKBOXES</p>
+                                                  <p className="text-blue-300/80">Multiple correct answers</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "Which are Nordic countries?"</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'dropdown' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">📋 DROPDOWN</p>
+                                                  <p className="text-blue-300/80">Pick one from dropdown menu</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "Select the year: 1990, 2000, 2010"</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'timeline' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">📅 TIMELINE / ORDER</p>
+                                                  <p className="text-blue-300/80">Arrange items in correct order</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "Sort these events by date"</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'photo' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">📸 PHOTO</p>
+                                                  <p className="text-blue-300/80">Teams upload a photo for review</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "Take a selfie at the statue"</p>
+                                              </div>
+
+                                              <div className={editedPoint.task.type === 'video' ? 'bg-blue-600/30 p-2 rounded-lg border border-blue-400' : ''}>
+                                                  <p className="font-bold text-blue-200">🎥 VIDEO</p>
+                                                  <p className="text-blue-300/80">Teams record a video for review</p>
+                                                  <p className="italic text-blue-400 text-[10px]">Ex: "Record your team's challenge"</p>
+                                              </div>
                                           </div>
                                       )}
                                   </div>
