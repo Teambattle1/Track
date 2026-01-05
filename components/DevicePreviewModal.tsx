@@ -50,7 +50,7 @@ const DevicePreviewModal: React.FC<DevicePreviewModalProps> = ({ point, onClose 
               <p className="text-xs opacity-90">View how your task appears on different devices</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+          <button type="button" onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
