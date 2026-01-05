@@ -1284,6 +1284,38 @@ const GameApp: React.FC = () => {
       }
   };
 
+  // --- INSTRUCTOR NOTIFICATIONS ---
+  const addInstructorNotification = (taskId: string, taskTitle: string, trigger: 'onOpen' | 'onCorrect' | 'onIncorrect') => {
+      if (!activeGame) return;
+
+      const teamName = teamSync.getTeamName() || 'Unknown Team';
+      const notification: InstructorNotification = {
+          id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          gameId: activeGame.id,
+          teamName,
+          taskTitle,
+          taskId,
+          trigger,
+          timestamp: Date.now(),
+          read: false
+      };
+
+      setInstructorNotifications(prev => [notification, ...prev]);
+
+      // Also broadcast to realtime channel for other instructors
+      if (activeGame) {
+          teamSync.broadcastNotification(notification);
+      }
+  };
+
+  const dismissNotification = (id: string) => {
+      setInstructorNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const dismissAllNotifications = () => {
+      setInstructorNotifications([]);
+  };
+
   // --- TAG MANAGEMENT ---
   const handleRenameTagGlobally = async (
       oldTag: string,
