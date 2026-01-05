@@ -237,26 +237,35 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                         {selectedScript.description}
                       </p>
                     </div>
-                    <button
-                      onClick={() => handleCopy(selectedScript)}
-                      className={`px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition-all flex items-center gap-2 ${
-                        copiedId === selectedScript.id
-                          ? 'bg-green-600 text-white'
-                          : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
-                      }`}
-                    >
-                      {copiedId === selectedScript.id ? (
-                        <>
-                          <Check className="w-4 h-4" />
-                          COPIED!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4" />
-                          COPY SQL
-                        </>
-                      )}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleCopy(selectedScript)}
+                        className={`px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition-all flex items-center gap-2 ${
+                          copiedId === selectedScript.id
+                            ? 'bg-green-600 text-white'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        {copiedId === selectedScript.id ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            COPIED!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            COPY SQL
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={handleSelectAll}
+                        className="px-4 py-2 rounded-lg font-bold uppercase text-xs tracking-widest transition-all bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white"
+                        title="Select all text for manual copy"
+                      >
+                        SELECT ALL
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-3 text-[10px]">
                     <span className={`px-2 py-1 rounded border ${getCategoryColor(selectedScript.category)} font-bold uppercase tracking-wide`}>
