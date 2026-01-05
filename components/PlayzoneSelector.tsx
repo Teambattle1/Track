@@ -54,15 +54,38 @@ const PlayzoneSelector: React.FC<PlayzoneSelectorProps> = ({ onClose, onAddToGam
 
   const handleAddToGame = async () => {
     if (selectedIds.size === 0) return;
-    
+
     const selectedTemplates = templates.filter(t => selectedIds.has(t.id));
+
+    // VALIDATION: Check if any selected templates are missing tasks
+    const brokenTemplates = selectedTemplates.filter(t => !t.tasks || t.tasks.length === 0);
+    if (brokenTemplates.length > 0) {
+      const brokenList = brokenTemplates.map(t => `• ${t.title}`).join('\n');
+      alert(
+        `⚠️ BROKEN TEMPLATES DETECTED\n\n` +
+        `The following templates have no tasks:\n${brokenList}\n\n` +
+        `These templates are corrupted and cannot be added.\n\n` +
+        `Please use the "VALIDATE TEMPLATES" button in the Global Playzones Manager to remove broken templates.`
+      );
+      return;
+    }
+
     setIsAdding(true);
-    
+
     try {
+      console.log('[PlayzoneSelector] Adding templates to game:', {
+        count: selectedTemplates.length,
+        templates: selectedTemplates.map(t => ({
+          title: t.title,
+          taskCount: t.tasks?.length || 0
+        }))
+      });
+
       await onAddToGame(selectedTemplates);
       onClose();
     } catch (error) {
       console.error('Error adding playzones to game:', error);
+      alert('❌ Failed to add playzones to game. Check console for details.');
     } finally {
       setIsAdding(false);
     }
