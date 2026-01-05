@@ -1560,7 +1560,13 @@ const GameApp: React.FC = () => {
                       setShowGameChooser(false);
                       setShowLanding(false);
                   }}
-                  onSelectGame={(id) => { setActiveGameId(id); setShowGameChooser(false); }}
+                  onSelectGame={(id) => {
+                      console.log('[App.tsx] onSelectGame called:', { id, currentMode: mode });
+                      setActiveGameId(id);
+                      setShowGameChooser(false);
+                      setShowLanding(false);
+                      console.log('[App.tsx] onSelectGame: state updates queued');
+                  }}
                   onDeleteGame={handleDeleteGame}
                   onClose={() => setShowGameChooser(false)}
                   onEditGame={(id) => {
