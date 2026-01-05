@@ -93,11 +93,36 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
 
   const handleCopy = async (script: SQLScript) => {
     try {
+      // Try modern Clipboard API first
       await navigator.clipboard.writeText(script.sql);
       setCopiedId(script.id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      // Fallback for restricted contexts (iframes, etc.)
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = script.sql;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        if (successful) {
+          setCopiedId(script.id);
+          setTimeout(() => setCopiedId(null), 2000);
+        } else {
+          console.error('Fallback copy failed');
+          alert('Copy failed. Please manually select and copy the SQL code.');
+        }
+      } catch (fallbackErr) {
+        console.error('Both copy methods failed:', fallbackErr);
+        alert('Copy failed. Please manually select and copy the SQL code.');
+      }
     }
   };
 
