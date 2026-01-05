@@ -107,6 +107,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const [addToTasksSelection, setAddToTasksSelection] = useState<TaskTemplate[]>([]);
     const [addToDestinationType, setAddToDestinationType] = useState<'GAME' | 'PLAYZONE' | 'TASKLIST' | null>(null);
     const [showDestinationSelector, setShowDestinationSelector] = useState(false);
+    const [showCreateNewTasklistInput, setShowCreateNewTasklistInput] = useState(false);
+    const [newTasklistName, setNewTasklistName] = useState('');
 
     // Refs
     const listImageInputRef = useRef<HTMLInputElement>(null);
@@ -2723,28 +2725,45 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     ))
                                 )
                             ) : (
-                                taskLists.length === 0 ? (
-                                    <div className="text-center py-8">
-                                        <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                                        <p className="text-slate-400 text-sm">No task lists available. Create one first.</p>
-                                    </div>
-                                ) : (
-                                    taskLists.map(list => (
-                                        <button
-                                            key={list.id}
-                                            onClick={() => handleConfirmAddTo(list)}
-                                            className="w-full text-left px-5 py-4 bg-slate-800 hover:bg-orange-700 rounded-xl transition-all border border-slate-700 hover:border-orange-500 group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <div className="font-bold text-white text-sm group-hover:text-orange-100">{list.name}</div>
-                                                    <div className="text-xs text-slate-400 mt-1">{list.tasks.length} tasks currently</div>
+                                <>
+                                    {/* Create New Tasklist Button */}
+                                    <button
+                                        onClick={() => {
+                                            setShowCreateNewTasklistInput(true);
+                                            setNewTasklistName('');
+                                        }}
+                                        className="w-full px-5 py-4 bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 rounded-xl transition-all border-2 border-green-500 hover:border-green-400 group shadow-lg"
+                                    >
+                                        <div className="flex items-center justify-center gap-3">
+                                            <Plus className="w-5 h-5 text-white" />
+                                            <div className="font-bold text-white text-sm">CREATE NEW TASKLIST</div>
+                                        </div>
+                                    </button>
+
+                                    {/* Existing Tasklists */}
+                                    {taskLists.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                                            <p className="text-slate-400 text-sm">No task lists available yet.</p>
+                                        </div>
+                                    ) : (
+                                        taskLists.map(list => (
+                                            <button
+                                                key={list.id}
+                                                onClick={() => handleConfirmAddTo(list)}
+                                                className="w-full text-left px-5 py-4 bg-slate-800 hover:bg-orange-700 rounded-xl transition-all border border-slate-700 hover:border-orange-500 group"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="font-bold text-white text-sm group-hover:text-orange-100">{list.name}</div>
+                                                        <div className="text-xs text-slate-400 mt-1">{list.tasks.length} tasks currently</div>
+                                                    </div>
+                                                    <LayoutList className="w-5 h-5 text-slate-600 group-hover:text-orange-300" />
                                                 </div>
-                                                <LayoutList className="w-5 h-5 text-slate-600 group-hover:text-orange-300" />
-                                            </div>
-                                        </button>
-                                    ))
-                                )
+                                            </button>
+                                        ))
+                                    )}
+                                </>
                             )}
                         </div>
                         <div className="p-4 border-t border-slate-700">
