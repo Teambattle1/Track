@@ -10,6 +10,9 @@ import LocationSearch from './LocationSearch';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { haversineMeters } from '../utils/geo';
 import { getGameDisplayId } from '../utils/gameIdUtils';
+import ChangeZonePanel from './ChangeZonePanel';
+import ChangeZoneCountdown from './ChangeZoneCountdown';
+import ChangeZonePopup from './ChangeZonePopup';
 
 interface InstructorDashboardProps {
   game: Game;
