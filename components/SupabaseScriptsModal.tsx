@@ -289,7 +289,7 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                       </span>
                     </div>
                     <pre className="p-4 overflow-x-auto text-xs text-green-400 font-mono leading-relaxed">
-                      <code>{selectedScript.sql}</code>
+                      <code ref={codeRef}>{selectedScript.sql}</code>
                     </pre>
                   </div>
 
