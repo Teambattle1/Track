@@ -201,6 +201,14 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
       }
   };
 
+  const handleClearAll = () => {
+    setGeneratedBuffer([]);
+    setApprovedTasks([]);
+    setError(null);
+    setBatchFinished(false);
+    console.log('[AI Generator] All tasks cleared');
+  };
+
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     if (!autoTag.trim()) {
@@ -214,6 +222,10 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
         setShowGeminiKeyModal(true);
         return;
     }
+
+    // Clear old tasks before generating new ones
+    setGeneratedBuffer([]);
+    setApprovedTasks([]);
 
     setIsGenerating(true);
     setError(null);
