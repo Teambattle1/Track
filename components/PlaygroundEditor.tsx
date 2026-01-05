@@ -2801,6 +2801,17 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                             try {
                                 const zoneTasks = game.points.filter(p => p.playgroundId === activePlayground.id);
+
+                                console.log('[PlaygroundEditor] Creating template:', {
+                                    templateName: templateName.trim(),
+                                    playgroundId: activePlayground.id,
+                                    totalGamePoints: game.points.length,
+                                    zoneTasks: zoneTasks.length,
+                                    taskIds: zoneTasks.map(t => t.id),
+                                    firstTask: zoneTasks[0],
+                                    playgroundData: activePlayground
+                                });
+
                                 const template: PlaygroundTemplate = {
                                     id: `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                                     title: templateName.trim(),
@@ -2809,10 +2820,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     createdAt: Date.now(),
                                     isGlobal: true
                                 };
+
+                                console.log('[PlaygroundEditor] Template prepared:', {
+                                    id: template.id,
+                                    title: template.title,
+                                    taskCount: template.tasks.length,
+                                    hasPlaygroundData: !!template.playgroundData
+                                });
+
                                 await db.savePlaygroundTemplate(template);
-                                alert(`✅ Template "${templateName}" saved successfully!\n\nYou can now use this template to create new playzones.`);
+
+                                console.log('[PlaygroundEditor] Template saved successfully');
+                                alert(`✅ Template "${templateName}" saved successfully!\n\nTasks included: ${zoneTasks.length}\n\nYou can now use this template to create new playzones.`);
                             } catch (error) {
-                                console.error('Failed to save template:', error);
+                                console.error('[PlaygroundEditor] Failed to save template:', error);
                                 alert('❌ Failed to save template. Please try again.');
                             }
                         }}
