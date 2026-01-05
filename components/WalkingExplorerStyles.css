@@ -1,7 +1,7 @@
-/* Explorer Container */
+/* Explorer Container - Higher z-index to stay in front */
 .explorer-container {
     position: absolute;
-    z-index: 5;
+    z-index: 9999;
     pointer-events: none;
     transition: left 0.1s linear, top 0.1s linear;
     filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
@@ -49,7 +49,70 @@
     animation: walk-backpack 0.6s ease-in-out infinite;
 }
 
-/* Leg Walking Animation */
+.explorer.walking .arm-walk-left {
+    animation: walk-arm-left 0.6s ease-in-out infinite;
+}
+
+.explorer.walking .arm-walk-right {
+    animation: walk-arm-right 0.6s ease-in-out infinite;
+}
+
+/* Digging Animation */
+.explorer.digging .arms {
+    animation: dig-arms 0.8s ease-in-out infinite;
+}
+
+.explorer.digging .body {
+    animation: dig-body 0.8s ease-in-out infinite;
+}
+
+.explorer.digging .shovel {
+    animation: dig-shovel 0.8s ease-in-out infinite;
+}
+
+/* Pointing Animation */
+.explorer.pointing .pointing-arm {
+    animation: point-arm 1.5s ease-in-out infinite;
+}
+
+.explorer.pointing .head {
+    animation: point-head 1.5s ease-in-out infinite;
+}
+
+/* Monocular Animation */
+.explorer.monocular .head {
+    animation: monocular-scan 3s ease-in-out infinite;
+}
+
+.explorer.monocular .monocular-lens {
+    animation: lens-glint 2s ease-in-out infinite;
+}
+
+/* Shooting Animation */
+.explorer.shooting .rifle {
+    animation: rifle-recoil 0.15s ease-out;
+}
+
+.explorer.shooting .body {
+    animation: shooting-stance 0.15s ease-out;
+}
+
+/* Celebrating Animation */
+.explorer.celebrating .arm-celebrate-left {
+    animation: celebrate-arm-left 0.8s ease-in-out infinite;
+}
+
+.explorer.celebrating .arm-celebrate-right {
+    animation: celebrate-arm-right 0.8s ease-in-out infinite;
+}
+
+.explorer.celebrating .body {
+    animation: celebrate-body 0.8s ease-in-out infinite;
+}
+
+/* === KEYFRAME ANIMATIONS === */
+
+/* Walking */
 @keyframes walk-leg-left {
     0% { transform: rotate(0deg); transform-origin: 26px 45px; }
     25% { transform: rotate(20deg); transform-origin: 26px 45px; }
@@ -95,47 +158,88 @@
     50% { transform: translateY(-1px); }
 }
 
-/* Searching Animation (when stopped) */
-.explorer.searching .head {
-    animation: search-head 2s ease-in-out infinite;
+@keyframes walk-arm-left {
+    0%, 100% { transform: rotate(0deg); transform-origin: 22px 28px; }
+    50% { transform: rotate(-20deg); transform-origin: 22px 28px; }
 }
 
-.explorer.searching .map-group {
-    animation: search-map 2s ease-in-out infinite;
+@keyframes walk-arm-right {
+    0%, 100% { transform: rotate(0deg); transform-origin: 38px 28px; }
+    50% { transform: rotate(15deg); transform-origin: 38px 28px; }
 }
 
-.explorer.searching .eye {
-    animation: blink 4s ease-in-out infinite;
+/* Digging */
+@keyframes dig-arms {
+    0%, 100% { transform: translateY(0) rotate(0deg); transform-origin: 30px 35px; }
+    50% { transform: translateY(-5px) rotate(-10deg); transform-origin: 30px 35px; }
 }
 
-.explorer.searching .map-marker {
-    animation: pulse-marker 1.5s ease-in-out infinite;
+@keyframes dig-body {
+    0%, 100% { transform: translateY(0) rotate(0deg); transform-origin: 30px 23px; }
+    50% { transform: translateY(-2px) rotate(5deg); transform-origin: 30px 23px; }
 }
 
-@keyframes search-head {
+@keyframes dig-shovel {
+    0%, 100% { transform: rotate(0deg); transform-origin: 30px 40px; }
+    50% { transform: rotate(-15deg); transform-origin: 30px 40px; }
+}
+
+/* Pointing */
+@keyframes point-arm {
+    0%, 100% { transform: rotate(0deg); transform-origin: 38px 28px; }
+    50% { transform: rotate(-5deg); transform-origin: 38px 28px; }
+}
+
+@keyframes point-head {
     0%, 100% { transform: rotate(0deg); transform-origin: 30px 23px; }
-    20% { transform: rotate(-8deg); transform-origin: 30px 23px; }
-    40% { transform: rotate(5deg); transform-origin: 30px 23px; }
-    60% { transform: rotate(-5deg); transform-origin: 30px 23px; }
-    80% { transform: rotate(3deg); transform-origin: 30px 23px; }
+    50% { transform: rotate(3deg); transform-origin: 30px 23px; }
 }
 
-@keyframes search-map {
-    0%, 100% { transform: translateY(0) rotate(0deg); transform-origin: 25px 36px; }
-    25% { transform: translateY(-2px) rotate(-3deg); transform-origin: 25px 36px; }
-    50% { transform: translateY(0) rotate(2deg); transform-origin: 25px 36px; }
-    75% { transform: translateY(-1px) rotate(-1deg); transform-origin: 25px 36px; }
+/* Monocular */
+@keyframes monocular-scan {
+    0%, 100% { transform: rotate(-10deg); transform-origin: 30px 23px; }
+    25% { transform: rotate(10deg); transform-origin: 30px 23px; }
+    50% { transform: rotate(-5deg); transform-origin: 30px 23px; }
+    75% { transform: rotate(5deg); transform-origin: 30px 23px; }
 }
 
-@keyframes blink {
-    0%, 49%, 51%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+@keyframes lens-glint {
+    0%, 90%, 100% { opacity: 1; }
+    95% { opacity: 0.3; }
 }
 
-@keyframes pulse-marker {
-    0%, 100% { transform: scale(1); opacity: 0.7; }
-    50% { transform: scale(1.3); opacity: 1; }
+/* Shooting */
+@keyframes rifle-recoil {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
 }
+
+@keyframes shooting-stance {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+}
+
+/* Celebrating */
+@keyframes celebrate-arm-left {
+    0%, 100% { transform: rotate(0deg); transform-origin: 22px 28px; }
+    50% { transform: rotate(-30deg); transform-origin: 22px 28px; }
+}
+
+@keyframes celebrate-arm-right {
+    0%, 100% { transform: rotate(0deg); transform-origin: 38px 28px; }
+    50% { transform: rotate(30deg); transform-origin: 38px 28px; }
+}
+
+@keyframes celebrate-body {
+    0%, 100% { transform: translateY(0) scale(1); }
+    25% { transform: translateY(-4px) scale(1.05); }
+    50% { transform: translateY(0) scale(1); }
+    75% { transform: translateY(-3px) scale(1.03); }
+}
+
+/* === VISUAL EFFECTS === */
 
 /* Dust cloud effect */
 .dust-cloud {
@@ -165,55 +269,100 @@
     }
 }
 
-/* Thought bubble */
-.thought-bubble {
+/* Digging dirt effect */
+.dig-effect {
     position: absolute;
-    top: -30px;
+    bottom: -10px;
     left: 50%;
     transform: translateX(-50%);
-    animation: float-bubble 2s ease-in-out infinite;
+    width: 40px;
+    height: 40px;
+    pointer-events: none;
 }
 
-.bubble {
-    background: white;
-    border: 2px solid #333;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    position: relative;
-}
-
-.bubble-tail::before,
-.bubble-tail::after {
-    content: '';
+.dirt-particle {
     position: absolute;
-    background: white;
-    border: 2px solid #333;
-    border-radius: 50%;
-}
-
-.bubble-tail::before {
-    width: 12px;
-    height: 12px;
-    bottom: -15px;
-    left: 15px;
-}
-
-.bubble-tail::after {
     width: 6px;
     height: 6px;
-    bottom: -22px;
-    left: 18px;
+    background: #8b7355;
+    border-radius: 50%;
+    animation: dirt-fly 1s ease-out infinite;
 }
 
-@keyframes float-bubble {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-5px); }
+.dirt-particle:nth-child(1) {
+    left: 0;
+    animation-delay: 0s;
+}
+
+.dirt-particle:nth-child(2) {
+    left: 15px;
+    animation-delay: 0.2s;
+}
+
+.dirt-particle:nth-child(3) {
+    left: 30px;
+    animation-delay: 0.4s;
+}
+
+@keyframes dirt-fly {
+    0% {
+        transform: translateY(0) translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20px) translateX(10px);
+        opacity: 0;
+    }
+}
+
+/* Muzzle flash effect */
+.muzzle-flash {
+    position: absolute;
+    right: -10px;
+    top: 20px;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #ffff00 0%, #ff8800 30%, transparent 70%);
+    border-radius: 50%;
+    animation: flash 0.15s ease-out;
+    opacity: 0;
+}
+
+@keyframes flash {
+    0% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.7;
+        transform: scale(1.5);
+    }
+    100% { 
+        opacity: 0;
+        transform: scale(0.5);
+    }
+}
+
+/* Celebration stars */
+.celebration-stars {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    animation: stars-float 0.8s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+@keyframes stars-float {
+    0%, 100% { 
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% { 
+        transform: translateX(-50%) translateY(-10px) rotate(10deg);
+        opacity: 0.8;
+    }
 }
 
 /* Responsive adjustments */
@@ -233,13 +382,12 @@
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
 }
 
-/* Arm animation when searching */
-.explorer.searching .arm-left,
-.explorer.searching .arm-right {
-    animation: search-arms 2s ease-in-out infinite;
+/* Eye blink */
+.eye {
+    animation: blink 4s ease-in-out infinite;
 }
 
-@keyframes search-arms {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-1px); }
+@keyframes blink {
+    0%, 49%, 51%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }
