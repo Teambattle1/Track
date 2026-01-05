@@ -1016,6 +1016,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     }, [activePlayground?.id, taskSortMode, game.points]);
 
+    // Deduplicate playgrounds to prevent "same key" errors (fixes duplicate playground IDs)
+    const uniquePlaygrounds = React.useMemo(() => {
+        if (!game.playgrounds) return [];
+        // Use Map to deduplicate by ID - keeps the last occurrence of each ID
+        return Array.from(new Map(game.playgrounds.map(pg => [pg.id, pg])).values());
+    }, [game.playgrounds]);
+
     // Deduplicate to prevent "same key" errors
     const uniquePlaygroundPoints = Array.from(new Map(playgroundPoints.map(p => [p.id, p])).values());
 
