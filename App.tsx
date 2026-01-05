@@ -117,6 +117,7 @@ const GameApp: React.FC = () => {
   const [showAccess, setShowAccess] = useState(false);
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
   const [showPlayzoneSelector, setShowPlayzoneSelector] = useState(false);
+  const [showSystemSounds, setShowSystemSounds] = useState(false);
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
   const gameTemplates = useMemo(() => games.filter(g => g.isGameTemplate), [games]);
