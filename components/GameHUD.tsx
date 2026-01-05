@@ -1062,6 +1062,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                                 ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
                                                 : `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
+                                            const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending';
+
                                             return (
                                                 <button
                                                     key={zc.id}
@@ -1069,7 +1071,11 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                                         // TODO: Open zone change adjustment modal
                                                         setShowAdjustGameTime(true);
                                                     }}
-                                                    className="px-4 py-2 rounded-xl font-bold text-sm shadow-lg flex flex-col items-center gap-1 border transition-all bg-orange-700 border-orange-600 text-white hover:bg-orange-800 cursor-pointer"
+                                                    className={`px-4 py-2 rounded-xl font-bold text-sm shadow-lg flex flex-col items-center gap-1 border transition-all cursor-pointer ${
+                                                        isGameEnded
+                                                            ? 'bg-pink-600 border-pink-500 text-white hover:bg-pink-700'
+                                                            : 'bg-orange-700 border-orange-600 text-white hover:bg-orange-800'
+                                                    }`}
                                                     title={`Click to adjust: ${zc.title}`}
                                                 >
                                                     <span className="text-[8px] font-black uppercase tracking-widest opacity-90">{zc.title}</span>
@@ -1448,8 +1454,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     onPointerMove={handlePinsBoxPointerMove}
                     onPointerUp={handlePinsBoxPointerUp}
                 >
-                    <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl shadow-2xl p-1 cursor-move group relative">
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-yellow-200 opacity-0 group-hover:opacity-100 transition-opacity bg-yellow-700 rounded-full px-2 border border-yellow-500 pointer-events-none">
+                    <div className="bg-pink-600 border-2 border-pink-500 rounded-xl shadow-2xl p-1 cursor-move group relative">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-pink-200 opacity-0 group-hover:opacity-100 transition-opacity bg-pink-700 rounded-full px-2 border border-pink-500 pointer-events-none">
                             <GripHorizontal className="w-3 h-3" />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -1460,7 +1466,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 {/* Danger Zone Button */}
                                 <button
                                     onClick={onAddDangerZone}
-                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-pink-700 text-pink-100 border-pink-600 hover:bg-pink-800 hover:text-white`}
                                     title="Danger Zone"
                                 >
                                     <Skull className="w-4 h-4" />
@@ -1469,7 +1475,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 {/* Measure Button */}
                                 <button
                                     onClick={onToggleMeasure}
-                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${isMeasuring ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${isMeasuring ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-pink-700 text-pink-100 border-pink-600 hover:bg-pink-800 hover:text-white'}`}
                                     title="Measure"
                                 >
                                     <Ruler className="w-4 h-4" />
@@ -1478,7 +1484,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 {/* Relocate Button */}
                                 <button
                                     onClick={onRelocateGame}
-                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${isRelocating ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50 animate-pulse' : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'}`}
+                                    className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${isRelocating ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50 animate-pulse' : 'bg-pink-700 text-pink-100 border-pink-600 hover:bg-pink-800 hover:text-white'}`}
                                     title="Relocate"
                                 >
                                     <Crosshair className="w-4 h-4" />
@@ -1491,7 +1497,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                         className={`w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative ${
                                             snapToRoadMode
                                                 ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50'
-                                                : 'bg-yellow-700 text-yellow-100 border-yellow-600 hover:bg-yellow-800 hover:text-white'
+                                                : 'bg-pink-700 text-pink-100 border-pink-600 hover:bg-pink-800 hover:text-white'
                                         }`}
                                         title={snapToRoadMode ? 'ACTIVE: Draw rectangle around tasks to select them' : 'Click to activate snap mode: draw rectangle to select tasks, then deactivate to snap to roads'}
                                     >
