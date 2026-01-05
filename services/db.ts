@@ -441,6 +441,64 @@ export const replaceMapStyleInGames = async (oldStyleId: string, newStyleId: str
     }
 };
 
+// --- GAME LOCATION HISTORY ---
+export const saveGameLocationHistory = async (
+    gameId: string,
+    teamPaths: Record<string, any[]>
+): Promise<boolean> => {
+    try {
+        const historyData = {
+            game_id: gameId,
+            team_paths: teamPaths,
+            timestamp: Date.now(),
+            updated_at: new Date().toISOString(),
+        };
+
+        const { error } = await supabase
+            .from('game_location_history')
+            .upsert(historyData, {
+                onConflict: 'game_id',
+                ignoreDuplicates: false,
+            });
+
+        if (error) {
+            logError('saveGameLocationHistory', error);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        logError('saveGameLocationHistory', error);
+        return false;
+    }
+};
+
+export const fetchGameLocationHistory = async (
+    gameId: string
+): Promise<Record<string, any[]> | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('game_location_history')
+            .select('team_paths')
+            .eq('game_id', gameId)
+            .single();
+
+        if (error) {
+            if (error.code === 'PGRST116') {
+                // No history found
+                return null;
+            }
+            logError('fetchGameLocationHistory', error);
+            return null;
+        }
+
+        return data?.team_paths || null;
+    } catch (error) {
+        logError('fetchGameLocationHistory', error);
+        return null;
+    }
+};
+
 // --- TEAMS ---
 export const fetchTeams = async (gameId: string): Promise<Team[]> => {
     try {
