@@ -175,10 +175,16 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     const [showMapStylesMenu, setShowMapStylesMenu] = useState(false);
     const [showToolbarsMenu, setShowToolbarsMenu] = useState(false);
 
-    // Auto-collapse Zone Change section when game ends
+    // Auto-collapse Zone Change section when game ends or when no active countdowns
     React.useEffect(() => {
-        const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending';
-        if (isGameEnded && zoneChanges && zoneChanges.length > 0) {
+        const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending' || (timerConfig && timerConfig.timeLeft <= 0);
+        const now = Date.now();
+        const hasActiveCountdowns = zoneChanges && zoneChanges.some(zc =>
+            zc.enabled && !zc.hasTriggered && zc.targetTime && zc.targetTime > now
+        );
+
+        // Collapse if game ended OR if there are no active countdowns
+        if ((isGameEnded || !hasActiveCountdowns) && zoneChanges && zoneChanges.length > 0) {
             const newState = {
                 ...collapsedSections,
                 zonechange: true
@@ -189,7 +195,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                 setCollapsedSectionsLocal(newState);
             }
         }
-    }, [activeGame?.state]);
+    }, [activeGame?.state, timerConfig?.timeLeft, zoneChanges]);
 
     // Use prop if provided, otherwise use local state
     const collapsedSections = collapsedSectionsProp || collapsedSectionsLocal;
@@ -472,7 +478,11 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
 
                 {/* ZONE CHANGE Section - Yellow with glow when active, Pink when game ended (NO glow when ended) */}
                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (() => {
-                    const hasActiveZoneChanges = zoneChanges.some(zc => zc.enabled && !zc.hasTriggered);
+                    const now = Date.now();
+                    // Only show as active if enabled, not triggered, AND targetTime is in the future
+                    const hasActiveZoneChanges = zoneChanges.some(zc =>
+                        zc.enabled && !zc.hasTriggered && zc.targetTime && zc.targetTime > now
+                    );
                     // Check if game has ended OR if timer has run out (timeLeft is at or below 0)
                     const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending' || (timerConfig && timerConfig.timeLeft <= 0);
 
@@ -509,7 +519,10 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                             {isVisible('zonechange') && (
                                 <div className="space-y-2">
                                     {zoneChanges.map((zc, index) => {
-                                        const hasActiveZoneChanges = zoneChanges.some(zc => zc.enabled && !zc.hasTriggered);
+                                        const now = Date.now();
+                                        const hasActiveZoneChanges = zoneChanges.some(zc =>
+                                            zc.enabled && !zc.hasTriggered && zc.targetTime && zc.targetTime > now
+                                        );
 
                                         return (
                                             <ZoneChangeItem
