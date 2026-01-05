@@ -162,6 +162,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     pendingApprovalsCount = 0,
     zoneChanges = [],
     onAdjustZoneChange,
+    onShowRanking,
+    onOpenTeams,
 }) => {
     // Auto-collapse MAPSTYLE and ZONE CHANGE in editor mode by default
     const defaultCollapsedState = {
