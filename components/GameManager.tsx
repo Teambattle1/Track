@@ -292,9 +292,12 @@ const GameManager: React.FC<GameManagerProps> = ({
     // This guarantees game editor opens in EDIT mode, not PLAY
     if (onEditGame) {
       onEditGame(gameId);
+      // Close the modal after opening the game
+      onClose();
     } else {
       // Fallback: select game and let parent handle mode change
       onSelectGame(gameId);
+      onClose();
     }
   };
 
