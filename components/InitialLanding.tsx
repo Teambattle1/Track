@@ -171,15 +171,19 @@ const MapPinButton = ({
                         group-hover:-translate-y-6 group-hover:scale-110 group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)] group-hover:border-white/40
                         animate-in zoom-in fade-in fill-mode-backwards
                         ${delayClass}
+                        ${isBlinking ? 'animate-[blink_2s_ease-in-out]' : ''}
                     `}
                 >
                     {/* Inner Content (Counter-rotated to stay upright) */}
                     <div className="-rotate-45 flex items-center justify-center">
-                        <Icon className="w-12 h-12 md:w-20 md:h-20 text-white drop-shadow-md" strokeWidth={2} />
+                        <Icon className={`w-12 h-12 md:w-20 md:h-20 text-white drop-shadow-md transition-all duration-300 ${isBlinking ? 'scale-110' : ''}`} strokeWidth={2} />
                     </div>
 
-                    {/* Glass/Shine Effect */}
+                    {/* Enhanced Glass/Shine Effect - Multiple Layers */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rounded-full rounded-br-none pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-bl from-white/30 via-transparent to-transparent rounded-full rounded-br-none pointer-events-none" />
+                    <div className={`absolute top-0 left-0 w-1/3 h-1/3 bg-white/40 rounded-full blur-2xl pointer-events-none transition-opacity duration-300 ${isBlinking ? 'opacity-100' : 'opacity-60'}`} />
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/10 rounded-full rounded-br-none pointer-events-none" />
 
                     {/* Badge (if provided) */}
                     {badge && (
