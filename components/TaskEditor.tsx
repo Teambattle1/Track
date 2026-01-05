@@ -2292,7 +2292,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                   {/* Keep on Screen When Correct */}
                                   <div className="flex items-center justify-between">
                                       <div className="flex-1">
-                                          <label className="block text-xs font-bold text-green-900 dark:text-green-100">Keep on Screen When Correct</label>
+                                          <label className="block text-xs font-bold text-green-900 dark:text-green-100 flex items-center gap-1.5">
+                                              Keep on Screen When Correct
+                                              <InfoTooltip
+                                                  title="Keep on Screen When Correct"
+                                                  description="When enabled, the task pin stays visible on the map after teams answer correctly (shown grayed out). Useful for showing completed progress."
+                                                  example="Show all completed checkpoints along a route"
+                                              />
+                                          </label>
                                           <p className="text-[10px] text-green-700 dark:text-green-300 mt-1">
                                               Task remains visible (grayed out) after answering correctly
                                           </p>
@@ -2327,7 +2334,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                   {/* Keep on Screen When Incorrect */}
                                   <div className="flex items-center justify-between">
                                       <div className="flex-1">
-                                          <label className="block text-xs font-bold text-red-900 dark:text-red-100">Keep on Screen When Incorrect</label>
+                                          <label className="block text-xs font-bold text-red-900 dark:text-red-100 flex items-center gap-1.5">
+                                              Keep on Screen When Incorrect
+                                              <InfoTooltip
+                                                  title="Keep on Screen When Incorrect"
+                                                  description="When enabled, the task pin stays visible on the map after teams answer incorrectly (shown grayed out). Helps teams remember failed attempts."
+                                                  example="Show attempted but failed challenges"
+                                              />
+                                          </label>
                                           <p className="text-[10px] text-red-700 dark:text-red-300 mt-1">
                                               Task remains visible (grayed out) after answering incorrectly
                                           </p>
