@@ -289,6 +289,29 @@ export const saveGame = async (game: Game) => {
     }
 };
 
+/**
+ * Update a game with partial data (merge updates with existing game)
+ * @param gameId - Game ID to update
+ * @param updates - Partial game data to merge
+ * @returns Updated game object or null if failed
+ */
+export const updateGame = async (gameId: string, updates: Partial<Game>): Promise<Game | null> => {
+    try {
+        const existing = await fetchGame(gameId);
+        if (!existing) {
+            console.error('[DB] updateGame: Game not found:', gameId);
+            return null;
+        }
+
+        const updated: Game = { ...existing, ...updates };
+        await saveGame(updated);
+        return updated;
+    } catch (e) {
+        logError('updateGame', e);
+        return null;
+    }
+};
+
 export const fetchGame = async (id: string): Promise<Game | null> => {
     try {
         const result = await retryWithBackoff(
