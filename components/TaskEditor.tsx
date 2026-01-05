@@ -1890,7 +1890,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                               </div>
 
                               <div>
-                                  <label className="block text-[10px] font-black text-blue-700 dark:text-blue-300 mb-1.5 uppercase tracking-[0.2em]">Duration (Seconds)</label>
+                                  <label className="block text-[10px] font-black text-blue-700 dark:text-blue-300 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
+                                      Duration (Seconds)
+                                      <InfoTooltip
+                                          title="Time Limit"
+                                          description="Set a countdown timer for this task. When time runs out, the task may fail or apply penalties depending on your settings."
+                                          example="300 seconds = 5 minute timer"
+                                      />
+                                  </label>
                                   <div className="flex">
                                       <input
                                           type="number"
@@ -2364,7 +2371,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 p-5 rounded-2xl border-2 border-yellow-200 dark:border-yellow-700">
                                <div className="flex items-center gap-2 mb-3">
                                    <MessageSquare className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                                   <label className="text-[10px] font-black text-yellow-700 dark:text-yellow-300 uppercase tracking-[0.2em]">HINT System</label>
+                                   <label className="text-[10px] font-black text-yellow-700 dark:text-yellow-300 uppercase tracking-[0.2em] flex items-center gap-1">
+                                       HINT System
+                                       <InfoTooltip
+                                           title="Hint System"
+                                           description="Provide a helpful hint that players can reveal by spending points. The hint cost is deducted from their score."
+                                           example="Hint: 'The answer starts with C' costs -50 points to reveal"
+                                       />
+                                   </label>
                                </div>
 
                                <div className="space-y-4">
