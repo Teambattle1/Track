@@ -1,0 +1,245 @@
+/* Explorer Container */
+.explorer-container {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    transition: left 0.1s linear, top 0.1s linear;
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.explorer {
+    position: relative;
+    transform-origin: bottom center;
+}
+
+.explorer.right {
+    transform: scaleX(1);
+}
+
+.explorer.left {
+    transform: scaleX(-1);
+}
+
+/* Walking Animation */
+.explorer.walking .leg-left {
+    animation: walk-leg-left 0.6s ease-in-out infinite;
+}
+
+.explorer.walking .leg-right {
+    animation: walk-leg-right 0.6s ease-in-out infinite;
+}
+
+.explorer.walking .foot-left {
+    animation: walk-foot-left 0.6s ease-in-out infinite;
+}
+
+.explorer.walking .foot-right {
+    animation: walk-foot-right 0.6s ease-in-out infinite;
+}
+
+.explorer.walking .body {
+    animation: walk-body 0.6s ease-in-out infinite;
+}
+
+.explorer.walking .head {
+    animation: walk-head 0.6s ease-in-out infinite;
+}
+
+.explorer.walking .backpack {
+    animation: walk-backpack 0.6s ease-in-out infinite;
+}
+
+/* Leg Walking Animation */
+@keyframes walk-leg-left {
+    0% { transform: rotate(0deg); transform-origin: 26px 45px; }
+    25% { transform: rotate(20deg); transform-origin: 26px 45px; }
+    50% { transform: rotate(0deg); transform-origin: 26px 45px; }
+    75% { transform: rotate(-15deg); transform-origin: 26px 45px; }
+    100% { transform: rotate(0deg); transform-origin: 26px 45px; }
+}
+
+@keyframes walk-leg-right {
+    0% { transform: rotate(0deg); transform-origin: 34px 45px; }
+    25% { transform: rotate(-15deg); transform-origin: 34px 45px; }
+    50% { transform: rotate(0deg); transform-origin: 34px 45px; }
+    75% { transform: rotate(20deg); transform-origin: 34px 45px; }
+    100% { transform: rotate(0deg); transform-origin: 34px 45px; }
+}
+
+@keyframes walk-foot-left {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-3px); }
+    50% { transform: translateY(0); }
+    75% { transform: translateY(0); }
+}
+
+@keyframes walk-foot-right {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(0); }
+    50% { transform: translateY(0); }
+    75% { transform: translateY(-3px); }
+}
+
+@keyframes walk-body {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+@keyframes walk-head {
+    0%, 100% { transform: translateY(0) rotate(0deg); transform-origin: center; }
+    50% { transform: translateY(-2px) rotate(2deg); transform-origin: center; }
+}
+
+@keyframes walk-backpack {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-1px); }
+}
+
+/* Searching Animation (when stopped) */
+.explorer.searching .head {
+    animation: search-head 2s ease-in-out infinite;
+}
+
+.explorer.searching .map-group {
+    animation: search-map 2s ease-in-out infinite;
+}
+
+.explorer.searching .eye {
+    animation: blink 4s ease-in-out infinite;
+}
+
+.explorer.searching .map-marker {
+    animation: pulse-marker 1.5s ease-in-out infinite;
+}
+
+@keyframes search-head {
+    0%, 100% { transform: rotate(0deg); transform-origin: 30px 23px; }
+    20% { transform: rotate(-8deg); transform-origin: 30px 23px; }
+    40% { transform: rotate(5deg); transform-origin: 30px 23px; }
+    60% { transform: rotate(-5deg); transform-origin: 30px 23px; }
+    80% { transform: rotate(3deg); transform-origin: 30px 23px; }
+}
+
+@keyframes search-map {
+    0%, 100% { transform: translateY(0) rotate(0deg); transform-origin: 25px 36px; }
+    25% { transform: translateY(-2px) rotate(-3deg); transform-origin: 25px 36px; }
+    50% { transform: translateY(0) rotate(2deg); transform-origin: 25px 36px; }
+    75% { transform: translateY(-1px) rotate(-1deg); transform-origin: 25px 36px; }
+}
+
+@keyframes blink {
+    0%, 49%, 51%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes pulse-marker {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* Dust cloud effect */
+.dust-cloud {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 10px;
+    background: radial-gradient(ellipse, rgba(139, 115, 85, 0.4) 0%, transparent 70%);
+    animation: dust 0.6s ease-in-out infinite;
+    border-radius: 50%;
+}
+
+@keyframes dust {
+    0% { 
+        width: 20px;
+        opacity: 0.3;
+    }
+    50% { 
+        width: 35px;
+        opacity: 0.6;
+    }
+    100% { 
+        width: 20px;
+        opacity: 0.3;
+    }
+}
+
+/* Thought bubble */
+.thought-bubble {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: float-bubble 2s ease-in-out infinite;
+}
+
+.bubble {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.bubble-tail::before,
+.bubble-tail::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 50%;
+}
+
+.bubble-tail::before {
+    width: 12px;
+    height: 12px;
+    bottom: -15px;
+    left: 15px;
+}
+
+.bubble-tail::after {
+    width: 6px;
+    height: 6px;
+    bottom: -22px;
+    left: 18px;
+}
+
+@keyframes float-bubble {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .explorer-container {
+        transform: scale(0.7);
+    }
+}
+
+/* Add slight shadow to character */
+.explorer-svg {
+    filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+/* Hat shadow on face */
+.hat-brim {
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Arm animation when searching */
+.explorer.searching .arm-left,
+.explorer.searching .arm-right {
+    animation: search-arms 2s ease-in-out infinite;
+}
+
+@keyframes search-arms {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-1px); }
+}
