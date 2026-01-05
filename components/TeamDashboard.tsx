@@ -8,17 +8,23 @@ import ChangeZonePopup from './ChangeZonePopup';
 interface TeamDashboardProps {
   teamId?: string;
   gameId: string;
+  game?: Game; // NEW: Full game object for ChangeZone feature
   totalMapPoints: number;
   onOpenAgents: () => void;
   onClose: () => void;
   chatHistory?: ChatMessage[];
 }
 
-const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, totalMapPoints, onOpenAgents, onClose, chatHistory = [] }) => {
+const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, totalMapPoints, onOpenAgents, onClose, chatHistory = [] }) => {
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [leaderboard, setLeaderboard] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'STATS' | 'CHAT'>('STATS');
+  const [showChangeZonePopup, setShowChangeZonePopup] = useState(false);
+
+  const handleChangeZoneTrigger = () => {
+    setShowChangeZonePopup(true);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
