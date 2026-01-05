@@ -98,6 +98,40 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
       if (!selectedTemplateForGame) return;
 
       try {
+          console.log('[PlaygroundManager] Starting import...', {
+              template: selectedTemplateForGame.title,
+              taskCount: selectedTemplateForGame.tasks?.length,
+              tasks: selectedTemplateForGame.tasks
+          });
+
+          // VALIDATION: Check if template has tasks
+          if (!selectedTemplateForGame.tasks || selectedTemplateForGame.tasks.length === 0) {
+              const errorMsg = `⚠️ TEMPLATE ERROR: "${selectedTemplateForGame.title}" has no tasks!
+
+This template may be:
+• Corrupted or created before this feature
+• Missing data in the database
+• Not saved with tasks included
+
+Would you like to delete this broken template?`;
+
+              console.error('[PlaygroundManager] Template has no tasks:', selectedTemplateForGame);
+
+              if (window.confirm(errorMsg)) {
+                  try {
+                      await db.deletePlaygroundTemplate(selectedTemplateForGame.id);
+                      setTemplates(prev => prev.filter(t => t.id !== selectedTemplateForGame.id));
+                      alert('❌ Broken template deleted.');
+                  } catch (deleteError) {
+                      console.error('Error deleting template:', deleteError);
+                  }
+              }
+
+              setShowGameSelector(false);
+              setSelectedTemplateForGame(null);
+              return;
+          }
+
           const newPlaygroundId = `pg-${Date.now()}`;
           const newPlayground = {
               id: newPlaygroundId,
@@ -113,12 +147,20 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
           // - Appearance (icons, colors, scales, etc.)
           // - Advanced Features (timeBomb, proximityTrigger, multiTeam, QR codes, NFC, etc.)
           // - All other properties
-          const newPoints = selectedTemplateForGame.tasks?.map((task, index) => ({
+          const newPoints = selectedTemplateForGame.tasks.map((task, index) => ({
               ...task,
-              id: task.id, // Keep original task ID for library sync
+              id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Generate unique ID for each game import
               playgroundId: newPlaygroundId, // Associate with new playground
-              order: index
-          })) || [];
+              order: index,
+              isCompleted: false, // Reset completion status
+              isUnlocked: true // Unlock by default
+          }));
+
+          console.log('[PlaygroundManager] Imported tasks:', {
+              count: newPoints.length,
+              firstTask: newPoints[0],
+              lastTask: newPoints[newPoints.length - 1]
+          });
 
           const updatedGame = {
               ...game,
@@ -128,12 +170,18 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
 
           await db.saveGame(updatedGame);
 
+          console.log('[PlaygroundManager] Game updated successfully', {
+              gameId: game.id,
+              newPlaygroundCount: updatedGame.playgrounds.length,
+              newPointCount: updatedGame.points.length
+          });
+
           setShowGameSelector(false);
           setSelectedTemplateForGame(null);
-          alert(`Playzone "${selectedTemplateForGame.title}" with ${newPoints.length} task(s) added to "${game.name}"!`);
+          alert(`✅ SUCCESS!\n\nPlayzone "${selectedTemplateForGame.title}" with ${newPoints.length} task(s) added to "${game.name}"!\n\nGo to the Game Editor to see the imported tasks.`);
       } catch (error) {
-          console.error('Error adding playzone to game:', error);
-          alert('Failed to add playzone to game');
+          console.error('[PlaygroundManager] Error adding playzone to game:', error);
+          alert(`❌ Failed to add playzone to game:\n\n${error}`);
       }
   };
 
