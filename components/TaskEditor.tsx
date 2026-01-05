@@ -1095,7 +1095,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                             <input
                                 type="number"
                                 value={range.max}
-                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, max: parseInt(e.target.value) || 100}}})}
+                                onChange={(e) => setEditedPoint(prev => ({...prev, task: {...prev.task, range: {...prev.task.range, max: parseInt(e.target.value) || 100}}}))}
                                 className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
                             />
                         </div>
@@ -1104,7 +1104,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                             <input
                                 type="number"
                                 value={range.step || 1}
-                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, step: parseInt(e.target.value) || 1}}})}
+                                onChange={(e) => setEditedPoint(prev => ({...prev, task: {...prev.task, range: {...prev.task.range, step: parseInt(e.target.value) || 1}}}))}
                                 className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
                             />
                         </div>
@@ -1121,7 +1121,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                             <input
                                 type="number"
                                 value={range.correctValue || 50}
-                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, correctValue: parseInt(e.target.value) || 50}}})}
+                                onChange={(e) => setEditedPoint(prev => ({...prev, task: {...prev.task, range: {...prev.task.range, correctValue: parseInt(e.target.value) || 50}}}))}
                                 min={range.min}
                                 max={range.max}
                                 className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm border-green-500"
@@ -1132,7 +1132,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                             <input
                                 type="number"
                                 value={range.tolerance || 0}
-                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, tolerance: parseInt(e.target.value) || 0}}})}
+                                onChange={(e) => setEditedPoint(prev => ({...prev, task: {...prev.task, range: {...prev.task.range, tolerance: parseInt(e.target.value) || 0}}}))}
                                 className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
                             />
                             <p className="text-[10px] text-gray-400 mt-1">How many points away from correct value is acceptable</p>
