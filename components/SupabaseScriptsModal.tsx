@@ -586,11 +586,19 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                 <h3 className="text-sm font-black text-slate-400 uppercase mb-3">Quick Actions</h3>
                 <div className="space-y-3">
                   <button
-                    onClick={() => window.open('https://supabase.com/dashboard', '_blank')}
+                    onClick={() => window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja', '_blank')}
                     className="w-full py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-bold uppercase text-xs flex items-center justify-center gap-2 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Open Supabase Dashboard
+                    Open My Supabase Project
+                  </button>
+
+                  <button
+                    onClick={() => window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/5f49e3d9-339b-4fd1-ac3b-8f368f6d6eb9', '_blank')}
+                    className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-bold uppercase text-xs flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <Terminal className="w-4 h-4" />
+                    Open SQL Editor (Direct)
                   </button>
 
                   <button
