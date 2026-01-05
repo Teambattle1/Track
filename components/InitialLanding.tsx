@@ -356,6 +356,23 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
     }
   }, [games]);
 
+  // Generate QR code for game login
+  const generateGameLoginQR = async (gameId: string) => {
+    if (qrCodeDataUrls[gameId]) return; // Already generated
+
+    try {
+      const url = `${window.location.origin}/#/client/${gameId}`;
+      const dataUrl = await QRCodeLib.toDataURL(url, {
+        width: 200,
+        margin: 1,
+        color: { dark: '#000000', light: '#ffffff' }
+      });
+      setQrCodeDataUrls(prev => ({ ...prev, [gameId]: dataUrl }));
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+    }
+  };
+
   // Handle drag start
   const handleDragStart = (e: React.MouseEvent) => {
     if (!fieldsContainerRef.current) return;
