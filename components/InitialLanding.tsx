@@ -712,7 +712,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                       <NavCard
                           title="SYSTEM SOUNDS"
                           subtitle="GLOBAL AUDIO SETTINGS"
-                          icon={MessageSquare}
+                          icon={Volume2}
                           color="bg-purple-600"
                           onClick={() => onAction('SYSTEM_SOUNDS')}
                       />
