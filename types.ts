@@ -167,6 +167,18 @@ export interface TaskFeedback {
 export interface TaskSettings {
   timeLimitSeconds?: number;
   scoreDependsOnSpeed: boolean;
+
+  // Advanced scoring mode based on time
+  scoreReductionMode?: 'none' | 'linear' | 'exponential'; // How points reduce over time
+
+  // Countdown warnings (last X seconds)
+  countdownWarningEnabled?: boolean; // Enable audio/visual warnings
+  countdownWarningSeconds?: number; // When to start warnings (default: 20)
+  countdownFlashEnabled?: boolean; // Flash countdown timer
+  countdownVibrateEnabled?: boolean; // Vibrate device
+  countdownSoundEnabled?: boolean; // Play countdown beep
+  countdownSoundVolume?: number; // Volume 0-100 (default: 80)
+
   language: string;
   showAnswerStatus: boolean;
   showCorrectAnswerOnMiss: boolean;
