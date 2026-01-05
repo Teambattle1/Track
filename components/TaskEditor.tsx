@@ -867,52 +867,98 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
       );
   };
 
-  const renderTypeConfig = () => {
-    // ... (unchanged logic for renderTypeConfig)
+  const addOption = useCallback(() => {
+    setEditedPoint(prev => ({
+      ...prev,
+      task: {
+        ...prev.task,
+        options: [...(prev.task.options || []), `Option ${(prev.task.options?.length || 0) + 1}`]
+      }
+    }));
+  }, []);
+
+  const updateOption = useCallback((i: number, val: string) => {
+    setEditedPoint(prev => {
+      const options = prev.task.options || [];
+      const oldVal = options[i];
+      const newOpts = [...options];
+      newOpts[i] = val;
+
+      let newCorrectAnswers = prev.task.correctAnswers || [];
+      if (newCorrectAnswers.includes(oldVal)) {
+        newCorrectAnswers = newCorrectAnswers.map(c => c === oldVal ? val : c);
+      }
+
+      let newAnswer = prev.task.answer;
+      if (newAnswer === oldVal) {
+        newAnswer = val;
+      }
+
+      return {
+        ...prev,
+        task: {
+          ...prev.task,
+          options: newOpts,
+          correctAnswers: newCorrectAnswers,
+          answer: newAnswer
+        }
+      };
+    });
+  }, []);
+
+  const removeOption = useCallback((i: number) => {
+    setEditedPoint(prev => {
+      const options = prev.task.options || [];
+      const optToRemove = options[i];
+      const newOpts = [...options];
+      newOpts.splice(i, 1);
+
+      let newCorrectAnswers = prev.task.correctAnswers || [];
+      if (optToRemove && newCorrectAnswers.includes(optToRemove)) {
+        newCorrectAnswers = newCorrectAnswers.filter(c => c !== optToRemove);
+      }
+
+      let newAnswer = prev.task.answer;
+      if (newAnswer === optToRemove) {
+        newAnswer = undefined;
+      }
+
+      return {
+        ...prev,
+        task: {
+          ...prev.task,
+          options: newOpts,
+          correctAnswers: newCorrectAnswers,
+          answer: newAnswer
+        }
+      };
+    });
+  }, []);
+
+  const toggleCorrectOption = useCallback((opt: string) => {
+    setEditedPoint(prev => {
+      const isMulti = prev.task.type === 'checkbox' || prev.task.type === 'multi_select_dropdown';
+      if (isMulti) {
+        const current = prev.task.correctAnswers || [];
+        const newAnswers = current.includes(opt)
+          ? current.filter(a => a !== opt)
+          : [...current, opt];
+        return {
+          ...prev,
+          task: { ...prev.task, correctAnswers: newAnswers }
+        };
+      } else {
+        return {
+          ...prev,
+          task: { ...prev.task, answer: opt }
+        };
+      }
+    });
+  }, []);
+
+  const renderTypeConfig = useCallback(() => {
     const { type, options, answer } = editedPoint.task;
     const correctAnswers = editedPoint.task.correctAnswers || [];
-    
-    const addOption = () => setEditedPoint(prev => ({...prev, task: {...prev.task, options: [...(prev.task.options||[]), `Option ${(prev.task.options?.length||0)+1}`]}}));
-    
-    const updateOption = (i: number, val: string) => {
-        const newOpts = [...(options||[])]; 
-        const oldVal = newOpts[i];
-        newOpts[i] = val;
-        let newCorrectAnswers = correctAnswers;
-        if (correctAnswers.includes(oldVal)) {
-            newCorrectAnswers = correctAnswers.map(c => c === oldVal ? val : c);
-        }
-        let newAnswer = answer;
-        if (answer === oldVal) {
-            newAnswer = val;
-        }
-        setEditedPoint({...editedPoint, task: {...editedPoint.task, options: newOpts, correctAnswers: newCorrectAnswers, answer: newAnswer }});
-    };
-
-    const removeOption = (i: number) => {
-        const optToRemove = options?.[i];
-        const newOpts = [...(options||[])]; newOpts.splice(i, 1);
-        let newCorrectAnswers = correctAnswers;
-        if (optToRemove && correctAnswers.includes(optToRemove)) {
-            newCorrectAnswers = correctAnswers.filter(c => c !== optToRemove);
-        }
-        let newAnswer = answer;
-        if (answer === optToRemove) newAnswer = undefined;
-        setEditedPoint({...editedPoint, task: {...editedPoint.task, options: newOpts, correctAnswers: newCorrectAnswers, answer: newAnswer }});
-    };
-
-    const toggleCorrectOption = (opt: string) => {
-        const isMulti = type === 'checkbox' || type === 'multi_select_dropdown';
-        if (isMulti) {
-            const current = correctAnswers;
-            const newAnswers = current.includes(opt) 
-                ? current.filter(a => a !== opt)
-                : [...current, opt];
-            setEditedPoint({...editedPoint, task: { ...editedPoint.task, correctAnswers: newAnswers }});
-        } else {
-            setEditedPoint({...editedPoint, task: { ...editedPoint.task, answer: opt }});
-        }
-    };
 
     // Info tasks don't need answer configuration
     if (type === 'info') {
@@ -940,7 +986,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
         return (
             <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">CORRECT ANSWER</label>
-                <input type="text" value={editedPoint.task.answer || ''} onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, answer: e.target.value}})} className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"/>
+                <input type="text" value={editedPoint.task.answer || ''} onChange={(e) => setEditedPoint(prev => ({...prev, task: {...prev.task, answer: e.target.value}}))} className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"/>
             </div>
         );
     }
@@ -1082,7 +1128,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
     }
 
     return <p className="text-xs text-gray-500 uppercase italic">No specific settings needed for this type.</p>;
-  };
+  }, [editedPoint]);
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
