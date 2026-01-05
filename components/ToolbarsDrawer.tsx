@@ -140,6 +140,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     onToggleMeasure,
     onRelocateGame,
     onToggleSnapToRoad,
+    onExecuteSnap,
+    selectedSnapTaskCount = 0,
     showTaskId,
     showTaskTitle,
     showScores,
