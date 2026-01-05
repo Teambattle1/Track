@@ -115,10 +115,10 @@ const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onCha
 // Sidebar Tabs Configuration
 const TABS = [
     { id: 'GAME', label: 'Game', icon: Gamepad2 },
+    { id: 'TIMING', label: 'Timing', icon: Clock }, // Timing Tab - moved to position 2
     { id: 'TEAMS', label: 'Teams', icon: Users },
     { id: 'VOTE', label: 'Vote', icon: Users },
     { id: 'MAP', label: 'Mapstyle', icon: MapIcon },
-    { id: 'TIMING', label: 'Timing', icon: Clock }, // New Timing Tab
     { id: 'ZONECHANGE', label: 'Zone Change', icon: MapPin }, // NEW: Zone Change Tab
     { id: 'PLAY', label: 'Play', icon: PlayCircle },
     { id: 'DESIGN', label: 'Game Setup', icon: PenTool },
