@@ -453,65 +453,107 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
-                {/* ZONE CHANGE Section - Orange */}
-                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (
-                    <div className="bg-orange-600 border-2 border-orange-500 rounded-xl p-3 space-y-3">
-                        <button
-                            onClick={() => toggleSection('zonechange')}
-                            className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
-                        >
-                            <span className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4" />
-                                ZONE CHANGE
-                                {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length > 0 && (
-                                    <span className="ml-1 bg-orange-700 px-2 py-0.5 rounded-full text-[9px] font-black">
-                                        {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length}
-                                    </span>
-                                )}
-                            </span>
-                            <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('zonechange') ? '' : '-rotate-90'}`} />
-                        </button>
+                {/* ZONE CHANGE Section - Yellow with glow when active */}
+                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (() => {
+                    const hasActiveZoneChanges = zoneChanges.some(zc => zc.enabled && !zc.hasTriggered);
 
-                        {isVisible('zonechange') && (
-                            <div className="space-y-2">
-                                {zoneChanges.map((zc, index) => {
-                                    const isActive = zc.enabled && !zc.hasTriggered;
-                                    const hasTime = zc.targetTime && zc.targetTime > Date.now();
+                    return (
+                        <div className={`${hasActiveZoneChanges ? 'bg-yellow-600 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)] animate-pulse' : 'bg-orange-600 border-2 border-orange-500'} rounded-xl p-3 space-y-3`}>
+                            <button
+                                onClick={() => toggleSection('zonechange')}
+                                className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <MapPin className="w-4 h-4" />
+                                    ZONE CHANGE
+                                    {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length > 0 && (
+                                        <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] font-black ${hasActiveZoneChanges ? 'bg-yellow-700' : 'bg-orange-700'}`}>
+                                            {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length}
+                                        </span>
+                                    )}
+                                </span>
+                                <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('zonechange') ? '' : '-rotate-90'}`} />
+                            </button>
 
-                                    return (
-                                        <button
-                                            key={zc.id}
-                                            onClick={() => {
-                                                if (onAdjustZoneChange) {
-                                                    onAdjustZoneChange(zc.id);
+                            {isVisible('zonechange') && (
+                                <div className="space-y-2">
+                                    {zoneChanges.map((zc, index) => {
+                                        const isActive = zc.enabled && !zc.hasTriggered;
+                                        const hasTime = zc.targetTime && zc.targetTime > Date.now();
+                                        const [countdown, setCountdown] = React.useState('');
+
+                                        React.useEffect(() => {
+                                            if (!hasTime) {
+                                                setCountdown('');
+                                                return;
+                                            }
+
+                                            const updateCountdown = () => {
+                                                const now = Date.now();
+                                                const remaining = zc.targetTime! - now;
+
+                                                if (remaining <= 0) {
+                                                    setCountdown('00:00:00');
+                                                    return;
                                                 }
-                                            }}
-                                            className={`w-full py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-between transition-all ${
-                                                isActive
-                                                    ? 'bg-orange-700 hover:bg-orange-800 text-white border-2 border-orange-500'
-                                                    : 'bg-orange-800/50 text-orange-200 border-2 border-orange-700/50'
-                                            }`}
-                                            title={`Click to adjust zone change time: ${zc.title}`}
-                                        >
-                                            <span className="flex items-center gap-2 flex-1 min-w-0">
-                                                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-800 text-white flex items-center justify-center text-[10px] font-black">
-                                                    {index + 1}
+
+                                                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                                                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                                                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+                                                setCountdown(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+                                            };
+
+                                            updateCountdown();
+                                            const interval = setInterval(updateCountdown, 1000);
+
+                                            return () => clearInterval(interval);
+                                        }, [hasTime, zc.targetTime]);
+
+                                        return (
+                                            <button
+                                                key={zc.id}
+                                                onClick={() => {
+                                                    if (onAdjustZoneChange) {
+                                                        onAdjustZoneChange(zc.id);
+                                                    }
+                                                }}
+                                                className={`w-full py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col gap-1 transition-all ${
+                                                    isActive
+                                                        ? hasActiveZoneChanges
+                                                            ? 'bg-yellow-700 hover:bg-yellow-800 text-white border-2 border-yellow-500'
+                                                            : 'bg-orange-700 hover:bg-orange-800 text-white border-2 border-orange-500'
+                                                        : 'bg-orange-800/50 text-orange-200 border-2 border-orange-700/50'
+                                                }`}
+                                                title={`Click to adjust zone change time: ${zc.title}`}
+                                            >
+                                                <span className="flex items-center justify-between w-full">
+                                                    <span className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <span className={`flex-shrink-0 w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-black ${hasActiveZoneChanges ? 'bg-yellow-800' : 'bg-orange-800'}`}>
+                                                            {index + 1}
+                                                        </span>
+                                                        <span className="truncate">{zc.title}</span>
+                                                    </span>
+                                                    <span className="flex items-center gap-1 flex-shrink-0 ml-2">
+                                                        {hasTime && (
+                                                            <AlertTriangle className="w-3 h-3 animate-pulse" />
+                                                        )}
+                                                        <Clock className="w-3 h-3" />
+                                                    </span>
                                                 </span>
-                                                <span className="truncate">{zc.title}</span>
-                                            </span>
-                                            <span className="flex items-center gap-1 flex-shrink-0 ml-2">
-                                                {hasTime && (
-                                                    <AlertTriangle className="w-3 h-3 animate-pulse" />
+                                                {countdown && (
+                                                    <span className="text-red-500 font-mono text-sm font-black tracking-wider">
+                                                        {countdown}
+                                                    </span>
                                                 )}
-                                                <Clock className="w-3 h-3" />
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
 
                 {/* PINS Section - Yellow - Hidden in Instructor Mode */}
                 {mode !== GameMode.INSTRUCTOR && (mode === GameMode.EDIT || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
