@@ -137,7 +137,7 @@ const DevicePreviewModal: React.FC<DevicePreviewModalProps> = ({ point, onClose 
                   <div className="mt-6 space-y-2">
                     <label className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase">Select Answer</label>
                     {point.task.options?.slice(0, 3).map((opt, idx) => (
-                      <button key={idx} className="w-full p-3 text-left border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-orange-500 transition-colors" disabled>
+                      <button type="button" key={idx} className="w-full p-3 text-left border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-orange-500 transition-colors" disabled>
                         {opt}
                       </button>
                     ))}
@@ -146,8 +146,8 @@ const DevicePreviewModal: React.FC<DevicePreviewModalProps> = ({ point, onClose 
 
                 {point.task.type === 'boolean' && (
                   <div className="mt-6 flex gap-2">
-                    <button className="flex-1 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-bold text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-orange-500 transition-colors" disabled>YES</button>
-                    <button className="flex-1 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-bold text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-orange-500 transition-colors" disabled>NO</button>
+                    <button type="button" className="flex-1 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-bold text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-orange-500 transition-colors" disabled>YES</button>
+                    <button type="button" className="flex-1 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-bold text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-orange-500 transition-colors" disabled>NO</button>
                   </div>
                 )}
 
@@ -162,7 +162,7 @@ const DevicePreviewModal: React.FC<DevicePreviewModalProps> = ({ point, onClose 
 
               {/* Footer */}
               <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <button className="w-full py-3 bg-green-600 text-white rounded-xl font-bold uppercase text-sm hover:bg-green-700 transition-colors" disabled>Submit Answer</button>
+                <button type="button" className="w-full py-3 bg-green-600 text-white rounded-xl font-bold uppercase text-sm hover:bg-green-700 transition-colors" disabled>Submit Answer</button>
               </div>
             </div>
           </div>
