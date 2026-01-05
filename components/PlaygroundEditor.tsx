@@ -105,6 +105,17 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showBackground, setShowBackground] = useState(true);
     const [isBackgroundLocked, setIsBackgroundLocked] = useState(false);
 
+    // Delete Zone Confirmation Modal State
+    const [deleteZoneConfirm, setDeleteZoneConfirm] = useState<{
+        isOpen: boolean;
+        zoneName: string;
+        taskCount: number;
+    }>({
+        isOpen: false,
+        zoneName: '',
+        taskCount: 0,
+    });
+
     // Simulation Mode State
     const [isSimulationActive, setIsSimulationActive] = useState(false);
     const [simulationScore, setSimulationScore] = useState(0);
