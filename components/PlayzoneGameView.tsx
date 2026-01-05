@@ -596,7 +596,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
 
           <button
             onClick={() => setIsQRScannerActive(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold text-white transition-colors shadow-lg"
             title="Scan QR Code"
           >
             <QrCode className="w-5 h-5" />
