@@ -493,6 +493,15 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                                             className={`px-6 py-4 flex items-center justify-between transition-colors group cursor-pointer border-l-4 ${isSelected ? 'bg-orange-900/20 border-orange-500' : isEditing ? 'bg-white/[0.05] border-orange-500' : 'hover:bg-white/[0.02] border-transparent'}`}
                                         >
                                             <div className="flex items-center gap-4">
+                                                {bulkSelectionMode && (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => handleToggleBulkSelection(name)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="w-5 h-5 rounded border-orange-500 accent-orange-600 cursor-pointer"
+                                                    />
+                                                )}
                                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg border border-white/5 transition-all ${!isRegistered ? 'bg-slate-800 opacity-50' : ''}`} style={{ backgroundColor: color }}>
                                                     {name.charAt(0).toUpperCase()}
                                                 </div>
