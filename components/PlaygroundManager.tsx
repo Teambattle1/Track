@@ -308,11 +308,14 @@ Would you like to delete this broken template?`;
           }
 
           // CRITICAL: Log imported tasks AFTER processing to verify all properties are preserved
+          const tasksWithPositions = newPoints.filter(t => t.playgroundPosition || t.devicePositions);
           console.log('[PlaygroundManager] ✅ IMPORTED TASKS ANALYSIS (AFTER IMPORT):', {
               count: newPoints.length,
               tasksWithLogic: newPoints.filter(t => t.logic && (t.logic.onOpen?.length || t.logic.onCorrect?.length || t.logic.onIncorrect?.length)).length,
               tasksWithSettings: newPoints.filter(t => t.settings).length,
               tasksWithFeedback: newPoints.filter(t => t.feedback).length,
+              tasksWithPositions: tasksWithPositions.length,
+              positionCoverage: `${Math.round((tasksWithPositions.length / newPoints.length) * 100)}%`,
               firstTask: newPoints[0] ? {
                   id: newPoints[0].id,
                   title: newPoints[0].title,
@@ -321,11 +324,30 @@ Would you like to delete this broken template?`;
                   hasSettings: !!newPoints[0].settings,
                   settings: newPoints[0].settings,
                   hasFeedback: !!newPoints[0].feedback,
+                  hasPlaygroundPosition: !!newPoints[0].playgroundPosition,
+                  playgroundPosition: newPoints[0].playgroundPosition,
+                  hasDevicePositions: !!newPoints[0].devicePositions,
+                  devicePositions: newPoints[0].devicePositions,
                   colorScheme: newPoints[0].colorScheme,
                   allKeys: Object.keys(newPoints[0])
               } : null,
               logicComparison: selectedTemplateForGame.tasks[0]?.logic === newPoints[0]?.logic ? '✅ Same object' : '⚠️ Different objects (expected due to spread)'
           });
+
+          // VERIFICATION: Warn if position data was lost
+          if (tasksWithPositions.length === 0 && newPoints.length > 0) {
+              console.error('[PlaygroundManager] ⚠️ CRITICAL: ALL POSITION DATA WAS LOST DURING IMPORT!', {
+                  templateTasksWithPositions: selectedTemplateForGame.tasks.filter((t: any) => t.playgroundPosition || t.devicePositions).length,
+                  importedTasksWithPositions: tasksWithPositions.length
+              });
+          } else if (tasksWithPositions.length < newPoints.length) {
+              console.warn('[PlaygroundManager] ⚠️ WARNING: Some position data was lost:', {
+                  expected: selectedTemplateForGame.tasks.filter((t: any) => t.playgroundPosition || t.devicePositions).length,
+                  actual: tasksWithPositions.length
+              });
+          } else {
+              console.log('[PlaygroundManager] ✅ Position data preserved successfully!');
+          }
 
           const updatedGame = {
               ...game,
