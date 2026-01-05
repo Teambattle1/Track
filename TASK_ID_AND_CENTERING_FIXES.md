@@ -75,9 +75,11 @@ Misunderstanding of requirements - playzone templates are carefully designed lay
 ## Console Output
 
 The fixes include enhanced logging:
-- `[PlaygroundEditor] Created playground and tasks:` now includes `appliedSpiralPlacement: true`
-- `[PlaygroundEditor] ✅ Template imported successfully with spiral placement`
+- `[PlaygroundEditor] Importing task "Task Name":` shows position data for each task
+- `[PlaygroundEditor] Created playground and tasks:` now includes `positionsPreserved: true`
+- `[PlaygroundEditor] ✅ Template imported successfully - positions preserved from template`
 - Task IDs are now logged to verify uniqueness
+- Position data logged includes both `playgroundPosition` and `devicePositions`
 
 ## Related Files
 - `services/ai.ts` - AI task ID generation
