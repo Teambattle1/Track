@@ -1553,7 +1553,11 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                     {editingList.tasks.map((task, i) => (
                                         <div
                                             key={i}
-                                            onClick={() => setEditingTaskIndex(i)}
+                                            onClick={() => {
+                                                setEditingTemplate(task);
+                                                setRequestedTab('GENERAL');
+                                                setEditingList(null);
+                                            }}
                                             className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all"
                                         >
                                             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
@@ -1562,6 +1566,10 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h4 className="font-bold text-sm text-gray-800 dark:text-white truncate">{task.title}</h4>
+                                                    {/* Task Type Badge */}
+                                                    <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold uppercase rounded-full flex-shrink-0">
+                                                        {task.task?.type || 'text'}
+                                                    </span>
                                                     {task.settings?.language && (
                                                         <span title={task.settings.language} className="text-lg flex-shrink-0">
                                                             {getLanguageFlag(task.settings.language)}
