@@ -622,15 +622,35 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     </button>
                                 )}
 
-                                {/* SNAP - EDIT mode only */}
+                                {/* SELECT TOOLS - EDIT mode only */}
                                 {mode === GameMode.EDIT && onToggleSnapToRoad && (
                                     <button
                                         onClick={onToggleSnapToRoad}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${snapToRoadMode ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
-                                        title="Snap to Road"
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${snapToRoadMode ? 'bg-cyan-600 text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
+                                        title="Select Tasks Tool - Draw rectangle to select tasks"
+                                    >
+                                        <TargetIcon className="w-4 h-4" />
+                                        SELECT
+                                    </button>
+                                )}
+
+                                {/* SNAP - EDIT mode only, only active when tasks are selected */}
+                                {mode === GameMode.EDIT && onExecuteSnap && (
+                                    <button
+                                        onClick={onExecuteSnap}
+                                        disabled={selectedSnapTaskCount === 0}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                            selectedSnapTaskCount > 0
+                                                ? 'bg-green-700 hover:bg-green-800 text-white cursor-pointer'
+                                                : 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+                                        }`}
+                                        title={selectedSnapTaskCount > 0 ? `Snap ${selectedSnapTaskCount} task${selectedSnapTaskCount !== 1 ? 's' : ''} to road` : 'Select tasks first using SELECT button'}
                                     >
                                         <Navigation className="w-4 h-4" />
                                         SNAP
+                                        {selectedSnapTaskCount > 0 && (
+                                            <span className="text-[8px] font-black">({selectedSnapTaskCount})</span>
+                                        )}
                                     </button>
                                 )}
                             </div>
