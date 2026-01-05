@@ -82,6 +82,9 @@ The fixes include enhanced logging:
 - Position data logged includes both `playgroundPosition` and `devicePositions`
 
 ## Related Files
-- `services/ai.ts` - AI task ID generation
-- `components/PlaygroundEditor.tsx` - Template import and task rendering
+- `services/ai.ts` - AI task ID generation with unique suffixes
+- `components/PlaygroundEditor.tsx` - Template import with exact position preservation
 - `components/AiTaskGenerator.tsx` - AI task generation UI (uses ai.ts service)
+- `services/db.ts` - Template save/load operations
+- `types.ts` - GamePoint interface with playgroundPosition and devicePositions
+- `PLAYZONE_POSITION_PRESERVATION.md` - Detailed documentation on position preservation
