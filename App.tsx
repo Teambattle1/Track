@@ -1301,10 +1301,16 @@ const GameApp: React.FC = () => {
       };
 
       setInstructorNotifications(prev => [notification, ...prev]);
+  };
 
-      // Also broadcast to realtime channel for other instructors
-      if (activeGame) {
-          teamSync.broadcastNotification(notification);
+  const triggerInstructorNotification = (point: GamePoint, trigger: 'onOpen' | 'onCorrect' | 'onIncorrect') => {
+      // Check if task has notify_instructor action for this trigger
+      const actions = point.logic?.[trigger] || [];
+      const hasNotifyAction = actions.some(action => action.type === 'notify_instructor');
+
+      if (hasNotifyAction && mode !== GameMode.INSTRUCTOR && mode !== GameMode.EDIT) {
+          // Only trigger from team play mode, not from instructor/editor viewing
+          addInstructorNotification(point.id, point.title, trigger);
       }
   };
 
