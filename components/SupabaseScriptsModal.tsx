@@ -450,6 +450,38 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
     }
   };
 
+  const toggleScriptCompletion = (scriptId: string) => {
+    const newCompleted = new Set(completedScripts);
+    if (newCompleted.has(scriptId)) {
+      newCompleted.delete(scriptId);
+      // Also uncollapse when unmarking as complete
+      const newCollapsed = new Set(collapsedScripts);
+      newCollapsed.delete(scriptId);
+      setCollapsedScripts(newCollapsed);
+      localStorage.setItem('collapsedSqlScripts', JSON.stringify([...newCollapsed]));
+    } else {
+      newCompleted.add(scriptId);
+      // Auto-collapse when marking as complete
+      const newCollapsed = new Set(collapsedScripts);
+      newCollapsed.add(scriptId);
+      setCollapsedScripts(newCollapsed);
+      localStorage.setItem('collapsedSqlScripts', JSON.stringify([...newCollapsed]));
+    }
+    setCompletedScripts(newCompleted);
+    localStorage.setItem('completedSqlScripts', JSON.stringify([...newCompleted]));
+  };
+
+  const toggleScriptCollapse = (scriptId: string) => {
+    const newCollapsed = new Set(collapsedScripts);
+    if (newCollapsed.has(scriptId)) {
+      newCollapsed.delete(scriptId);
+    } else {
+      newCollapsed.add(scriptId);
+    }
+    setCollapsedScripts(newCollapsed);
+    localStorage.setItem('collapsedSqlScripts', JSON.stringify([...newCollapsed]));
+  };
+
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'setup':
