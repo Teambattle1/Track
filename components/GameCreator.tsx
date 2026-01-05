@@ -363,6 +363,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
     return [];
   });
   const [timerTitle, setTimerTitle] = useState(baseGame?.timerConfig?.title || 'TIME TO END');
+  const [startTime, setStartTime] = useState(baseGame?.timerConfig?.startTime || '');
+  const [lobbyOpenTime, setLobbyOpenTime] = useState(baseGame?.timerConfig?.lobbyOpenTime || '');
   const [selectedMapStyle, setSelectedMapStyle] = useState<MapStyleId>(baseGame?.defaultMapStyle || 'osm');
   const [customMapJson, setCustomMapJson] = useState(baseGame?.googleMapStyleJson || '');
   const [showJsonHelp, setShowJsonHelp] = useState(false);
