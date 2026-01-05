@@ -118,6 +118,7 @@ const TABS = [
     { id: 'VOTE', label: 'Vote', icon: Users },
     { id: 'MAP', label: 'Mapstyle', icon: MapIcon },
     { id: 'TIMING', label: 'Timing', icon: Clock }, // New Timing Tab
+    { id: 'ZONECHANGE', label: 'Zone Change', icon: MapPin }, // NEW: Zone Change Tab
     { id: 'PLAY', label: 'Play', icon: PlayCircle },
     { id: 'DESIGN', label: 'Game Setup', icon: PenTool },
     { id: 'TASKS', label: 'Tasks', icon: List },
