@@ -934,6 +934,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           defaultTaskColorScheme,
           soundSettings,
           accessCode: accessCode.toUpperCase().trim() || undefined,
+          zoneChanges: zoneChanges.length > 0 ? zoneChanges : undefined, // NEW: Save zone changes
           client: {
               name: clientName,
               logoUrl: clientLogo,
