@@ -3125,12 +3125,12 @@ const GameApp: React.FC = () => {
                         <button
                             onClick={() => {
                                 setShowPlayzoneChoiceModal(false);
-                                setShowPlayzoneSelector(true);
+                                setShowPlaygroundManager(true);
                             }}
                             className="w-full px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-black uppercase tracking-widest rounded-lg transition-all duration-200 flex items-center justify-center gap-2 group"
                         >
                             <Library className="w-5 h-5" />
-                            ADD EXISTING PLAYZONE(S)
+                            ADD FROM GLOBAL PLAYZONES
                         </button>
                     </div>
 
