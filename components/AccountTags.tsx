@@ -140,6 +140,74 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
         }
     };
 
+    const handleToggleBulkSelection = (tagName: string) => {
+        const newSet = new Set(selectedTagsForBulk);
+        if (newSet.has(tagName)) {
+            newSet.delete(tagName);
+        } else {
+            newSet.add(tagName);
+        }
+        setSelectedTagsForBulk(newSet);
+    };
+
+    const handleSelectAllVisibleTags = (displayedTags: string[]) => {
+        setSelectedTagsForBulk(new Set(displayedTags));
+    };
+
+    const handleDeselectAllTags = () => {
+        setSelectedTagsForBulk(new Set());
+    };
+
+    const handleStartBulkDelete = () => {
+        if (selectedTagsForBulk.size === 0) return;
+        setBulkDeleteTarget(Array.from(selectedTagsForBulk));
+    };
+
+    const handleConfirmBulkDelete = async () => {
+        if (!bulkDeleteTarget || !onDeleteTagGlobally) return;
+        setIsBulkDeleting(true);
+        setBulkDeleteProgress(0);
+        setBulkDeleteLabel('Starting bulk deletion...');
+
+        try {
+            for (let i = 0; i < bulkDeleteTarget.length; i++) {
+                const tagName = bulkDeleteTarget[i];
+                console.log(`[AccountTags] Deleting tag ${i + 1}/${bulkDeleteTarget.length}: "${tagName}"`);
+
+                const inUse = inUseTagsCountMap[tagName] || 0;
+                if (inUse > 0) {
+                    await onDeleteTagGlobally(tagName, (progress, label) => {
+                        // Calculate overall progress
+                        const overallProgress = (i + progress) / bulkDeleteTarget.length;
+                        setBulkDeleteProgress(overallProgress);
+                        setBulkDeleteLabel(`Deleting "${tagName}"... ${label}`);
+                    });
+                } else {
+                    // Just remove from registry
+                    const next = { ...tagColors };
+                    delete next[tagName];
+                    delete next[tagName.toLowerCase()];
+                    replaceTagColors(next);
+                    const overallProgress = (i + 1) / bulkDeleteTarget.length;
+                    setBulkDeleteProgress(overallProgress);
+                    setBulkDeleteLabel(`Removed "${tagName}" from registry`);
+                }
+            }
+
+            console.log(`[AccountTags] Bulk delete complete`);
+            setBulkDeleteTarget(null);
+            setSelectedTagsForBulk(new Set());
+            setBulkSelectionMode(false);
+        } catch (error) {
+            console.error("Bulk delete failed:", error);
+            alert(`Failed to delete tags. Please try again.\n\nError: ${error}`);
+        } finally {
+            setIsBulkDeleting(false);
+            setBulkDeleteLabel('');
+            setBulkDeleteProgress(0);
+        }
+    };
+
     const handleConfirmPurge = async () => {
         if (!purgeTarget || !onDeleteTagGlobally) return;
         setIsPurging(true);
