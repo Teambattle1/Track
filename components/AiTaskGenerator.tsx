@@ -57,7 +57,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [approvedTasks, setApprovedTasks] = useState<TaskTemplate[]>([]);
   const [resultsTab, setResultsTab] = useState<'REVIEW' | 'APPROVED'>('REVIEW');
   const [error, setError] = useState<string | null>(null);
-  
+
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isGeneratingLogo, setIsGeneratingLogo] = useState(false);
   const [useLogoForTasks, setUseLogoForTasks] = useState(false);
@@ -66,7 +66,42 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
   const [pendingGenerationParams, setPendingGenerationParams] = useState<{topic: string; taskCount: number; language: string; autoTag: string} | null>(null);
 
+  // Clear old cached tasks on mount to prevent duplicate key errors from stale IDs
   useEffect(() => {
+    // Validate and filter out tasks with old ID format (ai-{timestamp}-{index} without random suffix)
+    const isOldIdFormat = (id: string): boolean => {
+      // New format: ai-{timestamp}-{randomString} (random part is 10-13 chars)
+      // Old format: ai-{timestamp}-{index} or ai-{timestamp}-{index}-{shortRandom}
+      const parts = id.split('-');
+      if (parts.length < 3) return true; // Invalid or very old format
+
+      const lastPart = parts[parts.length - 1];
+      // If last part is a single digit (0-9), it's the old index-based format
+      if (/^\d+$/.test(lastPart) && lastPart.length < 2) return true;
+
+      // If last part is short (less than 7 chars), might be old format
+      if (lastPart.length < 7) return true;
+
+      return false;
+    };
+
+    // Clear any tasks with old ID formats
+    setGeneratedBuffer(prev => {
+      const filtered = prev.filter(task => !isOldIdFormat(task.id));
+      if (filtered.length !== prev.length) {
+        console.warn(`[AI Generator] Cleared ${prev.length - filtered.length} tasks with old ID format`);
+      }
+      return filtered;
+    });
+
+    setApprovedTasks(prev => {
+      const filtered = prev.filter(task => !isOldIdFormat(task.id));
+      if (filtered.length !== prev.length) {
+        console.warn(`[AI Generator] Cleared ${prev.length - filtered.length} approved tasks with old ID format`);
+      }
+      return filtered;
+    });
+
     fetchUniqueTags().then(tags => setExistingTags(tags)).catch(() => setExistingTags([]));
   }, []);
 
