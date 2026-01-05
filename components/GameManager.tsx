@@ -281,8 +281,15 @@ const GameManager: React.FC<GameManagerProps> = ({
   };
 
   const primaryActionForGame = (gameId: string) => {
-    // Always call onEditGame if available to ensure mode is set to EDIT
-    // This guarantees game editor opens in EDIT mode, not PLAY or INSTRUCTOR
+    // INSTRUCTOR mode should only select game, not enter EDIT mode
+    if (mode === GameMode.INSTRUCTOR) {
+      onSelectGame(gameId);
+      onClose();
+      return;
+    }
+
+    // For EDITOR mode: call onEditGame if available to ensure mode is set to EDIT
+    // This guarantees game editor opens in EDIT mode, not PLAY
     if (onEditGame) {
       onEditGame(gameId);
     } else {
