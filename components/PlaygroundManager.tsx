@@ -233,7 +233,8 @@ Would you like to delete this broken template?`;
       return games.filter(g => {
           const gameDate = new Date(g.createdAt);
           const now = new Date();
-          return gameDate.toDateString() === now.toDateString() || g.state === 'active';
+          // Show if created today OR explicitly active OR has no state (old games)
+          return gameDate.toDateString() === now.toDateString() || g.state === 'active' || !g.state;
       });
   };
 
@@ -241,25 +242,30 @@ Would you like to delete this broken template?`;
       return games.filter(g => {
           const gameDate = new Date(g.createdAt);
           const now = new Date();
-          return gameDate.toDateString() !== now.toDateString() && gameDate > now && g.state !== 'active' && g.state !== 'ended';
+          // Show if created in future AND (not active AND not ended)
+          return gameDate.toDateString() !== now.toDateString() && gameDate > now && g.state !== 'active' && g.state !== 'ended' && g.state !== 'ending';
       });
   };
 
   const getCompletedGames = () => {
-      const completed = games.filter(g => g.state === 'ended' || g.state === 'ending');
-      console.log('[PlaygroundManager] Filtering completed games:', {
-          total: games.length,
-          completed: completed.length,
-          gameStates: games.map(g => ({
-              name: g.name,
-              state: g.state,
-              stateType: typeof g.state,
-              isEnded: g.state === 'ended',
-              isEnding: g.state === 'ending',
-              matchesFilter: g.state === 'ended' || g.state === 'ending'
-          })),
-          completedNames: completed.map(g => g.name)
+      // Include games that are ended, ending, OR old games that were modified more than 1 day ago (likely completed)
+      const oneDay = 24 * 60 * 60 * 1000;
+      const now = Date.now();
+
+      const completed = games.filter(g => {
+          // Explicitly ended or ending
+          if (g.state === 'ended' || g.state === 'ending') return true;
+
+          // Old games (no state) - show them in completed if they haven't been played/active today
+          if (!g.state) {
+              const gameDate = new Date(g.createdAt);
+              const isOldGame = now - gameDate.getTime() > oneDay;
+              return isOldGame;
+          }
+
+          return false;
       });
+
       return completed;
   };
 
