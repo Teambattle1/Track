@@ -2949,6 +2949,8 @@ const GameApp: React.FC = () => {
             onStartSimulation={handleStartSimulation}
             onToggleSnapToRoad={handleToggleSnapToRoad}
             snapToRoadMode={snapToRoadMode}
+            onExecuteSnap={handleExecuteSnap}
+            selectedSnapTaskCount={selectedSnapTaskIds.length}
             showTeamPaths={showTeamPaths}
             onToggleTeamPaths={() => setShowTeamPaths(!showTeamPaths)}
             showTeamPathSelector={showTeamPathSelector}
