@@ -267,6 +267,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const [showActivityNotification, setShowActivityNotification] = useState(false);
   const [showSupabaseScripts, setShowSupabaseScripts] = useState(false);
   const [pendingMediaCounts, setPendingMediaCounts] = useState<Record<string, number>>({});
+  const [hoveredGameId, setHoveredGameId] = useState<string | null>(null);
+  const [qrCodeDataUrls, setQrCodeDataUrls] = useState<Record<string, string>>({});
   const fieldsContainerRef = React.useRef<HTMLDivElement>(null);
   const activeGame = games.find(g => g.id === activeGameId);
 
