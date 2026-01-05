@@ -93,13 +93,25 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, tot
                   <h2 className="text-xl font-black text-white uppercase tracking-wider">{currentTeam.name}</h2>
 
                   {/* Change Zone Countdown (if enabled and set to show on team view) */}
-                  {game?.changeZone?.enabled && game?.changeZone?.showOnTeamView && game?.changeZone?.targetTime && (
-                      <ChangeZoneCountdown
-                          targetTime={game.changeZone.targetTime}
-                          variant="team"
-                          onTrigger={handleChangeZoneTrigger}
-                      />
-                  )}
+                  <div className="flex flex-col gap-2">
+                      {/* Support new zoneChanges array */}
+                      {game?.zoneChanges?.filter(event => event.enabled && event.showOnTeamView && event.targetTime && !event.hasTriggered).map(event => (
+                          <ChangeZoneCountdown
+                              key={event.id}
+                              targetTime={event.targetTime!}
+                              variant="team"
+                              onTrigger={handleChangeZoneTrigger}
+                          />
+                      ))}
+                      {/* Backward compatibility with old changeZone format */}
+                      {!game?.zoneChanges && game?.changeZone?.enabled && game?.changeZone?.showOnTeamView && game?.changeZone?.targetTime && (
+                          <ChangeZoneCountdown
+                              targetTime={game.changeZone.targetTime}
+                              variant="team"
+                              onTrigger={handleChangeZoneTrigger}
+                          />
+                      )}
+                  </div>
               </div>
               <button onClick={onClose} className="p-2 bg-slate-800 rounded-full text-white hover:bg-slate-700 transition-colors"><X className="w-6 h-6" /></button>
           </div>
