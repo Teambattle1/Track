@@ -336,6 +336,32 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [timerMode, setTimerMode] = useState<TimerMode>(baseGame?.timerConfig?.mode || 'none');
   const [duration, setDuration] = useState<number>(baseGame?.timerConfig?.durationMinutes || 60);
   const [endDateTime, setEndDateTime] = useState<string>(baseGame?.timerConfig?.endTime || '');
+
+  // Zone Changes (NEW - support multiple zone changes)
+  const [zoneChanges, setZoneChanges] = useState<ZoneChangeEvent[]>(() => {
+    // Auto-migrate old single changeZone to new zoneChanges array
+    if (baseGame?.zoneChanges && baseGame.zoneChanges.length > 0) {
+      return baseGame.zoneChanges;
+    }
+    // Migrate old format if present
+    if (baseGame?.changeZone && baseGame.changeZone.enabled) {
+      return [{
+        id: `zc-${Date.now()}`,
+        title: 'Zone Change',
+        enabled: baseGame.changeZone.enabled,
+        targetTime: baseGame.changeZone.targetTime,
+        showOnTeamView: baseGame.changeZone.showOnTeamView,
+        message: baseGame.changeZone.message,
+        imageUrl: baseGame.changeZone.imageUrl,
+        requireCode: baseGame.changeZone.requireCode,
+        hasTriggered: baseGame.changeZone.hasTriggered,
+        startedAt: baseGame.changeZone.startedAt,
+        order: 0,
+        createdAt: Date.now()
+      }];
+    }
+    return [];
+  });
   const [timerTitle, setTimerTitle] = useState(baseGame?.timerConfig?.title || 'TIME TO END');
   const [selectedMapStyle, setSelectedMapStyle] = useState<MapStyleId>(baseGame?.defaultMapStyle || 'osm');
   const [customMapJson, setCustomMapJson] = useState(baseGame?.googleMapStyleJson || '');
