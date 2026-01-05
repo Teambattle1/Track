@@ -51,10 +51,26 @@ A wrapper component that creates a realistic tablet device frame with:
 ### Integration
 
 #### App.tsx Changes
-**Lines**: 24, 2011-2021
+**Lines**: 24, 1997-2011, 2011-2021
 
 ```typescript
 import TabletFrame from './components/TabletFrame';
+
+// Wrap InstructorDashboard in TabletFrame
+{showInstructorDashboard && activeGame && (
+    <TabletFrame onClose={() => setShowInstructorDashboard(false)}>
+        <InstructorDashboard
+            game={activeGame}
+            onClose={() => setShowInstructorDashboard(false)}
+            onSetMode={setMode}
+            mode={mode}
+            onOpenPlayground={(playgroundId) => {
+                setShowInstructorDashboard(false);
+                setViewingPlaygroundId(playgroundId);
+            }}
+        />
+    </TabletFrame>
+)}
 
 // Wrap TeamDashboard in TabletFrame
 {showTeamDashboard && activeGameId && (
@@ -71,6 +87,18 @@ import TabletFrame from './components/TabletFrame';
 )}
 ```
 
+#### InstructorDashboard.tsx Changes
+**Lines**: 387-388
+
+Removed fullscreen wrapper:
+```typescript
+// Before:
+<div className="fixed inset-0 z-[2000] bg-slate-900 text-white flex flex-col animate-in fade-in duration-300">
+
+// After:
+<div className="w-full h-full bg-slate-900 text-white flex flex-col">
+```
+
 #### TeamDashboard.tsx Changes
 **Lines**: 87-88
 
@@ -83,7 +111,7 @@ Removed fullscreen wrapper and backdrop:
 <div className="w-full h-full bg-slate-900 flex items-center justify-center">
 ```
 
-The TeamDashboard now fills the tablet frame's screen area instead of taking over the entire viewport.
+Both dashboards now fill the tablet frame's screen area instead of taking over the entire viewport.
 
 ## Dimensions Reference
 
