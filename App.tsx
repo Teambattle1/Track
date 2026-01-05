@@ -3149,6 +3149,17 @@ const GameApp: React.FC = () => {
                 }}
             />
         )}
+
+        {/* Media Rejection Popup for Team Players */}
+        {rejectedSubmission && (
+            <MediaRejectionPopup
+                taskTitle={rejectedSubmission.taskTitle}
+                reviewerName={rejectedSubmission.reviewerName}
+                message={rejectedSubmission.message}
+                allowMultipleSubmissions={rejectedSubmission.allowMultipleSubmissions}
+                onClose={() => setRejectedSubmission(null)}
+            />
+        )}
     </div>
   );
 };
