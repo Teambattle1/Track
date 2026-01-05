@@ -8,9 +8,10 @@ interface PlaygroundManagerProps {
   onEdit: (template: PlaygroundTemplate) => void;
   onCreate: () => void;
   onUseInGame?: (template: PlaygroundTemplate) => void; // New prop for using template
+  onGameUpdated?: (game: Game) => void; // Callback when a game is updated with new playzone
 }
 
-const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, onCreate, onUseInGame }) => {
+const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, onCreate, onUseInGame, onGameUpdated }) => {
   const [templates, setTemplates] = useState<PlaygroundTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteWarningTemplate, setDeleteWarningTemplate] = useState<PlaygroundTemplate | null>(null);
@@ -231,6 +232,13 @@ Would you like to delete this broken template?`;
           setGames(prevGames => prevGames.map(g =>
               g.id === updatedGame.id ? updatedGame : g
           ));
+
+          // Notify parent component (App.tsx) about the game update
+          // This ensures the global games state is also refreshed
+          if (onGameUpdated) {
+              onGameUpdated(updatedGame);
+              console.log('[PlaygroundManager] ✅ Parent notified of game update');
+          }
 
           console.log('[PlaygroundManager] ✅ Local games state updated with imported tasks');
 
