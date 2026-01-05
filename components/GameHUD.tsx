@@ -1062,7 +1062,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                                 ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
                                                 : `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-                                            const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending';
+                                            // Check if game has ended OR timer has reached 0
+                                            const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending' || timeLeft === '00:00:00';
 
                                             return (
                                                 <button
