@@ -1,7 +1,7 @@
 {
   "name": "teamaction-2026",
   "private": true,
-  "version": "4.6",
+  "version": "4.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
