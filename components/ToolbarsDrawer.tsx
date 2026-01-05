@@ -356,7 +356,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                 )}
 
                 {/* LOCATION Section - Green */}
-                {mode === GameMode.EDIT && activeGame?.gameMode !== 'playzone' && (
+                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && activeGame?.gameMode !== 'playzone' && (
                     <div className="bg-green-600 border-2 border-green-500 rounded-xl p-3 space-y-3">
                         <button
                             onClick={() => toggleSection('location')}
