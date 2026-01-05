@@ -234,15 +234,24 @@ Would you like to delete this broken template?`;
               } : null
           });
 
-          // Copy ALL task properties from template (including logic, actions, feedback, settings, etc.)
-          // CRITICAL: Use JSON deep clone to preserve nested objects like logic.onOpen, logic.onCorrect, etc.
-          // The spread operator is shallow and won't clone nested objects properly!
-          const newPoints = selectedTemplateForGame.tasks.map((task, index) => {
+          // ============================================================
+          // CRITICAL FIX: TWO-PASS ID REMAPPING FOR TASK ACTIONS
+          // ============================================================
+          // PROBLEM: When copying tasks from template to game, each task gets a NEW unique ID.
+          // However, task logic (onOpen/onCorrect/onIncorrect) still references the OLD template IDs.
+          // SOLUTION:
+          // 1. First pass: Create tasks with new IDs and build an ID mapping table
+          // 2. Second pass: Update all targetId references in task logic using the map
+
+          console.log('[PlaygroundManager] 📋 PASS 1: Creating tasks with new IDs...');
+
+          // PASS 1: Create tasks with new IDs (but keep old targetId references for now)
+          const newPointsWithOldReferences = selectedTemplateForGame.tasks.map((task, index) => {
               // Deep clone the entire task object to preserve nested structures
               const clonedTask = JSON.parse(JSON.stringify(task));
 
               // Override specific properties AFTER deep clone
-              const newTask = {
+              return {
                   ...clonedTask,
                   id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`, // Generate unique ID
                   playgroundId: newPlaygroundId, // Associate with new playground
@@ -250,23 +259,33 @@ Would you like to delete this broken template?`;
                   isCompleted: false, // Reset completion status
                   isUnlocked: true // Unlock by default
               };
-
-              // VERIFICATION: Log if critical properties are preserved
-              if (task.logic && !newTask.logic) {
-                  console.error('[PlaygroundManager] ❌ LOGIC LOST during import for task:', task.title);
-              } else if (task.logic) {
-                  console.log('[PlaygroundManager] ✅ LOGIC preserved for task:', task.title, {
-                      onOpen: newTask.logic.onOpen?.length || 0,
-                      onCorrect: newTask.logic.onCorrect?.length || 0,
-                      onIncorrect: newTask.logic.onIncorrect?.length || 0
-                  });
-              }
-              if (task.settings && !newTask.settings) {
-                  console.error('[PlaygroundManager] ❌ SETTINGS LOST during import for task:', task.title);
-              }
-
-              return newTask;
           });
+
+          // Create ID mapping table: oldTemplateId -> newGameId
+          console.log('[PlaygroundManager] 🗺️ Creating ID mapping table...');
+          const idMap = createTaskIdMap(selectedTemplateForGame.tasks, newPointsWithOldReferences);
+
+          // PASS 2: Remap all targetId references in task logic
+          console.log('[PlaygroundManager] 🔄 PASS 2: Remapping targetId references in task logic...');
+          const newPoints = remapTaskLogicTargets(newPointsWithOldReferences, idMap);
+
+          // VALIDATION: Verify all references are valid
+          console.log('[PlaygroundManager] ✅ VALIDATION: Checking task references...');
+          const validation = validateTaskReferences(newPoints);
+
+          if (!validation.valid) {
+              console.error('[PlaygroundManager] ❌ VALIDATION FAILED:', validation.errors);
+              validation.errors.forEach(err => console.error(`   • ${err}`));
+          }
+
+          if (validation.warnings.length > 0) {
+              console.warn('[PlaygroundManager] ⚠️ VALIDATION WARNINGS:', validation.warnings);
+              validation.warnings.forEach(warn => console.warn(`   • ${warn}`));
+          }
+
+          if (validation.valid) {
+              console.log('[PlaygroundManager] ✅ ALL TASK REFERENCES ARE VALID!');
+          }
 
           // CRITICAL: Log imported tasks AFTER processing to verify all properties are preserved
           console.log('[PlaygroundManager] ✅ IMPORTED TASKS ANALYSIS (AFTER IMPORT):', {
