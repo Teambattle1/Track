@@ -28,23 +28,37 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
     const [isExpanded, setIsExpanded] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
 
-    const handleTimeChange = (timeString: string) => {
-        if (!timeString) {
-            onUpdate({ targetTime: undefined });
+    const handleDateTimeChange = (dateString?: string, timeString?: string) => {
+        const currentDate = zoneChange.targetTime ? new Date(zoneChange.targetTime) : new Date();
+
+        // Use provided values or fall back to current values
+        const dateToUse = dateString || getDateString();
+        const timeToUse = timeString || getTimeString();
+
+        if (!dateToUse || !timeToUse) {
+            // If either is cleared, keep current targetTime
             return;
         }
 
-        const [hours, minutes] = timeString.split(':').map(Number);
-        const now = new Date();
-        const target = new Date(now);
-        target.setHours(hours, minutes, 0, 0);
-        
-        // If time is in the past, assume next day
-        if (target.getTime() < now.getTime()) {
-            target.setDate(target.getDate() + 1);
-        }
-        
+        // Parse date (YYYY-MM-DD)
+        const [year, month, day] = dateToUse.split('-').map(Number);
+        // Parse time (HH:MM)
+        const [hours, minutes] = timeToUse.split(':').map(Number);
+
+        // Create target date with both date and time
+        const target = new Date(year, month - 1, day, hours, minutes, 0, 0);
+
         onUpdate({ targetTime: target.getTime() });
+    };
+
+    const handleTimeChange = (timeString: string) => {
+        if (!timeString) return;
+        handleDateTimeChange(undefined, timeString);
+    };
+
+    const handleDateChange = (dateString: string) => {
+        if (!dateString) return;
+        handleDateTimeChange(dateString, undefined);
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +80,16 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
         if (!zoneChange.targetTime) return '';
         const date = new Date(zoneChange.targetTime);
         return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    };
+
+    const getDateString = () => {
+        if (!zoneChange.targetTime) {
+            // Default to today
+            const today = new Date();
+            return `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+        }
+        const date = new Date(zoneChange.targetTime);
+        return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
     };
 
     const getTimeRemaining = () => {
@@ -193,20 +217,34 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
             {/* Expanded Configuration */}
             {isExpanded && (
                 <div className="border-t border-slate-700 p-6 space-y-6 bg-slate-950">
-                    {/* Time Configuration */}
+                    {/* Date & Time Configuration */}
                     <div>
                         <label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
                             <Clock className="w-4 h-4" />
-                            Countdown Target Time
+                            Countdown Target Date & Time
                         </label>
-                        <input
-                            type="time"
-                            value={getTimeString()}
-                            onChange={(e) => handleTimeChange(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:ring-2 focus:ring-orange-500 outline-none"
-                        />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Date</label>
+                                <input
+                                    type="date"
+                                    value={getDateString()}
+                                    onChange={(e) => handleDateChange(e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:ring-2 focus:ring-orange-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-500 mb-1">Time</label>
+                                <input
+                                    type="time"
+                                    value={getTimeString()}
+                                    onChange={(e) => handleTimeChange(e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:ring-2 focus:ring-orange-500 outline-none"
+                                />
+                            </div>
+                        </div>
                         <p className="text-xs text-slate-500 mt-2">
-                            Countdown will reach 00:00 at this time. If time is in the past, assumes next day.
+                            Countdown will reach 00:00 at this date and time.
                         </p>
                     </div>
 
