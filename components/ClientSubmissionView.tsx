@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { TaskList, TaskTemplate, TaskType } from '../types';
 import * as db from '../services/db';
@@ -197,7 +196,7 @@ const ClientSubmissionView: React.FC<ClientSubmissionViewProps> = ({ token }) =>
                             </div>
                         </div>
                         <p className="text-center text-[10px] text-slate-400 mt-6 font-bold uppercase tracking-widest">
-                            POWERED BY TEAMBATTLE
+                            POWERED BY TEAMACTION
                         </p>
                     </div>
                 )}
