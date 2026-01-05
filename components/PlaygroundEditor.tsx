@@ -3088,7 +3088,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             <div className="absolute top-full mt-2 left-0 z-[1001] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden min-w-[220px]">
                                                 <button
                                                     onClick={addNewZone}
-                                                    className="w-full px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-white hover:bg-slate-800 transition-colors flex items-center gap-3 border-b border-slate-800"
+                                                    className="w-full px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-white hover:bg-slate-800 transition-colors flex items-center gap-3"
                                                 >
                                                     <Plus className="w-4 h-4 text-green-400" />
                                                     <div>
@@ -3096,7 +3096,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                         <div className="text-[9px] text-slate-400 font-normal normal-case">Create from scratch</div>
                                                     </div>
                                                 </button>
-                                                <button
+                                                {/* HIDDEN: From Template library import button */}
+                                                {/* <button
                                                     onClick={() => {
                                                         setShowPlaygroundLibrary(true);
                                                         setShowAddNewMenu(false);
@@ -3108,7 +3109,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                         <div>From Template</div>
                                                         <div className="text-[9px] text-slate-400 font-normal normal-case">Import existing playzone</div>
                                                     </div>
-                                                </button>
+                                                </button> */}
                                             </div>
                                         </>
                                     )}
