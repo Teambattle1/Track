@@ -27,9 +27,35 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
 
   const loadTemplates = async () => {
     setLoading(true);
-    const data = await db.fetchPlaygroundLibrary();
-    setTemplates(data);
-    setLoading(false);
+    try {
+      const data = await db.fetchPlaygroundLibrary();
+
+      console.log('[PlaygroundManager] Loaded templates:', {
+          count: data.length,
+          templates: data.map(t => ({
+              id: t.id,
+              title: t.title,
+              taskCount: t.tasks?.length || 0,
+              hasPlaygroundData: !!t.playgroundData,
+              hasTasks: !!t.tasks
+          }))
+      });
+
+      // Validate templates - ensure all have tasks
+      const validTemplates = data.filter(t => t.tasks && t.tasks.length > 0);
+      const invalidCount = data.length - validTemplates.length;
+
+      if (invalidCount > 0) {
+          console.warn(`[PlaygroundManager] Found ${invalidCount} templates without tasks. These should be deleted.`);
+      }
+
+      setTemplates(data);
+    } catch (error) {
+      console.error('[PlaygroundManager] Error loading templates:', error);
+      alert('Failed to load templates. Check console for details.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (template: PlaygroundTemplate, e: React.MouseEvent) => {
