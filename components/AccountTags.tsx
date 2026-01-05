@@ -460,6 +460,17 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                             </div>
                         )}
 
+                        {bulkSelectionMode && (
+                            <div className="px-6 py-3 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
+                                <button
+                                    onClick={() => handleSelectAllVisibleTags(displayTags)}
+                                    className="text-[10px] font-black text-[#00adef] uppercase tracking-widest hover:underline"
+                                >
+                                    SELECT ALL SHOWN
+                                </button>
+                            </div>
+                        )}
+
                         <div className="divide-y divide-white/5 min-h-[400px]">
                             {displayTags.length === 0 ? (
                                 <div className="p-20 text-center flex flex-col items-center gap-4 opacity-30">
@@ -473,12 +484,13 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                                     const isInUse = inUseTags.includes(name);
                                     const useCount = inUseTagsCountMap[name] || 0;
                                     const isEditing = editingOldName === name;
+                                    const isSelected = selectedTagsForBulk.has(name);
 
                                     return (
-                                        <div 
-                                            key={name} 
-                                            onClick={() => handleEditTagClick(name, color)}
-                                            className={`px-6 py-4 flex items-center justify-between transition-colors group cursor-pointer border-l-4 ${isEditing ? 'bg-white/[0.05] border-orange-500' : 'hover:bg-white/[0.02] border-transparent'}`}
+                                        <div
+                                            key={name}
+                                            onClick={() => bulkSelectionMode ? handleToggleBulkSelection(name) : handleEditTagClick(name, color)}
+                                            className={`px-6 py-4 flex items-center justify-between transition-colors group cursor-pointer border-l-4 ${isSelected ? 'bg-orange-900/20 border-orange-500' : isEditing ? 'bg-white/[0.05] border-orange-500' : 'hover:bg-white/[0.02] border-transparent'}`}
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg border border-white/5 transition-all ${!isRegistered ? 'bg-slate-800 opacity-50' : ''}`} style={{ backgroundColor: color }}>
