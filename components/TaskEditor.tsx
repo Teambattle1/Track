@@ -2061,34 +2061,74 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                            {/* FEEDBACK MESSAGES */}
                            <div className="grid grid-cols-1 gap-4">
                                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border-2 border-green-200 dark:border-green-700">
-                                   <label className="block text-[9px] font-bold text-green-700 dark:text-green-300 mb-2 uppercase flex items-center gap-1">
-                                       <CheckCircle className="w-3 h-3" /> Correct Answer Message
-                                   </label>
-                                   <textarea
-                                       value={editedPoint.feedback?.correctMessage || ''}
-                                       onChange={(e) => setEditedPoint({
-                                           ...editedPoint,
-                                           feedback: {...editedPoint.feedback, correctMessage: e.target.value}
-                                       })}
-                                       className="w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-white dark:bg-gray-800 text-sm outline-none"
-                                       rows={2}
-                                   />
-                               </div>
+                                  <label className="block text-[9px] font-bold text-green-700 dark:text-green-300 mb-2 uppercase flex items-center gap-1">
+                                      <CheckCircle className="w-3 h-3" /> Correct Answer Message
+                                  </label>
+                                  <textarea
+                                      value={editedPoint.feedback?.correctMessage || ''}
+                                      onChange={(e) => setEditedPoint({
+                                          ...editedPoint,
+                                          feedback: {...editedPoint.feedback, correctMessage: e.target.value}
+                                      })}
+                                      className="w-full px-3 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-white dark:bg-gray-800 text-sm outline-none"
+                                      rows={2}
+                                  />
 
-                               <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border-2 border-red-200 dark:border-red-700">
-                                   <label className="block text-[9px] font-bold text-red-700 dark:text-red-300 mb-2 uppercase flex items-center gap-1">
-                                       <AlertCircle className="w-3 h-3" /> Incorrect Answer Message
-                                   </label>
-                                   <textarea
-                                       value={editedPoint.feedback?.incorrectMessage || ''}
-                                       onChange={(e) => setEditedPoint({
-                                           ...editedPoint,
-                                           feedback: {...editedPoint.feedback, incorrectMessage: e.target.value}
-                                       })}
-                                       className="w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-white dark:bg-gray-800 text-sm outline-none"
-                                       rows={2}
-                                   />
-                               </div>
+                                  {/* Divider */}
+                                  <div className="my-3 border-t border-green-300 dark:border-green-600"></div>
+
+                                  {/* Keep on Screen When Correct */}
+                                  <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                          <label className="block text-xs font-bold text-green-900 dark:text-green-100">Keep on Screen When Correct</label>
+                                          <p className="text-[10px] text-green-700 dark:text-green-300 mt-1">
+                                              Task remains visible (grayed out) after answering correctly
+                                          </p>
+                                      </div>
+                                      <label className="flex items-center gap-2 cursor-pointer ml-3" onClick={() => {
+                                          setEditedPoint({...editedPoint, keepOnScreenOnCorrect: !editedPoint.keepOnScreenOnCorrect});
+                                      }}>
+                                          <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.keepOnScreenOnCorrect ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                              <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.keepOnScreenOnCorrect ? 'translate-x-6' : 'translate-x-0'}`} />
+                                          </div>
+                                      </label>
+                                  </div>
+                              </div>
+
+                              <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border-2 border-red-200 dark:border-red-700">
+                                  <label className="block text-[9px] font-bold text-red-700 dark:text-red-300 mb-2 uppercase flex items-center gap-1">
+                                      <AlertCircle className="w-3 h-3" /> Incorrect Answer Message
+                                  </label>
+                                  <textarea
+                                      value={editedPoint.feedback?.incorrectMessage || ''}
+                                      onChange={(e) => setEditedPoint({
+                                          ...editedPoint,
+                                          feedback: {...editedPoint.feedback, incorrectMessage: e.target.value}
+                                      })}
+                                      className="w-full px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-white dark:bg-gray-800 text-sm outline-none"
+                                      rows={2}
+                                  />
+
+                                  {/* Divider */}
+                                  <div className="my-3 border-t border-red-300 dark:border-red-600"></div>
+
+                                  {/* Keep on Screen When Incorrect */}
+                                  <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                          <label className="block text-xs font-bold text-red-900 dark:text-red-100">Keep on Screen When Incorrect</label>
+                                          <p className="text-[10px] text-red-700 dark:text-red-300 mt-1">
+                                              Task remains visible (grayed out) after answering incorrectly
+                                          </p>
+                                      </div>
+                                      <label className="flex items-center gap-2 cursor-pointer ml-3" onClick={() => {
+                                          setEditedPoint({...editedPoint, keepOnScreenOnIncorrect: !editedPoint.keepOnScreenOnIncorrect});
+                                      }}>
+                                          <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.keepOnScreenOnIncorrect ? 'bg-red-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                              <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.keepOnScreenOnIncorrect ? 'translate-x-6' : 'translate-x-0'}`} />
+                                          </div>
+                                      </label>
+                                  </div>
+                              </div>
                            </div>
 
                            {/* HINT SECTION */}
