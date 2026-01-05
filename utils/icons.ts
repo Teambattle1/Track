@@ -101,11 +101,21 @@ export const getLeafletIcon = (
       html += `<div class="animate-pulse" style="position: absolute; bottom: 0px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 4px 1px rgba(239,68,68,0.8); border: 2px solid white; z-index: 23;"></div>`;
   }
 
+  // Completion Badge - Center Overlay (Green Checkmark or Red X)
+  if (showCompletionBadge && isCompleted) {
+      const badgeColor = wasAnsweredCorrectly ? '#22c55e' : '#ef4444'; // Green or Red
+      const badgeIcon = wasAnsweredCorrectly
+          ? '<path d="M5 12l5 5L20 7" stroke="white" stroke-width="3" fill="none"/>' // Checkmark
+          : '<path d="M6 6l12 12M18 6L6 18" stroke="white" stroke-width="3"/>';      // X
+
+      html += `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background-color: ${badgeColor}; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 24;"><svg viewBox="0 0 24 24" width="16" height="16">${badgeIcon}</svg></div>`;
+  }
+
   // ID Label - Centered ABOVE the icon (pill shape) - Added last for highest visual z-order
   if (label) {
       html += `<div style="position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 8px; border: 1px solid white; z-index: 999; white-space: nowrap; pointer-events: none;">${label}</div>`;
   }
-  
+
   html += `</div>`;
 
   return L.divIcon({
