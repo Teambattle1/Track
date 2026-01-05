@@ -1141,21 +1141,40 @@ export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> =>
         const templates = rows.map((row: any) => {
             const template = { ...row.data, id: row.id, title: row.title, isGlobal: row.is_global };
 
-            // CRITICAL: Validate template structure
+            // CRITICAL: Validate template structure AND position data
             if (!template.tasks) {
-                console.warn('[DB] Template loaded without tasks:', {
+                console.warn('[DB] ⚠️ Template loaded WITHOUT TASKS:', {
                     id: template.id,
                     title: template.title,
                     dataKeys: Object.keys(row.data || {}),
                     fullData: row.data
                 });
             } else {
-                console.log('[DB] Template loaded with tasks:', {
+                const tasksWithPositions = template.tasks.filter((t: any) => t.playgroundPosition || t.devicePositions);
+                const sampleTask = template.tasks[0];
+
+                console.log('[DB] 📦 Template loaded:', {
                     id: template.id,
                     title: template.title,
                     taskCount: template.tasks.length,
-                    playgroundDataPresent: !!template.playgroundData
+                    tasksWithPositions: tasksWithPositions.length,
+                    positionCoverage: `${Math.round((tasksWithPositions.length / template.tasks.length) * 100)}%`,
+                    playgroundDataPresent: !!template.playgroundData,
+                    sampleTaskPositions: sampleTask ? {
+                        hasPlaygroundPosition: !!(sampleTask as any).playgroundPosition,
+                        playgroundPosition: (sampleTask as any).playgroundPosition,
+                        hasDevicePositions: !!(sampleTask as any).devicePositions,
+                        devicePositions: (sampleTask as any).devicePositions
+                    } : null
                 });
+
+                if (tasksWithPositions.length === 0) {
+                    console.warn('[DB] ⚠️ Template has NO position data:', {
+                        id: template.id,
+                        title: template.title,
+                        message: 'Tasks will use default grid layout when imported'
+                    });
+                }
             }
 
             return template;
