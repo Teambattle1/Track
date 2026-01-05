@@ -1522,11 +1522,39 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         });
 
         // Update game with snapped points
+        const positionUpdates: Record<string, { x: number; y: number }> = {};
+        snappedPoints.forEach(sp => {
+            positionUpdates[sp.id] = {
+                x: Math.round(sp.devicePositions?.[selectedDevice]?.x || 50),
+                y: Math.round(sp.devicePositions?.[selectedDevice]?.y || 50)
+            };
+        });
+
+        // Update deviceLayouts.iconPositions for the active playground
+        let updatedPlaygrounds = game.playgrounds;
+        if (activePlayground) {
+            updatedPlaygrounds = game.playgrounds?.map(pg => {
+                if (pg.id === activePlayground.id) {
+                    const newLayouts = { ...pg.deviceLayouts };
+                    newLayouts[selectedDevice] = {
+                        ...newLayouts[selectedDevice],
+                        iconPositions: {
+                            ...newLayouts[selectedDevice]?.iconPositions,
+                            ...positionUpdates
+                        }
+                    };
+                    return { ...pg, deviceLayouts: newLayouts };
+                }
+                return pg;
+            });
+        }
+
         onUpdateGame({
             ...game,
+            playgrounds: updatedPlaygrounds,
             points: game.points?.map(p => {
                 const snapped = snappedPoints.find(sp => sp.id === p.id);
-                return snapped ? { ...p, playgroundPosition: snapped.playgroundPosition } : p;
+                return snapped ? snapped : p;
             })
         });
     };
