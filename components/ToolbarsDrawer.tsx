@@ -721,6 +721,18 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     </button>
                                     {/* SETTINGS button hidden */}
 
+                                    {/* DANGER button for Instructor Mode */}
+                                    {mode === GameMode.INSTRUCTOR && onAddDangerZone && (
+                                        <button
+                                            onClick={onAddDangerZone}
+                                            className="py-2 px-2 bg-yellow-700 hover:bg-yellow-800 text-yellow-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
+                                            title="Add Danger Zone"
+                                        >
+                                            <SkullIcon className="w-4 h-4" />
+                                            DANGER
+                                        </button>
+                                    )}
+
                                     {mode === GameMode.EDIT && timerConfig && (
                                         <button
                                             onClick={onAdjustGameTime}
