@@ -3171,16 +3171,20 @@ const GameApp: React.FC = () => {
                             buttonVisible: true
                         });
 
-                        // ✅ CRITICAL FIX: Copy all tasks from template and assign to new playground
+                        // ✅ CRITICAL FIX: Deep clone tasks to preserve nested logic/settings/feedback
                         if (tpl.tasks && tpl.tasks.length > 0) {
-                            const clonedTasks = tpl.tasks.map((task, taskIndex) => ({
-                                ...task,
-                                id: `p-${timestamp}-${index}-${taskIndex}`, // Generate new unique ID
-                                playgroundId: newPlaygroundId, // Assign to the new playground
-                                isUnlocked: task.isUnlocked ?? true, // Preserve unlock state
-                                isCompleted: false, // Reset completion status for new game
-                                order: (activeGame.points?.length || 0) + newTasks.length + taskIndex // Maintain order
-                            }));
+                            const clonedTasks = tpl.tasks.map((task, taskIndex) => {
+                                // Deep clone to preserve nested objects (logic.onOpen, logic.onCorrect, etc.)
+                                const deepClone = JSON.parse(JSON.stringify(task));
+                                return {
+                                    ...deepClone,
+                                    id: `p-${timestamp}-${index}-${taskIndex}`, // Generate new unique ID
+                                    playgroundId: newPlaygroundId, // Assign to the new playground
+                                    isUnlocked: task.isUnlocked ?? true, // Preserve unlock state
+                                    isCompleted: false, // Reset completion status for new game
+                                    order: (activeGame.points?.length || 0) + newTasks.length + taskIndex // Maintain order
+                                };
+                            });
                             newTasks.push(...clonedTasks);
                         }
                     });
