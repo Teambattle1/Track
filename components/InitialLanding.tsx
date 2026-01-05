@@ -10,6 +10,7 @@ import { Game, AuthUser } from '../types';
 import { getGameDisplayId, matchesGameSearch, formatGameNameWithId } from '../utils/gameIdUtils';
 import { hasNewSupabaseSetup } from './SupabaseToolsModal';
 import ActivityNotificationModal from './ActivityNotificationModal';
+import SupabaseScriptsModal from './SupabaseScriptsModal';
 import { getActivitySinceLastLogin, getLastLogin, updateLastLogin, ActivitySummary, getPendingMediaCount } from '../services/activityTracker';
 import './InitialLandingStyles.css';
 
@@ -263,6 +264,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
   const [activitySummary, setActivitySummary] = useState<ActivitySummary | null>(null);
   const [showActivityNotification, setShowActivityNotification] = useState(false);
+  const [showSupabaseScripts, setShowSupabaseScripts] = useState(false);
   const [pendingMediaCounts, setPendingMediaCounts] = useState<Record<string, number>>({});
   const fieldsContainerRef = React.useRef<HTMLDivElement>(null);
   const activeGame = games.find(g => g.id === activeGameId);
@@ -702,11 +704,10 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                       />
                       <NavCard
                           title="SUPABASE"
-                          subtitle="DATABASE & CONNECTION"
-                          icon={Gauge}
+                          subtitle="SQL SCRIPTS & MIGRATIONS"
+                          icon={Database}
                           color="bg-green-600"
-                          onClick={() => onAction('DIAGNOSTICS')}
-                          badge={hasNewSupabaseSetup() ? 'NEW' : undefined}
+                          onClick={() => setShowSupabaseScripts(true)}
                       />
                       <NavCard
                           title="MEDIA"
@@ -1177,6 +1178,13 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                     setShowActivityNotification(false);
                     onAction('EDIT_GAME'); // Go to editor to review media
                 }}
+            />
+        )}
+
+        {/* Supabase Scripts Modal */}
+        {showSupabaseScripts && (
+            <SupabaseScriptsModal
+                onClose={() => setShowSupabaseScripts(false)}
             />
         )}
       </div>
