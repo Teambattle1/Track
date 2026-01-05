@@ -108,9 +108,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showBackground, setShowBackground] = useState(true);
     const [isBackgroundLocked, setIsBackgroundLocked] = useState(false);
 
-    // Feature flag: show the "Sync from Library" button in the editor (set to false to hide)
-    const SHOW_SYNC_FROM_LIBRARY = false;
-
     // Delete Zone Confirmation Modal State
     const [deleteZoneConfirm, setDeleteZoneConfirm] = useState<{
         isOpen: boolean;
