@@ -1892,6 +1892,14 @@ const GameApp: React.FC = () => {
                       setPlaygroundTemplateToEdit(newTemplate);
                       setShowPlaygroundManager(false);
                   }}
+                  onGameUpdated={(updatedGame) => {
+                      // Update the games state when a playzone is imported
+                      // This ensures the game editor shows the newly imported tasks
+                      setGames(prevGames => prevGames.map(g =>
+                          g.id === updatedGame.id ? updatedGame : g
+                      ));
+                      console.log('[App] \u2705 Games state updated after playzone import');
+                  }}
               />
           )}
           {playgroundTemplateToEdit && (
