@@ -735,15 +735,44 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                     {/* Script Header */}
                     <div className="p-6 border-b border-slate-800 bg-slate-950/50">
                       <div className="flex items-start justify-between gap-4 mb-3">
-                        <div>
-                          <h3 className="text-xl font-black text-white uppercase tracking-wide mb-1">
-                            {selectedScript.title}
-                          </h3>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-xl font-black text-white uppercase tracking-wide">
+                              {selectedScript.title}
+                            </h3>
+                            {completedScripts.has(selectedScript.id) && (
+                              <span className="px-2 py-1 rounded bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wide flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3" />
+                                COMPLETED
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-slate-400 leading-relaxed">
                             {selectedScript.description}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => toggleScriptCompletion(selectedScript.id)}
+                            className={`px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition-all flex items-center gap-2 ${
+                              completedScripts.has(selectedScript.id)
+                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                : 'bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white'
+                            }`}
+                            title={completedScripts.has(selectedScript.id) ? 'Mark as incomplete' : 'Mark as complete'}
+                          >
+                            {completedScripts.has(selectedScript.id) ? (
+                              <>
+                                <CheckCircle className="w-4 h-4" />
+                                DONE
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-4 h-4" />
+                                MARK DONE
+                              </>
+                            )}
+                          </button>
                           <button
                             onClick={() => window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/5f49e3d9-339b-4fd1-ac3b-8f368f6d6eb9', '_blank')}
                             className="px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white flex items-center gap-2"
