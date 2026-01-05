@@ -130,6 +130,8 @@ interface GameHUDProps {
     // Drawer State Props
     collapsedSections?: Record<string, boolean>;
     onCollapsedSectionsChange?: (sections: Record<string, boolean>) => void;
+    // Access Mode Props
+    userAccessMode?: 'EDITOR' | 'INSTRUCTOR' | 'TEAM' | null;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
@@ -150,7 +152,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     onRelocateGame, isRelocating, onUpdateGameTime, timerConfig, onFitBounds, onLocateMe, onSearchLocation,
     isDrawerExpanded, showScores, onToggleScores, showTaskId, onToggleTaskId, showTaskTitle, onToggleTaskTitle, showTaskActions, onToggleTaskActions, hiddenPlaygroundIds, onToggleChat, unreadMessagesCount,
     targetPlaygroundId, onAddDangerZone, activeDangerZone, onEditGameSettings, onOpenGameChooser,
-    routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true, locateFeedback,
+    routes, onToggleRoute, onAddRoute, endingAt, gameEnded, onReturnToStart, allowChatting = true, locateFeedback, userAccessMode,
     authUser, activeGame, onUpdateGame, onStartSimulation, onToggleSnapToRoad, snapToRoadMode,
     showTeamPaths, onToggleTeamPaths, showTeamPathSelector, selectedTeamPaths = [], onToggleTeamPathSelector, onSelectTeamPath,
     fogOfWarEnabled, selectedTeamForFogOfWar, onToggleFogOfWar, onSelectTeamForFogOfWar, teams,
@@ -1233,16 +1235,19 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 </div>
 
                                 {/* Settings Button */}
-                                <div className="flex flex-col items-center gap-0.5">
-                                    <button
-                                        onClick={onEditGameSettings}
-                                        className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                                        title="Settings"
-                                    >
-                                        <Settings className="w-4 h-4" />
-                                    </button>
-                                    <div className="text-[7px] font-black text-slate-400 uppercase tracking-widest leading-tight whitespace-nowrap">SETTINGS</div>
-                                </div>
+                                {/* Settings Button - Hidden for INSTRUCTOR mode */}
+                                {userAccessMode !== 'INSTRUCTOR' && (
+                                    <div className="flex flex-col items-center gap-0.5">
+                                        <button
+                                            onClick={onEditGameSettings}
+                                            className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                            title="Settings"
+                                        >
+                                            <Settings className="w-4 h-4" />
+                                        </button>
+                                        <div className="text-[7px] font-black text-slate-400 uppercase tracking-widest leading-tight whitespace-nowrap">SETTINGS</div>
+                                    </div>
+                                )}
 
                                 {/* ADJUST GAMETIME Button (Editor Mode) */}
                                 {mode === GameMode.EDIT && timerConfig && (
@@ -1346,13 +1351,16 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-white">MAPMODE</h3>
                             </div>
                             <div className="flex gap-1">
-                                <button
-                                    onClick={() => onSetMode(GameMode.EDIT)}
-                                    className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.EDIT ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-red-700 text-red-100 border-red-600 hover:bg-red-800 hover:text-white'}`}
-                                    title="Editor View"
-                                >
-                                    <MapIcon className="w-4 h-4" />
-                                </button>
+                                {/* Editor Button - Hidden for INSTRUCTOR mode */}
+                                {userAccessMode !== 'INSTRUCTOR' && (
+                                    <button
+                                        onClick={() => onSetMode(GameMode.EDIT)}
+                                        className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.EDIT ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-red-700 text-red-100 border-red-600 hover:bg-red-800 hover:text-white'}`}
+                                        title="Editor View"
+                                    >
+                                        <MapIcon className="w-4 h-4" />
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => onSetMode(GameMode.INSTRUCTOR)}
                                     className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.INSTRUCTOR ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-red-700 text-red-100 border-red-600 hover:bg-red-800 hover:text-white'}`}
@@ -1369,7 +1377,9 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 </button>
                             </div>
                             <div className="flex gap-1 text-center">
-                                <div className="flex-1 text-[7px] font-black text-red-100 uppercase tracking-widest leading-tight">EDITOR</div>
+                                {userAccessMode !== 'INSTRUCTOR' && (
+                                    <div className="flex-1 text-[7px] font-black text-red-100 uppercase tracking-widest leading-tight">EDITOR</div>
+                                )}
                                 <div className="flex-1 text-[7px] font-black text-red-100 uppercase tracking-widest leading-tight">INSTRUCTOR</div>
                                 <div className="flex-1 text-[7px] font-black text-red-100 uppercase tracking-widest leading-tight">TEAM</div>
                             </div>
