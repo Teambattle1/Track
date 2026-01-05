@@ -23,6 +23,7 @@ import TaskEditor from './TaskEditor';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
 import TaskModal from './TaskModal';
 import ConfirmationModal from './ConfirmationModal';
+import PlaygroundLibraryModal from './PlaygroundLibraryModal';
 
 interface PlaygroundEditorProps {
   game: Game;
@@ -252,6 +253,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [pendingTasksToAdd, setPendingTasksToAdd] = useState<TaskTemplate[]>([]);
     const [isAddingAITasks, setIsAddingAITasks] = useState(false);
     const [isAddingTaskList, setIsAddingTaskList] = useState(false);
+    const [showPlaygroundLibrary, setShowPlaygroundLibrary] = useState(false);
+    const [showAddNewMenu, setShowAddNewMenu] = useState(false);
 
     // AI Background Generation
     const [showAiBackgroundPrompt, setShowAiBackgroundPrompt] = useState(false);
