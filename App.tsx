@@ -626,6 +626,35 @@ const GameApp: React.FC = () => {
       return allHistory.filter(history => selectedTeamPaths.includes(history.teamId));
   }, [activeGame, selectedTeamPaths, teamsForFogOfWar]);
 
+  // Filter tasks based on scheduled visibility
+  const visiblePoints = useMemo(() => {
+      if (!activeGame?.points) return [];
+
+      // Determine team start time for schedule calculations
+      // Priority: 1) Fog of War selected team, 2) First team in list, 3) undefined
+      let teamStartTime: number | undefined = undefined;
+
+      if (selectedTeamForFogOfWar) {
+          const team = teamsForFogOfWar.find(t => t.id === selectedTeamForFogOfWar);
+          teamStartTime = team?.startedAt;
+      } else if (teamsForFogOfWar.length > 0) {
+          teamStartTime = teamsForFogOfWar[0]?.startedAt;
+      }
+
+      // In EDIT/INSTRUCTOR mode, show all tasks (no schedule filtering)
+      // Scheduling only affects PLAY mode (team view)
+      if (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) {
+          return activeGame.points;
+      }
+
+      // Apply schedule filtering for PLAY mode
+      return filterTasksBySchedule(
+          activeGame.points,
+          teamStartTime,
+          activeGame.timerConfig
+      );
+  }, [activeGame, mode, selectedTeamForFogOfWar, teamsForFogOfWar]);
+
 
   const ensureSession = (callback: () => void) => {
       if (!authUser) {
