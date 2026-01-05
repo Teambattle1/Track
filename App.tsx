@@ -3172,9 +3172,19 @@ const GameApp: React.FC = () => {
                             buttonVisible: true
                         });
 
-                        // ✅ CRITICAL FIX: Deep clone tasks to preserve nested logic/settings/feedback
+                        // ============================================================
+                        // CRITICAL FIX: TWO-PASS ID REMAPPING FOR TASK ACTIONS
+                        // ============================================================
+                        // PROBLEM: Task logic (onOpen/onCorrect/onIncorrect) still references OLD template IDs
+                        // SOLUTION:
+                        // 1. First pass: Create tasks with new IDs and build an ID mapping table
+                        // 2. Second pass: Update all targetId references in task logic using the map
+
                         if (tpl.tasks && tpl.tasks.length > 0) {
-                            const clonedTasks = tpl.tasks.map((task, taskIndex) => {
+                            console.log(`[App.tsx] 📋 PASS 1: Creating tasks for "${tpl.title}" with new IDs...`);
+
+                            // PASS 1: Create tasks with new IDs (but keep old targetId references for now)
+                            const tasksWithOldReferences = tpl.tasks.map((task, taskIndex) => {
                                 // Deep clone to preserve nested objects (logic.onOpen, logic.onCorrect, etc.)
                                 const deepClone = JSON.parse(JSON.stringify(task));
                                 return {
@@ -3186,7 +3196,26 @@ const GameApp: React.FC = () => {
                                     order: (activeGame.points?.length || 0) + newTasks.length + taskIndex // Maintain order
                                 };
                             });
-                            newTasks.push(...clonedTasks);
+
+                            // Create ID mapping table: oldTemplateId -> newGameId
+                            console.log(`[App.tsx] 🗺️ Creating ID mapping table for "${tpl.title}"...`);
+                            const idMap = createTaskIdMap(tpl.tasks, tasksWithOldReferences);
+
+                            // PASS 2: Remap all targetId references in task logic
+                            console.log(`[App.tsx] 🔄 PASS 2: Remapping targetId references for "${tpl.title}"...`);
+                            const remappedTasks = remapTaskLogicTargets(tasksWithOldReferences, idMap);
+
+                            // VALIDATION: Verify all references are valid
+                            console.log(`[App.tsx] ✅ VALIDATION: Checking task references for "${tpl.title}"...`);
+                            const validation = validateTaskReferences(remappedTasks);
+
+                            if (!validation.valid) {
+                                console.error(`[App.tsx] ❌ VALIDATION FAILED for "${tpl.title}":`, validation.errors);
+                            } else {
+                                console.log(`[App.tsx] ✅ ALL TASK REFERENCES ARE VALID for "${tpl.title}"!`);
+                            }
+
+                            newTasks.push(...remappedTasks);
                         }
                     });
 
