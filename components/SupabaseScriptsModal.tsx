@@ -127,6 +127,18 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
     }
   };
 
+  const handleSelectAll = () => {
+    if (codeRef.current) {
+      const range = document.createRange();
+      range.selectNodeContents(codeRef.current);
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+  };
+
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'migrations':
