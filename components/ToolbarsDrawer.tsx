@@ -158,16 +158,19 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     zoneChanges = [],
     onAdjustZoneChange,
 }) => {
-    const [collapsedSectionsLocal, setCollapsedSectionsLocal] = useState<Record<string, boolean>>({
+    // Auto-collapse MAPSTYLE and ZONE CHANGE in editor mode by default
+    const defaultCollapsedState = {
         mapmode: true,
         layers: true,
         location: true,
-        mapstyle: true,
-        zonechange: true,
+        mapstyle: mode === GameMode.EDIT ? true : true,  // Always collapsed in editor
+        zonechange: mode === GameMode.EDIT ? true : true,  // Always collapsed in editor
         pins: true,
         show: true,
         tools: true,
-    });
+    };
+
+    const [collapsedSectionsLocal, setCollapsedSectionsLocal] = useState<Record<string, boolean>>(defaultCollapsedState);
     const [showMapStylesMenu, setShowMapStylesMenu] = useState(false);
     const [showToolbarsMenu, setShowToolbarsMenu] = useState(false);
 
