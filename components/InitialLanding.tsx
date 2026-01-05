@@ -172,7 +172,7 @@ const MapPinButton = ({
                         group-hover:-translate-y-6 group-hover:scale-110 group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)] group-hover:border-white/40
                         animate-in zoom-in fade-in fill-mode-backwards
                         ${delayClass}
-                        ${isBlinking ? 'animate-[blink_2s_ease-in-out]' : ''}
+                        ${isBlinking ? 'animate-[blink_4s_ease-in-out]' : ''}
                     `}
                 >
                     {/* Inner Content (Counter-rotated to stay upright) */}
