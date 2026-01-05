@@ -1042,9 +1042,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         // Priority: deviceLayouts[selectedDevice].iconPositions > devicePositions[selectedDevice] > playgroundPosition > default
         const deviceLayout = activePlayground?.deviceLayouts?.[selectedDevice];
 
-        // DEBUG: Log first 5 tasks to see what's happening
+        // DEBUG: Log first 3 tasks to see what's happening
         const taskIndex = uniquePlaygroundPoints.indexOf(point);
-        if (taskIndex < 5) {
+        if (taskIndex < 3) {
             const finalPos = deviceLayout?.iconPositions?.[point.id] ||
                            point.devicePositions?.[selectedDevice] ||
                            point.playgroundPosition ||
@@ -1052,11 +1052,16 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
             console.log(`[PlaygroundEditor] 🔍 Task #${taskIndex}: "${point.title}"`, {
                 FINAL_POSITION: finalPos,
+                FULL_TASK_OBJECT: point,
                 selectedDevice,
+                playgroundId: point.playgroundId,
+                activePlaygroundId: activePlayground?.id,
+                MATCHES: point.playgroundId === activePlayground?.id,
                 iconPositions_value: deviceLayout?.iconPositions?.[point.id] || null,
                 taskDevicePositions_value: point.devicePositions?.[selectedDevice] || null,
                 playgroundPosition_value: point.playgroundPosition || null,
                 ALL_devicePositions: point.devicePositions,
+                ALL_KEYS_ON_TASK: Object.keys(point),
                 SOURCE: deviceLayout?.iconPositions?.[point.id] ? '❌ OVERRIDE (blocking!)' :
                        point.devicePositions?.[selectedDevice] ? '✅ task.devicePositions' :
                        point.playgroundPosition ? '⚠️ legacy playgroundPosition' :
