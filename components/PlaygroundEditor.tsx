@@ -2812,14 +2812,37 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             try {
                                 const zoneTasks = game.points.filter(p => p.playgroundId === activePlayground.id);
 
-                                console.log('[PlaygroundEditor] Creating template:', {
+                                // CRITICAL: Log source data BEFORE template creation
+                                console.log('[PlaygroundEditor] 🔍 SOURCE DATA ANALYSIS (BEFORE TEMPLATE CREATION):', {
                                     templateName: templateName.trim(),
                                     playgroundId: activePlayground.id,
                                     totalGamePoints: game.points.length,
-                                    zoneTasks: zoneTasks.length,
-                                    taskIds: zoneTasks.map(t => t.id),
-                                    firstTask: zoneTasks[0],
-                                    playgroundData: activePlayground
+                                    zoneTaskCount: zoneTasks.length,
+                                    tasksWithLogic: zoneTasks.filter(t => t.logic && (t.logic.onOpen?.length || t.logic.onCorrect?.length || t.logic.onIncorrect?.length)).length,
+                                    tasksWithSettings: zoneTasks.filter(t => t.settings).length,
+                                    tasksWithFeedback: zoneTasks.filter(t => t.feedback).length,
+                                    playgroundVisibilitySettings: {
+                                        showTaskScores: activePlayground.showTaskScores,
+                                        showTaskOrder: activePlayground.showTaskOrder,
+                                        showTaskActions: activePlayground.showTaskActions,
+                                        showTaskNames: activePlayground.showTaskNames,
+                                        showTaskStatus: activePlayground.showTaskStatus,
+                                        showBackground: activePlayground.showBackground,
+                                        showQRScanner: activePlayground.showQRScanner,
+                                        showTitleText: activePlayground.showTitleText
+                                    },
+                                    sampleTask: zoneTasks[0] ? {
+                                        id: zoneTasks[0].id,
+                                        title: zoneTasks[0].title,
+                                        hasLogic: !!zoneTasks[0].logic,
+                                        logic: zoneTasks[0].logic,
+                                        hasSettings: !!zoneTasks[0].settings,
+                                        settings: zoneTasks[0].settings,
+                                        hasFeedback: !!zoneTasks[0].feedback,
+                                        feedback: zoneTasks[0].feedback,
+                                        colorScheme: zoneTasks[0].colorScheme,
+                                        allKeys: Object.keys(zoneTasks[0])
+                                    } : null
                                 });
 
                                 const template: PlaygroundTemplate = {
@@ -2831,11 +2854,38 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     isGlobal: true
                                 };
 
-                                console.log('[PlaygroundEditor] Template prepared:', {
+                                // VERIFICATION: Log template AFTER creation to verify all properties are preserved
+                                console.log('[PlaygroundEditor] ✅ TEMPLATE DATA ANALYSIS (AFTER TEMPLATE CREATION):', {
                                     id: template.id,
                                     title: template.title,
                                     taskCount: template.tasks.length,
-                                    hasPlaygroundData: !!template.playgroundData
+                                    hasPlaygroundData: !!template.playgroundData,
+                                    tasksWithLogic: template.tasks.filter(t => t.logic && (t.logic.onOpen?.length || t.logic.onCorrect?.length || t.logic.onIncorrect?.length)).length,
+                                    tasksWithSettings: template.tasks.filter(t => t.settings).length,
+                                    tasksWithFeedback: template.tasks.filter(t => t.feedback).length,
+                                    playgroundVisibilitySettings: {
+                                        showTaskScores: template.playgroundData.showTaskScores,
+                                        showTaskOrder: template.playgroundData.showTaskOrder,
+                                        showTaskActions: template.playgroundData.showTaskActions,
+                                        showTaskNames: template.playgroundData.showTaskNames,
+                                        showTaskStatus: template.playgroundData.showTaskStatus,
+                                        showBackground: template.playgroundData.showBackground,
+                                        showQRScanner: template.playgroundData.showQRScanner,
+                                        showTitleText: template.playgroundData.showTitleText
+                                    },
+                                    sampleTask: template.tasks[0] ? {
+                                        id: template.tasks[0].id,
+                                        title: template.tasks[0].title,
+                                        hasLogic: !!template.tasks[0].logic,
+                                        logic: template.tasks[0].logic,
+                                        hasSettings: !!template.tasks[0].settings,
+                                        settings: template.tasks[0].settings,
+                                        hasFeedback: !!template.tasks[0].feedback,
+                                        feedback: template.tasks[0].feedback,
+                                        colorScheme: template.tasks[0].colorScheme,
+                                        allKeys: Object.keys(template.tasks[0])
+                                    } : null,
+                                    fullTemplate: template
                                 });
 
                                 await db.savePlaygroundTemplate(template);
