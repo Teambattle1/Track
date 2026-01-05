@@ -3346,11 +3346,26 @@ const GameApp: React.FC = () => {
                         if (tpl.tasks && tpl.tasks.length > 0) {
                             console.log(`[App.tsx] 📋 PASS 1: Creating tasks for "${tpl.title}" with new IDs...`);
 
+                            // DEBUG: Check first 3 tasks in template for devicePositions
+                            console.log(`[App.tsx] 🔍 TEMPLATE DATA CHECK for "${tpl.title}":`, {
+                                templateId: tpl.id,
+                                totalTasks: tpl.tasks.length,
+                                firstTaskDevicePositions: tpl.tasks[0]?.devicePositions,
+                                firstTaskPlaygroundPosition: tpl.tasks[0]?.playgroundPosition,
+                                firstTaskTitle: tpl.tasks[0]?.title,
+                                firstTaskHasDevicePositions: !!tpl.tasks[0]?.devicePositions,
+                                firstTaskDevicePositionsJSON: JSON.stringify(tpl.tasks[0]?.devicePositions || null),
+                                task0_id: tpl.tasks[0]?.id,
+                                task1_id: tpl.tasks[1]?.id,
+                                task2_id: tpl.tasks[2]?.id
+                            });
+
                             // PASS 1: Create tasks with new IDs (but keep old targetId references for now)
                             const tasksWithOldReferences = tpl.tasks.map((task, taskIndex) => {
                                 // Deep clone to preserve nested objects (logic.onOpen, logic.onCorrect, etc.)
                                 const deepClone = JSON.parse(JSON.stringify(task));
-                                return {
+
+                                const clonedTask = {
                                     ...deepClone,
                                     id: `p-${timestamp}-${index}-${taskIndex}`, // Generate new unique ID
                                     playgroundId: newPlaygroundId, // Assign to the new playground
@@ -3358,6 +3373,21 @@ const GameApp: React.FC = () => {
                                     isCompleted: false, // Reset completion status for new game
                                     order: (activeGame.points?.length || 0) + newTasks.length + taskIndex // Maintain order
                                 };
+
+                                // DEBUG: Log first 3 cloned tasks to verify devicePositions preservation
+                                if (taskIndex < 3) {
+                                    console.log(`[App.tsx] 🔍 CLONED TASK #${taskIndex}: "${task.title}"`, {
+                                        originalId: task.id,
+                                        newId: clonedTask.id,
+                                        originalDevicePositions: task.devicePositions,
+                                        clonedDevicePositions: clonedTask.devicePositions,
+                                        devicePositionsPreserved: JSON.stringify(task.devicePositions) === JSON.stringify(clonedTask.devicePositions),
+                                        originalPlaygroundPosition: task.playgroundPosition,
+                                        clonedPlaygroundPosition: clonedTask.playgroundPosition
+                                    });
+                                }
+
+                                return clonedTask;
                             });
 
                             // Create ID mapping table: oldTemplateId -> newGameId
