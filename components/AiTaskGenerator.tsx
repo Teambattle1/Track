@@ -196,9 +196,8 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
         setTotalTaskCount(total);
         setProgress((current / total) * 100);
       });
-      
+
       if (!isActiveRef.current) {
-          clearInterval(interval);
           return;
       }
 
@@ -222,20 +221,20 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
           });
       }
 
-      clearInterval(interval);
       setProgress(100);
-      
+
       setTimeout(() => {
           if (isActiveRef.current) {
               setGeneratedBuffer(newTasks);
               setIsGenerating(false);
               setProgress(0);
+              setCurrentTaskCount(0);
+              setTotalTaskCount(0);
               setBatchFinished(true);
           }
       }, 500);
 
     } catch (err: any) {
-        clearInterval(interval);
         if (isActiveRef.current) {
             const errorMessage = err.message || "Failed to generate tasks.";
             if (errorMessage.includes('AI API Key missing')) {
