@@ -479,6 +479,15 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
             </div>
         )}
 
+        {/* Change Zone Countdown Banner */}
+        {liveGame.changeZone?.enabled && liveGame.changeZone?.targetTime && (
+            <ChangeZoneCountdown
+                targetTime={liveGame.changeZone.targetTime}
+                variant="instructor"
+                onTrigger={handleChangeZoneTrigger}
+            />
+        )}
+
         {/* Main Content */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
             
