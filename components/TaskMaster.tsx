@@ -2851,7 +2851,11 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                         </div>
                         <div className="p-4 border-t border-slate-700">
                             <button
-                                onClick={() => setShowDestinationSelector(false)}
+                                onClick={() => {
+                                    setShowDestinationSelector(false);
+                                    setShowCreateNewTasklistInput(false);
+                                    setNewTasklistName('');
+                                }}
                                 className="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg font-bold uppercase text-xs transition-colors"
                             >
                                 ← BACK TO OPTIONS
