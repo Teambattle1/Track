@@ -1002,6 +1002,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     // For now, just toggle the adjust time modal
                     setShowAdjustGameTime(true);
                 }}
+                onResetToolbarPositions={resetToolbarPositions}
             />
             <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-[1000]">
             {/* COUNTDOWN OVERLAY */}
