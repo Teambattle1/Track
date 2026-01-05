@@ -5255,39 +5255,42 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                                 {!isCollapsed && (
                                                                     <div className="space-y-1">
                                                                         {/* onOpen targets */}
-                                                                        {sourceTask.logic?.onOpen?.map((action: any) => {
+                                                                        {sourceTask.logic?.onOpen?.map((action: any, actionIndex: number) => {
                                                                             const targetId = action.targetId || action;
                                                                             const targetTask = uniquePlaygroundPoints.find(p => p.id === targetId);
                                                                             if (!targetTask) return null;
-                                                                            return renderTaskItem(targetTask, {
+                                                                            const uniqueKey = `${targetTask.id}-nested-${sourceTask.id}-onOpen-${actionIndex}`;
+                                                                            return <div key={uniqueKey}>{renderTaskItem(targetTask, {
                                                                                 isNested: true,
                                                                                 sourceTask,
                                                                                 actionType: 'onOpen'
-                                                                            });
+                                                                            })}</div>;
                                                                         })}
 
                                                                         {/* onCorrect targets */}
-                                                                        {sourceTask.logic?.onCorrect?.map((action: any) => {
+                                                                        {sourceTask.logic?.onCorrect?.map((action: any, actionIndex: number) => {
                                                                             const targetId = action.targetId || action;
                                                                             const targetTask = uniquePlaygroundPoints.find(p => p.id === targetId);
                                                                             if (!targetTask) return null;
-                                                                            return renderTaskItem(targetTask, {
+                                                                            const uniqueKey = `${targetTask.id}-nested-${sourceTask.id}-onCorrect-${actionIndex}`;
+                                                                            return <div key={uniqueKey}>{renderTaskItem(targetTask, {
                                                                                 isNested: true,
                                                                                 sourceTask,
                                                                                 actionType: 'onCorrect'
-                                                                            });
+                                                                            })}</div>;
                                                                         })}
 
                                                                         {/* onIncorrect targets */}
-                                                                        {sourceTask.logic?.onIncorrect?.map((action: any) => {
+                                                                        {sourceTask.logic?.onIncorrect?.map((action: any, actionIndex: number) => {
                                                                             const targetId = action.targetId || action;
                                                                             const targetTask = uniquePlaygroundPoints.find(p => p.id === targetId);
                                                                             if (!targetTask) return null;
-                                                                            return renderTaskItem(targetTask, {
+                                                                            const uniqueKey = `${targetTask.id}-nested-${sourceTask.id}-onIncorrect-${actionIndex}`;
+                                                                            return <div key={uniqueKey}>{renderTaskItem(targetTask, {
                                                                                 isNested: true,
                                                                                 sourceTask,
                                                                                 actionType: 'onIncorrect'
-                                                                            });
+                                                                            })}</div>;
                                                                         })}
                                                                     </div>
                                                                 )}
