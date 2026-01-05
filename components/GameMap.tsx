@@ -318,44 +318,70 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
     const eventHandlers = React.useMemo(
         () => ({
             click: (e: any) => {
-                // CRITICAL: When tools are active, always call onClick
-                // The onClick handler (handlePointClick in App.tsx) will handle the tool logic
-                console.log('[MapTaskMarker] Click event:', {
-                    pointId: point.id,
-                    isMeasuring,
-                    isRelocating,
-                    mode
-                });
-                onClick(point);
+                try {
+                    // CRITICAL: When tools are active, always call onClick
+                    // The onClick handler (handlePointClick in App.tsx) will handle the tool logic
+                    console.log('[MapTaskMarker] Click event:', {
+                        pointId: point.id,
+                        isMeasuring,
+                        isRelocating,
+                        mode
+                    });
+                    if (onClick && point) {
+                        onClick(point);
+                    }
+                } catch (error) {
+                    console.error('[MapTaskMarker] Error handling click on iPad/mobile:', error, point);
+                }
             },
             mouseover: () => {
-                if (onHover) onHover(point);
+                try {
+                    if (onHover && point) onHover(point);
+                } catch (error) {
+                    console.error('[MapTaskMarker] Error handling mouseover:', error);
+                }
             },
             mouseout: () => {
-                if (onHover) onHover(null);
+                try {
+                    if (onHover) onHover(null);
+                } catch (error) {
+                    console.error('[MapTaskMarker] Error handling mouseout:', error);
+                }
             },
             dragstart(e: any) {
-                // Prevent drag when in relocate mode (measure mode is OK)
-                if (isRelocating) {
-                    console.log('[MapTaskMarker] Drag prevented - relocate mode active');
-                    e.originalEvent?.preventDefault();
-                    e.originalEvent?.stopPropagation();
-                    return;
+                try {
+                    // Prevent drag when in relocate mode (measure mode is OK)
+                    if (isRelocating) {
+                        console.log('[MapTaskMarker] Drag prevented - relocate mode active');
+                        e.originalEvent?.preventDefault();
+                        e.originalEvent?.stopPropagation();
+                        return;
+                    }
+                    if (onDragStart) onDragStart(point.id);
+                } catch (error) {
+                    console.error('[MapTaskMarker] Error handling dragstart:', error);
                 }
-                if (onDragStart) onDragStart(point.id);
             },
             dragend(e: any) {
-                const shouldDelete = onDragEnd ? onDragEnd(point.id, e) : false;
-                // If onDragEnd returns true, it means delete - don't move
-                if (shouldDelete === true) {
-                    // Reset marker position to original
-                    e.target.setLatLng([point.location.lat, point.location.lng]);
-                    return;
-                }
-                // Otherwise move the marker
-                if (onMove) {
-                    const latlng = e.target.getLatLng();
-                    onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
+                try {
+                    const shouldDelete = onDragEnd ? onDragEnd(point.id, e) : false;
+                    // If onDragEnd returns true, it means delete - don't move
+                    if (shouldDelete === true) {
+                        // Reset marker position to original
+                        if (e?.target?.setLatLng && point?.location) {
+                            e.target.setLatLng([point.location.lat, point.location.lng]);
+                        }
+                        return;
+                    }
+                    // Otherwise move the marker
+                    if (onMove && e?.target?.getLatLng) {
+                        const latlng = e.target.getLatLng();
+                        if (latlng) {
+                            onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
+                        }
+                    }
+                } catch (error) {
+                    console.error('[MapTaskMarker] Error handling dragend on iPad/mobile:', error);
                 }
             },
         }),
