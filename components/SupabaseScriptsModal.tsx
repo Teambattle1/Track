@@ -350,6 +350,16 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
   const [selectedScript, setSelectedScript] = useState<SQLScript | null>(SQL_SCRIPTS[0]);
   const codeRef = React.useRef<HTMLElement>(null);
 
+  // Track completed scripts and collapsed state
+  const [completedScripts, setCompletedScripts] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('completedSqlScripts');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  const [collapsedScripts, setCollapsedScripts] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('collapsedSqlScripts');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
   // Diagnostics state
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; error?: string; latency?: number } | null>(null);
