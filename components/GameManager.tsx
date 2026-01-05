@@ -215,7 +215,8 @@ const GameManager: React.FC<GameManagerProps> = ({
   onCreateGame,
   onCreateFromTemplate,
   onOpenGameCreator,
-  onEditGameSetup
+  onEditGameSetup,
+  mode
 }) => {
   const [section, setSection] = useState<'GAMES' | 'TEMPLATES'>('GAMES');
   const [view, setView] = useState<'LIST' | 'CREATE'>('LIST');
