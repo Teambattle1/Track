@@ -1130,7 +1130,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         console.log('[PlaygroundEditor] Importing template:', template.title, { taskCount: template.tasks?.length || 0 });
 
         // Create new playground ID
-        const newPlaygroundId = `pg-${Date.now()}`;
+        const newPlaygroundId = `pg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const baseTimestamp = Date.now();
 
         // Create new playground from template data
         const newPlayground: Playground = {
@@ -1140,19 +1141,54 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             buttonVisible: true
         };
 
-        // Import all tasks from template with new IDs
-        const newTasks: GamePoint[] = (template.tasks || []).map((task, index) => ({
-            ...task,
-            id: `task-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-            playgroundId: newPlaygroundId,
-            order: index,
-            isCompleted: false,
-            isUnlocked: true
-        }));
+        // Helper function to calculate spiral placement with 50m spacing in playzone coordinates
+        const getPlayzoneOffset = (index: number): { x: number; y: number } => {
+            if (index === 0) return { x: 0, y: 0 }; // First task at center
+
+            // Spiral placement: tasks arranged in a circle pattern
+            const radiusPixels = 80; // 80px spacing (adjusted for playzone coordinates)
+            const tasksPerRing = 6; // 6 tasks per ring
+            const ring = Math.floor((index - 1) / tasksPerRing) + 1;
+            const posInRing = (index - 1) % tasksPerRing;
+            const angle = (posInRing / tasksPerRing) * 2 * Math.PI;
+
+            // Calculate offset in pixels
+            const offsetPixels = radiusPixels * ring;
+
+            return {
+                x: offsetPixels * Math.cos(angle),
+                y: offsetPixels * Math.sin(angle)
+            };
+        };
+
+        // Import all tasks from template with new IDs and spiral placement
+        const newTasks: GamePoint[] = (template.tasks || []).map((task, index) => {
+            // Generate unique ID with timestamp, index, and random string
+            const uniqueId = `task-${baseTimestamp}-${index}-${Math.random().toString(36).substr(2, 9)}`;
+
+            // Calculate spiral offset
+            const offset = getPlayzoneOffset(index);
+
+            // Get original position or default to center
+            const originalX = task.playgroundX ?? 0;
+            const originalY = task.playgroundY ?? 0;
+
+            return {
+                ...task,
+                id: uniqueId,
+                playgroundId: newPlaygroundId,
+                playgroundX: originalX + offset.x, // Apply spiral offset
+                playgroundY: originalY + offset.y, // Apply spiral offset
+                order: index,
+                isCompleted: false,
+                isUnlocked: true
+            };
+        });
 
         console.log('[PlaygroundEditor] Created playground and tasks:', {
             playgroundId: newPlaygroundId,
-            taskCount: newTasks.length
+            taskCount: newTasks.length,
+            appliedSpiralPlacement: true
         });
 
         // Update game with new playground and tasks
@@ -1167,7 +1203,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         setShowPlaygroundLibrary(false);
         setShowAddNewMenu(false);
 
-        console.log('[PlaygroundEditor] ✅ Template imported successfully');
+        console.log('[PlaygroundEditor] ✅ Template imported successfully with spiral placement');
     };
 
     const handleResetBackground = () => {
