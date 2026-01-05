@@ -80,10 +80,22 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
   // Change Zone State
   const [showChangeZonePopup, setShowChangeZonePopup] = useState(false);
 
-  const handleChangeZoneTrigger = async () => {
-    if (liveGame.changeZone && !liveGame.changeZone.hasTriggered) {
+  const handleChangeZoneTrigger = async (eventId?: string) => {
+    // Handle new zoneChanges array format
+    if (eventId && liveGame.zoneChanges) {
+      const event = liveGame.zoneChanges.find(e => e.id === eventId);
+      if (event && !event.hasTriggered) {
+        setShowChangeZonePopup(true);
+        // Mark as triggered in database
+        const updatedEvents = liveGame.zoneChanges.map(e =>
+          e.id === eventId ? { ...e, hasTriggered: true } : e
+        );
+        await db.updateGame(liveGame.id, { zoneChanges: updatedEvents });
+      }
+    }
+    // Backward compatibility with old changeZone format
+    else if (liveGame.changeZone && !liveGame.changeZone.hasTriggered) {
       setShowChangeZonePopup(true);
-      // Mark as triggered in database
       await db.updateGame(liveGame.id, {
         changeZone: {
           ...liveGame.changeZone,
