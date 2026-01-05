@@ -454,12 +454,19 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
-                {/* ZONE CHANGE Section - Yellow with glow when active */}
+                {/* ZONE CHANGE Section - Yellow with glow when active, Pink when game ended */}
                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (() => {
                     const hasActiveZoneChanges = zoneChanges.some(zc => zc.enabled && !zc.hasTriggered);
+                    const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending';
 
                     return (
-                        <div className={`${hasActiveZoneChanges ? 'bg-yellow-600 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)] animate-pulse' : 'bg-orange-600 border-2 border-orange-500'} rounded-xl p-3 space-y-3`}>
+                        <div className={`${
+                            isGameEnded
+                                ? 'bg-pink-600 border-2 border-pink-500'
+                                : hasActiveZoneChanges
+                                    ? 'bg-yellow-600 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)] animate-pulse'
+                                    : 'bg-orange-600 border-2 border-orange-500'
+                        } rounded-xl p-3 space-y-3`}>
                             <button
                                 onClick={() => toggleSection('zonechange')}
                                 className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
@@ -468,7 +475,13 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     <MapPin className="w-4 h-4" />
                                     ZONE CHANGE
                                     {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length > 0 && (
-                                        <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] font-black ${hasActiveZoneChanges ? 'bg-yellow-700' : 'bg-orange-700'}`}>
+                                        <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] font-black ${
+                                            isGameEnded
+                                                ? 'bg-pink-700'
+                                                : hasActiveZoneChanges
+                                                    ? 'bg-yellow-700'
+                                                    : 'bg-orange-700'
+                                        }`}>
                                             {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length}
                                         </span>
                                     )}
