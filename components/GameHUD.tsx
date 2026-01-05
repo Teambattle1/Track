@@ -970,6 +970,12 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 pendingApprovalsCount={pendingApprovalsCount}
                 collapsedSections={collapsedSections}
                 onCollapsedSectionsChange={onCollapsedSectionsChange}
+                zoneChanges={activeGame?.zoneChanges}
+                onAdjustZoneChange={(zoneChangeId) => {
+                    // Open adjustment modal for specific zone change
+                    // For now, just toggle the adjust time modal
+                    setShowAdjustGameTime(true);
+                }}
             />
             <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-[1000]">
             {/* COUNTDOWN OVERLAY */}
