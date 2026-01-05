@@ -110,7 +110,21 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
 
       try {
           const gamesList = await db.fetchGames();
-          setGames(gamesList.filter(g => !g.isGameTemplate));
+          const nonTemplateGames = gamesList.filter(g => !g.isGameTemplate);
+
+          // DEBUG: Log all games and their states
+          console.log('[PlaygroundManager] Fetched games:', {
+              total: gamesList.length,
+              nonTemplate: nonTemplateGames.length,
+              games: nonTemplateGames.map(g => ({
+                  id: g.id,
+                  name: g.name,
+                  state: g.state || 'undefined',
+                  isGameTemplate: g.isGameTemplate
+              }))
+          });
+
+          setGames(nonTemplateGames);
           setShowGameSelector(true);
       } catch (error) {
           console.error('Error loading games:', error);
