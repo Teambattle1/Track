@@ -1667,6 +1667,9 @@ const GameApp: React.FC = () => {
                   distance={liveTaskModalPoint.playgroundId ? 0 : haversineMeters(userLocation, liveTaskModalPoint.location)}
                   onClose={() => setActiveTaskModalId(null)}
                   onComplete={async (id, pts) => {
+                      // Trigger instructor notification on correct answer
+                      triggerInstructorNotification(liveTaskModalPoint, 'onCorrect');
+
                       setScore(s => s + (pts || 0));
 
                       if (activeGame) {
@@ -1686,6 +1689,14 @@ const GameApp: React.FC = () => {
                       }
 
                       setActiveTaskModalId(null);
+                  }}
+                  onTaskOpen={() => {
+                      // Trigger instructor notification when task opens
+                      triggerInstructorNotification(liveTaskModalPoint, 'onOpen');
+                  }}
+                  onTaskIncorrect={() => {
+                      // Trigger instructor notification on incorrect answer
+                      triggerInstructorNotification(liveTaskModalPoint, 'onIncorrect');
                   }}
                   onUnlock={handleManualUnlock} // Pass the unlock handler!
                   mode={mode}
