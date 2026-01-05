@@ -1177,21 +1177,43 @@ export const fetchPlaygroundLibrary = async (): Promise<PlaygroundTemplate[]> =>
 
 export const savePlaygroundTemplate = async (template: PlaygroundTemplate) => {
     try {
-        // CRITICAL: Validate template has tasks before saving
-        console.log('[DB] savePlaygroundTemplate - validating template:', {
+        // CRITICAL: Validate template has tasks AND position data before saving
+        const tasksWithPositions = template.tasks?.filter((t: any) => t.playgroundPosition || t.devicePositions) || [];
+        const sampleTask = template.tasks?.[0];
+
+        console.log('[DB] 💾 savePlaygroundTemplate - FULL VALIDATION:', {
             id: template.id,
             title: template.title,
             hasPlaygroundData: !!template.playgroundData,
             hasTasks: !!template.tasks,
             taskCount: template.tasks?.length || 0,
-            taskIds: template.tasks?.map((t: any) => t.id) || []
+            tasksWithPositionData: tasksWithPositions.length,
+            positionDataPercentage: template.tasks?.length ? `${Math.round((tasksWithPositions.length / template.tasks.length) * 100)}%` : '0%',
+            sampleTask: sampleTask ? {
+                id: sampleTask.id,
+                title: sampleTask.title,
+                hasPlaygroundPosition: !!(sampleTask as any).playgroundPosition,
+                playgroundPosition: (sampleTask as any).playgroundPosition,
+                hasDevicePositions: !!(sampleTask as any).devicePositions,
+                devicePositions: (sampleTask as any).devicePositions,
+                allKeys: Object.keys(sampleTask)
+            } : null
         });
 
         if (!template.tasks || template.tasks.length === 0) {
-            console.error('[DB] WARNING: Attempting to save template without tasks!', {
+            console.error('[DB] ⚠️ WARNING: Attempting to save template WITHOUT TASKS!', {
                 id: template.id,
                 title: template.title,
                 templateKeys: Object.keys(template)
+            });
+        }
+
+        if (tasksWithPositions.length === 0 && template.tasks && template.tasks.length > 0) {
+            console.warn('[DB] ⚠️ WARNING: Template tasks have NO POSITION DATA!', {
+                id: template.id,
+                title: template.title,
+                taskCount: template.tasks.length,
+                message: 'Tasks will be placed in default grid when imported'
             });
         }
 
