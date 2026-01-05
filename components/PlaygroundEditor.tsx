@@ -3155,6 +3155,45 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             )}
                         </button>
 
+                        {/* CLEAR LAYOUT OVERRIDES - Fix stacked tasks */}
+                        {activePlayground && (
+                            <button
+                                onClick={() => {
+                                    if (!activePlayground) return;
+
+                                    // Clear iconPositions from all device layouts
+                                    const clearedDeviceLayouts = activePlayground.deviceLayouts ? {
+                                        ...activePlayground.deviceLayouts
+                                    } : undefined;
+
+                                    if (clearedDeviceLayouts) {
+                                        Object.keys(clearedDeviceLayouts).forEach(deviceType => {
+                                            if (clearedDeviceLayouts[deviceType as any]) {
+                                                const { iconPositions, ...rest } = clearedDeviceLayouts[deviceType as any];
+                                                clearedDeviceLayouts[deviceType as any] = { ...rest, iconPositions: {} };
+                                            }
+                                        });
+                                    }
+
+                                    // Update playground
+                                    const updated = game.playgrounds?.map(p =>
+                                        p.id === activePlayground.id
+                                            ? { ...p, deviceLayouts: clearedDeviceLayouts }
+                                            : p
+                                    );
+
+                                    onUpdateGame({ ...game, playgrounds: updated });
+
+                                    console.log('[PlaygroundEditor] ✅ Layout overrides cleared! Tasks will now use their own positions.');
+                                    alert('Layout overrides cleared! Tasks should now display in their designed positions.');
+                                }}
+                                className="flex-1 py-4 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 border-2 border-yellow-500 shadow-lg shadow-yellow-500/20"
+                                title="Clear layout overrides to let tasks use their template positions"
+                            >
+                                <RefreshCw className="w-4 h-4" /> CLEAR OVERRIDES
+                            </button>
+                        )}
+
                         {activePlayground && (
                             <button
                                 onClick={() => {
