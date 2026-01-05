@@ -3006,16 +3006,55 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                         {/* Center: Zone Tabs - Centered in Editor Window */}
                         <div className="absolute left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto pointer-events-auto hide-scrollbar">
-                            {/* ADD NEW Button First (hide when editing/creating playzone templates) */}
+                            {/* ADD NEW Dropdown (hide when editing/creating playzone templates) */}
                             {!isTemplateMode && (
-                                <button
-                                    onClick={addNewZone}
-                                    disabled={isInstructorView}
-                                    className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
-                                    title="Add a new zone to the game"
-                                >
-                                    <Plus className="w-4 h-4" /> ADD NEW
-                                </button>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowAddNewMenu(!showAddNewMenu)}
+                                        disabled={isInstructorView}
+                                        className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all flex-shrink-0 bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-500 flex items-center gap-2"
+                                        title="Add a new zone to the game"
+                                    >
+                                        <Plus className="w-4 h-4" /> ADD NEW <ChevronDown className={`w-3 h-3 transition-transform ${showAddNewMenu ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {showAddNewMenu && (
+                                        <>
+                                            {/* Backdrop to close menu */}
+                                            <div
+                                                className="fixed inset-0 z-[1000]"
+                                                onClick={() => setShowAddNewMenu(false)}
+                                            />
+
+                                            <div className="absolute top-full mt-2 left-0 z-[1001] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden min-w-[220px]">
+                                                <button
+                                                    onClick={addNewZone}
+                                                    className="w-full px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-white hover:bg-slate-800 transition-colors flex items-center gap-3 border-b border-slate-800"
+                                                >
+                                                    <Plus className="w-4 h-4 text-green-400" />
+                                                    <div>
+                                                        <div>Blank Playzone</div>
+                                                        <div className="text-[9px] text-slate-400 font-normal normal-case">Create from scratch</div>
+                                                    </div>
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowPlaygroundLibrary(true);
+                                                        setShowAddNewMenu(false);
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-white hover:bg-slate-800 transition-colors flex items-center gap-3"
+                                                >
+                                                    <Download className="w-4 h-4 text-orange-400" />
+                                                    <div>
+                                                        <div>From Template</div>
+                                                        <div className="text-[9px] text-slate-400 font-normal normal-case">Import existing playzone</div>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             )}
 
                             {/* Zone Tabs */}
