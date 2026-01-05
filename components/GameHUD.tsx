@@ -1034,7 +1034,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 </div>
 
                 <div className={`flex flex-col items-center gap-2 pointer-events-auto transition-transform duration-300 ease-in-out ${sidebarOffset}`}>
-                    {timeLeft && (activeGame?.designConfig?.enableGameTime !== false) && (
+                    {/* GAME TIME - Always visible in EDIT mode when active, otherwise respects enableGameTime setting */}
+                    {timeLeft && (mode === GameMode.EDIT || activeGame?.designConfig?.enableGameTime !== false) && (
                         <div className="flex flex-col gap-2">
                             <button
                                 onClick={mode === GameMode.INSTRUCTOR ? () => setShowAdjustGameTime(true) : undefined}
@@ -1044,7 +1045,9 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                         ? 'bg-red-600 border-red-500 animate-pulse text-white hover:bg-red-700'
                                         : mode === GameMode.INSTRUCTOR
                                             ? 'bg-orange-600 border-orange-500 text-white hover:bg-orange-700 cursor-pointer'
-                                            : 'bg-orange-600 border-orange-500 text-white cursor-default'
+                                            : mode === GameMode.EDIT
+                                                ? 'bg-red-600 border-red-500 text-white cursor-default'
+                                                : 'bg-orange-600 border-orange-500 text-white cursor-default'
                                 }`}
                             >
                                 <span className="text-[9px] font-black uppercase tracking-widest opacity-90">GAME TIME</span>
