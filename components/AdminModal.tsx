@@ -131,6 +131,34 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                   </button>
               </div>
           </div>
+
+          {/* Database Tools */}
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+              <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                          <Database className="w-5 h-5 text-orange-400" />
+                      </div>
+                      <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-white">DATABASE TOOLS</p>
+                          <p className="text-[10px] text-slate-600 font-bold mt-2 leading-snug">
+                              Fix duplicate AI task IDs in database to resolve React key errors.
+                          </p>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="mt-4">
+                  <button
+                      type="button"
+                      onClick={() => setShowMigrationTool(true)}
+                      className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2"
+                  >
+                      <Database className="w-4 h-4" />
+                      FIX DUPLICATE TASK IDS
+                  </button>
+              </div>
+          </div>
         </div>
 
         {/* Footer */}
@@ -140,6 +168,11 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
             </p>
         </div>
       </div>
+
+      {/* Migration Tool Modal */}
+      {showMigrationTool && (
+        <AiTaskIdMigrationTool onClose={() => setShowMigrationTool(false)} />
+      )}
     </div>
   );
 };
