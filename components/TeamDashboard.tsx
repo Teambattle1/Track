@@ -88,9 +88,18 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, tot
       <div className="w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-md flex flex-col bg-slate-900 border-x-0 border-y-0 sm:border border-slate-800 sm:rounded-3xl overflow-hidden shadow-2xl relative">
           {/* Header */}
           <div className="p-6 bg-slate-950 border-b border-slate-800 flex justify-between items-center shrink-0">
-              <div className="flex flex-col">
+              <div className="flex flex-col gap-2">
                   <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">TEAM ZONE</span>
                   <h2 className="text-xl font-black text-white uppercase tracking-wider">{currentTeam.name}</h2>
+
+                  {/* Change Zone Countdown (if enabled and set to show on team view) */}
+                  {game?.changeZone?.enabled && game?.changeZone?.showOnTeamView && game?.changeZone?.targetTime && (
+                      <ChangeZoneCountdown
+                          targetTime={game.changeZone.targetTime}
+                          variant="team"
+                          onTrigger={handleChangeZoneTrigger}
+                      />
+                  )}
               </div>
               <button onClick={onClose} className="p-2 bg-slate-800 rounded-full text-white hover:bg-slate-700 transition-colors"><X className="w-6 h-6" /></button>
           </div>
