@@ -134,12 +134,26 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   // Get tasks for this playground
   const playgroundTasks = game.points?.filter(p => p.playgroundId === playgroundId) || [];
 
-  // Get position for a task from device layout
+  // Get position for a task from device layout or task's own devicePositions
   const getTaskPosition = (task: GamePoint) => {
-    const pos = deviceLayout?.iconPositions?.[task.id];
-    if (pos) {
-      return { x: pos.x, y: pos.y };
+    // PRIORITY 1: Check deviceLayout.iconPositions (editor-managed positions)
+    const layoutPos = deviceLayout?.iconPositions?.[task.id];
+    if (layoutPos) {
+      return { x: layoutPos.x, y: layoutPos.y };
     }
+
+    // PRIORITY 2: Check task's own devicePositions (template import positions)
+    const taskDevicePos = task.devicePositions?.[selectedDevice];
+    if (taskDevicePos) {
+      return { x: taskDevicePos.x, y: taskDevicePos.y };
+    }
+
+    // PRIORITY 3: Check legacy playgroundPosition
+    if (task.playgroundPosition) {
+      return { x: task.playgroundPosition.x, y: task.playgroundPosition.y };
+    }
+
+    // FALLBACK: Center position
     return { x: 50, y: 50 };
   };
 
