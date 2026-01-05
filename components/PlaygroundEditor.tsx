@@ -359,69 +359,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     // Initialize active playground
     useEffect(() => {
+        // Set active playground to first one if none selected and playgrounds exist
         if (!activePlaygroundId && game.playgrounds && game.playgrounds.length > 0) {
             setActivePlaygroundId(game.playgrounds[0].id);
-        } else if (!game.playgrounds || game.playgrounds.length === 0) {
-            // Auto-create if none exists with full device layouts configuration
-
-            const newPg: Playground = {
-                id: `pg-${Date.now()}`,
-                title: 'Global 1',
-                buttonVisible: true,
-                iconId: 'default',
-                location: { lat: 0, lng: 0 },
-                orientationLock: 'landscape',
-                deviceLayouts: {
-                    mobile: {
-                        orientationLock: 'landscape',
-                        qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
-                        qrScannerSize: { width: 140, height: 48 },
-                        qrScannerColor: '#f97316', // Orange-500 default
-                        iconPositions: {},
-                        buttonVisible: true,
-                        iconScale: 1.0,
-                    },
-                    tablet: {
-                        orientationLock: 'landscape',
-                        qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
-                        qrScannerSize: { width: 140, height: 48 },
-                        qrScannerColor: '#f97316', // Orange-500 default
-                        iconPositions: {},
-                        buttonVisible: true,
-                        iconScale: 1.0,
-                    },
-                    desktop: {
-                        orientationLock: 'landscape',
-                        qrScannerPos: { x: 85, y: 85 }, // Percentage-based (85%, 85%)
-                        qrScannerSize: { width: 140, height: 48 },
-                        qrScannerColor: '#f97316', // Orange-500 default
-                        iconPositions: {},
-                        buttonVisible: true,
-                        iconScale: 1.0,
-                    },
-                },
-            };
-
-            // Initialize default toolbar positions for new games
-        const defaultPos = getDefaultEditorToolbarPositions();
-        const defaultToolbarPositions = {
-            editorOrientationPos: defaultPos.orientation,
-            editorShowPos: defaultPos.show,
-            editorToolsPos: defaultPos.tools,
-        };
-
-            onUpdateGame({
-                ...game,
-                playgrounds: [newPg],
-                toolbarPositions: defaultToolbarPositions
-            });
-            setActivePlaygroundId(newPg.id);
-
-            // Drawers open by default (already set in useState, but kept for clarity)
-            setIsDrawerOpen(true);
-            setIsTasksDrawerOpen(true);
         }
-    }, [game.playgrounds]);
+    }, [game.playgrounds, activePlaygroundId]);
 
     // ESC key listener for draw mode
     useEffect(() => {
