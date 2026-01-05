@@ -58,6 +58,7 @@ import PlayzoneSelector from './components/PlayzoneSelector';
 import TranslationsManager from './components/TranslationsManager';
 import MediaManager from './components/MediaManager';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
+import MediaRejectionPopup from './components/MediaRejectionPopup';
 import { approveMediaSubmission, rejectMediaSubmission } from './services/mediaUpload';
 import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
 
