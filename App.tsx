@@ -50,6 +50,7 @@ import OfflineIndicator from './components/OfflineIndicator';
 import MeasureBox from './components/MeasureBox';
 import SupabaseDiagnostic from './components/SupabaseDiagnostic';
 import SupabaseToolsModal from './components/SupabaseToolsModal';
+import SystemSoundsModal from './components/SystemSoundsModal';
 import ImpossibleTravelWarnings from './components/ImpossibleTravelWarnings';
 import RemoteOverrideModal from './components/RemoteOverrideModal';
 import ClientLobby from './components/ClientLobby';
