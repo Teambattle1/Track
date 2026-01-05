@@ -250,7 +250,14 @@ Would you like to delete this broken template?`;
       console.log('[PlaygroundManager] Filtering completed games:', {
           total: games.length,
           completed: completed.length,
-          gameStates: games.map(g => ({ name: g.name, state: g.state || 'undefined' })),
+          gameStates: games.map(g => ({
+              name: g.name,
+              state: g.state,
+              stateType: typeof g.state,
+              isEnded: g.state === 'ended',
+              isEnding: g.state === 'ending',
+              matchesFilter: g.state === 'ended' || g.state === 'ending'
+          })),
           completedNames: completed.map(g => g.name)
       });
       return completed;
