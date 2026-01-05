@@ -241,14 +241,20 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, tot
       </div>
 
       {/* Change Zone Popup */}
-      {showChangeZonePopup && game?.changeZone && (
-          <ChangeZonePopup
-              message={game.changeZone.message}
-              imageUrl={game.changeZone.imageUrl}
-              requireCode={game.changeZone.requireCode}
-              onClose={() => setShowChangeZonePopup(false)}
-          />
-      )}
+      {showChangeZonePopup && (() => {
+          // Find first triggered zone change event or use old format
+          const activeEvent = game?.zoneChanges?.find(e => e.hasTriggered && e.enabled)
+              || game?.changeZone;
+
+          return activeEvent ? (
+              <ChangeZonePopup
+                  message={activeEvent.message}
+                  imageUrl={activeEvent.imageUrl}
+                  requireCode={activeEvent.requireCode}
+                  onClose={() => setShowChangeZonePopup(false)}
+              />
+          ) : null;
+      })()}
     </div>
   );
 };
