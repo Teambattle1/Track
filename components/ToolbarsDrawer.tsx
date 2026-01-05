@@ -173,6 +173,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
         pins: true,
         show: true,
         tools: true,
+        ranking: true,  // INSTRUCTOR: Show Ranking section
+        teams: true,    // INSTRUCTOR: Teams section
     };
 
     const [collapsedSectionsLocal, setCollapsedSectionsLocal] = useState<Record<string, boolean>>(defaultCollapsedState);
