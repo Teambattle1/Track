@@ -2854,7 +2854,6 @@ const GameApp: React.FC = () => {
             onSetMode={setMode}
             onOpenGameManager={() => setShowGameChooser(true)}
             onOpenTaskMaster={() => setShowTaskMaster(true)}
-            onOpenTeams={() => setShowTeamsHub(true)}
             mapStyle={localMapStyle || 'osm'}
             onSetMapStyle={(s) => setLocalMapStyle(s)}
             language={activeGame?.language || 'English'}
