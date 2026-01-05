@@ -132,6 +132,16 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
 
   useEffect(() => {
       loadTeams();
+
+      // Load historic location data from database
+      const loadHistoricPaths = async () => {
+          const savedPaths = await db.fetchGameLocationHistory(game.id);
+          if (savedPaths) {
+              setLocationHistory(savedPaths);
+          }
+      };
+      loadHistoricPaths();
+
       const unsubscribe = teamSync.subscribeToMembers((members) => {
           setOnlineMembers(members);
           updateLocationHistory(members);
