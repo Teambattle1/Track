@@ -462,6 +462,34 @@ const GameApp: React.FC = () => {
       }
   }, [showChatDrawer]);
 
+  // --- CURRENT TEAM DATA LOADING (for schedule calculations in PLAY mode) ---
+  useEffect(() => {
+      if (!activeGameId || mode !== GameMode.PLAY) {
+          setCurrentTeam(null);
+          return;
+      }
+
+      // Check if teamSync is connected
+      const teamState = teamSync.getState();
+      if (!teamState.teamId) return;
+
+      // Load the team's data
+      const loadTeam = async () => {
+          try {
+              const team = await db.fetchTeam(teamState.teamId);
+              setCurrentTeam(team);
+          } catch (error) {
+              console.error('[Schedule] Failed to load current team:', error);
+          }
+      };
+
+      loadTeam();
+
+      // Refresh team data periodically (in case startedAt is updated)
+      const interval = setInterval(loadTeam, 10000); // Every 10 seconds
+      return () => clearInterval(interval);
+  }, [activeGameId, mode]);
+
   // --- MEDIA REJECTION NOTIFICATIONS (for team players) ---
   useEffect(() => {
       if (!activeGameId || !activeGame) return;
