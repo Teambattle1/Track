@@ -871,6 +871,76 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                         )}
                     </div>
                 )}
+
+                {/* SHOW RANKING Section - Only for INSTRUCTOR mode */}
+                {mode === GameMode.INSTRUCTOR && onShowRanking && (
+                    <div className="bg-amber-600 border-2 border-amber-500 rounded-xl p-3 space-y-3">
+                        <button
+                            onClick={() => toggleSection('ranking')}
+                            className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Trophy className="w-4 h-4" />
+                                SHOW RANKING
+                            </span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('ranking') ? '' : '-rotate-90'}`} />
+                        </button>
+
+                        {isVisible('ranking') && (
+                            <div className="space-y-2">
+                                <button
+                                    onClick={onShowRanking}
+                                    className="w-full py-3 px-2 bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 transition-all"
+                                    title="Show Full Screen Ranking"
+                                >
+                                    <Trophy className="w-5 h-5" />
+                                    FULL SCREEN RANKING
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* TEAMS Section - Only for INSTRUCTOR mode */}
+                {mode === GameMode.INSTRUCTOR && (
+                    <div className="bg-indigo-600 border-2 border-indigo-500 rounded-xl p-3 space-y-3">
+                        <button
+                            onClick={() => toggleSection('teams')}
+                            className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Users className="w-4 h-4" />
+                                TEAMS
+                            </span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('teams') ? '' : '-rotate-90'}`} />
+                        </button>
+
+                        {isVisible('teams') && (
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={onToggleChat}
+                                        className="py-2 px-2 bg-indigo-700 hover:bg-indigo-800 text-indigo-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
+                                        title="Open Chat"
+                                    >
+                                        <MessageSquare className="w-4 h-4" />
+                                        CHAT
+                                    </button>
+                                    {onOpenTeams && (
+                                        <button
+                                            onClick={onOpenTeams}
+                                            className="py-2 px-2 bg-indigo-700 hover:bg-indigo-800 text-indigo-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
+                                            title="Show Teams"
+                                        >
+                                            <Users className="w-4 h-4" />
+                                            TEAMS
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
