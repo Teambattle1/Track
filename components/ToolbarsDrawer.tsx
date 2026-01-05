@@ -80,6 +80,7 @@ interface ToolbarsDrawerProps {
     selectedTeamPaths?: string[];
     teams?: Team[];
     onToggleVisibleToolbars?: () => void;
+    onResetToolbarPositions?: () => void;
     
     // TOOLS
     onToggleChat: () => void;
@@ -143,6 +144,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     selectedTeamPaths = [],
     teams = [],
     onToggleVisibleToolbars,
+    onResetToolbarPositions,
     onToggleChat,
     onEditGameSettings,
     onOpenGameChooser,
@@ -689,6 +691,18 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Reset Toolbar Positions Button */}
+                                {onResetToolbarPositions && (
+                                    <button
+                                        onClick={onResetToolbarPositions}
+                                        className="w-full py-2 px-2 bg-red-700 hover:bg-red-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 transition-all"
+                                        title="Reset all toolbar positions to default"
+                                    >
+                                        <Target className="w-4 h-4" />
+                                        RESET POSITIONS
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
