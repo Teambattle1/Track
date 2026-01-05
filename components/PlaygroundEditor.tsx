@@ -1039,7 +1039,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
     // Device-specific position helpers
     const getDevicePosition = (point: GamePoint): { x: number; y: number } => {
-        // Priority: devicePositions[selectedDevice] > playgroundPosition > default
+        // Priority: deviceLayouts[selectedDevice].iconPositions > devicePositions[selectedDevice] > playgroundPosition > default
+        const deviceLayout = activePlayground?.deviceLayouts?.[selectedDevice];
+        if (deviceLayout?.iconPositions?.[point.id]) {
+            return deviceLayout.iconPositions[point.id];
+        }
         if (point.devicePositions?.[selectedDevice]) {
             return point.devicePositions[selectedDevice];
         }
