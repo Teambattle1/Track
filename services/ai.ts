@@ -184,6 +184,9 @@ Return JSON array with all fields properly filled.`,
             tags.push(additionalTag);
         }
 
+        // Log to confirm NO language tags are added
+        console.log(`[AI Task] "${item.title}" - Tags: [${tags.join(', ')}] (Language is "${normalizedLanguage}", NOT added to tags)`);
+
         return {
             id: `ai-${Date.now()}-${index}`,
             title: item.title,
