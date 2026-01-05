@@ -765,7 +765,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                                 <Zap className="w-4 h-4" />
                                                 OVERRIDE
                                             </button>
-                                            <div className="absolute -top-2 -right-2 z-40">
+                                            <div className="absolute -top-2 -right-2 z-[9999]">
                                                 <InfoBox
                                                     title="REMOTE OVERRIDE"
                                                     className="left-full ml-2 -top-2 w-72"
