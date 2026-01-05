@@ -53,7 +53,7 @@ const getGameSessionDate = (game: Game) => {
 };
 
 const isGameCompleted = (game: Game) => {
-  if (game.state === 'ended') return true;
+  if (game.state === 'ended' || game.state === 'ending') return true;
   const points = game.points || [];
   const playable = points.filter(p => !p.isSectionHeader);
   if (playable.length === 0) return false;
