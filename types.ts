@@ -692,7 +692,8 @@ export interface Game {
   // Client-side mirror of DB updated_at (used for multi-user syncing)
   dbUpdatedAt?: string;
 
-  // Change Zone Countdown Feature
+  // Change Zone Countdown Feature (DEPRECATED - use zoneChanges instead)
+  // Kept for backwards compatibility - auto-migrated on game load
   changeZone?: {
     enabled: boolean;
     targetTime?: number; // Unix timestamp for when countdown reaches 00:00
@@ -703,6 +704,9 @@ export interface Game {
     hasTriggered: boolean; // Track if popup has already been shown
     startedAt?: number; // Timestamp when countdown was activated
   };
+
+  // NEW: Multiple Zone Changes Support
+  zoneChanges?: ZoneChangeEvent[];
 }
 
 export interface GameState {
