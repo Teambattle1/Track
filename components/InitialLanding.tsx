@@ -1070,8 +1070,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
             {/* System Status (HOME view, no auth) */}
             {view === 'HOME' && !authUser && (
-                <div className="absolute top-0 left-0 z-30 pt-4 pl-4">
-                    <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-slate-700 h-16 animate-in fade-in slide-in-from-left-4 duration-500">
+                <div className="absolute top-16 right-0 z-30 pt-2 pr-4">
+                    <div className="flex items-center gap-2 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-slate-700 h-16 animate-in fade-in slide-in-from-right-4 duration-500">
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                         <p className="text-[9px] font-black text-slate-500 tracking-[0.4em] uppercase">
                           SYSTEM ONLINE &bull; v{version}
