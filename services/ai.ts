@@ -82,8 +82,17 @@ export const generateAiTasks = async (
     const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Create exactly ${count} diverse scavenger hunt tasks. Topic: "${topic}". Language: ${normalizedLanguage}.
-IMPORTANT: For tasks with type "boolean", the answer MUST be either "YES" or "NO" (uppercase).
-Return JSON array.`,
+
+CRITICAL REQUIREMENTS:
+1. For "multiple_choice" tasks: ALWAYS create 3-4 answer options in the "options" array
+2. For "multiple_choice" tasks: ALWAYS mark the correct answer(s) in the "correctAnswers" array
+3. For "checkbox" tasks: ALWAYS create 4-6 options and mark 2-3 correct answers in "correctAnswers" array
+4. For "dropdown" tasks: ALWAYS create 4-5 options and mark the correct answer in "correctAnswers" array
+5. For "boolean" tasks: The answer MUST be either "YES" or "NO" (uppercase)
+6. For "text" tasks: Provide the correct answer in the "answer" field
+7. If the topic/context clearly indicates a correct answer, ensure it's properly marked
+
+Return JSON array with all fields properly filled.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
