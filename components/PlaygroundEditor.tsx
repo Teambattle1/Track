@@ -1041,6 +1041,23 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const getDevicePosition = (point: GamePoint): { x: number; y: number } => {
         // Priority: deviceLayouts[selectedDevice].iconPositions > devicePositions[selectedDevice] > playgroundPosition > default
         const deviceLayout = activePlayground?.deviceLayouts?.[selectedDevice];
+
+        // DEBUG: Log first 3 tasks to see what's happening
+        if (uniquePlaygroundPoints.indexOf(point) < 3) {
+            console.log(`[PlaygroundEditor] Position lookup for "${point.title}":`, {
+                taskId: point.id,
+                selectedDevice,
+                hasDeviceLayout: !!deviceLayout,
+                hasIconPositions: !!deviceLayout?.iconPositions,
+                iconPositionsCount: deviceLayout?.iconPositions ? Object.keys(deviceLayout.iconPositions).length : 0,
+                hasTaskDevicePositions: !!point.devicePositions,
+                taskDevicePositions: point.devicePositions,
+                taskDevicePositionForDevice: point.devicePositions?.[selectedDevice],
+                hasPlaygroundPosition: !!point.playgroundPosition,
+                playgroundPosition: point.playgroundPosition
+            });
+        }
+
         if (deviceLayout?.iconPositions?.[point.id]) {
             return deviceLayout.iconPositions[point.id];
         }
