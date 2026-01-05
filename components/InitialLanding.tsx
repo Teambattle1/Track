@@ -1048,8 +1048,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
             {/* Operator Field (HOME view) */}
             {view === 'HOME' && authUser && (
-                <div className="absolute top-0 left-0 z-30 pt-4 pl-4">
-                    <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-green-500/60 h-16 animate-in fade-in slide-in-from-left-4 duration-500">
+                <div className="absolute top-16 right-0 z-30 pt-2 pr-4">
+                    <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-green-500/60 h-16 animate-in fade-in slide-in-from-right-4 duration-500">
                         <div className="flex items-center gap-3 flex-1">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
                             <div className="flex flex-col min-w-0">
