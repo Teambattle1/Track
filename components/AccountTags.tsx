@@ -520,14 +520,18 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                                             </div>
 
                                             <div className="flex items-center gap-4">
-                                                {isEditing && <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest animate-pulse">EDITING</span>}
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); handleRemoveTagClick(name); }}
-                                                    className="p-2.5 rounded-lg transition-all bg-red-950/20 text-red-500/50 hover:text-red-500 hover:bg-red-950/50"
-                                                    title={isInUse ? "GLOBAL PURGE" : "REMOVE FROM REGISTRY"}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                {!bulkSelectionMode && (
+                                                    <>
+                                                        {isEditing && <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest animate-pulse">EDITING</span>}
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleRemoveTagClick(name); }}
+                                                            className="p-2.5 rounded-lg transition-all bg-red-950/20 text-red-500/50 hover:text-red-500 hover:bg-red-950/50"
+                                                            title={isInUse ? "GLOBAL PURGE" : "REMOVE FROM REGISTRY"}
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     );
