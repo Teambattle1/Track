@@ -102,6 +102,9 @@ interface ToolbarsDrawerProps {
     // INSTRUCTOR FEATURES
     onShowRanking?: () => void;
     onOpenTeams?: () => void;
+
+    // Access Mode Props
+    userAccessMode?: 'EDITOR' | 'INSTRUCTOR' | 'TEAM' | null;
 }
 
 const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
@@ -164,6 +167,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     onAdjustZoneChange,
     onShowRanking,
     onOpenTeams,
+    userAccessMode,
 }) => {
     // Auto-collapse MAPSTYLE and ZONE CHANGE in editor mode by default
     const defaultCollapsedState = {
@@ -309,22 +313,29 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
 
                         {isVisible('mapmode') && (
                             <div className="grid grid-cols-3 gap-2">
-                                <button
-                                    onClick={() => onSetMode(GameMode.EDIT)}
-                                    className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.EDIT ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
-                                    title="Editor View"
-                                >
-                                    <MapIcon className="w-4 h-4" />
-                                    EDITOR
-                                </button>
-                                <button
-                                    onClick={() => onSetMode(GameMode.INSTRUCTOR)}
-                                    className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.INSTRUCTOR ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
-                                    title="Instructor View"
-                                >
-                                    <Shield className="w-4 h-4" />
-                                    INSTRUCTOR
-                                </button>
+                                {/* EDITOR button - Only show for EDITOR access */}
+                                {userAccessMode === 'EDITOR' && (
+                                    <button
+                                        onClick={() => onSetMode(GameMode.EDIT)}
+                                        className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.EDIT ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
+                                        title="Editor View"
+                                    >
+                                        <MapIcon className="w-4 h-4" />
+                                        EDITOR
+                                    </button>
+                                )}
+                                {/* INSTRUCTOR button - Show for EDITOR and INSTRUCTOR access */}
+                                {(userAccessMode === 'EDITOR' || userAccessMode === 'INSTRUCTOR') && (
+                                    <button
+                                        onClick={() => onSetMode(GameMode.INSTRUCTOR)}
+                                        className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.INSTRUCTOR ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
+                                        title="Instructor View"
+                                    >
+                                        <Shield className="w-4 h-4" />
+                                        INSTRUCTOR
+                                    </button>
+                                )}
+                                {/* TEAM button - Show for all access modes */}
                                 <button
                                     onClick={() => onSetMode(GameMode.PLAY)}
                                     className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.PLAY ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
