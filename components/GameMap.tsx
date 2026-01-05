@@ -611,11 +611,23 @@ const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }:
                 icon={dangerIcon}
                 draggable={draggable}
                 eventHandlers={{
-                    click: () => onClick && onClick(zone),
+                    click: () => {
+                        try {
+                            if (onClick && zone) onClick(zone);
+                        } catch (error) {
+                            console.error('[DangerZone] Error handling click:', error);
+                        }
+                    },
                     dragend(e: any) {
-                        if (onMove) {
-                            const latlng = e.target.getLatLng();
-                            onMove(zone.id, { lat: latlng.lat, lng: latlng.lng });
+                        try {
+                            if (onMove && e?.target?.getLatLng) {
+                                const latlng = e.target.getLatLng();
+                                if (latlng && zone?.id) {
+                                    onMove(zone.id, { lat: latlng.lat, lng: latlng.lng });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('[DangerZone] Error handling dragend:', error);
                         }
                     }
                 }}
