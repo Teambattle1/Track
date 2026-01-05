@@ -243,7 +243,14 @@ Would you like to delete this broken template?`;
   };
 
   const getCompletedGames = () => {
-      return games.filter(g => g.state === 'ended' || g.state === 'ending');
+      const completed = games.filter(g => g.state === 'ended' || g.state === 'ending');
+      console.log('[PlaygroundManager] Filtering completed games:', {
+          total: games.length,
+          completed: completed.length,
+          gameStates: games.map(g => ({ name: g.name, state: g.state || 'undefined' })),
+          completedNames: completed.map(g => g.name)
+      });
+      return completed;
   };
 
   const getActiveTabGames = () => {
