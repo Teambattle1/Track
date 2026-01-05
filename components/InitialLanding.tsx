@@ -122,7 +122,8 @@ const MapPinButton = ({
     onClick,
     delay,
     scale = 1,
-    badge
+    badge,
+    isBlinking = false
 }: {
     title: string;
     icon: any;
@@ -131,6 +132,7 @@ const MapPinButton = ({
     delay: number;
     scale?: number;
     badge?: string;
+    isBlinking?: boolean;
 }) => {
     const scaleClass = scale === 0.85 ? 'landing-scale-085'
         : scale === 0.9 ? 'landing-scale-090'
