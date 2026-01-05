@@ -149,7 +149,7 @@ const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: str
     { id: 'clean', label: 'Clean', icon: Globe, preview: 'https://a.basemaps.cartocdn.com/rastertiles/voyager/13/4285/2722.png' },
 ];
 
-const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, toggleMode, onSetMode, onOpenGameManager, onOpenTaskMaster, onOpenTeams,
+const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, toggleMode, onSetMode, onOpenGameManager, onOpenTaskMaster,
     mapStyle, onSetMapStyle, language, onBackToHub, activeGameName, onOpenInstructorDashboard,
     isMeasuring, onToggleMeasure, measuredDistance, measurePointsCount = 0, playgrounds, onOpenPlayground, onOpenTeamDashboard, onOpenTeamLobby,
     onRelocateGame, isRelocating, onUpdateGameTime, timerConfig, onFitBounds, onLocateMe, onSearchLocation,
