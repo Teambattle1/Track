@@ -98,6 +98,7 @@ export interface GameTask {
   // Media
   imageUrl?: string;
   videoUrl?: string;
+  youtubeUrl?: string;
   audioUrl?: string;
   backgroundAudioUrl?: string;
 
