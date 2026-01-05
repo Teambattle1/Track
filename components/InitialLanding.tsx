@@ -448,7 +448,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               showBranding: true,
               brandingParts: [
                   { text: 'TEAM', color: 'text-white' },
-                  { text: 'CHALLENGE', color: 'text-orange-500' }
+                  { text: 'ACTION', color: 'text-orange-500' }
               ]
           };
       }
@@ -1197,7 +1197,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
           {/* Footer Branding */}
           <div className="mt-auto pt-10 border-t border-slate-900/50 flex justify-center items-center gap-4">
             <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest">
-                POWERED BY TEAMBATTLE
+                POWERED BY TEAMACTION
             </p>
           </div>
         </div>
