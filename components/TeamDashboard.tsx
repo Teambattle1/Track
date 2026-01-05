@@ -84,8 +84,8 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, tot
   const tasksCompleted = currentTeam.completedPointIds?.length || 0;
 
   return (
-    <div className="fixed inset-0 z-[2500] bg-slate-950/95 backdrop-blur-md flex items-center justify-center sm:p-4 animate-in slide-in-from-bottom-10">
-      <div className="w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-md flex flex-col bg-slate-900 border-x-0 border-y-0 sm:border border-slate-800 sm:rounded-3xl overflow-hidden shadow-2xl relative">
+    <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+      <div className="w-full h-full max-w-md flex flex-col bg-slate-900 overflow-hidden relative">
           {/* Header */}
           <div className="p-6 bg-slate-950 border-b border-slate-800 flex justify-between items-center shrink-0">
               <div className="flex flex-col gap-2">
