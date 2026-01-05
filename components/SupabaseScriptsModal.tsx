@@ -677,35 +677,54 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                   </h3>
                 </div>
                 <div className="divide-y divide-slate-800">
-                  {SQL_SCRIPTS.map(script => (
-                    <button
-                      key={script.id}
-                      onClick={() => setSelectedScript(script)}
-                      className={`w-full text-left p-4 transition-colors group hover:bg-slate-800/50 ${
-                        selectedScript?.id === script.id ? 'bg-green-900/20 border-l-4 border-green-500' : ''
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h4 className="text-sm font-black text-white uppercase leading-tight">
-                          {script.title}
-                        </h4>
-                        <ChevronRight className={`w-4 h-4 text-slate-600 group-hover:text-green-400 transition-colors shrink-0 ${
-                          selectedScript?.id === script.id ? 'text-green-400' : ''
-                        }`} />
-                      </div>
-                      <p className="text-[10px] text-slate-500 leading-relaxed mb-2">
-                        {script.description}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${getCategoryColor(script.category)}`}>
-                          {script.category}
-                        </span>
-                        <span className="text-[9px] text-slate-600 font-bold">
-                          {script.createdDate}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                  {SQL_SCRIPTS.map(script => {
+                    const isCompleted = completedScripts.has(script.id);
+                    return (
+                      <button
+                        key={script.id}
+                        onClick={() => setSelectedScript(script)}
+                        className={`w-full text-left p-4 transition-colors group hover:bg-slate-800/50 ${
+                          selectedScript?.id === script.id
+                            ? 'bg-green-900/20 border-l-4 border-green-500'
+                            : isCompleted
+                              ? 'bg-emerald-950/30 border-l-4 border-emerald-600'
+                              : ''
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {isCompleted && (
+                              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                            )}
+                            <h4 className={`text-sm font-black uppercase leading-tight ${
+                              isCompleted ? 'text-emerald-300' : 'text-white'
+                            }`}>
+                              {script.title}
+                            </h4>
+                          </div>
+                          <ChevronRight className={`w-4 h-4 text-slate-600 group-hover:text-green-400 transition-colors shrink-0 ${
+                            selectedScript?.id === script.id ? 'text-green-400' : ''
+                          }`} />
+                        </div>
+                        <p className="text-[10px] text-slate-500 leading-relaxed mb-2">
+                          {script.description}
+                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${getCategoryColor(script.category)}`}>
+                            {script.category}
+                          </span>
+                          <span className="text-[9px] text-slate-600 font-bold">
+                            {script.createdDate}
+                          </span>
+                          {isCompleted && (
+                            <span className="px-2 py-0.5 rounded bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-wide">
+                              ✓ DONE
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
