@@ -963,46 +963,53 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                         setDraggingPointId(id);
                     }}
                     onDragEnd={(id: string, e: any) => {
-                        const trashEl = document.getElementById('map-trash-bin');
-                        const trashRect = trashEl?.getBoundingClientRect();
+                        try {
+                            const trashEl = document.getElementById('map-trash-bin');
+                            const trashRect = trashEl?.getBoundingClientRect();
 
-                        let overTrash = false;
+                            let overTrash = false;
 
-                        if (trashRect) {
-                            const originalEvent = e?.originalEvent;
-                            const touchPoint = originalEvent?.changedTouches?.[0] || originalEvent?.touches?.[0];
+                            if (trashRect && e) {
+                                const originalEvent = e?.originalEvent;
+                                const touchPoint = originalEvent?.changedTouches?.[0] || originalEvent?.touches?.[0];
 
-                            const clientX = typeof originalEvent?.clientX === 'number' ? originalEvent.clientX : (typeof touchPoint?.clientX === 'number' ? touchPoint.clientX : null);
-                            const clientY = typeof originalEvent?.clientY === 'number' ? originalEvent.clientY : (typeof touchPoint?.clientY === 'number' ? touchPoint.clientY : null);
+                                const clientX = typeof originalEvent?.clientX === 'number' ? originalEvent.clientX : (typeof touchPoint?.clientX === 'number' ? touchPoint.clientX : null);
+                                const clientY = typeof originalEvent?.clientY === 'number' ? originalEvent.clientY : (typeof touchPoint?.clientY === 'number' ? touchPoint.clientY : null);
 
-                            if (typeof clientX === 'number' && typeof clientY === 'number') {
-                                overTrash = clientX >= trashRect.left && clientX <= trashRect.right && clientY >= trashRect.top && clientY <= trashRect.bottom;
-                            } else {
-                                const markerEl = typeof e?.target?.getElement === 'function' ? e.target.getElement() : null;
-                                const markerRect = markerEl?.getBoundingClientRect();
-                                if (markerRect) {
-                                    overTrash = !(
-                                        markerRect.right < trashRect.left ||
-                                        markerRect.left > trashRect.right ||
-                                        markerRect.bottom < trashRect.top ||
-                                        markerRect.top > trashRect.bottom
-                                    );
+                                if (typeof clientX === 'number' && typeof clientY === 'number') {
+                                    overTrash = clientX >= trashRect.left && clientX <= trashRect.right && clientY >= trashRect.top && clientY <= trashRect.bottom;
+                                } else if (e?.target) {
+                                    const markerEl = typeof e.target.getElement === 'function' ? e.target.getElement() : null;
+                                    const markerRect = markerEl?.getBoundingClientRect();
+                                    if (markerRect) {
+                                        overTrash = !(
+                                            markerRect.right < trashRect.left ||
+                                            markerRect.left > trashRect.right ||
+                                            markerRect.bottom < trashRect.top ||
+                                            markerRect.top > trashRect.bottom
+                                        );
+                                    }
                                 }
                             }
-                        }
 
-                        console.log('[Drag] Ended drag for point:', id, 'overTrash:', overTrash, 'isOverTrash(state):', isOverTrash);
-                        setDraggingPointId(null);
+                            console.log('[Drag] Ended drag for point:', id, 'overTrash:', overTrash, 'isOverTrash(state):', isOverTrash);
+                            setDraggingPointId(null);
 
-                        if (overTrash && onDeletePoint) {
-                            console.log('[Drag] Calling delete for:', id);
-                            onDeletePoint(id);
+                            if (overTrash && onDeletePoint) {
+                                console.log('[Drag] Calling delete for:', id);
+                                onDeletePoint(id);
+                                setIsOverTrash(false);
+                                return true; // Signal deletion
+                            }
+
                             setIsOverTrash(false);
-                            return true; // Signal deletion
+                            return false;
+                        } catch (error) {
+                            console.error('[Drag] Error handling drag end on iPad:', error);
+                            setDraggingPointId(null);
+                            setIsOverTrash(false);
+                            return false;
                         }
-
-                        setIsOverTrash(false);
-                        return false;
                     }}
                 />
             ))}
