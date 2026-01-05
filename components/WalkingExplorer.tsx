@@ -33,6 +33,8 @@ const WalkingExplorer: React.FC = () => {
     ];
 
     useEffect(() => {
+        if (!shouldShow || hasSeenExplorer) return;
+
         let animationFrame: number;
         let lastTime = Date.now();
         let pauseTimeout: NodeJS.Timeout;
@@ -45,7 +47,7 @@ const WalkingExplorer: React.FC = () => {
             if (isWalking) {
                 const path = paths[currentPath];
                 const speed = 8; // pixels per second
-                
+
                 setPosition(prev => {
                     let newX = prev.x;
                     let newY = prev.y;
@@ -61,18 +63,20 @@ const WalkingExplorer: React.FC = () => {
                             // Stop and search the map
                             setIsWalking(false);
                             pauseTimeout = setTimeout(() => {
-                                // Move to next path or loop
-                                const nextPath = (currentPath + 1) % paths.length;
-                                setCurrentPath(nextPath);
-                                
-                                // If looping back, reset position
-                                if (nextPath === 0) {
-                                    setPosition({ x: -10, y: 70 });
+                                const nextPath = currentPath + 1;
+
+                                // Check if this is the last path
+                                if (nextPath >= paths.length) {
+                                    // Mark as seen and hide
+                                    sessionStorage.setItem('explorerSeen', 'true');
+                                    setHasSeenExplorer(true);
+                                    return;
                                 }
-                                
+
+                                setCurrentPath(nextPath);
                                 setIsWalking(true);
                             }, 3000 + Math.random() * 2000); // Pause 3-5 seconds
-                            
+
                             return { x: path.end.x, y: path.end.y };
                         }
                     }
@@ -90,7 +94,7 @@ const WalkingExplorer: React.FC = () => {
             cancelAnimationFrame(animationFrame);
             if (pauseTimeout) clearTimeout(pauseTimeout);
         };
-    }, [isWalking, direction, currentPath]);
+    }, [isWalking, direction, currentPath, shouldShow, hasSeenExplorer]);
 
     return (
         <div 
