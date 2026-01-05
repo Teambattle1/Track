@@ -946,7 +946,9 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
               mode: timerMode,
               durationMinutes: timerMode === 'countdown' ? duration : undefined,
               endTime: timerMode === 'scheduled_end' ? endDateTime : undefined,
-              title: timerTitle
+              title: timerTitle,
+              startTime: startTime || undefined,
+              lobbyOpenTime: lobbyOpenTime || undefined
           }
       };
 
