@@ -78,6 +78,30 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
     setNotesRead(true);
   };
 
+  // Change Zone State
+  const [showChangeZonePopup, setShowChangeZonePopup] = useState(false);
+  const [showChangeZonePanel, setShowChangeZonePanel] = useState(false);
+
+  const handleChangeZoneTrigger = async () => {
+    if (liveGame.changeZone && !liveGame.changeZone.hasTriggered) {
+      setShowChangeZonePopup(true);
+      // Mark as triggered in database
+      await db.updateGame(liveGame.id, {
+        changeZone: {
+          ...liveGame.changeZone,
+          hasTriggered: true
+        }
+      });
+    }
+  };
+
+  const handleUpdateGame = async (updates: Partial<Game>) => {
+    const updated = await db.updateGame(liveGame.id, updates);
+    if (updated) {
+      setLiveGame(updated);
+    }
+  };
+
   const mapRef = useRef<GameMapHandle>(null);
 
   const loadTeams = async () => {
