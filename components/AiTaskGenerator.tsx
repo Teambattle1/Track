@@ -749,10 +749,16 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                             {isGenerating ? 'GENERATING...' : 'GENERATE TASKS'}
                         </button>
 
-                        {/* Progress Bar */}
+                        {/* Progress Bar with Task Count */}
                         {isGenerating && (
-                            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div className="bg-purple-500 h-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between text-[10px] font-bold text-purple-400 uppercase tracking-wider">
+                                    <span>Generating task {currentTaskCount}/{totalTaskCount}</span>
+                                    <span>{Math.round(progress)}%</span>
+                                </div>
+                                <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                    <div className="bg-purple-500 h-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
+                                </div>
                             </div>
                         )}
 
