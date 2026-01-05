@@ -1183,7 +1183,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         setShowPlaygroundLibrary(false);
         setShowAddNewMenu(false);
 
-        console.log('[PlaygroundEditor] ✅ Template imported successfully with spiral placement');
+        console.log('[PlaygroundEditor] ✅ Template imported successfully - positions preserved from template');
     };
 
     const handleResetBackground = () => {
