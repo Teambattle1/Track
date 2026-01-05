@@ -710,10 +710,17 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                           onClick={() => setShowSupabaseScripts(true)}
                       />
                       <NavCard
+                          title="SYSTEM SOUNDS"
+                          subtitle="GLOBAL AUDIO SETTINGS"
+                          icon={MessageSquare}
+                          color="bg-purple-600"
+                          onClick={() => onAction('SYSTEM_SOUNDS')}
+                      />
+                      <NavCard
                           title="MEDIA"
                           subtitle="PHOTOS & VIDEOS MANAGER"
                           icon={Smartphone}
-                          color="bg-purple-600"
+                          color="bg-orange-600"
                           onClick={() => onAction('MEDIA')}
                       />
                       <NavCard
