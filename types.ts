@@ -778,3 +778,17 @@ export interface AccountUser {
   usageHistory?: UsageLogEntry[];
   messages?: AdminMessage[];
 }
+
+// --- Team Location History ---
+export interface LocationHistoryItem extends Coordinate {
+  timestamp: number;
+}
+
+export interface GameLocationHistory {
+  id: string;
+  gameId: string;
+  timestamp: number;
+  teamPaths: Record<string, LocationHistoryItem[]>; // teamId -> array of locations
+  createdAt: number;
+  updatedAt: number;
+}
