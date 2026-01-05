@@ -1824,6 +1824,190 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                       </div>
                   )}
 
+                  {activeTab === 'TIMER' && (
+                      <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                          {/* TIME LIMIT */}
+                          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 p-6 rounded-2xl border-2 border-blue-200 dark:border-blue-800">
+                              <div className="flex items-start gap-4 mb-4">
+                                  <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                      <Clock className="w-6 h-6" />
+                                  </div>
+                                  <div className="flex-1">
+                                      <h3 className="text-sm font-black text-blue-900 dark:text-blue-100 uppercase tracking-wider">Time Limit</h3>
+                                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Set a countdown timer for this task</p>
+                                  </div>
+                              </div>
+
+                              <div>
+                                  <label className="block text-[10px] font-black text-blue-700 dark:text-blue-300 mb-1.5 uppercase tracking-[0.2em]">Duration (Seconds)</label>
+                                  <div className="flex">
+                                      <input
+                                          type="number"
+                                          value={editedPoint.settings?.timeLimitSeconds || ''}
+                                          onChange={(e) => setEditedPoint({...editedPoint, settings: {...editedPoint.settings, timeLimitSeconds: parseInt(e.target.value) || undefined }})}
+                                          className="w-full px-4 py-3 border-2 border-r-0 dark:border-gray-700 rounded-l-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-blue-500 transition-all text-sm"
+                                          placeholder="∞ (No limit)"
+                                      />
+                                      <span className="bg-gray-100 dark:bg-gray-700 border-2 dark:border-gray-700 border-l-0 rounded-r-xl px-3 flex items-center text-[10px] font-bold text-gray-500 uppercase">SEC</span>
+                                  </div>
+                                  <p className="text-[9px] text-blue-600 dark:text-blue-400 mt-2 italic">Leave empty for unlimited time</p>
+                              </div>
+                          </div>
+
+                          {/* SCORE DEPENDS ON TIME */}
+                          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
+                              <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                      <div className="flex items-start gap-4 mb-2">
+                                          <div className="w-12 h-12 bg-purple-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                              <Zap className="w-6 h-6" />
+                                          </div>
+                                          <div>
+                                              <h3 className="text-sm font-black text-purple-900 dark:text-purple-100 uppercase tracking-wider">Score Depends on Speed</h3>
+                                              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">Award more points for faster completion</p>
+                                          </div>
+                                      </div>
+                                      <p className="text-[10px] text-purple-600 dark:text-purple-400 mt-2 italic ml-16">
+                                          When enabled, teams get full points if they answer within 50% of the time limit. Points decrease linearly as time runs out.
+                                      </p>
+                                  </div>
+                                  <label className="flex items-center gap-2 cursor-pointer ml-3" onClick={() => {
+                                      setEditedPoint({...editedPoint, settings: {...editedPoint.settings, scoreDependsOnSpeed: !editedPoint.settings?.scoreDependsOnSpeed}});
+                                  }}>
+                                      <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.settings?.scoreDependsOnSpeed ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                          <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.settings?.scoreDependsOnSpeed ? 'translate-x-6' : 'translate-x-0'}`} />
+                                      </div>
+                                  </label>
+                              </div>
+                              {!editedPoint.settings?.timeLimitSeconds && editedPoint.settings?.scoreDependsOnSpeed && (
+                                  <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg flex items-start gap-2">
+                                      <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                                      <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                                          <strong>Warning:</strong> Score depends on speed requires a time limit to be set. Please add a time limit above.
+                                      </p>
+                                  </div>
+                              )}
+                          </div>
+
+                          {/* SCHEDULED VISIBILITY */}
+                          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-6 rounded-2xl border-2 border-amber-200 dark:border-amber-800">
+                              <div className="flex items-start gap-4 mb-4">
+                                  <div className="w-12 h-12 bg-amber-600 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                                      <Clock className="w-6 h-6" />
+                                  </div>
+                                  <div className="flex-1">
+                                      <h3 className="text-sm font-black text-amber-900 dark:text-amber-100 uppercase tracking-wider">Scheduled Visibility</h3>
+                                      <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">Control when this task appears on the map</p>
+                                  </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                  <div className="flex items-center justify-between">
+                                      <label className="text-xs font-bold text-amber-900 dark:text-amber-100">Enable Scheduling</label>
+                                      <label className="flex items-center gap-2 cursor-pointer" onClick={() => {
+                                          setEditedPoint({
+                                              ...editedPoint,
+                                              schedule: editedPoint.schedule?.enabled
+                                                  ? {...editedPoint.schedule, enabled: false}
+                                                  : {enabled: true, scheduleType: 'game_start_offset', showAfterMinutes: 0, isScheduled: true}
+                                          });
+                                      }}>
+                                          <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.schedule?.enabled ? 'bg-amber-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                              <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.schedule?.enabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                          </div>
+                                      </label>
+                                  </div>
+
+                                  {editedPoint.schedule?.enabled && (
+                                      <>
+                                          <div>
+                                              <label className="block text-[10px] font-black text-amber-700 dark:text-amber-300 mb-2 uppercase tracking-wider">Schedule Type</label>
+                                              <select
+                                                  value={editedPoint.schedule?.scheduleType || 'game_start_offset'}
+                                                  onChange={(e) => setEditedPoint({
+                                                      ...editedPoint,
+                                                      schedule: {...editedPoint.schedule!, scheduleType: e.target.value as any}
+                                                  })}
+                                                  className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-amber-500 text-sm"
+                                              >
+                                                  <option value="game_start_offset">⏱️ Show after game starts</option>
+                                                  <option value="game_end_offset">⏰ Show before game ends</option>
+                                                  <option value="datetime">📅 Show at specific date/time</option>
+                                              </select>
+                                          </div>
+
+                                          {editedPoint.schedule?.scheduleType === 'game_start_offset' && (
+                                              <div>
+                                                  <label className="block text-[10px] font-black text-amber-700 dark:text-amber-300 mb-2 uppercase tracking-wider">Show After (Minutes)</label>
+                                                  <input
+                                                      type="number"
+                                                      min="0"
+                                                      value={editedPoint.schedule?.showAfterMinutes || 0}
+                                                      onChange={(e) => setEditedPoint({
+                                                          ...editedPoint,
+                                                          schedule: {...editedPoint.schedule!, showAfterMinutes: parseInt(e.target.value) || 0}
+                                                      })}
+                                                      className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-amber-500 text-sm"
+                                                      placeholder="0"
+                                                  />
+                                                  <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-1 italic">Task will appear X minutes after the game starts</p>
+                                              </div>
+                                          )}
+
+                                          {editedPoint.schedule?.scheduleType === 'game_end_offset' && (
+                                              <div>
+                                                  <label className="block text-[10px] font-black text-amber-700 dark:text-amber-300 mb-2 uppercase tracking-wider">Show Before End (Minutes)</label>
+                                                  <input
+                                                      type="number"
+                                                      min="0"
+                                                      value={editedPoint.schedule?.showBeforeEndMinutes || 0}
+                                                      onChange={(e) => setEditedPoint({
+                                                          ...editedPoint,
+                                                          schedule: {...editedPoint.schedule!, showBeforeEndMinutes: parseInt(e.target.value) || 0}
+                                                      })}
+                                                      className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-amber-500 text-sm"
+                                                      placeholder="0"
+                                                  />
+                                                  <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-1 italic">Task will appear X minutes before the game ends</p>
+                                              </div>
+                                          )}
+
+                                          {editedPoint.schedule?.scheduleType === 'datetime' && (
+                                              <div className="space-y-3">
+                                                  <div>
+                                                      <label className="block text-[10px] font-black text-amber-700 dark:text-amber-300 mb-2 uppercase tracking-wider">Show At Date/Time</label>
+                                                      <input
+                                                          type="datetime-local"
+                                                          value={editedPoint.schedule?.showAtDateTime ? new Date(editedPoint.schedule.showAtDateTime).toISOString().slice(0, 16) : ''}
+                                                          onChange={(e) => setEditedPoint({
+                                                              ...editedPoint,
+                                                              schedule: {...editedPoint.schedule!, showAtDateTime: e.target.value ? new Date(e.target.value).getTime() : undefined}
+                                                          })}
+                                                          className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-amber-500 text-sm"
+                                                      />
+                                                  </div>
+                                                  <div>
+                                                      <label className="block text-[10px] font-black text-amber-700 dark:text-amber-300 mb-2 uppercase tracking-wider">Hide At Date/Time (Optional)</label>
+                                                      <input
+                                                          type="datetime-local"
+                                                          value={editedPoint.schedule?.hideAtDateTime ? new Date(editedPoint.schedule.hideAtDateTime).toISOString().slice(0, 16) : ''}
+                                                          onChange={(e) => setEditedPoint({
+                                                              ...editedPoint,
+                                                              schedule: {...editedPoint.schedule!, hideAtDateTime: e.target.value ? new Date(e.target.value).getTime() : undefined}
+                                                          })}
+                                                          className="w-full px-4 py-3 border-2 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium outline-none focus:border-amber-500 text-sm"
+                                                      />
+                                                      <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-1 italic">Leave empty to keep task visible indefinitely</p>
+                                                  </div>
+                                              </div>
+                                          )}
+                                      </>
+                                  )}
+                              </div>
+                          </div>
+                      </div>
+                  )}
+
                   {activeTab === 'ADDONS' && (
                       <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
                           {/* TIME-BOMB CONFIGURATION */}
