@@ -1209,7 +1209,12 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                   <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em] flex items-center gap-1">
-                                      TYPE <Info className="w-3 h-3 text-blue-500" title="Hover over dropdown to see descriptions" />
+                                      TYPE
+                                      <InfoTooltip
+                                          title="Task Type"
+                                          description="Choose what kind of answer players must provide. Each type has different input methods and validation."
+                                          example="Quiz (MC) for multiple choice questions, Text Input for open-ended answers"
+                                      />
                                   </label>
                                   <div className="relative group">
                                       <select
