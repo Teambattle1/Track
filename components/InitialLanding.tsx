@@ -979,6 +979,47 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                                 <span className={`px-2 py-1 rounded-md text-[9px] font-black tracking-wide border ${badge.bgColor} ${badge.textColor} border-slate-700 whitespace-nowrap`}>
                                                     {badge.label}
                                                 </span>
+                                                {/* Game Login Info Button */}
+                                                <div className="relative">
+                                                    <button
+                                                        onMouseEnter={() => {
+                                                            setHoveredGameId(game.id);
+                                                            generateGameLoginQR(game.id);
+                                                        }}
+                                                        onMouseLeave={() => setHoveredGameId(null)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="p-1 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-blue-400 flex-shrink-0"
+                                                        title="Show login code & QR"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+
+                                                    {/* Login Info Tooltip */}
+                                                    {hoveredGameId === game.id && (
+                                                        <div className="absolute right-0 top-full mt-2 z-[9999] bg-slate-800 border-2 border-blue-500 rounded-xl shadow-2xl p-4 min-w-[220px] animate-in fade-in slide-in-from-top-2 duration-200">
+                                                            <div className="flex flex-col gap-3">
+                                                                <div>
+                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Team Login Code</p>
+                                                                    <div className="flex items-center gap-2 bg-slate-900 rounded-lg p-2 border border-slate-700">
+                                                                        <code className="text-lg font-black text-blue-400 tracking-wider">{getGameDisplayId(game.id)}</code>
+                                                                    </div>
+                                                                </div>
+                                                                {qrCodeDataUrls[game.id] && (
+                                                                    <div>
+                                                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">QR Code Login</p>
+                                                                        <div className="bg-white rounded-lg p-2 flex items-center justify-center">
+                                                                            <img src={qrCodeDataUrls[game.id]} alt="QR Code" className="w-32 h-32" />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                                <p className="text-[8px] text-slate-500 text-center">
+                                                                    Teams can scan or enter code at:<br />
+                                                                    <span className="text-blue-400 font-mono">{window.location.origin}/#/client</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 {/* Game Settings Button */}
                                                 <button
                                                     onClick={(e) => {
