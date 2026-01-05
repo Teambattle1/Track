@@ -416,25 +416,21 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
       )}
 
       {/* Canvas Container */}
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
+      <div className="flex-1 flex items-center justify-center overflow-hidden relative w-full">
         {/* Device Frame Scaling Wrapper */}
         <div
-          className="flex items-center justify-center"
+          className="flex items-center justify-center w-full h-full"
           style={{
-            transform: selectedDevice === 'tablet' ? 'scale(0.85)' : 'scale(1)',
+            transform: 'scale(1)',
             transformOrigin: 'center center',
-            transition: 'transform 0.3s ease-out',
-            width: selectedDevice === 'desktop' ? '100%' : 'auto',
-            height: selectedDevice === 'desktop' ? '100%' : 'auto'
+            transition: 'transform 0.3s ease-out'
           }}
         >
           {/* Device Frame Container */}
           <div
-            className="relative border-8 border-slate-950 rounded-3xl overflow-hidden flex-shrink-0"
+            className="relative overflow-hidden w-full h-full"
             style={{
-              width: viewportDims.width,
-              height: viewportDims.height,
-              boxShadow: '0 0 0 12px #1f2937, 0 0 0 16px #000000, inset 0 0 0 1px #444'
+              boxShadow: 'inset 0 0 0 1px #444'
             }}
           >
             {/* Background Canvas */}
