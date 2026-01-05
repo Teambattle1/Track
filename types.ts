@@ -444,6 +444,13 @@ export interface GamePoint {
 
   // Structural
   isSectionHeader?: boolean;
+
+  // Task Scheduling (Timed Visibility)
+  schedule?: TaskSchedule;
+
+  // Info Task Settings (for task.type === 'info')
+  infoSettings?: InfoTaskSettings;
+  activatedByTeams?: string[]; // Track which teams have activated this info task (for one-time display)
 }
 
 export interface TaskTemplate {
