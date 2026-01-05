@@ -725,11 +725,47 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
           case 'SETTINGS':
               return (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-right-4">
+                      {/* Operator Status */}
+                      {authUser && (
+                          <div className="group relative bg-slate-900/80 border border-green-500/60 rounded-[1.5rem] p-5 text-left shadow-xl overflow-hidden flex flex-col h-full backdrop-blur-sm">
+                              {/* Green glow effect */}
+                              <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full blur-3xl opacity-[0.08] transition-opacity group-hover:opacity-[0.16] bg-green-500" />
+
+                              <div className="relative z-10 flex flex-col h-full">
+                                  <div className="flex items-start justify-between gap-4">
+                                      <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:scale-110 group-hover:rotate-3 duration-300 bg-green-500 bg-opacity-20 border border-green-500">
+                                          <UserCircle className="w-6 h-6 text-green-500" />
+                                      </div>
+                                      <div className="mt-1 flex items-center gap-2">
+                                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                                      </div>
+                                  </div>
+
+                                  <div className="flex-1">
+                                      <h3 className="text-lg font-black text-white uppercase tracking-wider mb-1">
+                                          OPERATOR
+                                      </h3>
+                                      <p className="text-[9px] font-bold text-green-400 uppercase tracking-widest leading-tight truncate">
+                                          {authUser.name}
+                                      </p>
+                                  </div>
+
+                                  <button
+                                      onClick={onLogout}
+                                      className="mt-6 flex items-center gap-1 text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] hover:text-red-400 transition-colors hover:translate-x-1 group"
+                                  >
+                                      <LogOut className="w-3 h-3" />
+                                      LOGOUT
+                                  </button>
+                              </div>
+                          </div>
+                      )}
+
                       {/* Admin Tools */}
-                      <NavCard 
-                          title="USERS" 
-                          subtitle="ACCESS & ROLES" 
-                          icon={UserCircle} 
+                      <NavCard
+                          title="USERS"
+                          subtitle="ACCESS & ROLES"
+                          icon={UserCircle}
                           color="bg-purple-500"
                           onClick={() => onAction('USERS')}
                       />
@@ -1088,27 +1124,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 </div>
             )}
 
-            {/* Operator Field (HOME view) */}
-            {view === 'HOME' && authUser && (
-                <div className="absolute top-16 right-0 z-30 pt-2 pr-4">
-                    <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-md px-4 py-3 rounded-xl border-2 border-green-500/60 h-16 animate-in fade-in slide-in-from-right-4 duration-500">
-                        <div className="flex items-center gap-3 flex-1">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
-                            <div className="flex flex-col min-w-0">
-                                <p className="text-[8px] font-black text-slate-500 tracking-[0.2em] uppercase leading-none">OPERATOR</p>
-                                <p className="text-xs font-black text-white tracking-widest uppercase leading-none mt-0.5 truncate">{authUser.name}</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={onLogout}
-                            title="Logout"
-                            className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0"
-                        >
-                            <LogOut className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* Operator status moved to System Tools menu */}
 
             {/* System Status (HOME view, no auth) */}
             {view === 'HOME' && !authUser && (
