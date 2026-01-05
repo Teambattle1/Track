@@ -24,7 +24,7 @@ const InfoBox: React.FC<InfoBoxProps> = ({ title, children, className = '', icon
 
       {/* Info Popup */}
       {isOpen && (
-        <div className={`absolute z-50 bg-slate-900 border border-blue-500/50 rounded-lg p-4 shadow-2xl max-w-xs ${className}`}>
+        <div className={`absolute z-[99999] bg-slate-900 border border-blue-500/50 rounded-lg p-4 shadow-2xl max-w-xs ${className}`}>
           <div className="flex items-start justify-between gap-3 mb-2">
             <h3 className="text-sm font-bold text-blue-400 uppercase tracking-wider">{title}</h3>
             <button
