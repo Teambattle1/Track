@@ -15,7 +15,7 @@ import { getActivitySinceLastLogin, getLastLogin, updateLastLogin, ActivitySumma
 import './InitialLandingStyles.css';
 
 interface InitialLandingProps {
-  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS') => void;
+  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS') => void;
   version: string;
   games: Game[];
   activeGameId: string | null;
@@ -676,10 +676,17 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                       />
                       <NavCard
                           title="AI SETTINGS"
-                          subtitle="SYSTEM MAINTENANCE"
+                          subtitle="GEMINI API KEY"
                           icon={KeyRound}
                           color="bg-blue-600"
                           onClick={() => onAction('DATABASE')}
+                      />
+                      <NavCard
+                          title="DATABASE TOOLS"
+                          subtitle="MAINTENANCE & CLEANUP"
+                          icon={Database}
+                          color="bg-orange-600"
+                          onClick={() => onAction('DATABASE_TOOLS')}
                       />
                       <NavCard
                           title="QR CODES"
