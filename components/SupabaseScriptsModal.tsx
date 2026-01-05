@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Copy, Check, Database, ChevronRight, AlertTriangle, CheckCircle, XCircle, RefreshCw, ExternalLink, Terminal, Settings } from 'lucide-react';
+import { X, Copy, Check, Database, ChevronRight, ChevronDown, AlertTriangle, CheckCircle, XCircle, RefreshCw, ExternalLink, Terminal, Settings } from 'lucide-react';
 import { testDatabaseConnection } from '../services/db';
 
 interface SupabaseScriptsModalProps {
