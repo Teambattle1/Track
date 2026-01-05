@@ -79,12 +79,14 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
 
   // Change Zone State
   const [showChangeZonePopup, setShowChangeZonePopup] = useState(false);
+  const [activeZoneChangeId, setActiveZoneChangeId] = useState<string | null>(null);
 
   const handleChangeZoneTrigger = async (eventId?: string) => {
     // Handle new zoneChanges array format
     if (eventId && liveGame.zoneChanges) {
       const event = liveGame.zoneChanges.find(e => e.id === eventId);
       if (event && !event.hasTriggered) {
+        setActiveZoneChangeId(eventId);
         setShowChangeZonePopup(true);
         // Mark as triggered in database
         const updatedEvents = liveGame.zoneChanges.map(e =>
@@ -95,6 +97,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
     }
     // Backward compatibility with old changeZone format
     else if (liveGame.changeZone && !liveGame.changeZone.hasTriggered) {
+      setActiveZoneChangeId(null);
       setShowChangeZonePopup(true);
       await db.updateGame(liveGame.id, {
         changeZone: {
@@ -651,14 +654,27 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
         )}
 
         {/* Change Zone Popup */}
-        {showChangeZonePopup && liveGame.changeZone && (
-            <ChangeZonePopup
-                message={liveGame.changeZone.message}
-                imageUrl={liveGame.changeZone.imageUrl}
-                requireCode={liveGame.changeZone.requireCode}
-                onClose={() => setShowChangeZonePopup(false)}
-            />
-        )}
+        {showChangeZonePopup && (() => {
+            // Find the active zone change event
+            const activeEvent = activeZoneChangeId
+                ? liveGame.zoneChanges?.find(e => e.id === activeZoneChangeId)
+                : null;
+
+            // Use active event or fall back to old changeZone format
+            const eventData = activeEvent || liveGame.changeZone;
+
+            return eventData ? (
+                <ChangeZonePopup
+                    message={eventData.message}
+                    imageUrl={eventData.imageUrl}
+                    requireCode={eventData.requireCode}
+                    onClose={() => {
+                        setShowChangeZonePopup(false);
+                        setActiveZoneChangeId(null);
+                    }}
+                />
+            ) : null;
+        })()}
     </div>
   );
 };
