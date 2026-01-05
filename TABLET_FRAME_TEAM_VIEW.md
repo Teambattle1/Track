@@ -1,7 +1,12 @@
-# Tablet Frame for Team View
+# Tablet Frame for Team & Instructor Views
 
 ## Overview
-The team view is now displayed within a realistic tablet frame in landscape mode to show correct dimensions as the game is normally played by teams, rather than adapting to desktop view.
+Both the team view and instructor dashboard are now displayed within a realistic tablet frame in landscape mode to show correct dimensions as the game is normally played, rather than adapting to desktop view.
+
+This ensures:
+- **Team View**: Shows exact gameplay experience for teams
+- **Instructor View**: Shows what instructors see during live game monitoring
+- **Consistent Dimensions**: Both views use same tablet landscape layout (1024×768)
 
 ## Implementation
 
