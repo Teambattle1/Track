@@ -96,8 +96,13 @@ const WalkingExplorer: React.FC = () => {
         };
     }, [isWalking, direction, currentPath, shouldShow, hasSeenExplorer]);
 
+    // Don't render if user has already seen the explorer
+    if (hasSeenExplorer || !shouldShow) {
+        return null;
+    }
+
     return (
-        <div 
+        <div
             className="explorer-container"
             style={{
                 left: `${position.x}%`,
