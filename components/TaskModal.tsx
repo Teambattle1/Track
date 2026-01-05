@@ -1153,15 +1153,18 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   </div>
                 )}
 
-                {/* YouTube Video Embed */}
+                {/* YouTube Video Embed - Plays inline, no native app redirect */}
                 {point.task.youtubeUrl && (
-                  <div className="mt-4 w-full aspect-video rounded-lg overflow-hidden shadow-lg">
+                  <div className="mt-4 w-full aspect-video rounded-lg overflow-hidden shadow-lg bg-black">
                     <iframe
-                      src={`https://www.youtube.com/embed/${point.task.youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1]}`}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      src={`https://www.youtube.com/embed/${point.task.youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1]}?playsinline=1&rel=0&modestbranding=1`}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                       allowFullScreen
                       title="YouTube video"
+                      frameBorder="0"
+                      sandbox="allow-same-origin allow-scripts allow-presentation allow-forms"
+                      style={{ pointerEvents: 'auto' }}
                     />
                   </div>
                 )}
