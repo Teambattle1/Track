@@ -317,7 +317,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 onClose();
             } else {
                 // Auto-approve: Award points immediately
-                const finalScore = isDoubleTrouble ? point.points * 2 : point.points;
+                const finalScore = calculateFinalScore(point.points);
                 onComplete(point.id, finalScore);
                 onClose();
             }
@@ -396,7 +396,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
           const volume = game?.soundSettings?.volume ?? getGlobalVolume();
           playSound(correctSoundUrl, volume);
 
-          const finalScore = isDoubleTrouble ? point.points * 2 : point.points;
+          const finalScore = calculateFinalScore(point.points);
           onComplete(point.id, finalScore);
           onClose();
       } else {
@@ -490,7 +490,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
           const volume = game?.soundSettings?.volume ?? getGlobalVolume();
           playSound(correctSoundUrl, volume);
 
-          const finalScore = isDoubleTrouble ? point.points * 2 : point.points;
+          const finalScore = calculateFinalScore(point.points);
           onComplete(point.id, finalScore);
           onClose();
       } else {
