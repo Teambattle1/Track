@@ -898,7 +898,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                                     generatedBuffer.map((task, idx) => {
                                         const Icon = ICON_COMPONENTS[task.iconId] || ICON_COMPONENTS.default;
                                         return (
-                                            <div key={task.id} className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex gap-4 group hover:border-purple-500/50 transition-colors animate-in slide-in-from-bottom-2 fade-in fill-mode-backwards" style={{ animationDelay: `${idx * 50}ms` }}>
+                                            <div key={getUniqueTaskKey(task.id, idx)} className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex gap-4 group hover:border-purple-500/50 transition-colors animate-in slide-in-from-bottom-2 fade-in fill-mode-backwards" style={{ animationDelay: `${idx * 50}ms` }}>
                                                 <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
                                                     {task.task.imageUrl ? (
                                                         <img src={task.task.imageUrl} className="w-full h-full object-cover rounded-xl" />
