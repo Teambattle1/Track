@@ -154,6 +154,17 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
       };
   }, [game.id]);
 
+  // Save location history to database periodically
+  useEffect(() => {
+      const saveInterval = setInterval(async () => {
+          if (Object.keys(locationHistory).length > 0) {
+              await db.saveGameLocationHistory(game.id, locationHistory);
+          }
+      }, 30000); // Save every 30 seconds
+
+      return () => clearInterval(saveInterval);
+  }, [game.id, locationHistory]);
+
   const updateLocationHistory = (members: TeamMember[]) => {
       const now = Date.now();
       const fiveMinutesAgo = now - 5 * 60 * 1000;
@@ -164,11 +175,11 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
               if (!m.location) return;
               // Find which team this member belongs to
               const team = teams.find(t => t.members.some(mem => mem.name === m.userName || mem.deviceId === m.deviceId));
-              
+
               if (team) {
                   // Only track if this member is the captain (or first member if no captain)
-                  const isCaptain = team.captainDeviceId 
-                      ? team.captainDeviceId === m.deviceId 
+                  const isCaptain = team.captainDeviceId
+                      ? team.captainDeviceId === m.deviceId
                       : team.members[0]?.deviceId === m.deviceId;
 
                   if (isCaptain) {
@@ -181,9 +192,10 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ game, onClose
                   }
               }
           });
-          // Cleanup old history
+          // Cleanup old history (keep last 2 hours instead of 5 minutes for persistence)
+          const twoHoursAgo = now - 2 * 60 * 60 * 1000;
           Object.keys(next).forEach(teamId => {
-              next[teamId] = next[teamId].filter(loc => loc.timestamp > fiveMinutesAgo);
+              next[teamId] = next[teamId].filter(loc => loc.timestamp > twoHoursAgo);
           });
           return next;
       });
