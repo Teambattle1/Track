@@ -357,6 +357,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         return ok;
     };
 
+    // Deduplicate playgrounds to prevent "same key" errors (fixes duplicate playground IDs)
+    const uniquePlaygrounds = React.useMemo(() => {
+        if (!game.playgrounds) return [];
+        // Use Map to deduplicate by ID - keeps the last occurrence of each ID
+        return Array.from(new Map(game.playgrounds.map(pg => [pg.id, pg])).values());
+    }, [game.playgrounds]);
+
     // Initialize active playground
     useEffect(() => {
         // Set active playground to first one if none selected and playgrounds exist
