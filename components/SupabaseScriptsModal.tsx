@@ -684,6 +684,14 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                         </div>
                         <div className="flex items-center gap-2">
                           <button
+                            onClick={() => window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/5f49e3d9-339b-4fd1-ac3b-8f368f6d6eb9', '_blank')}
+                            className="px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white flex items-center gap-2"
+                            title="Open Supabase SQL Editor"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            SQL EDITOR
+                          </button>
+                          <button
                             onClick={() => handleCopy(selectedScript)}
                             className={`px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition-all flex items-center gap-2 ${
                               copiedId === selectedScript.id
