@@ -58,6 +58,7 @@ const DevicePreviewModal: React.FC<DevicePreviewModalProps> = ({ point, onClose 
         {/* Device Selector */}
         <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex gap-3">
           <button
+            type="button"
             onClick={() => setActiveDevice('mobile')}
             className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm uppercase transition-all ${
               activeDevice === 'mobile'
@@ -69,6 +70,7 @@ const DevicePreviewModal: React.FC<DevicePreviewModalProps> = ({ point, onClose 
             Mobile (Portrait)
           </button>
           <button
+            type="button"
             onClick={() => setActiveDevice('tablet')}
             className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm uppercase transition-all ${
               activeDevice === 'tablet'
