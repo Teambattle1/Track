@@ -1212,11 +1212,15 @@ const GameApp: React.FC = () => {
           return;
       }
 
-      // Get coordinates of selected tasks
-      const tasksToSnap = activeGame.points.filter(p => selectedSnapTaskIds.includes(p.id) && p.location);
+      // Get coordinates of selected tasks (ONLY map tasks, not playzone tasks)
+      const tasksToSnap = activeGame.points.filter(p =>
+          selectedSnapTaskIds.includes(p.id) &&
+          p.location &&
+          !p.playgroundId // Exclude playzone tasks
+      );
       const coordinates = tasksToSnap.map(p => p.location!);
 
-      console.log('[Snap to Road] Snapping', tasksToSnap.length, 'tasks to roads');
+      console.log('[Snap to Road] Snapping', tasksToSnap.length, 'MAP tasks to roads (excluding playzone tasks)');
 
       // Call Mapbox API to snap to roads
       const snappedCoordinates = await snapPointsToRoad(coordinates);
