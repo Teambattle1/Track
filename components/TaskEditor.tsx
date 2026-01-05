@@ -2075,7 +2075,14 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        <Clock className="w-6 h-6" />
                                    </div>
                                    <div className="flex-1">
-                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1">Time-Bomb Mode</h3>
+                                       <h3 className="font-black text-sm uppercase tracking-wide mb-1 flex items-center gap-2">
+                                           Time-Bomb Mode
+                                           <InfoTooltip
+                                               title="Time-Bomb Mode"
+                                               description="Creates a high-pressure countdown that starts when the task unlocks or activates. Teams must complete it before time expires or face penalties/auto-fail."
+                                               example="300 second timer, -100 point penalty if expired"
+                                           />
+                                       </h3>
                                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Add countdown timer that penalizes or auto-fails the task if not completed in time.</p>
 
                                        <label className="flex items-center gap-3 cursor-pointer" onClick={() => {
