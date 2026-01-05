@@ -470,7 +470,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
-                {/* ZONE CHANGE Section - Yellow with glow when active, Pink when game ended */}
+                {/* ZONE CHANGE Section - Yellow with glow when active, Pink when game ended (NO glow when ended) */}
                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (() => {
                     const hasActiveZoneChanges = zoneChanges.some(zc => zc.enabled && !zc.hasTriggered);
                     const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending';
