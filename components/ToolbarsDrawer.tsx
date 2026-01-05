@@ -65,6 +65,8 @@ interface ToolbarsDrawerProps {
     onToggleMeasure: () => void;
     onRelocateGame: () => void;
     onToggleSnapToRoad?: () => void;
+    onExecuteSnap?: () => void;
+    selectedSnapTaskCount?: number;
     
     // SHOW
     showTaskId?: boolean;
