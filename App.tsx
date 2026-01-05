@@ -1739,8 +1739,9 @@ const GameApp: React.FC = () => {
               />
           )}
           {showTeamDashboard && activeGameId && (
-              <TeamDashboard 
+              <TeamDashboard
                   gameId={activeGameId}
+                  game={activeGame || undefined}
                   totalMapPoints={activeGame?.points.length || 0}
                   onOpenAgents={() => {}}
                   onClose={() => setShowTeamDashboard(false)}
