@@ -199,10 +199,24 @@ Would you like to delete this broken template?`;
               buttonVisible: true
           };
 
+          // CRITICAL FIX: Clear deviceLayouts.iconPositions to let tasks use their own devicePositions
+          // When importing a template, we want tasks to maintain their designed positions (stored in task.devicePositions)
+          // rather than being overridden by empty layout objects
+          if (newPlayground.deviceLayouts) {
+              Object.keys(newPlayground.deviceLayouts).forEach(deviceType => {
+                  if (newPlayground.deviceLayouts![deviceType as any]) {
+                      // Keep all deviceLayout properties EXCEPT iconPositions
+                      const { iconPositions, ...restOfLayout } = newPlayground.deviceLayouts![deviceType as any];
+                      newPlayground.deviceLayouts![deviceType as any] = restOfLayout;
+                  }
+              });
+          }
+
           // VERIFICATION: Log playground after spread to verify properties are preserved
           console.log('[PlaygroundManager] ✅ PLAYGROUND DATA ANALYSIS (AFTER SPREAD):', {
               playgroundId: newPlayground.id,
               playgroundKeys: Object.keys(newPlayground),
+              deviceLayoutsCleared: !!newPlayground.deviceLayouts,
               visibilitySettings: {
                   showTaskScores: newPlayground.showTaskScores,
                   showTaskOrder: newPlayground.showTaskOrder,
