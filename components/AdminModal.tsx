@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Game } from '../types';
-import { X, KeyRound, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { X, KeyRound, Eye, EyeOff, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { fixDuplicatePlayzones } from '../utils/fixDuplicatePlayzones';
 
 interface AdminModalProps {
   games: Game[];
