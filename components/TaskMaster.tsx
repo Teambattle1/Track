@@ -2401,15 +2401,29 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             {/* AI Generator Modal */}
             {showAiGen && (
                 <AiTaskGenerator
-                    onClose={() => setShowAiGen(false)}
-                    onAddTasks={(tasks) => {}}
+                    onClose={() => {
+                        setShowAiGen(false);
+                        // Stay in current view - don't navigate away
+                    }}
+                    onAddTasks={(tasks) => {
+                        // Add AI-generated tasks directly to the active game if available
+                        if (activeGame) {
+                            onImportTasks(tasks, activeGame.id);
+                            setShowAiGen(false);
+                            setNotification({ message: `✨ ${tasks.length} AI-generated tasks added to game!`, type: 'success' });
+                        } else {
+                            // No active game - just close the modal
+                            setShowAiGen(false);
+                        }
+                    }}
                     onAddToLibrary={async (tasks) => {
                         const { ok } = await db.saveTemplates(tasks);
                         if (!ok) console.error('[TaskMaster] Failed to save templates to library');
                         await loadLibrary(true); // Force refresh cache
                         setShowAiGen(false);
+                        setNotification({ message: `✨ ${tasks.length} tasks saved to library!`, type: 'success' });
                     }}
-                    targetMode='LIBRARY'
+                    targetMode={activeGame ? 'GAME' : 'LIBRARY'}
                 />
             )}
 
