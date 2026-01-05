@@ -478,13 +478,26 @@ Would you like to delete this broken template?`;
                                     };
                                     const colors = tabColorMap[activeTab];
 
+                                    // Get game type badge info
+                                    const gameModeIcons = {
+                                        'standard': { label: 'GPS', color: 'bg-blue-600 text-blue-100' },
+                                        'playzone': { label: 'PLAYZONE', color: 'bg-purple-600 text-purple-100' },
+                                        'elimination': { label: 'CTF', color: 'bg-red-600 text-red-100' }
+                                    };
+                                    const modeInfo = gameModeIcons[game.gameMode as keyof typeof gameModeIcons] || { label: 'STANDARD', color: 'bg-slate-600 text-slate-100' };
+
                                     return (
                                         <button
                                             key={game.id}
                                             onClick={() => confirmAddToGame(game)}
-                                            className={`text-left p-4 ${colors.bg} ${colors.hover} border ${colors.border} rounded-lg transition-all hover:shadow-lg ${colors.shadow} group`}
+                                            className={`text-left p-4 ${colors.bg} ${colors.hover} border ${colors.border} rounded-lg transition-all hover:shadow-lg ${colors.shadow} group relative`}
                                         >
-                                            <h3 className={`font-bold text-white uppercase text-sm mb-1 ${colors.text} transition-colors`}>{game.name}</h3>
+                                            {/* Game Type Badge */}
+                                            <div className={`absolute top-2 right-2 px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${modeInfo.color}`}>
+                                                {modeInfo.label}
+                                            </div>
+
+                                            <h3 className={`font-bold text-white uppercase text-sm mb-1 ${colors.text} transition-colors pr-14`}>{game.name}</h3>
                                             <p className="text-xs text-slate-400 mb-2">{game.points?.length || 0} tasks • {game.playgrounds?.length || 0} zones</p>
                                             <p className="text-xs text-slate-500">
                                                 {game.client?.name ? `By ${game.client.name}` : 'No client assigned'}
