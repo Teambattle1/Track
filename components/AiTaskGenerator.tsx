@@ -51,6 +51,8 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [showAutoTagSuggestions, setShowAutoTagSuggestions] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentTaskCount, setCurrentTaskCount] = useState(0);
+  const [totalTaskCount, setTotalTaskCount] = useState(0);
   const [generatedBuffer, setGeneratedBuffer] = useState<TaskTemplate[]>([]);
   const [approvedTasks, setApprovedTasks] = useState<TaskTemplate[]>([]);
   const [resultsTab, setResultsTab] = useState<'REVIEW' | 'APPROVED'>('REVIEW');
@@ -181,20 +183,19 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
     setIsGenerating(true);
     setError(null);
     setProgress(0);
+    setCurrentTaskCount(0);
+    setTotalTaskCount(taskCount);
     setBatchFinished(false);
     setResultsTab('REVIEW');
     isActiveRef.current = true;
-    
-    const interval = setInterval(() => {
-        setProgress(prev => {
-            const increment = prev < 40 ? 5 : (prev < 70 ? 2 : (prev < 90 ? 1 : 0.5));
-            const next = prev + increment;
-            return next >= 98 ? 98 : next;
-        });
-    }, 400);
-    
+
     try {
-      const newTasks = await generateAiTasks(topic, taskCount, language, autoTag);
+      const newTasks = await generateAiTasks(topic, taskCount, language, autoTag, (current, total) => {
+        // Progress callback
+        setCurrentTaskCount(current);
+        setTotalTaskCount(total);
+        setProgress((current / total) * 100);
+      });
       
       if (!isActiveRef.current) {
           clearInterval(interval);
