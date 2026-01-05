@@ -269,6 +269,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const [pendingMediaCounts, setPendingMediaCounts] = useState<Record<string, number>>({});
   const [hoveredGameId, setHoveredGameId] = useState<string | null>(null);
   const [qrCodeDataUrls, setQrCodeDataUrls] = useState<Record<string, string>>({});
+  const [blinkingPin, setBlinkingPin] = useState<'CREATE' | 'EDIT' | 'PLAY' | null>(null);
   const fieldsContainerRef = React.useRef<HTMLDivElement>(null);
   const activeGame = games.find(g => g.id === activeGameId);
 
@@ -317,6 +318,34 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
     return () => clearInterval(interval);
   }, []);
+
+  // Random blink animation for main pins
+  useEffect(() => {
+    if (view !== 'HOME') return;
+
+    const pins: ('CREATE' | 'EDIT' | 'PLAY')[] = ['CREATE', 'EDIT', 'PLAY'];
+
+    const randomBlink = () => {
+      const randomPin = pins[Math.floor(Math.random() * pins.length)];
+      setBlinkingPin(randomPin);
+
+      // Clear after blink animation completes
+      setTimeout(() => setBlinkingPin(null), 2000);
+    };
+
+    // Initial random blink after 1 second
+    const initialTimeout = setTimeout(randomBlink, 1000);
+
+    // Random blink every 5-8 seconds
+    const interval = setInterval(() => {
+      randomBlink();
+    }, Math.random() * 3000 + 5000); // 5-8 seconds
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [view]);
 
   // Check for new activity since last login
   useEffect(() => {
