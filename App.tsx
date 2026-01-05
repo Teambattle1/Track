@@ -1898,6 +1898,14 @@ const GameApp: React.FC = () => {
                       setGames(prevGames => prevGames.map(g =>
                           g.id === updatedGame.id ? updatedGame : g
                       ));
+
+                      // Also update activeGame if it's the same game
+                      // This ensures that if the user has the game open, it shows the new tasks
+                      if (activeGame?.id === updatedGame.id) {
+                          setActiveGame(updatedGame);
+                          console.log('[App] \u2705 Active game state also updated');
+                      }
+
                       console.log('[App] \u2705 Games state updated after playzone import');
                   }}
               />
