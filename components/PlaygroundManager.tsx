@@ -134,8 +134,13 @@ const PlaygroundManager: React.FC<PlaygroundManagerProps> = ({ onClose, onEdit, 
       try {
           console.log('[PlaygroundManager] Starting import...', {
               template: selectedTemplateForGame.title,
+              templateId: selectedTemplateForGame.id,
               taskCount: selectedTemplateForGame.tasks?.length,
-              tasks: selectedTemplateForGame.tasks
+              templateKeys: Object.keys(selectedTemplateForGame),
+              playgroundDataPresent: !!selectedTemplateForGame.playgroundData,
+              tasksPresent: !!selectedTemplateForGame.tasks,
+              firstTaskKeys: selectedTemplateForGame.tasks?.[0] ? Object.keys(selectedTemplateForGame.tasks[0]) : 'no tasks',
+              fullTemplate: JSON.stringify(selectedTemplateForGame, null, 2)
           });
 
           // VALIDATION: Check if template has tasks
