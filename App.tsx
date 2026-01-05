@@ -2374,6 +2374,12 @@ const GameApp: React.FC = () => {
                 />
             )}
 
+            {showSystemSounds && (
+                <SystemSoundsModal
+                    onClose={() => setShowSystemSounds(false)}
+                />
+            )}
+
             {showTranslationsManager && (
                 <TranslationsManager
                     onClose={() => setShowTranslationsManager(false)}
