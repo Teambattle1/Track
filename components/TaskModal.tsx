@@ -1118,6 +1118,19 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     <img src={point.task.imageUrl} alt="Task" className="w-full h-auto object-cover max-h-60" />
                   </div>
                 )}
+
+                {/* Countdown Timer (if time limit set) */}
+                {hasTimeLimit && !isEditMode && !isInstructor && point.settings && (
+                  <div className="mt-4">
+                    <TaskCountdownTimer
+                      totalSeconds={point.settings.timeLimitSeconds || 0}
+                      onTimeUp={() => setShowTimesUpPopup(true)}
+                      settings={point.settings}
+                      showScoreReduction={point.settings.scoreDependsOnSpeed}
+                      basePoints={point.points}
+                    />
+                  </div>
+                )}
               </div>
 
               {(isInstructor || isEditMode) && point.task.type !== 'timeline' && (
