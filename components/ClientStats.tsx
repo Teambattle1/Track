@@ -1,6 +1,7 @@
 import React from 'react';
 import { Game, Team } from '../types';
 import { BarChart3, CheckCircle, XCircle, Image as ImageIcon, Video, Clock } from 'lucide-react';
+import { getUniqueTaskKey } from '../utils/taskKeyUtils';
 
 interface ClientStatsProps {
   game: Game;
@@ -105,7 +106,7 @@ const ClientStats: React.FC<ClientStatsProps> = ({ game, teams }) => {
 
           return (
             <div
-              key={task.id}
+              key={getUniqueTaskKey(task.id, taskIndex)}
               className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-4 hover:border-purple-500/50 transition-all"
             >
               {/* Task Header */}
