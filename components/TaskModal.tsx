@@ -1318,6 +1318,16 @@ const TaskModal: React.FC<TaskModalProps> = ({
           )}
         </div>
       </div>
+
+      {/* Times Up Popup */}
+      {showTimesUpPopup && (
+        <TimesUpPopup
+          onClose={() => {
+            setShowTimesUpPopup(false);
+            onClose(); // Close task modal after times up
+          }}
+        />
+      )}
     </div>
   );
 };
