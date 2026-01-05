@@ -542,6 +542,57 @@ const AccountTags: React.FC<AccountTagsProps> = ({ games = [], library = [], onD
                 </div>
             </div>
 
+            {/* BULK DELETE CONFIRMATION MODAL */}
+            {bulkDeleteTarget && (
+                <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-in fade-in">
+                    <div className="bg-[#111111] border border-white/10 w-full max-w-sm rounded-[2rem] p-8 shadow-[0_30px_100px_rgba(0,0,0,1)] text-center">
+                        <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-6 mx-auto border border-red-500/20">
+                            <AlertCircle className="w-10 h-10" />
+                        </div>
+                        <h3 className="text-2xl font-black text-white uppercase tracking-widest mb-3 leading-tight">BULK DELETE?</h3>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest leading-relaxed mb-6">
+                            YOU ARE ABOUT TO DELETE <span className="text-orange-500 font-black">{bulkDeleteTarget.length} TAG{bulkDeleteTarget.length !== 1 ? 'S' : ''}</span>.
+                            <br/><br/>
+                            THIS WILL REMOVE THEM FROM THE REGISTRY AND STRIP THEM FROM ALL ITEMS. THIS CANNOT BE UNDONE.
+                        </p>
+
+                        <div className={`mb-8 transition-opacity ${isBulkDeleting ? 'opacity-100' : 'opacity-60'}`} aria-live="polite">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
+                                    {isBulkDeleting ? (bulkDeleteLabel || 'DELETING...') : 'READY'}
+                                </span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
+                                    {isBulkDeleting ? `${Math.round(bulkDeleteProgress * 100)}%` : '0%'}
+                                </span>
+                            </div>
+                            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
+                                <div
+                                    className="h-full bg-red-600 rounded-full transition-all duration-300 w-[var(--bulk-delete-progress)]"
+                                    style={{ ['--bulk-delete-progress' as any]: `${Math.min(100, Math.max(2, Math.round(bulkDeleteProgress * 100)))}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => { setBulkDeleteTarget(null); setBulkDeleteLabel(''); setBulkDeleteProgress(0); }}
+                                disabled={isBulkDeleting}
+                                className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all"
+                            >
+                                CANCEL
+                            </button>
+                            <button
+                                onClick={handleConfirmBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isBulkDeleting ? 'DELETING...' : 'CONFIRM DELETE'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* PURGE CONFIRMATION MODAL */}
             {purgeTarget && (
                 <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-in fade-in">
