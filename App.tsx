@@ -62,6 +62,7 @@ import TranslationsManager from './components/TranslationsManager';
 import MediaManager from './components/MediaManager';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
+import RankingModal from './components/RankingModal';
 import { approveMediaSubmission, rejectMediaSubmission, subscribeToMediaSubmissions } from './services/mediaUpload';
 import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
 import { createTaskIdMap, remapTaskLogicTargets, validateTaskReferences } from './utils/taskIdRemapping';
