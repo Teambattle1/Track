@@ -3327,7 +3327,7 @@ const GameApp: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary componentName="TeamChallenge App">
+    <ErrorBoundary componentName="TeamAction App">
       <OfflineIndicator />
       <TagColorsProvider>
         <LocationProvider>
