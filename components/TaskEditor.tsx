@@ -1086,7 +1086,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                             <input
                                 type="number"
                                 value={range.min}
-                                onChange={(e) => setEditedPoint({...editedPoint, task: {...editedPoint.task, range: {...range, min: parseInt(e.target.value) || 0}}})}
+                                onChange={(e) => setEditedPoint(prev => ({...prev, task: {...prev.task, range: {...prev.task.range, min: parseInt(e.target.value) || 0}}}))}
                                 className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-sm"
                             />
                         </div>
