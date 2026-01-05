@@ -1361,6 +1361,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                         <MapIcon className="w-4 h-4" />
                                     </button>
                                 )}
+                                {/* INSTRUCTOR Button - Always visible */}
                                 <button
                                     onClick={() => onSetMode(GameMode.INSTRUCTOR)}
                                     className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.INSTRUCTOR ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-red-700 text-red-100 border-red-600 hover:bg-red-800 hover:text-white'}`}
@@ -1368,6 +1369,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                 >
                                     <Shield className="w-4 h-4" />
                                 </button>
+                                {/* TEAM Button - Always visible (INSTRUCTOR users can access TEAM view) */}
                                 <button
                                     onClick={() => onSetMode(GameMode.PLAY)}
                                     className={`w-10 h-10 rounded-lg transition-all border flex items-center justify-center group/mode relative ${mode === GameMode.PLAY ? 'bg-black text-white border-gray-800 shadow-lg shadow-black/50' : 'bg-red-700 text-red-100 border-red-600 hover:bg-red-800 hover:text-white'}`}
