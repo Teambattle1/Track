@@ -2997,6 +2997,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </button>
 
                     {/* SYNC FROM LIBRARY Button */}
+                    {SHOW_SYNC_FROM_LIBRARY && (
                     <button
                         onClick={async () => {
                             const taskCount = game.points.length;
@@ -3038,6 +3039,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         <Repeat className="w-5 h-5" />
                         <span>SYNC FROM LIBRARY</span>
                     </button>
+                    )}
 
                     {/* Orange Divider */}
                     <div className="h-0.5 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30" />
