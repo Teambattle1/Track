@@ -2116,6 +2116,30 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                               </div>
                            </div>
 
+                           {/* VISUAL MARKING SECTION */}
+                           {(editedPoint.keepOnScreenOnCorrect || editedPoint.keepOnScreenOnIncorrect) && (
+                               <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-5 rounded-2xl border-2 border-purple-200 dark:border-purple-700">
+                                   <div className="flex items-center justify-between">
+                                       <div className="flex-1">
+                                           <div className="flex items-center gap-2 mb-2">
+                                               <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                               <label className="text-xs font-bold text-purple-900 dark:text-purple-100">Show Visual Mark on Task Icon</label>
+                                           </div>
+                                           <p className="text-[10px] text-purple-700 dark:text-purple-300 leading-relaxed">
+                                               When enabled, completed tasks will display a <span className="font-bold text-green-600">✓ green checkmark</span> (if correct) or <span className="font-bold text-red-600">✗ red X</span> (if incorrect) across the task icon on the map.
+                                           </p>
+                                       </div>
+                                       <label className="flex items-center gap-2 cursor-pointer ml-3" onClick={() => {
+                                           setEditedPoint({...editedPoint, showBadgeOnGrayedTask: !editedPoint.showBadgeOnGrayedTask});
+                                       }}>
+                                           <div className={`w-12 h-7 rounded-full transition-all ${editedPoint.showBadgeOnGrayedTask ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                               <div className={`w-6 h-6 bg-white rounded-full transition-all transform ${editedPoint.showBadgeOnGrayedTask ? 'translate-x-6' : 'translate-x-0'}`} />
+                                           </div>
+                                       </label>
+                                   </div>
+                               </div>
+                           )}
+
                            {/* HINT SECTION */}
                            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 p-5 rounded-2xl border-2 border-yellow-200 dark:border-yellow-700">
                                <div className="flex items-center gap-2 mb-3">
