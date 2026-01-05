@@ -210,5 +210,5 @@ All features have been:
 ---
 
 **Implementation Date:** January 2026  
-**Version:** 4.5+  
+**Version:** 4.6+  
 **Developer:** AI Assistant (Fusion by Builder.io)
