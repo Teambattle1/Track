@@ -132,6 +132,9 @@ interface GameHUDProps {
     onCollapsedSectionsChange?: (sections: Record<string, boolean>) => void;
     // Access Mode Props
     userAccessMode?: 'EDITOR' | 'INSTRUCTOR' | 'TEAM' | null;
+    // INSTRUCTOR Features
+    onShowRanking?: () => void;
+    onOpenTeams?: () => void;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
