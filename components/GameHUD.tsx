@@ -1267,8 +1267,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                     </div>
                                 )}
 
-                                {/* Simulate Button - Only in Editor Mode (MAP/ELIMINATION only) */}
-                                {mode === GameMode.EDIT && onStartSimulation && activeGame?.gameMode !== 'playzone' && (
+                                {/* Simulate Button - Editor and Instructor Mode (MAP/ELIMINATION only) */}
+                                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onStartSimulation && activeGame?.gameMode !== 'playzone' && (
                                     <div className="flex flex-col items-center gap-0.5">
                                         <button
                                             onClick={onStartSimulation}
