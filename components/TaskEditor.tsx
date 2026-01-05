@@ -1323,7 +1323,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
                            <div>
                                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-[0.2em]">TASK DESCRIPTION</label>
-                               <RichTextEditor value={editedPoint.task.question} onChange={(html) => setEditedPoint({ ...editedPoint, task: { ...editedPoint.task, question: html } })} />
+                               <RichTextEditor value={editedPoint.task.question} onChange={(html) => setEditedPoint(prev => ({ ...prev, task: { ...prev.task, question: html } }))} />
                            </div>
                            {/* POINTS SECTION */}
                            <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-4 rounded-2xl border-2 border-emerald-200 dark:border-emerald-800 space-y-4">
