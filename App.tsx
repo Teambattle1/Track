@@ -1683,6 +1683,11 @@ const GameApp: React.FC = () => {
                       setTaskEditorOpen(false);
                       setActiveTask(null);
                   }}
+                  onDelete={async (pointId) => {
+                      await handleDeleteItem(pointId);
+                      setTaskEditorOpen(false);
+                      setActiveTask(null);
+                  }}
                   onClose={() => {
                       setTaskEditorOpen(false);
                       setActiveTask(null);
