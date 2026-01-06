@@ -379,6 +379,9 @@ const GameManager: React.FC<GameManagerProps> = ({
                     <div className="flex items-center gap-2">
                       <span className="text-orange-600 dark:text-orange-400 font-black">[{getGameDisplayId(game.id)}]</span>
                       <span className="text-gray-800 dark:text-white font-semibold">{game.name}</span>
+                      {game.identificator && (
+                        <span className="text-blue-600 dark:text-blue-400 font-black">({game.identificator})</span>
+                      )}
                     </div>
                   </button>
                 ))}
