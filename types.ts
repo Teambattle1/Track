@@ -640,6 +640,7 @@ export interface ToolbarPositions {
 export interface Game {
   id: string;
   name: string;
+  identificator?: string; // City, initials, or identifier to distinguish games from same customer
   description: string; // Used as Intro Message
   finishMessage?: string; // New: Finish Message
   tags?: string[]; // New: Game Tags
