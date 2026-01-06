@@ -78,6 +78,9 @@ export const generateAiTasks = async (
   // Normalize the language parameter (it may come with emoji+name format)
   const normalizedLanguage = normalizeLanguage(language);
 
+  // Create base timestamp for all tasks in this batch
+  const baseTimestamp = new Date().toISOString();
+
   try {
     const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: 'gemini-3-flash-preview',
