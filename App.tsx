@@ -3159,7 +3159,12 @@ const GameApp: React.FC = () => {
                 taskLists={taskLists}
                 sourceListId=""
                 onSetSourceListId={() => {}}
-                onEditPoint={(p) => setActiveTask(p)}
+                onEditPoint={(p) => {
+                    setActiveTask(p);
+                    if (mode === GameMode.EDIT) {
+                        setTaskEditorOpen(true);
+                    }
+                }}
                 onSelectPoint={(p) => { setActiveTask(p); mapRef.current?.jumpTo(p.location); }}
                 onDeletePoint={handleDeleteItem}
                 onReorderPoints={async (pts) => { if (activeGame) await updateActiveGame({ ...activeGame, points: pts }); }}
