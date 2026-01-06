@@ -1672,8 +1672,27 @@ const GameApp: React.FC = () => {
               />
           )}
 
-          {activeTask && (
-              <TaskModal 
+          {/* Task Editor for EDIT mode */}
+          {activeTask && mode === GameMode.EDIT && taskEditorOpen && (
+              <TaskEditor
+                  point={activeTask}
+                  onSave={async (updatedPoint) => {
+                      if (!activeGame) return;
+                      const updatedPoints = activeGame.points.map(p => p.id === updatedPoint.id ? updatedPoint : p);
+                      await updateActiveGame({ ...activeGame, points: updatedPoints });
+                      setTaskEditorOpen(false);
+                      setActiveTask(null);
+                  }}
+                  onClose={() => {
+                      setTaskEditorOpen(false);
+                      setActiveTask(null);
+                  }}
+              />
+          )}
+
+          {/* Task Modal for PLAY/INSTRUCTOR modes */}
+          {activeTask && (mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR) && (
+              <TaskModal
                   point={activeTask}
                   distance={0}
                   onClose={() => setActiveTask(null)}
