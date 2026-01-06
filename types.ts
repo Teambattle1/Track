@@ -418,9 +418,11 @@ export interface GamePoint {
   isHiddenBeforeScan?: boolean; 
 
   // Appearance
-  iconId: IconId;
-  iconUrl?: string;
-  completedIconId?: IconId; // Icon to show when task is completed
+  iconId: IconId; // Default/Standard icon shown before any answer
+  iconUrl?: string; // Custom URL for standard icon
+  incorrectIconId?: IconId; // Icon to show when answer is incorrect
+  incorrectIconUrl?: string; // Custom icon URL for incorrect answer
+  completedIconId?: IconId; // Icon to show when task is completed (correct answer)
   completedIconUrl?: string; // Custom icon URL to show when task is completed
   areaColor?: string; 
 
