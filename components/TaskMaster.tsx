@@ -1617,15 +1617,27 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                             setShowAiGenForList(false);
                             setNotification({ message: `✨ ${tasks.length} AI-generated tasks added to list!`, type: 'success' });
                         }}
-                        onAddTasksToList={(listId, tasks) => {
+                        onAddTasksToList={async (listId, tasks) => {
                             const updatedLists = taskLists.map(l =>
                                 l.id === listId ? { ...l, tasks: [...l.tasks, ...tasks] } : l
                             );
                             onUpdateTaskLists(updatedLists);
+
+                            // Save the updated list to database
+                            const updatedList = updatedLists.find(l => l.id === listId);
+                            if (updatedList) {
+                                try {
+                                    await db.saveTaskList(updatedList);
+                                    console.log('[TaskMaster] Successfully saved updated task list to database');
+                                } catch (error) {
+                                    console.error('[TaskMaster] Failed to save updated task list:', error);
+                                }
+                            }
+
                             setShowAiGenForList(false);
                             setNotification({ message: `✨ ${tasks.length} AI-generated tasks added!`, type: 'success' });
                         }}
-                        onCreateListWithTasks={(name, tasks) => {
+                        onCreateListWithTasks={async (name, tasks) => {
                             const newList: TaskList = {
                                 id: `list_${Date.now()}`,
                                 name: name,
@@ -1635,6 +1647,15 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 createdAt: new Date().toISOString()
                             };
                             onUpdateTaskLists([...taskLists, newList]);
+
+                            // Save the new list to database
+                            try {
+                                await db.saveTaskList(newList);
+                                console.log('[TaskMaster] Successfully saved new task list to database');
+                            } catch (error) {
+                                console.error('[TaskMaster] Failed to save new task list:', error);
+                            }
+
                             setShowAiGenForList(false);
                             setNotification({ message: `✨ New list "${name}" created with ${tasks.length} AI tasks!`, type: 'success' });
                         }}
