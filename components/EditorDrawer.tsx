@@ -879,6 +879,13 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     </button>
                 </div>
 
+                {/* Divider with Label */}
+                <div className="flex items-center gap-3 my-2">
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-600">Save</span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+                </div>
+
                 {!isGameTemplateMode && onSaveGameTemplate && (
                     <button
                         onClick={() => {
