@@ -415,6 +415,16 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         }
     }, [pendingDrawTrigger, activeTaskActionPoint, onDrawModeActivated]);
 
+    // Auto-hide background locked warning after 5 seconds
+    useEffect(() => {
+        if (showBackgroundLockedWarning) {
+            const timer = setTimeout(() => {
+                setShowBackgroundLockedWarning(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [showBackgroundLockedWarning]);
+
     const didSeedEditorToolbarPositionsRef = useRef(false);
 
     // Load toolbar positions from game (device-aware)
