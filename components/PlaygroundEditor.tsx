@@ -4487,7 +4487,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </button>
 
                     <button
-                        onClick={() => setZoom(z => Math.min(5, z + 0.1))}
+                        onClick={() => setZoom(z => Math.min(10, z + 0.1))}
                         className="p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl border border-slate-700 transition-colors"
                         title="Zoom In"
                     >
