@@ -499,6 +499,78 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
+                {/* ZONE CHANGE Section - Yellow with glow when active, Pink when game ended (NO glow when ended) */}
+                {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (() => {
+                    const now = Date.now();
+                    // Only show as active if enabled, not triggered, AND targetTime is in the future
+                    const hasActiveZoneChanges = zoneChanges.some(zc =>
+                        zc.enabled && !zc.hasTriggered && zc.targetTime && zc.targetTime > now
+                    );
+                    // Check if game has ended OR if timer has run out (timeLeft is at or below 0)
+                    const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending' || (timerConfig && timerConfig.timeLeft <= 0);
+
+                    return (
+                        <div className={`${
+                            isGameEnded
+                                ? 'bg-pink-600 border-2 border-pink-500'
+                                : hasActiveZoneChanges
+                                    ? 'bg-yellow-600 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)] animate-pulse'
+                                    : 'bg-orange-600 border-2 border-orange-500'
+                        } rounded-xl p-3 space-y-3`}>
+                            <button
+                                onClick={() => toggleSection('zonechange')}
+                                className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <MapPin className="w-4 h-4" />
+                                    ZONE CHANGE
+                                    {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length > 0 && (
+                                        <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] font-black ${
+                                            isGameEnded
+                                                ? 'bg-pink-700'
+                                                : hasActiveZoneChanges
+                                                    ? 'bg-yellow-700'
+                                                    : 'bg-orange-700'
+                                        }`}>
+                                            {zoneChanges.filter(zc => zc.enabled && !zc.hasTriggered).length}
+                                        </span>
+                                    )}
+                                </span>
+                                <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('zonechange') ? '' : '-rotate-90'}`} />
+                            </button>
+
+                            {isVisible('zonechange') && (
+                                <div className="space-y-2">
+                                    {zoneChanges.map((zc, index) => {
+                                        const now = Date.now();
+                                        const hasActiveZoneChanges = zoneChanges.some(zc =>
+                                            zc.enabled && !zc.hasTriggered && zc.targetTime && zc.targetTime > now
+                                        );
+
+                                        return (
+                                            <ZoneChangeItem
+                                                key={zc.id}
+                                                id={zc.id}
+                                                index={index}
+                                                title={zc.title}
+                                                enabled={zc.enabled}
+                                                hasTriggered={zc.hasTriggered}
+                                                targetTime={zc.targetTime}
+                                                hasActiveZoneChanges={hasActiveZoneChanges}
+                                                isGameEnded={isGameEnded}
+                                                onClick={() => {
+                                                    if (onAdjustZoneChange) {
+                                                        onAdjustZoneChange(zc.id);
+                                                    }
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
 
                 {/* PINS Section - Pink - Hidden in Instructor Mode */}
                 {mode !== GameMode.INSTRUCTOR && (mode === GameMode.EDIT || mode === GameMode.PLAY) && activeGame?.gameMode !== 'playzone' && (
