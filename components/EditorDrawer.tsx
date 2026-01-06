@@ -313,7 +313,6 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isRoutesCollapsed, setIsRoutesCollapsed] = useState(true);
   const [isDangerZonesCollapsed, setIsDangerZonesCollapsed] = useState(true);
-  const [isPinsSettingsCollapsed, setIsPinsSettingsCollapsed] = useState(true); // Auto-collapsed by default
 
   const [collapsedZonesLocal, setCollapsedZonesLocal] = useState<Record<string, boolean>>({ 'map': false });
   const collapsedZones = collapsedZonesProp || collapsedZonesLocal;
