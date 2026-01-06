@@ -3617,10 +3617,22 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 {/* Orientation Lock Warning - HIDDEN - Now shown inline in left drawer */}
 
                 {showBackgroundLockedWarning && (
-                    <div className="absolute top-4 left-4 bg-red-900/90 border-2 border-red-500 rounded-xl p-4 text-[10px] text-red-100 uppercase font-black tracking-widest shadow-2xl max-w-xs pointer-events-auto z-50 backdrop-blur-sm animate-fade-out">
+                    <div
+                        className="absolute top-4 left-4 bg-red-900/90 border-2 border-red-500 rounded-xl p-4 text-[10px] text-red-100 uppercase font-black tracking-widest shadow-2xl max-w-xs pointer-events-auto z-50 backdrop-blur-sm"
+                        style={{
+                            animation: 'fadeInOut 5s ease-in-out forwards'
+                        }}
+                    >
                         🔒 BACKGROUND IS LOCKED - DRAGGING DISABLED
                     </div>
                 )}
+                <style>{`
+                    @keyframes fadeInOut {
+                        0% { opacity: 1; }
+                        80% { opacity: 1; }
+                        100% { opacity: 0; }
+                    }
+                `}</style>
 
                 {/* Draggable SHOW Toolbar - HIDDEN - Now in left drawer */}
                 <div
