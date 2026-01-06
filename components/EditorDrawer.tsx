@@ -453,6 +453,19 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
       points: allPoints.filter(p => p.playgroundId === pg.id)
   })) || [];
 
+  // Calculate orphaned points (points with playgroundId that don't match any playground)
+  const orphanedPoints = allPoints.filter(p =>
+      p.playgroundId && !activeGame?.playgrounds?.find(pg => pg.id === p.playgroundId)
+  );
+
+  // Debug: Log point distribution
+  const pointBreakdown = {
+      onMap: mapPoints.length,
+      inPlaygrounds: playgroundGroups.reduce((sum, pg) => sum + pg.points.length, 0),
+      orphaned: orphanedPoints.length,
+      total: allPoints.length
+  };
+
 
   return (
     <div
