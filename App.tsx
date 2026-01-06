@@ -215,6 +215,9 @@ const GameApp: React.FC = () => {
   const [snapSelectionEnd, setSnapSelectionEnd] = useState<Coordinate | null>(null);
   const [selectedSnapTaskIds, setSelectedSnapTaskIds] = useState<string[]>([]);
 
+  // --- SIMULATION MODE ---
+  const [isSimulationMode, setIsSimulationMode] = useState(false);
+
   // --- HOVER STATE ---
   const [hoveredPointId, setHoveredPointId] = useState<string | null>(null); // List → Map
   const [hoveredDangerZoneId, setHoveredDangerZoneId] = useState<string | null>(null); // List → Map
