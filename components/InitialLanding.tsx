@@ -943,7 +943,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                             className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
                         >
                             <span className="text-xs font-black text-white tracking-widest uppercase leading-none truncate">
-                                {activeGame ? `[${getGameDisplayId(activeGame.id)}] ${activeGame.name}` : "SELECT SESSION"}
+                                {activeGame ? `[${getGameDisplayId(activeGame.id)}] ${activeGame.name}${activeGame.identificator ? ` (${activeGame.identificator})` : ''}` : "SELECT SESSION"}
                             </span>
                             <ChevronDown className={`w-4 h-4 transition-transform shrink-0 text-slate-400 ${showGameMenu ? 'rotate-180' : ''}`} />
                         </button>
