@@ -713,11 +713,11 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
         console.warn('[DB Service] Initial fetch failed for fetchLibrary. Check database connection and table permissions.');
         // Try fallback: fetch fewer items with longer timeout
         try {
-            console.warn('[DB Service] Attempting fetchLibrary fallback (minimal batch)...');
+            console.warn('[DB Service] Attempting fetchLibrary fallback (minimal batch, reduced to 25 items)...');
             const { data, error } = await Promise.race([
-                supabase.from('library').select('id, data').limit(50).order('created_at', { ascending: false }),
+                supabase.from('library').select('id, data').limit(25).order('created_at', { ascending: false }),
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Fallback query timeout after 20s')), 20000)
+                    setTimeout(() => reject(new Error('Fallback query timeout after 30s')), 30000)
                 )
             ]) as Promise<{ data: any[] | null; error: any }>;
 
