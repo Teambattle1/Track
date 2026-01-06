@@ -20,6 +20,7 @@ import MeetingPointMapPicker from './MeetingPointMapPicker';
 import GeminiApiKeyModal from './GeminiApiKeyModal';
 import ColorSchemeEditor from './ColorSchemeEditor';
 import ZoneChangeCard from './ZoneChangeCard';
+import GameAccessPrintable from './GameAccessPrintable';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './DatePickerStyles.css';
