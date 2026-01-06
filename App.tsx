@@ -1196,10 +1196,10 @@ const GameApp: React.FC = () => {
   };
 
   const handleStartSimulation = () => {
-      // TODO: Implement simulation mode
-      console.log('[Simulation] Starting simulation mode');
-      // For now, just switch to PLAY mode to simulate
+      console.log('[Simulation] Starting simulation mode in tablet landscape view');
+      // Switch to PLAY mode and enable simulation UI
       setMode(GameMode.PLAY);
+      setIsSimulationMode(true);
   };
 
   const handleSelectSnapTools = () => {
