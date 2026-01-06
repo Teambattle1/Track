@@ -1200,7 +1200,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
         return (
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-slate-800 border-b border-slate-700">
+                    <thead className="sticky top-0 z-10 bg-slate-800 border-b border-slate-700">
                         <tr>
                             {bulkSelectionMode && (
                                 <th className="px-4 py-3 text-left w-10">
