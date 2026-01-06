@@ -309,6 +309,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const iconInputRef = useRef<HTMLInputElement>(null);
     const audioInputRef = useRef<HTMLInputElement>(null);
     const taskIconInputRef = useRef<HTMLInputElement>(null);
+    const incorrectTaskIconInputRef = useRef<HTMLInputElement>(null);
     const completedTaskIconInputRef = useRef<HTMLInputElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
     const backgroundRef = useRef<HTMLDivElement>(null);
