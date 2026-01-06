@@ -276,18 +276,7 @@ const GameApp: React.FC = () => {
       }
 
       try {
-        // Test database connection first
-        const connectionTest = await db.testDatabaseConnection();
-        if (!connectionTest.success) {
-          console.error('[App] Database connection test failed on startup');
-          setShowSupabaseDiagnostic(true);
-          // Use demo data if connection fails
-          setGames([]);
-          setTaskLists([]);
-          setTaskLibrary([]);
-          return;
-        }
-
+        // Attempt to load data without blocking on connection test
         const loadedGames = await db.fetchGames();
         setGames(loadedGames);
         const loadedLists = await db.fetchTaskLists();
@@ -300,6 +289,15 @@ const GameApp: React.FC = () => {
         if (savedGameId && loadedGames.some(g => g.id === savedGameId)) {
           setActiveGameId(savedGameId);
         }
+
+        // Run connection test in background (non-blocking)
+        db.testDatabaseConnection().then(result => {
+          if (!result.success) {
+            console.warn('[App] Background connection test warning:', result.error);
+          }
+        }).catch(err => {
+          console.warn('[App] Background connection test error:', err.message);
+        });
       } catch (error: any) {
         console.error('[App] Initialization error:', error);
         // Show diagnostic modal on initialization failure
