@@ -202,7 +202,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const titleTextResizeStart = useRef({ width: 0, height: 0, x: 0, y: 0 });
 
     // Device-specific layout management
-    // Smart device initialization: desktop for new playgrounds, last used for existing
+    // Smart device initialization: tablet for new playgrounds, last used for existing
     const [selectedDevice, setSelectedDevice] = useState<DeviceType>(() => {
         // Check if this is a new playground (no tasks yet)
         const playgroundId = game.playgrounds?.[0]?.id || activePlaygroundId;
@@ -210,13 +210,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         const isNewPlayground = playgroundTasks.length === 0;
 
         if (isNewPlayground) {
-            // New playground: start with desktop mode
-            return 'desktop';
+            // New playground: start with tablet mode (landscape by default)
+            return 'tablet';
         } else {
             // Existing playground: load last used device from localStorage
             const storageKey = `playzone_device_${playgroundId}`;
             const savedDevice = localStorage.getItem(storageKey);
-            return (savedDevice as DeviceType) || 'desktop';
+            return (savedDevice as DeviceType) || 'tablet';
         }
     });
     const [deviceLayoutsCache, setDeviceLayoutsCache] = useState<Record<DeviceType, any> | null>(null);
