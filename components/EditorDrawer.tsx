@@ -466,6 +466,21 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
       total: allPoints.length
   };
 
+  // Log if there's a mismatch
+  React.useEffect(() => {
+      const accountedPoints = pointBreakdown.onMap + pointBreakdown.inPlaygrounds + pointBreakdown.orphaned;
+      if (accountedPoints !== allPoints.length) {
+          console.warn('[EditorDrawer] Point count mismatch:', {
+              total: allPoints.length,
+              onMap: mapPoints.length,
+              inPlaygrounds: pointBreakdown.inPlaygrounds,
+              orphaned: orphanedPoints.length,
+              accounted: accountedPoints,
+              playgrounds: activeGame?.playgrounds?.map(pg => ({ id: pg.id, title: pg.title, pointsCount: allPoints.filter(p => p.playgroundId === pg.id).length }))
+          });
+      }
+  }, [allPoints.length, activeGame?.playgrounds]);
+
 
   return (
     <div
