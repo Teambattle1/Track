@@ -1118,24 +1118,17 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             return point.devicePositions[selectedDevice];
         }
 
-        // 3. FALLBACK: If current device has no position, use ANY available device position
-        // This fixes the issue where tasks positioned in "tablet" mode show at (50,50) in "desktop" mode
-        if (point.devicePositions) {
-            const availableDevices: Array<'mobile' | 'tablet' | 'desktop'> = ['tablet', 'desktop', 'mobile'];
-            for (const device of availableDevices) {
-                if (point.devicePositions[device]) {
-                    console.log(`[PlaygroundEditor] 📱 Task "${point.title}" using ${device} position for ${selectedDevice} view`);
-                    return point.devicePositions[device];
-                }
-            }
-        }
+        // 3. NO CROSS-DEVICE FALLBACK: Each device maintains independent layouts
+        // Do NOT use positions from other devices - this prevents layout changes from cascading
+        // If a device doesn't have a position set, it gets default (50,50) to prevent stacking
 
-        // 4. Fallback to legacy playgroundPosition
+        // 4. Fallback to legacy playgroundPosition (only for backward compatibility with old data)
         if (point.playgroundPosition) {
             return point.playgroundPosition;
         }
 
-        // 5. Default position (should rarely happen now)
+        // 5. Default position - Each device gets fresh positioning when no device-specific position exists
+        // This prevents tablet layout changes from affecting mobile layout
         return { x: 50, y: 50 };
     };
 
