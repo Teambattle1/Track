@@ -723,7 +723,7 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
 
             if (error) throw error;
             if (!data) return [];
-            console.log(`[DB Service] Fallback fetch returned ${data.length} library items`);
+            console.log(`[DB Service] ✅ Fallback library fetch successful - returned ${data.length} items (showing most recent)`);
             return data.map((row: any) => {
                 const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
                 return normalizeTemplate({ ...rowData, id: row.id });
