@@ -4446,6 +4446,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         <ZoomOut className="w-5 h-5" />
                     </button>
 
+                    {/* Zoom Level Presets */}
+                    <div className="flex gap-1">
+                        {[0.5, 1, 2, 3].map(level => (
+                            <button
+                                key={level}
+                                onClick={() => setZoom(level)}
+                                className={`px-2 py-1 text-xs font-bold rounded shadow-lg border transition-all ${
+                                    Math.abs(zoom - level) < 0.05
+                                        ? 'bg-orange-600 border-orange-500 text-white'
+                                        : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:border-slate-600'
+                                }`}
+                                title={`Zoom to ${level}x`}
+                            >
+                                {level}x
+                            </button>
+                        ))}
+                    </div>
+
                     {/* CENTER Button */}
                     <button
                         onClick={handleCenterBackground}
