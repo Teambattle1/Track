@@ -467,7 +467,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   };
 
   // Log if there's a mismatch
-  React.useEffect(() => {
+  useEffect(() => {
       const accountedPoints = pointBreakdown.onMap + pointBreakdown.inPlaygrounds + pointBreakdown.orphaned;
       if (accountedPoints !== allPoints.length) {
           console.warn('[EditorDrawer] Point count mismatch:', {
