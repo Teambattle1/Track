@@ -107,6 +107,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showTaskNames, setShowTaskNames] = useState(true);
     const [showBackground, setShowBackground] = useState(true);
     const [isBackgroundLocked, setIsBackgroundLocked] = useState(false);
+    const [showBackgroundLockedWarning, setShowBackgroundLockedWarning] = useState(false);
 
     // Delete Zone Confirmation Modal State
     const [deleteZoneConfirm, setDeleteZoneConfirm] = useState<{
