@@ -159,6 +159,9 @@ const GameSummaryCard: React.FC<{
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-bold text-gray-800 dark:text-white uppercase truncate">
               <span className="text-orange-600 dark:text-orange-400 font-black">[{getGameDisplayId(game.id)}]</span> {game.name || 'Unnamed Game'}
+              {game.identificator && (
+                <span className="ml-2 text-blue-600 dark:text-blue-400 font-black">({game.identificator})</span>
+              )}
             </h3>
             {(() => {
               const { Icon, label, color, bgColor, borderColor } = getGameModeIcon(game.gameMode);
