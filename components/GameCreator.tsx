@@ -2375,6 +2375,23 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                               <p>• <strong>Access Link:</strong> Players access via [Your Domain]/access</p>
                           </div>
                       </div>
+
+                      {/* Printable Game Info Sheet */}
+                      {accessCode && qrCodeDataUrl && baseGame && (
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                              <div className="mb-4">
+                                  <h3 className="text-lg font-black text-white uppercase mb-2">📄 Printable Team Instructions</h3>
+                                  <p className="text-sm text-slate-400">
+                                      Print or download a beautiful instruction sheet for your teams with game info, QR code, and login steps
+                                  </p>
+                              </div>
+                              <GameAccessPrintable
+                                  game={baseGame}
+                                  qrCodeDataUrl={qrCodeDataUrl}
+                                  accessCode={accessCode}
+                              />
+                          </div>
+                      )}
                   </div>
               );
           case 'CLIENT':
