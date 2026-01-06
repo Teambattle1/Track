@@ -1289,7 +1289,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   ))}
                               </div>
 
-                              {/* 3. Selected Chips (Tags Made) */}
+                              {/* 4. Selected Chips (Tags Made) */}
                               <div className="flex flex-wrap gap-2 min-h-[32px]">
                                   {tags.length === 0 && <span className="text-xs text-slate-600 italic">No tags added yet.</span>}
                                   {tags.map((tag, index) => {
