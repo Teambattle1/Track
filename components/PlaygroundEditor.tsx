@@ -1457,6 +1457,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         const iconPayload = {
             iconId: sourceTask.iconId,
             iconUrl: sourceTask.iconUrl,
+            incorrectIconId: sourceTask.incorrectIconId,
+            incorrectIconUrl: sourceTask.incorrectIconUrl,
             playgroundScale: sourceTask.playgroundScale || 1,
             textLabelScale: sourceTask.textLabelScale || 1,
             iconImageScale: sourceTask.iconImageScale || 0.9,
