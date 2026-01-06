@@ -1133,19 +1133,30 @@ const GameApp: React.FC = () => {
   };
 
   const handleUpdateGameTime = async (newEndTime: number) => {
-      if (!activeGame) return;
+      console.log('[App] handleUpdateGameTime called with:', new Date(newEndTime).toISOString());
+      if (!activeGame) {
+          console.warn('[App] No activeGame, returning');
+          return;
+      }
 
-      // Update the game with the new end time
-      const updatedGame = {
-          ...activeGame,
-          timerConfig: {
-              ...activeGame.timerConfig,
-              endTime: new Date(newEndTime).toISOString(),
-              mode: activeGame.timerConfig?.mode || 'countdown'
-          }
-      };
+      try {
+          // Update the game with the new end time
+          const updatedGame = {
+              ...activeGame,
+              timerConfig: {
+                  ...activeGame.timerConfig,
+                  endTime: new Date(newEndTime).toISOString(),
+                  mode: activeGame.timerConfig?.mode || 'countdown'
+              }
+          };
 
-      await updateActiveGame(updatedGame);
+          console.log('[App] Updating game with new timerConfig:', updatedGame.timerConfig);
+          await updateActiveGame(updatedGame);
+          console.log('[App] Game updated successfully');
+      } catch (error) {
+          console.error('[App] Error in handleUpdateGameTime:', error);
+          throw error;
+      }
   };
 
   const handleLocateMe = () => {
