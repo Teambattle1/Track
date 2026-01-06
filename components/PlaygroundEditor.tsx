@@ -277,6 +277,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [isOrientationCollapsed, setIsOrientationCollapsed] = useState(true); // Collapsed by default
     const [isShowCollapsed, setIsShowCollapsed] = useState(true); // Collapsed by default
     const [isLayoutCollapsed, setIsLayoutCollapsed] = useState(true); // Collapsed by default
+    const [isIconEditorCollapsed, setIsIconEditorCollapsed] = useState(true); // Icon editor collapsed by default
 
     // Toggle all sections collapsed/expanded (excluding HUD appearance)
     const toggleAllSections = () => {
