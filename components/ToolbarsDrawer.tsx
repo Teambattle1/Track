@@ -587,72 +587,125 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                         </button>
 
                         {isVisible('pins') && (
-                            <div className="grid grid-cols-2 gap-2">
-                                {/* DANGER ZONE - Available to both EDIT and INSTRUCTOR */}
-                                <button
-                                    onClick={onAddDangerZone}
-                                    className="py-2 px-2 bg-pink-700 hover:bg-pink-800 text-pink-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
-                                    title="Danger Zone"
-                                >
-                                    <SkullIcon className="w-4 h-4" />
-                                    DANGER
-                                </button>
-
-                                {/* MEASURE - EDIT mode only */}
-                                {mode === GameMode.EDIT && (
+                            <div className="space-y-3">
+                                {/* PINS Action Buttons */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    {/* DANGER ZONE - Available to both EDIT and INSTRUCTOR */}
                                     <button
-                                        onClick={onToggleMeasure}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isMeasuring ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
-                                        title="Measure"
+                                        onClick={onAddDangerZone}
+                                        className="py-2 px-2 bg-pink-700 hover:bg-pink-800 text-pink-100 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
+                                        title="Danger Zone"
                                     >
-                                        <Ruler className="w-4 h-4" />
-                                        MEASURE
+                                        <SkullIcon className="w-4 h-4" />
+                                        DANGER
                                     </button>
-                                )}
 
-                                {/* RELOCATE - EDIT mode only */}
-                                {mode === GameMode.EDIT && (
-                                    <button
-                                        onClick={onRelocateGame}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isRelocating ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
-                                        title="Relocate All Tasks"
-                                    >
-                                        <Crosshair className="w-4 h-4" />
-                                        RELOCATE
-                                    </button>
-                                )}
+                                    {/* MEASURE - EDIT mode only */}
+                                    {mode === GameMode.EDIT && (
+                                        <button
+                                            onClick={onToggleMeasure}
+                                            className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isMeasuring ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
+                                            title="Measure"
+                                        >
+                                            <Ruler className="w-4 h-4" />
+                                            MEASURE
+                                        </button>
+                                    )}
 
-                                {/* SELECT TOOLS - EDIT mode only */}
-                                {mode === GameMode.EDIT && onToggleSnapToRoad && (
-                                    <button
-                                        onClick={onToggleSnapToRoad}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${snapToRoadMode ? 'bg-cyan-600 text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
-                                        title="Select Tasks Tool - Draw rectangle to select tasks"
-                                    >
-                                        <TargetIcon className="w-4 h-4" />
-                                        SELECT
-                                    </button>
-                                )}
+                                    {/* RELOCATE - EDIT mode only */}
+                                    {mode === GameMode.EDIT && (
+                                        <button
+                                            onClick={onRelocateGame}
+                                            className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${isRelocating ? 'bg-black text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
+                                            title="Relocate All Tasks"
+                                        >
+                                            <Crosshair className="w-4 h-4" />
+                                            RELOCATE
+                                        </button>
+                                    )}
 
-                                {/* SNAP - EDIT mode only, only active when tasks are selected */}
-                                {mode === GameMode.EDIT && onExecuteSnap && (
-                                    <button
-                                        onClick={onExecuteSnap}
-                                        disabled={selectedSnapTaskCount === 0}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
-                                            selectedSnapTaskCount > 0
-                                                ? 'bg-green-700 hover:bg-green-800 text-white cursor-pointer'
-                                                : 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
-                                        }`}
-                                        title={selectedSnapTaskCount > 0 ? `Snap ${selectedSnapTaskCount} task${selectedSnapTaskCount !== 1 ? 's' : ''} to road` : 'Select tasks first using SELECT button'}
-                                    >
-                                        <Navigation className="w-4 h-4" />
-                                        SNAP
-                                        {selectedSnapTaskCount > 0 && (
-                                            <span className="text-[8px] font-black">({selectedSnapTaskCount})</span>
-                                        )}
-                                    </button>
-                                )}
+                                    {/* SELECT TOOLS - EDIT mode only */}
+                                    {mode === GameMode.EDIT && onToggleSnapToRoad && (
+                                        <button
+                                            onClick={onToggleSnapToRoad}
+                                            className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${snapToRoadMode ? 'bg-cyan-600 text-white' : 'bg-pink-700 hover:bg-pink-800 text-pink-100'}`}
+                                            title="Select Tasks Tool - Draw rectangle to select tasks"
+                                        >
+                                            <TargetIcon className="w-4 h-4" />
+                                            SELECT
+                                        </button>
+                                    )}
+
+                                    {/* SNAP - EDIT mode only, only active when tasks are selected */}
+                                    {mode === GameMode.EDIT && onExecuteSnap && (
+                                        <button
+                                            onClick={onExecuteSnap}
+                                            disabled={selectedSnapTaskCount === 0}
+                                            className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                                selectedSnapTaskCount > 0
+                                                    ? 'bg-green-700 hover:bg-green-800 text-white cursor-pointer'
+                                                    : 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+                                            }`}
+                                            title={selectedSnapTaskCount > 0 ? `Snap ${selectedSnapTaskCount} task${selectedSnapTaskCount !== 1 ? 's' : ''} to road` : 'Select tasks first using SELECT button'}
+                                        >
+                                            <Navigation className="w-4 h-4" />
+                                            SNAP
+                                            {selectedSnapTaskCount > 0 && (
+                                                <span className="text-[8px] font-black">({selectedSnapTaskCount})</span>
+                                            )}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* PIN SETTINGS Divider */}
+                                <div className="h-px bg-gradient-to-r from-pink-400 via-pink-300 to-transparent"></div>
+
+                                {/* PIN SETTINGS Section */}
+                                <div className="space-y-3">
+                                    {/* Pin Visibility Toggle */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Eye className="w-3 h-3 text-pink-200" />
+                                            <span className="text-[10px] font-bold text-pink-100 uppercase tracking-wide">Show Task Pins</span>
+                                        </div>
+                                        <button
+                                            onClick={() => {/* TODO: Toggle pin visibility */}}
+                                            className="px-3 py-1 bg-pink-700 text-white rounded text-[9px] font-bold uppercase tracking-wide hover:bg-pink-800 transition-colors"
+                                        >
+                                            ON
+                                        </button>
+                                    </div>
+
+                                    {/* Pin Labels Toggle */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Hash className="w-3 h-3 text-pink-200" />
+                                            <span className="text-[10px] font-bold text-pink-100 uppercase tracking-wide">Show Labels</span>
+                                        </div>
+                                        <button
+                                            onClick={() => {/* TODO: Toggle labels */}}
+                                            className="px-3 py-1 bg-pink-700 text-white rounded text-[9px] font-bold uppercase tracking-wide hover:bg-pink-800 transition-colors"
+                                        >
+                                            ON
+                                        </button>
+                                    </div>
+
+                                    {/* Pin Size Control */}
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-bold text-pink-100 uppercase tracking-wide">Pin Size</span>
+                                            <span className="text-[9px] font-bold text-pink-200">100%</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="50"
+                                            max="150"
+                                            defaultValue="100"
+                                            className="w-full h-2 bg-pink-700 dark:bg-pink-800 rounded-lg appearance-none cursor-pointer accent-pink-400"
+                                            onChange={(e) => {/* TODO: Update pin size */}}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
