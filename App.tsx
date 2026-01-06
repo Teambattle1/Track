@@ -139,6 +139,7 @@ const GameApp: React.FC = () => {
   // --- EDITOR STATE ---
   const [isEditorExpanded, setIsEditorExpanded] = useState(false);
   const [activeTask, setActiveTask] = useState<GamePoint | null>(null);
+  const [taskEditorOpen, setTaskEditorOpen] = useState(false);
   const [viewingPlaygroundId, setViewingPlaygroundId] = useState<string | null>(null);
   const [playgroundTemplateToEdit, setPlaygroundTemplateToEdit] = useState<any>(null);
   const [activeTaskActionPoint, setActiveTaskActionPoint] = useState<GamePoint | null>(null);
