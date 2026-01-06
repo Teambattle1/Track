@@ -1069,17 +1069,34 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             });
         }
 
+        // 1. Check layout override first
         if (deviceLayout?.iconPositions?.[point.id]) {
             return deviceLayout.iconPositions[point.id];
         }
+
+        // 2. Check current device position
         if (point.devicePositions?.[selectedDevice]) {
             return point.devicePositions[selectedDevice];
         }
-        // Fallback to legacy playgroundPosition
+
+        // 3. FALLBACK: If current device has no position, use ANY available device position
+        // This fixes the issue where tasks positioned in "tablet" mode show at (50,50) in "desktop" mode
+        if (point.devicePositions) {
+            const availableDevices: Array<'mobile' | 'tablet' | 'desktop'> = ['tablet', 'desktop', 'mobile'];
+            for (const device of availableDevices) {
+                if (point.devicePositions[device]) {
+                    console.log(`[PlaygroundEditor] 📱 Task "${point.title}" using ${device} position for ${selectedDevice} view`);
+                    return point.devicePositions[device];
+                }
+            }
+        }
+
+        // 4. Fallback to legacy playgroundPosition
         if (point.playgroundPosition) {
             return point.playgroundPosition;
         }
-        // Default position
+
+        // 5. Default position (should rarely happen now)
         return { x: 50, y: 50 };
     };
 
