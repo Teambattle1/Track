@@ -3520,6 +3520,15 @@ const GameApp: React.FC = () => {
         )}
     </div>
   );
+
+  // Return main content, wrapping in tablet frame if in simulation mode
+  return isSimulationMode ? (
+    <TabletFrame onClose={() => setIsSimulationMode(false)}>
+      {mainContent}
+    </TabletFrame>
+  ) : (
+    mainContent
+  );
 };
 
 const App: React.FC = () => {
