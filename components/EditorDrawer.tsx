@@ -856,6 +856,12 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
             </div>
 
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col gap-2 z-[60]">
+                {/* Tasks Section Label */}
+                <div className="flex items-center gap-3 mb-1">
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-600">Add Tasks</span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+                </div>
                 <div className="grid grid-cols-3 gap-2">
                     <button
                         onClick={() => onAddTask && onAddTask('TASKLIST')}
