@@ -1478,22 +1478,28 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         alert(`Applied all icon settings from "${sourceTask.title}" to ${bulkIconTargets.size} task(s)!`);
     };
 
-    const handleTaskIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTaskIconUpload = async (e: React.ChangeEvent<HTMLInputElement>, iconType: 'standard' | 'incorrect' | 'completed' = 'standard') => {
         const file = e.target.files?.[0];
         if (file && selectedTask) {
             const url = await uploadImage(file);
-            if (url) updateTask({ iconUrl: url });
+            if (url) {
+                if (iconType === 'standard') {
+                    updateTask({ iconUrl: url });
+                } else if (iconType === 'incorrect') {
+                    updateTask({ incorrectIconUrl: url });
+                } else if (iconType === 'completed') {
+                    updateTask({ completedIconUrl: url });
+                }
+            }
         }
+        // Reset all input refs
         if (taskIconInputRef.current) taskIconInputRef.current.value = '';
+        if (incorrectTaskIconInputRef.current) incorrectTaskIconInputRef.current.value = '';
+        if (completedTaskIconInputRef.current) completedTaskIconInputRef.current.value = '';
     };
 
     const handleCompletedTaskIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file && selectedTask) {
-            const url = await uploadImage(file);
-            if (url) updateTask({ completedIconUrl: url });
-        }
-        if (completedTaskIconInputRef.current) completedTaskIconInputRef.current.value = '';
+        await handleTaskIconUpload(e, 'completed');
     };
 
     const handleGenerateTaskIcon = async (prompt: string) => {
