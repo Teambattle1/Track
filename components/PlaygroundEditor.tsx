@@ -1068,17 +1068,6 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             } else if (point.devicePositions?.[selectedDevice]) {
                 finalPos = point.devicePositions[selectedDevice];
                 source = `✅ task.devicePositions[${selectedDevice}]`;
-            } else if (point.devicePositions) {
-                // Check for fallback device
-                const availableDevices: Array<'mobile' | 'tablet' | 'desktop'> = ['tablet', 'desktop', 'mobile'];
-                for (const device of availableDevices) {
-                    if (point.devicePositions[device]) {
-                        finalPos = point.devicePositions[device];
-                        fallbackDevice = device;
-                        source = `📱 FALLBACK: using devicePositions[${device}]`;
-                        break;
-                    }
-                }
             }
 
             if (!finalPos && point.playgroundPosition) {
