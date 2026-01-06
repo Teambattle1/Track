@@ -175,7 +175,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
 }) => {
     // Auto-collapse MAPSTYLE and ZONE CHANGE in editor mode by default
     const defaultCollapsedState = {
-        mapmode: true,
+        mapmode: false,  // Expanded by default to show current mode (EDITOR/INSTRUCTOR/TEAM)
         layers: true,
         location: true,
         mapstyle: mode === GameMode.EDIT ? true : true,  // Always collapsed in editor
