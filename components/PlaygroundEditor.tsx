@@ -5120,14 +5120,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                             {/* Divider */}
                             <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
 
-                            {/* Bulk Icon Mode Controls */}
+                            {/* Bulk Icon Settings Mode Controls */}
                             {!selectedTask && (
                                 <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
                                     {bulkIconMode ? (
                                         <>
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest flex items-center gap-1">
-                                                    <ImageIcon className="w-3 h-3" /> BULK ICON
+                                                <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest flex items-center gap-1">
+                                                    <ImageIcon className="w-3 h-3" /> COPY ICON SETTINGS
                                                 </span>
                                                 <button
                                                     onClick={() => {
@@ -5140,6 +5140,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     CANCEL
                                                 </button>
                                             </div>
+                                            <p className="text-[8px] text-slate-400 mb-2">
+                                                Copies icon, sizes (Icon Size, Text Label, Image Zoom), and correct answer settings
+                                            </p>
                                             <div className="space-y-2">
                                                 {!bulkIconSourceId && (
                                                     <div className="p-2 bg-blue-900/30 rounded border border-blue-500/50 text-[9px] text-blue-300 font-bold uppercase">
@@ -5159,9 +5162,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 {bulkIconTargets.size > 0 && (
                                                     <button
                                                         onClick={applyBulkIcon}
-                                                        className="w-full py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-[10px] font-bold uppercase rounded transition-colors shadow-lg"
+                                                        className="w-full py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-[10px] font-bold uppercase rounded transition-colors shadow-lg"
                                                     >
-                                                        ✓ APPLY ICON TO {bulkIconTargets.size}
+                                                        ✓ APPLY SETTINGS TO {bulkIconTargets.size}
                                                     </button>
                                                 )}
                                                 <button
@@ -5181,7 +5184,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             onClick={() => setBulkIconMode(true)}
                                             className="w-full py-2 bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-slate-300 hover:text-white text-[10px] font-bold uppercase rounded transition-colors flex items-center justify-center gap-2"
                                         >
-                                            <ImageIcon className="w-3 h-3" /> COPY ICON TO MULTIPLE
+                                            <ImageIcon className="w-3 h-3" /> COPY ICON SETTINGS TO MULTIPLE
                                         </button>
                                     )}
                                 </div>
