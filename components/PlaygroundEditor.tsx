@@ -4791,22 +4791,23 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 )}
                             </div>
 
-                            {/* Icon Editor - Dual State */}
+                            {/* Icon Editor - Triple State (Standard, Incorrect, Correct) */}
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-3">
-                                {/* INCORRECT ANSWER ICON Section */}
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-red-400 uppercase tracking-widest">❌ INCORRECT ANSWER</label>
+                                {/* STANDARD ICON Section */}
+                                <div className="space-y-2 pb-3 border-b border-slate-700">
+                                    <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest">⭕ STANDARD ICON</label>
+                                    <p className="text-[8px] text-slate-400">Default icon shown before any answer is given</p>
 
                                     {/* Current Icon Preview */}
                                     {selectedTask.iconUrl && (
                                         <div className="p-3 bg-slate-700 rounded-lg flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-3">
-                                                <img src={selectedTask.iconUrl} alt="Incorrect Answer Icon" className="w-8 h-8 object-contain" />
+                                                <img src={selectedTask.iconUrl} alt="Standard Icon" className="w-8 h-8 object-contain" />
                                                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">CUSTOM ICON</span>
                                             </div>
                                             <button
                                                 onClick={() => updateTask({ iconUrl: undefined, iconId: 'default' })}
-                                                className="p-1.5 text-slate-500 hover:text-red-500 transition-colors"
+                                                className="p-1.5 text-slate-500 hover:text-blue-500 transition-colors"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -4821,7 +4822,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                 taskIconInputRef.current?.click();
                                             }}
                                             className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
-                                            title="Upload custom icon for incorrect answer"
+                                            title="Upload custom icon for standard state"
                                         >
                                             <Upload className="w-3 h-3" /> UPLOAD
                                         </button>
