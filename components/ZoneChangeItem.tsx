@@ -26,6 +26,7 @@ const ZoneChangeItem: React.FC<ZoneChangeItemProps> = ({
 }) => {
     const [countdown, setCountdown] = useState('');
     const isActive = enabled && !hasTriggered;
+    const hasTime = !!targetTime;
 
     useEffect(() => {
         // If no targetTime set, show "Not set"
