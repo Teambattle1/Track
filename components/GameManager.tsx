@@ -307,7 +307,7 @@ const GameManager: React.FC<GameManagerProps> = ({
     }
   };
 
-  // Handle Game ID search
+  // Handle Game ID and Name search
   const handleGameIdSearch = (value: string) => {
     setGameIdSearch(value);
 
@@ -316,11 +316,13 @@ const GameManager: React.FC<GameManagerProps> = ({
       return;
     }
 
-    // Search through all games (not just templates) by display ID
+    // Search through all games (not just templates) by display ID AND name
+    const searchTerm = value.toLowerCase();
     const results = games.filter(g => {
       if (!g || g.isGameTemplate) return false;
       const displayId = getGameDisplayId(g.id);
-      return displayId.includes(value);
+      const gameName = (g.name || '').toLowerCase();
+      return displayId.includes(value) || gameName.includes(searchTerm);
     });
 
     setSearchResults(results);
