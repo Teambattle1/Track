@@ -2881,12 +2881,11 @@ const GameApp: React.FC = () => {
                             <button
                                 onClick={() => {
                                     if (mapRef.current && activeGame?.points && activeGame.points.length > 0) {
-                                        const center = activeGame.points[0].location;
-                                        mapRef.current.jumpTo(center, 17);
+                                        mapRef.current.fitBounds(activeGame.points);
                                     }
                                 }}
                                 className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
-                                title="Fit All Tasks on Screen - Zoom Level 17"
+                                title="Fit All Tasks on Screen - Zoom Level 16-17"
                             >
                                 <Maximize2 className="w-5 h-5" />
                             </button>
