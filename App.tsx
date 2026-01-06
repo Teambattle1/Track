@@ -1140,7 +1140,8 @@ const GameApp: React.FC = () => {
           ...activeGame,
           timerConfig: {
               ...activeGame.timerConfig,
-              endTime: new Date(newEndTime).toISOString()
+              endTime: new Date(newEndTime).toISOString(),
+              mode: activeGame.timerConfig?.mode || 'countdown'
           }
       };
 
