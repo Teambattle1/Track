@@ -1110,9 +1110,9 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                           </div>
                       </div>
 
-                      {/* 1. Name & Date */}
-                      <div className="grid grid-cols-3 gap-6">
-                          <div className="col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                      {/* 1. Name, Identificator & Date */}
+                      <div className="grid grid-cols-6 gap-6">
+                          <div className="col-span-3 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                               <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Game Name</label>
                               <input
                                   type="text"
@@ -1122,12 +1122,26 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   className="w-full p-4 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none transition-colors text-lg uppercase"
                               />
                           </div>
+                          <div className="col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">
+                                  Identificator
+                                  <span className="ml-1 text-[9px] text-slate-600">(City, Initials)</span>
+                              </label>
+                              <input
+                                  type="text"
+                                  value={identificator}
+                                  onChange={(e) => setIdentificator(e.target.value.toUpperCase())}
+                                  placeholder="e.g. CPH, NYC, AA"
+                                  maxLength={10}
+                                  className="w-full p-4 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-blue-500 outline-none transition-colors text-lg uppercase"
+                              />
+                          </div>
                           <div className="col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                               <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Playing Date</label>
                               <div className="relative h-14">
                                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                                  <input 
-                                      type="date" 
+                                  <input
+                                      type="date"
                                       value={playingDate}
                                       onChange={(e) => setPlayingDate(e.target.value)}
                                       className="w-full h-full pl-10 p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none uppercase"
