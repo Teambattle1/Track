@@ -1046,7 +1046,12 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                         >
                                             <span className="truncate flex items-center gap-2 flex-1">
                                                 <span className="text-orange-400 font-black shrink-0">[{getGameDisplayId(game.id)}]</span>
-                                                <span className="font-bold truncate">{game.name}</span>
+                                                <span className="font-bold truncate">
+                                                    {game.name}
+                                                    {game.identificator && (
+                                                        <span className="ml-2 text-blue-400 font-black">({game.identificator})</span>
+                                                    )}
+                                                </span>
                                                 {pendingMediaCounts[game.id] > 0 && (
                                                     <span className="bg-purple-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full animate-pulse" title="Pending media approvals">
                                                         📸 {pendingMediaCounts[game.id]}
