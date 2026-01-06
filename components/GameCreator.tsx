@@ -244,6 +244,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
   // Core Info
   const [name, setName] = useState(baseGame?.name || '');
+  const [identificator, setIdentificator] = useState(baseGame?.identificator || '');
   const [description, setDescription] = useState(baseGame?.description || '');
   const [finishMessage, setFinishMessage] = useState(baseGame?.finishMessage || '');
   const [language, setLanguage] = useState<Language>(baseGame?.language || 'Danish');
