@@ -1560,8 +1560,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
             if (logoUrl) {
                 console.log('[Logo Search] Found logo:', logoUrl);
-                if (editingCompletedIcon) {
+                if (editingIconType === 'completed') {
                     updateTask({ completedIconUrl: logoUrl });
+                } else if (editingIconType === 'incorrect') {
+                    updateTask({ incorrectIconUrl: logoUrl });
                 } else {
                     updateTask({ iconUrl: logoUrl });
                 }
