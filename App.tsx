@@ -2648,7 +2648,8 @@ const GameApp: React.FC = () => {
   }
 
   // Active Game View (Map & HUD)
-  return (
+  // Wrap in simulation mode tablet frame if enabled
+  const mainContent = (
     <div className="fixed inset-0 w-full h-full overflow-hidden bg-slate-900 text-white">
         {/* Hide map for PLAYZONE games - they use playground editor only */}
         {activeGame?.gameMode !== 'playzone' && (
