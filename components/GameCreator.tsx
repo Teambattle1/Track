@@ -1153,7 +1153,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                           </div>
                       </div>
 
-                      {/* 2. Client & Logo */}
+                      {/* 3. Client & Logo */}
                       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                           <label className="block text-[10px] font-bold text-slate-500 uppercase mb-4">Client / Event Configuration</label>
                           <div className="flex gap-4">
