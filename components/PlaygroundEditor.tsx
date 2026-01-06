@@ -4995,6 +4995,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 {/* CORRECT ANSWER ICON Section */}
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-green-400 uppercase tracking-widest">✅ CORRECT ANSWER</label>
+                                    <p className="text-[8px] text-slate-400">Icon shown when team provides correct answer</p>
 
                                     {/* Current Completed Icon Preview */}
                                     {selectedTask.completedIconUrl && (
@@ -5016,7 +5017,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <div className="grid grid-cols-3 gap-2">
                                         <button
                                             onClick={() => {
-                                                setEditingCompletedIcon(true);
+                                                setEditingIconType('completed');
                                                 completedTaskIconInputRef.current?.click();
                                             }}
                                             className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
@@ -5028,20 +5029,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                                         <button
                                             onClick={() => {
-                                                setEditingCompletedIcon(true);
+                                                setEditingIconType('completed');
                                                 setLogoCompanyName('');
                                                 setShowLogoPrompt(true);
                                             }}
-                                            disabled={isSearchingLogo && editingCompletedIcon}
+                                            disabled={isSearchingLogo && editingIconType !== 'completed'}
                                             className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
-                                                isSearchingLogo && editingCompletedIcon
+                                                isSearchingLogo && editingIconType === 'completed'
                                                     ? 'bg-blue-600/50 text-blue-300 cursor-wait'
                                                     : 'border border-dashed border-blue-600 text-blue-400 hover:text-blue-300 hover:border-blue-400'
                                             }`}
                                             title="Search for company logo online"
                                             type="button"
                                         >
-                                            {isSearchingLogo && editingCompletedIcon ? (
+                                            {isSearchingLogo && editingIconType === 'completed' ? (
                                                 <>
                                                     <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
                                                     <span className="text-[9px]">SEARCHING...</span>
@@ -5055,20 +5056,20 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                                         <button
                                             onClick={() => {
-                                                setEditingCompletedIcon(true);
+                                                setEditingIconType('completed');
                                                 setAiIconPromptValue('');
                                                 setShowAiIconPrompt(true);
                                             }}
-                                            disabled={isGeneratingIcon && editingCompletedIcon}
+                                            disabled={isGeneratingIcon && editingIconType !== 'completed'}
                                             className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
-                                                isGeneratingIcon && editingCompletedIcon
+                                                isGeneratingIcon && editingIconType === 'completed'
                                                     ? 'bg-purple-600/50 text-purple-300 cursor-wait'
                                                     : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
                                             }`}
                                             title="Generate icon with AI for correct answer"
                                             type="button"
                                         >
-                                            {isGeneratingIcon && editingCompletedIcon ? (
+                                            {isGeneratingIcon && editingIconType === 'completed' ? (
                                                 <>
                                                     <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
                                                     <span className="text-[9px]">GENERATING...</span>
