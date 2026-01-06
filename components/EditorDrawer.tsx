@@ -600,6 +600,12 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 <div>
                     <h2 className="font-bold text-xs text-gray-400 uppercase tracking-wide">Tasks List</h2>
                     <p className="text-[10px] text-gray-500 uppercase">{allPoints.length} points defined</p>
+                    {orphanedPoints.length > 0 && (
+                        <p className="text-[9px] text-red-500 font-bold mt-1">⚠️ {orphanedPoints.length} orphaned points</p>
+                    )}
+                    <p className="text-[9px] text-gray-400 mt-0.5">
+                        {mapPoints.length} on map • {playgroundGroups.reduce((sum, pg) => sum + pg.points.length, 0)} in zones
+                    </p>
                 </div>
                 {onOpenPlaygroundEditor && (
                     <button
