@@ -908,10 +908,10 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         <button
                                             onClick={onEditGameSettings}
                                             className="py-2 px-2 bg-indigo-700 hover:bg-indigo-800 text-indigo-200 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"
-                                            title="Edit Game Settings (Zone Changes, Timers, etc.)"
+                                            title="Edit Game Settings"
                                         >
-                                            <MapPin className="w-4 h-4" />
-                                            ZONE CHANGE
+                                            <Settings className="w-4 h-4" />
+                                            SETTINGS
                                         </button>
                                     )}
 
