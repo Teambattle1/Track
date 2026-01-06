@@ -614,12 +614,12 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
             <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900 flex-shrink-0 z-[60]">
                 <div>
                     <h2 className="font-bold text-xs text-gray-400 uppercase tracking-wide">Tasks List</h2>
-                    <p className="text-[10px] text-gray-500 uppercase">{allPoints.length} points defined</p>
+                    <p className="text-[10px] text-gray-500 uppercase">{mapPoints.length + playgroundGroups.reduce((sum, pg) => sum + pg.points.length, 0) + (activeGame?.dangerZones?.length || 0)} points defined</p>
                     {orphanedPoints.length > 0 && (
                         <p className="text-[9px] text-red-500 font-bold mt-1">⚠️ {orphanedPoints.length} orphaned points</p>
                     )}
                     <p className="text-[9px] text-gray-400 mt-0.5">
-                        {mapPoints.length} on map • {playgroundGroups.reduce((sum, pg) => sum + pg.points.length, 0)} in zones
+                        {mapPoints.length} on map • {playgroundGroups.reduce((sum, pg) => sum + pg.points.length, 0)} in zones • {activeGame?.dangerZones?.length || 0} danger zones
                     </p>
                 </div>
                 {onOpenPlaygroundEditor && (
