@@ -27,6 +27,7 @@ import InitialLanding from './components/InitialLanding';
 import LoginPage from './components/LoginPage';
 import EditorDrawer from './components/EditorDrawer';
 import TaskModal from './components/TaskModal';
+import TaskEditor from './components/TaskEditor';
 import DeleteGamesModal from './components/DeleteGamesModal';
 import PlaygroundManager from './components/PlaygroundManager';
 import AdminModal from './components/AdminModal';
