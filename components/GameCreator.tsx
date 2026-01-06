@@ -915,6 +915,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
       const newGameData: Partial<Game> = {
           name,
+          identificator: identificator.trim() || undefined,
           description,
           finishMessage,
           language,
