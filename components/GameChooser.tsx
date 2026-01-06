@@ -223,7 +223,12 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                         {/* Name & Desc */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <h3 className="text-sm font-black text-white uppercase tracking-wide truncate group-hover:text-indigo-400">{game.name}</h3>
+                                                <h3 className="text-sm font-black text-white uppercase tracking-wide truncate group-hover:text-indigo-400">
+                                                    {game.name}
+                                                    {game.identificator && (
+                                                        <span className="ml-2 text-blue-400">({game.identificator})</span>
+                                                    )}
+                                                </h3>
                                                 {(() => {
                                                     const { Icon, label, color, bgColor, borderColor } = getGameModeIcon(game.gameMode);
                                                     return (
