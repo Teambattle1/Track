@@ -4842,9 +4842,23 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 </div>
                             )}
 
-                            {/* Icon Editor - Triple State (Standard, Incorrect, Correct) */}
-                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-3">
-                                {/* STANDARD ICON Section */}
+                            {/* Icon Editor - Triple State (Standard, Incorrect, Correct) - Collapsible */}
+                            <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+                                {/* Collapsible Header */}
+                                <button
+                                    onClick={() => setIsIconEditorCollapsed(!isIconEditorCollapsed)}
+                                    className="w-full px-3 py-3 flex items-center justify-between hover:bg-slate-700/50 transition-colors"
+                                >
+                                    <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest flex items-center gap-2">
+                                        <ImageIcon className="w-4 h-4" /> ICON EDITOR
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isIconEditorCollapsed ? '-rotate-90' : ''}`} />
+                                </button>
+
+                                {/* Collapsible Content */}
+                                {!isIconEditorCollapsed && (
+                                    <div className="border-t border-slate-700 p-3 space-y-3">
+                                        {/* STANDARD ICON Section */}
                                 <div className="space-y-2 pb-3 border-b border-slate-700">
                                     <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest">⭕ STANDARD ICON</label>
                                     <p className="text-[8px] text-slate-400">Default icon shown before any answer is given</p>
@@ -5122,6 +5136,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         </button>
                                     </div>
                                 </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Copy Task Button */}
