@@ -117,6 +117,11 @@ export const setGlobalVolume = (volume: number) => {
 
 // Play sound with volume control
 export const playSound = (url: string, volume: number = 80) => {
+  // If URL is empty (No Sound option), don't play anything
+  if (!url || url.trim() === '') {
+    return;
+  }
+
   const audio = new Audio(url);
   audio.volume = Math.max(0, Math.min(1, volume / 100)); // Clamp between 0 and 1
   audio.play().catch(err => console.warn('Sound playback failed:', err));
