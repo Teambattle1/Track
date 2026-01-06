@@ -4447,8 +4447,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                     </button>
 
                     {/* Zoom Level Presets */}
-                    <div className="flex gap-1">
-                        {[0.5, 1, 2, 3].map(level => (
+                    <div className="flex flex-wrap gap-1">
+                        {[0.5, 1, 2, 3, 4, 6, 8, 10].map(level => (
                             <button
                                 key={level}
                                 onClick={() => setZoom(level)}
