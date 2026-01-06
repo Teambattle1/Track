@@ -610,7 +610,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="EDIT GAME"
                   icon={Gamepad2}
                   gradient="bg-gradient-to-br from-cyan-600 to-blue-600"
-                  onClick={() => onAction('GAMES')}
+                  onClick={() => onAction('EDIT_GAME')}
                   delay={0}
                   scale={0.75}
               />
