@@ -2624,6 +2624,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskOrder ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
+                                    title="Toggle task order numbers (1, 2, 3...) on the map"
                                 >
                                     <span className="text-base font-bold">#</span>
                                     <span className="text-[8px] font-black uppercase">ORDER</span>
@@ -2637,6 +2638,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskActions ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
+                                    title="Toggle task action indicators (links between tasks) on the map"
                                 >
                                     <Zap className="w-4 h-4" />
                                     <span className="text-[8px] font-black uppercase">ACTIONS</span>
@@ -2650,6 +2652,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskNames ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
+                                    title="Toggle task name labels displayed next to icons on the map"
                                 >
                                     <Type className="w-4 h-4" />
                                     <span className="text-[8px] font-black uppercase">NAME</span>
@@ -2663,6 +2666,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showTaskStatus ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
+                                    title="Toggle correct/incorrect answer markers (✓/✗) for completed tasks"
                                 >
                                     <CheckCircle className="w-4 h-4" />
                                     <span className="text-[8px] font-black uppercase">ANSWERS</span>
@@ -2676,6 +2680,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showBackground ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
+                                    title="Toggle background image display in the playzone"
                                 >
                                     <ImageIcon className="w-4 h-4" />
                                     <span className="text-[8px] font-black uppercase">BG</span>
@@ -2689,6 +2694,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
                                         showQRScanner ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700'
                                     }`}
+                                    title="Toggle QR code scanner controls in the playzone editor"
                                 >
                                     <QrCode className="w-4 h-4" />
                                     <span className="text-[8px] font-black uppercase">QR</span>
