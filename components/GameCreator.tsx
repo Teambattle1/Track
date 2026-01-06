@@ -1222,7 +1222,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                           </div>
                       </div>
 
-                      {/* 3. Language & Tags (Redesigned: Input -> Color Grid -> Tags List) */}
+                      {/* 4. Language & Tags (Redesigned: Input -> Color Grid -> Tags List) */}
                       <div className="grid grid-cols-2 gap-6">
                           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                               <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Language</label>
