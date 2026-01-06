@@ -317,8 +317,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
 
                         {isVisible('mapmode') && (
                             <div className="grid grid-cols-3 gap-2">
-                                {/* EDITOR button - Only show for EDITOR access */}
-                                {userAccessMode === 'EDITOR' && (
+                                {/* EDITOR button - Show if user has EDITOR access OR is currently in EDIT mode */}
+                                {(userAccessMode === 'EDITOR' || mode === GameMode.EDIT) && (
                                     <button
                                         onClick={() => onSetMode(GameMode.EDIT)}
                                         className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.EDIT ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
@@ -328,8 +328,8 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         EDITOR
                                     </button>
                                 )}
-                                {/* INSTRUCTOR button - Show for EDITOR and INSTRUCTOR access */}
-                                {(userAccessMode === 'EDITOR' || userAccessMode === 'INSTRUCTOR') && (
+                                {/* INSTRUCTOR button - Show if user has EDITOR/INSTRUCTOR access OR is currently in EDIT/INSTRUCTOR mode */}
+                                {(userAccessMode === 'EDITOR' || userAccessMode === 'INSTRUCTOR' || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
                                     <button
                                         onClick={() => onSetMode(GameMode.INSTRUCTOR)}
                                         className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.INSTRUCTOR ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
