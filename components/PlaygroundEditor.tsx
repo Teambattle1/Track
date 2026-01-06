@@ -4829,7 +4829,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <div className="grid grid-cols-3 gap-2">
                                         <button
                                             onClick={() => {
-                                                setEditingCompletedIcon(false);
+                                                setEditingIconType('standard');
                                                 taskIconInputRef.current?.click();
                                             }}
                                             className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
@@ -4837,24 +4837,24 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         >
                                             <Upload className="w-3 h-3" /> UPLOAD
                                         </button>
-                                        <input ref={taskIconInputRef} type="file" className="hidden" accept="image/*" onChange={handleTaskIconUpload} />
+                                        <input ref={taskIconInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => handleTaskIconUpload(e, 'standard')} />
 
                                         <button
                                             onClick={() => {
-                                                setEditingCompletedIcon(false);
+                                                setEditingIconType('standard');
                                                 setLogoCompanyName('');
                                                 setShowLogoPrompt(true);
                                             }}
-                                            disabled={isSearchingLogo && !editingCompletedIcon}
+                                            disabled={isSearchingLogo && editingIconType !== 'standard'}
                                             className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
-                                                isSearchingLogo && !editingCompletedIcon
+                                                isSearchingLogo && editingIconType === 'standard'
                                                     ? 'bg-blue-600/50 text-blue-300 cursor-wait'
                                                     : 'border border-dashed border-blue-600 text-blue-400 hover:text-blue-300 hover:border-blue-400'
                                             }`}
                                             title="Search for company logo online"
                                             type="button"
                                         >
-                                            {isSearchingLogo && !editingCompletedIcon ? (
+                                            {isSearchingLogo && editingIconType === 'standard' ? (
                                                 <>
                                                     <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
                                                     <span className="text-[9px]">SEARCHING...</span>
@@ -4868,20 +4868,114 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                                         <button
                                             onClick={() => {
-                                                setEditingCompletedIcon(false);
+                                                setEditingIconType('standard');
                                                 setAiIconPromptValue('');
                                                 setShowAiIconPrompt(true);
                                             }}
-                                            disabled={isGeneratingIcon && !editingCompletedIcon}
+                                            disabled={isGeneratingIcon && editingIconType !== 'standard'}
                                             className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
-                                                isGeneratingIcon && !editingCompletedIcon
+                                                isGeneratingIcon && editingIconType === 'standard'
+                                                    ? 'bg-purple-600/50 text-purple-300 cursor-wait'
+                                                    : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
+                                            }`}
+                                            title="Generate icon with AI for standard state"
+                                            type="button"
+                                        >
+                                            {isGeneratingIcon && editingIconType === 'standard' ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-[9px]">GENERATING...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Wand2 className="w-3 h-3" /> AI ICON
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+
+                                {/* INCORRECT ANSWER ICON Section - NEW */}
+                                <div className="space-y-2 pb-3 border-b border-slate-700">
+                                    <label className="text-[10px] font-black text-red-400 uppercase tracking-widest">❌ INCORRECT ANSWER</label>
+                                    <p className="text-[8px] text-slate-400">Icon shown when team provides wrong answer</p>
+
+                                    {/* Current Icon Preview */}
+                                    {selectedTask.incorrectIconUrl && (
+                                        <div className="p-3 bg-slate-700 rounded-lg flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <img src={selectedTask.incorrectIconUrl} alt="Incorrect Answer Icon" className="w-8 h-8 object-contain" />
+                                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">CUSTOM ICON</span>
+                                            </div>
+                                            <button
+                                                onClick={() => updateTask({ incorrectIconUrl: undefined, incorrectIconId: 'default' })}
+                                                className="p-1.5 text-slate-500 hover:text-red-500 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Icon Buttons */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setEditingIconType('incorrect');
+                                                incorrectTaskIconInputRef.current?.click();
+                                            }}
+                                            className="py-2 px-3 border border-dashed border-slate-600 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-colors flex items-center justify-center gap-1"
+                                            title="Upload custom icon for incorrect answer"
+                                        >
+                                            <Upload className="w-3 h-3" /> UPLOAD
+                                        </button>
+                                        <input ref={incorrectTaskIconInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => handleTaskIconUpload(e, 'incorrect')} />
+
+                                        <button
+                                            onClick={() => {
+                                                setEditingIconType('incorrect');
+                                                setLogoCompanyName('');
+                                                setShowLogoPrompt(true);
+                                            }}
+                                            disabled={isSearchingLogo && editingIconType !== 'incorrect'}
+                                            className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
+                                                isSearchingLogo && editingIconType === 'incorrect'
+                                                    ? 'bg-blue-600/50 text-blue-300 cursor-wait'
+                                                    : 'border border-dashed border-blue-600 text-blue-400 hover:text-blue-300 hover:border-blue-400'
+                                            }`}
+                                            title="Search for company logo online"
+                                            type="button"
+                                        >
+                                            {isSearchingLogo && editingIconType === 'incorrect' ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-[9px]">SEARCHING...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Globe className="w-3 h-3" /> LOGO
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setEditingIconType('incorrect');
+                                                setAiIconPromptValue('');
+                                                setShowAiIconPrompt(true);
+                                            }}
+                                            disabled={isGeneratingIcon && editingIconType !== 'incorrect'}
+                                            className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase flex items-center justify-center gap-1 transition-all ${
+                                                isGeneratingIcon && editingIconType === 'incorrect'
                                                     ? 'bg-purple-600/50 text-purple-300 cursor-wait'
                                                     : 'border border-dashed border-purple-600 text-purple-400 hover:text-purple-300 hover:border-purple-400'
                                             }`}
                                             title="Generate icon with AI for incorrect answer"
                                             type="button"
                                         >
-                                            {isGeneratingIcon && !editingCompletedIcon ? (
+                                            {isGeneratingIcon && editingIconType === 'incorrect' ? (
                                                 <>
                                                     <div className="w-3 h-3 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
                                                     <span className="text-[9px]">GENERATING...</span>
