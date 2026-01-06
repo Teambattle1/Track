@@ -4804,6 +4804,43 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 )}
                             </div>
 
+                            {/* Copy Icon Settings to Multiple Tasks */}
+                            {markedTaskIds.size > 0 && (
+                                <div className="bg-gradient-to-r from-purple-900/30 to-orange-900/30 border border-purple-500/50 rounded-lg p-3 space-y-2">
+                                    <p className="text-[9px] text-purple-300 font-bold uppercase tracking-wider">
+                                        📋 Copy All Icon Settings
+                                    </p>
+                                    <p className="text-[8px] text-slate-400">
+                                        Apply all icon settings (Standard, Incorrect, Correct, and sizes) from this task to {markedTaskIds.size} marked task(s)
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            const iconPayload = {
+                                                iconId: selectedTask.iconId,
+                                                iconUrl: selectedTask.iconUrl,
+                                                incorrectIconId: selectedTask.incorrectIconId,
+                                                incorrectIconUrl: selectedTask.incorrectIconUrl,
+                                                completedIconId: selectedTask.completedIconId,
+                                                completedIconUrl: selectedTask.completedIconUrl,
+                                                playgroundScale: selectedTask.playgroundScale || 1,
+                                                textLabelScale: selectedTask.textLabelScale || 1,
+                                                iconImageScale: selectedTask.iconImageScale || 0.9
+                                            };
+                                            const updatedPoints = game.points.map(p =>
+                                                markedTaskIds.has(p.id) ? { ...p, ...iconPayload } : p
+                                            );
+                                            onUpdateGame({ ...game, points: updatedPoints });
+                                            alert(`Applied all icon settings to ${markedTaskIds.size} task(s)! ✨`);
+                                        }}
+                                        className="w-full py-2.5 px-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-lg font-bold uppercase text-[9px] tracking-wider transition-all shadow-lg flex items-center justify-center gap-2"
+                                        title={`Copy all icon settings to ${markedTaskIds.size} marked task(s)`}
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                        COPY TO {markedTaskIds.size} TASKS
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Icon Editor - Triple State (Standard, Incorrect, Correct) */}
                             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-3">
                                 {/* STANDARD ICON Section */}
