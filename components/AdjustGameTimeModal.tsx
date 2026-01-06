@@ -76,15 +76,24 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
   };
 
   const handleUpdate = async () => {
-    if (!adjustedEndTime) return;
-    
+    console.log('[AdjustGameTimeModal] handleUpdate called');
+    console.log('[AdjustGameTimeModal] adjustedEndTime:', adjustedEndTime);
+    console.log('[AdjustGameTimeModal] adjustmentMinutes:', adjustmentMinutes);
+
+    if (!adjustedEndTime) {
+      console.warn('[AdjustGameTimeModal] No adjustedEndTime, returning');
+      return;
+    }
+
     setIsUpdating(true);
     setMessage(null);
 
     try {
       const newEndTime = adjustedEndTime.getTime();
+      console.log('[AdjustGameTimeModal] Calling onUpdateGameTime with:', new Date(newEndTime).toISOString());
       await onUpdateGameTime(newEndTime);
-      
+      console.log('[AdjustGameTimeModal] onUpdateGameTime completed successfully');
+
       setMessage({
         type: 'success',
         text: `Game time updated!`
@@ -94,10 +103,10 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
         onClose();
       }, 2000);
     } catch (error) {
-      console.error('Error updating game time:', error);
+      console.error('[AdjustGameTimeModal] Error updating game time:', error);
       setMessage({
         type: 'error',
-        text: 'Failed to update game time.'
+        text: 'Failed to update game time. ' + (error instanceof Error ? error.message : 'Unknown error')
       });
     } finally {
       setIsUpdating(false);
