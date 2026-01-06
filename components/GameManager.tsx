@@ -350,11 +350,11 @@ const GameManager: React.FC<GameManagerProps> = ({
         </div>
 
         <div className="p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-4">
-          {/* Game ID Search */}
+          {/* Game ID and Name Search */}
           <div className="relative">
             <input
               type="text"
-              placeholder="Search Game ID (e.g. 001, 123)..."
+              placeholder="Search Game ID (e.g. 001, 123) or Name..."
               value={gameIdSearch}
               onChange={(e) => handleGameIdSearch(e.target.value)}
               onKeyDown={(e) => searchResults.length > 0 && handleSearchKeyDown(e, searchResults[0].id)}
