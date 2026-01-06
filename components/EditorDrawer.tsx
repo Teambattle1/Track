@@ -333,7 +333,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
           setCollapsedZonesLocal(prev => {
               const next = { ...prev };
               activeGame.playgrounds?.forEach(pg => {
-                  if (next[pg.id] === undefined) next[pg.id] = false; // Default expanded now
+                  if (next[pg.id] === undefined) next[pg.id] = true; // Default collapsed
               });
               return next;
           });
