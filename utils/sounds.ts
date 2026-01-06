@@ -9,6 +9,12 @@ export interface SoundOption {
 // Free sound effects from various sources (royalty-free)
 export const CORRECT_SOUNDS: SoundOption[] = [
   {
+    id: 'none',
+    name: 'No Sound',
+    url: '',
+    description: 'Silent - no sound plays'
+  },
+  {
     id: 'correct_1',
     name: 'Success Chime',
     url: 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
@@ -41,6 +47,12 @@ export const CORRECT_SOUNDS: SoundOption[] = [
 ];
 
 export const INCORRECT_SOUNDS: SoundOption[] = [
+  {
+    id: 'none',
+    name: 'No Sound',
+    url: '',
+    description: 'Silent - no sound plays'
+  },
   {
     id: 'incorrect_1',
     name: 'Error Buzz',
