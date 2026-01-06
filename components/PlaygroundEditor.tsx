@@ -1045,15 +1045,44 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         // DEBUG: Log first 3 tasks to see what's happening
         const taskIndex = uniquePlaygroundPoints.indexOf(point);
         if (taskIndex < 3) {
-            const finalPos = deviceLayout?.iconPositions?.[point.id] ||
-                           point.devicePositions?.[selectedDevice] ||
-                           point.playgroundPosition ||
-                           { x: 50, y: 50 };
+            // Find which device position will be used
+            let finalPos = deviceLayout?.iconPositions?.[point.id];
+            let source = '';
+            let fallbackDevice = null;
+
+            if (finalPos) {
+                source = '❌ OVERRIDE (blocking!)';
+            } else if (point.devicePositions?.[selectedDevice]) {
+                finalPos = point.devicePositions[selectedDevice];
+                source = `✅ task.devicePositions[${selectedDevice}]`;
+            } else if (point.devicePositions) {
+                // Check for fallback device
+                const availableDevices: Array<'mobile' | 'tablet' | 'desktop'> = ['tablet', 'desktop', 'mobile'];
+                for (const device of availableDevices) {
+                    if (point.devicePositions[device]) {
+                        finalPos = point.devicePositions[device];
+                        fallbackDevice = device;
+                        source = `📱 FALLBACK: using devicePositions[${device}]`;
+                        break;
+                    }
+                }
+            }
+
+            if (!finalPos && point.playgroundPosition) {
+                finalPos = point.playgroundPosition;
+                source = '⚠️ legacy playgroundPosition';
+            }
+
+            if (!finalPos) {
+                finalPos = { x: 50, y: 50 };
+                source = '🔴 DEFAULT (50,50) - STACKING!';
+            }
 
             console.log(`[PlaygroundEditor] 🔍 Task #${taskIndex}: "${point.title}"`, {
                 FINAL_POSITION: finalPos,
                 FULL_TASK_OBJECT: point,
                 selectedDevice,
+                fallbackDevice,
                 playgroundId: point.playgroundId,
                 activePlaygroundId: activePlayground?.id,
                 MATCHES: point.playgroundId === activePlayground?.id,
@@ -1062,10 +1091,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 playgroundPosition_value: point.playgroundPosition || null,
                 ALL_devicePositions: point.devicePositions,
                 ALL_KEYS_ON_TASK: Object.keys(point),
-                SOURCE: deviceLayout?.iconPositions?.[point.id] ? '❌ OVERRIDE (blocking!)' :
-                       point.devicePositions?.[selectedDevice] ? '✅ task.devicePositions' :
-                       point.playgroundPosition ? '⚠️ legacy playgroundPosition' :
-                       '🔴 DEFAULT (50,50) - STACKING!'
+                SOURCE: source
             });
         }
 
