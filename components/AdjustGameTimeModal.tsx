@@ -9,6 +9,8 @@ interface AdjustGameTimeModalProps {
 }
 
 const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, timerConfig, onUpdateGameTime }) => {
+  console.log('[AdjustGameTimeModal] Mounted/updated with timerConfig:', timerConfig);
+
   const [adjustmentMinutes, setAdjustmentMinutes] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -20,8 +22,13 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
 
   // Calculate original end time
   const originalEndTime = useMemo(() => {
-    if (!timerConfig?.endTime) return null;
-    return new Date(timerConfig.endTime);
+    if (!timerConfig?.endTime) {
+      console.log('[AdjustGameTimeModal] No endTime in timerConfig');
+      return null;
+    }
+    const endTime = new Date(timerConfig.endTime);
+    console.log('[AdjustGameTimeModal] Calculated originalEndTime:', endTime);
+    return endTime;
   }, [timerConfig]);
 
   // Calculate adjusted end time
