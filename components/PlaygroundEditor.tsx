@@ -1455,7 +1455,12 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
         const iconPayload = {
             iconId: sourceTask.iconId,
-            iconUrl: sourceTask.iconUrl
+            iconUrl: sourceTask.iconUrl,
+            playgroundScale: sourceTask.playgroundScale || 1,
+            textLabelScale: sourceTask.textLabelScale || 1,
+            iconImageScale: sourceTask.iconImageScale || 0.9,
+            completedIconUrl: sourceTask.completedIconUrl,
+            completedIconId: sourceTask.completedIconId
         };
 
         onUpdateGame({
@@ -1469,6 +1474,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
         setBulkIconMode(false);
         setBulkIconSourceId(null);
         setBulkIconTargets(new Set());
+        alert(`Applied all icon settings from "${sourceTask.title}" to ${bulkIconTargets.size} task(s)!`);
     };
 
     const handleTaskIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
