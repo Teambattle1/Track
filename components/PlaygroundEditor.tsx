@@ -4476,7 +4476,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
 
                     {/* LOCK Background Button */}
                     <button
-                        onClick={() => setIsBackgroundLocked(!isBackgroundLocked)}
+                        onClick={() => {
+                            const newLockState = !isBackgroundLocked;
+                            setIsBackgroundLocked(newLockState);
+                            if (newLockState) {
+                                setShowBackgroundLockedWarning(true);
+                            }
+                        }}
                         className={`p-3 rounded-full shadow-xl border-2 transition-colors ${
                             isBackgroundLocked
                                 ? 'bg-red-600 border-red-500 text-white hover:bg-red-700'
