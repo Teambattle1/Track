@@ -4,8 +4,10 @@ import react from '@vitejs/plugin-react';
 import packageJson from './package.json';
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+    const env = loadEnv(mode, '.', 'VITE_');
+    // Support multiple environment variable naming conventions for Gemini API key
+    // Priority: VITE_GEMINI_API_KEY (Vite convention) > GEMINI_API_KEY (from process.env)
+    const geminiKey = env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
 
     return {
       server: {
