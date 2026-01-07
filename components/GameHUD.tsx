@@ -939,20 +939,20 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
         setLayersToolboxPos({ x: 20, y: window.innerHeight - 200 });
         setQRScannerPos(DEFAULT_POSITIONS.qr);
 
-        // Save to user settings if admin
-        if (isAdminRef.current && authUser?.id) {
-            db.updateUserSettings(authUser.id, {
-                toolbarPositions: {
-                    locationToolboxPos: DEFAULT_POSITIONS.location,
-                    topToolbarPos: DEFAULT_POSITIONS.tools,
-                    viewSwitcherPos: DEFAULT_POSITIONS.mapmode,
-                    pinsToolboxPos: DEFAULT_POSITIONS.pins,
-                    showToolboxPos: DEFAULT_POSITIONS.show,
-                    qrScannerPos: DEFAULT_POSITIONS.qr,
-                },
-                toolbarPositionsVersion: DEFAULT_POSITIONS_VERSION,
-            });
-        }
+        // TODO: Save to user settings if admin (function not yet exported from db.ts)
+        // if (isAdminRef.current && authUser?.id) {
+        //     db.updateUserSettings(authUser.id, {
+        //         toolbarPositions: {
+        //             locationToolboxPos: DEFAULT_POSITIONS.location,
+        //             topToolbarPos: DEFAULT_POSITIONS.tools,
+        //             viewSwitcherPos: DEFAULT_POSITIONS.mapmode,
+        //             pinsToolboxPos: DEFAULT_POSITIONS.pins,
+        //             showToolboxPos: DEFAULT_POSITIONS.show,
+        //             qrScannerPos: DEFAULT_POSITIONS.qr,
+        //         },
+        //         toolbarPositionsVersion: DEFAULT_POSITIONS_VERSION,
+        //     });
+        // }
     };
 
     return (
