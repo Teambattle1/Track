@@ -22,6 +22,7 @@ export const DangerZoneWarningModal: React.FC<DangerZoneWarningModalProps> = ({
   onClose
 }) => {
   const [isFlashing, setIsFlashing] = useState(true);
+  const [shouldShake, setShouldShake] = useState(true);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -31,17 +32,19 @@ export const DangerZoneWarningModal: React.FC<DangerZoneWarningModalProps> = ({
       setIsFlashing(prev => !prev);
     }, 400); // Flash every 400ms
 
-    // Screen vibration effect if device supports it
-    const vibrationInterval = setInterval(() => {
+    // Screen shake/vibration effect
+    const shakeInterval = setInterval(() => {
+      setShouldShake(prev => !prev);
+
+      // Device vibration if supported
       if (navigator.vibrate) {
-        // Pattern: 100ms vibrate, 50ms pause, 100ms vibrate
         navigator.vibrate([100, 50, 100]);
       }
-    }, 1000); // Vibrate every second
+    }, 500); // Shake/vibrate every 500ms
 
     return () => {
       clearInterval(flashInterval);
-      clearInterval(vibrationInterval);
+      clearInterval(shakeInterval);
       // Stop vibration on cleanup
       if (navigator.vibrate) {
         navigator.vibrate(0);
@@ -50,6 +53,11 @@ export const DangerZoneWarningModal: React.FC<DangerZoneWarningModalProps> = ({
   }, [isVisible]);
 
   if (!isVisible || !zone) return null;
+
+  // CSS for screen shake animation
+  const shakeStyle = shouldShake ? {
+    transform: `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`,
+  } : {};
 
   const penaltyInfo = zone.penaltyType === 'time_based' 
     ? `${scoreDeductedPerSecond} points/second`
