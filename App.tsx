@@ -197,6 +197,9 @@ const GameApp: React.FC = () => {
   const [showRemoteOverride, setShowRemoteOverride] = useState(false);
   const [hoveredPlaygroundId, setHoveredPlaygroundId] = useState<string | null>(null);
 
+  // --- DANGER ZONE STATE ---
+  const [dangerZoneScore, setDangerZoneScore] = useState(0); // Track score deductions from danger zones
+
   // Layer toggles (all default to true/visible)
   const [showMapLayer, setShowMapLayer] = useState(true);
   const [showZoneLayer, setShowZoneLayer] = useState(true);
