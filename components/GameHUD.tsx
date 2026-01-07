@@ -819,6 +819,12 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     const handleQRScan = (data: string) => {
         setQRScannedValue(data);
         console.log('QR Code scanned:', data);
+
+        // Vibration feedback on successful QR scan
+        if (navigator.vibrate) {
+            // Pattern: 50ms vibrate, 30ms pause, 50ms vibrate, 30ms pause, 100ms vibrate (success pattern)
+            navigator.vibrate([50, 30, 50, 30, 100]);
+        }
     };
 
     // Cleanup QR scanner on unmount
