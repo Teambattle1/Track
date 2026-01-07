@@ -2685,114 +2685,7 @@ const GameApp: React.FC = () => {
         {/* Hide map for PLAYZONE games - they use playground editor only */}
         {activeGame?.gameMode !== 'playzone' && (
             <div className="absolute inset-0 z-0">
-                {mode === GameMode.EDIT ? (
-                    <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
-                        <GameMap
-                        ref={mapRef}
-                        points={visiblePoints}
-                        routes={activeGame?.routes || []}
-                        dangerZones={activeGame?.dangerZones || []}
-                        logicLinks={logicLinks} // Pass Logic Links!
-                        measurePath={measurePath}
-                        mode={mode}
-                        mapStyle={localMapStyle || 'osm'}
-                        onPointClick={(point) => {
-                            if (mode === GameMode.PLAY) {
-                                setSelectedPointForTooltip(point.id);
-                                setTimeout(() => setSelectedPointForTooltip(null), 3000);
-                            } else {
-                                handlePointClick(point);
-                            }
-                        }}
-                        onAreaColorClick={handleAreaColorClick}
-                        onZoneClick={(z) => {
-                            if (mode === GameMode.PLAY) {
-                                setSelectedPointForTooltip(z.id);
-                                setTimeout(() => setSelectedPointForTooltip(null), 3000);
-                            } else {
-                                setActiveDangerZone(z);
-                            }
-                        }}
-                        onZoneMove={async (zoneId, newLoc) => {
-                            if (!activeGame) return;
-                            const updatedZones = (activeGame.dangerZones || []).map(z =>
-                                z.id === zoneId ? { ...z, location: newLoc } : z
-                            );
-                            await updateActiveGame({ ...activeGame, dangerZones: updatedZones });
-                        }}
-                        onMapClick={handleMapClick}
-                        onDeletePoint={handleDeleteItem}
-                        onPointMove={isRelocating ? undefined : async (id, loc) => {
-                            if (!activeGame) return;
-
-                            // If in measure mode, update measurePath to reflect new location
-                            if (isMeasuring) {
-                                const point = activeGame.points.find(p => p.id === id);
-                                if (point && point.location) {
-                                    const oldLocation = point.location;
-                                    setMeasurePath(prev =>
-                                        prev.map(coord =>
-                                            (coord.lat === oldLocation.lat && coord.lng === oldLocation.lng)
-                                                ? { lat: loc.lat, lng: loc.lng }
-                                                : coord
-                                        )
-                                    );
-                                }
-                            }
-
-                            // Location updates are the most common multi-user edit. We re-fetch latest game
-                            // before saving to reduce the chance of overwriting another editor's recent change.
-                            const plainLoc = { lat: loc.lat, lng: loc.lng };
-                            const updated = await db.updateGameItemLocation(activeGame.id, id, plainLoc, {
-                                user: authUser?.name,
-                                action: 'Moved Item'
-                            });
-                            if (!updated) return;
-
-                            setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
-                            setActiveGame(updated);
-                        }}
-                        onDragStart={isRelocating ? undefined : (pointId) => {
-                            // Don't open task editor when dragging in measure mode
-                            if (!isMeasuring) {
-                                const point = activeGame?.points.find(p => p.id === pointId);
-                                if (point) setActiveTask(point);
-                            }
-                        }}
-                        accuracy={gpsAccuracy}
-                        isRelocating={isRelocating}
-                        isMeasuring={isMeasuring}
-                        snapToRoadMode={snapToRoadMode}
-                        snapSelectionStart={snapSelectionStart}
-                        snapSelectionEnd={snapSelectionEnd}
-                        selectedSnapTaskIds={selectedSnapTaskIds}
-                        relocateScopeCenter={relocateScopeCenter}
-                        relocateAllTaskIds={relocateAllTaskIds}
-                        showScores={mode === GameMode.INSTRUCTOR ? instructorShowScores : showScores}
-                        showTaskId={mode === GameMode.INSTRUCTOR ? instructorShowTaskId : showTaskId}
-                        showTaskTitle={mode === GameMode.INSTRUCTOR ? instructorShowTaskTitle : showTaskTitle}
-                        showTaskActions={mode === GameMode.INSTRUCTOR ? instructorShowTaskActions : showTaskActions}
-                        measuredDistance={measuredDistance}
-                        hoveredPointId={hoveredPointId}
-                        hoveredDangerZoneId={hoveredDangerZoneId}
-                        onPointHover={(point) => setMapHoveredPointId(point?.id || null)}
-                        teamHistory={demoTeamHistory}
-                        showTeamPaths={showTeamPaths}
-                        gameStartTime={teamsForFogOfWar.length > 0 && teamsForFogOfWar[0]?.startedAt ? teamsForFogOfWar[0].startedAt : activeGame?.createdAt}
-                        fogOfWarEnabled={fogOfWarEnabled}
-                        selectedTeamId={selectedTeamForFogOfWar}
-                        selectedTeamCompletedPointIds={
-                            fogOfWarEnabled && selectedTeamForFogOfWar
-                                ? teamsForFogOfWar.find(t => t.id === selectedTeamForFogOfWar)?.completedPointIds || []
-                                : []
-                        }
-                        showMapLayer={showMapLayer}
-                        showZoneLayer={showZoneLayer}
-                        showTaskLayer={showTaskLayer}
-                        showLiveLayer={showLiveLayer}
-                        />
-                    </MapDeviceFrame>
-                ) : (
+                <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
                     <GameMap
                     ref={mapRef}
                     points={visiblePoints}
@@ -2897,7 +2790,7 @@ const GameApp: React.FC = () => {
                     showTaskLayer={showTaskLayer}
                     showLiveLayer={showLiveLayer}
                     />
-                )}
+                </MapDeviceFrame>
             </div>
         )}
 
