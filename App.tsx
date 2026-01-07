@@ -2686,7 +2686,9 @@ const GameApp: React.FC = () => {
   // Wrap in simulation mode tablet frame if enabled
   const mainContent = (
     <div className={`absolute overflow-hidden bg-slate-900 text-white flex flex-col ${
-      mode === GameMode.EDIT || playgroundTemplateToEdit ? 'inset-0' : 'inset-0'
+      mode === GameMode.EDIT || playgroundTemplateToEdit
+        ? 'inset-0 sm:right-[320px]'
+        : 'inset-0'
     }`}>
         {/* Map for EDIT/INSTRUCTOR modes only (PLAY mode uses device frame map) */}
         {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (
