@@ -330,6 +330,13 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [collapsedZonesLocal, setCollapsedZonesLocal] = useState<Record<string, boolean>>({ 'map': true });
   const collapsedZones = collapsedZonesProp || collapsedZonesLocal;
   const [activeAddMenu, setActiveAddMenu] = useState<string | null>(null);
+
+  // Auto-collapse all right drawer sections when entering editor mode
+  React.useEffect(() => {
+    setIsRoutesCollapsed(true);
+    setIsDangerZonesCollapsed(true);
+    setCollapsedZonesLocal({ 'map': true });
+  }, []);
   
   const gpxInputRef = useRef<HTMLInputElement>(null);
 
