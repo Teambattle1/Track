@@ -59,6 +59,7 @@ import SystemSoundsModal from './components/SystemSoundsModal';
 import ImpossibleTravelWarnings from './components/ImpossibleTravelWarnings';
 import RemoteOverrideModal from './components/RemoteOverrideModal';
 import ClientLobby from './components/ClientLobby';
+import FullscreenOverlay from './components/FullscreenOverlay';
 import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
 import PlayzoneSelector from './components/PlayzoneSelector';
