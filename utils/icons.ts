@@ -126,8 +126,8 @@ export const getLeafletIcon = (
   return L.divIcon({
     className: 'custom-game-icon',
     html: html,
-    iconSize: [labelSpace, labelSpace + 24], // Extra height for label above
-    iconAnchor: [labelSpace/2, labelSpace/2], // Center of the expanded container
-    popupAnchor: [0, -labelSpace/2],
+    iconSize: [iconContainerSize, iconContainerSize + 24], // Icon height + label space above
+    iconAnchor: [iconContainerSize/2, iconContainerSize], // Bottom center of actual icon
+    popupAnchor: [0, -iconContainerSize],
   });
 };
