@@ -21,8 +21,8 @@ const DevicePreviewToolbox: React.FC<DevicePreviewToolboxProps> = ({
   return (
     <div className="fixed top-1/2 -translate-y-1/2 right-4 z-[2000] pointer-events-auto bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-blue-500 rounded-xl p-3 shadow-2xl max-w-xs">
       {/* Title */}
-      <h3 className="text-white font-bold uppercase text-xs tracking-wider mb-3 pb-2 border-b border-blue-500">
-        📱 Device Preview
+      <h3 className="text-white font-bold uppercase text-[9px] tracking-wider mb-2 pb-1.5 border-b border-blue-500">
+        📱 Preview
       </h3>
 
       {/* DEVICE SELECTOR */}
