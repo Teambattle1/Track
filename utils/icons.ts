@@ -120,11 +120,14 @@ export const getLeafletIcon = (
 
   html += `</div>`;
 
+  // Icon size needs to be large enough to include the label without clipping
+  const labelSpace = 80;
+
   return L.divIcon({
     className: 'custom-game-icon',
     html: html,
-    iconSize: [size, size],
-    iconAnchor: [size/2, size], // Bottom center
-    popupAnchor: [0, -size],
+    iconSize: [labelSpace, labelSpace + 24], // Extra height for label above
+    iconAnchor: [labelSpace/2, labelSpace], // Bottom center of expanded container
+    popupAnchor: [0, -labelSpace],
   });
 };
