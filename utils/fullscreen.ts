@@ -119,19 +119,21 @@ export const isFullscreen = (): boolean => {
 export const requestFullscreenOnMobile = (): boolean => {
   const isMobileOrTablet = /mobile|tablet|ipad|android|iphone|ipod/i.test(navigator.userAgent) ||
                            (window.innerWidth < 1280 && 'ontouchstart' in window);
-  
+
   if (isMobileOrTablet && !isFullscreen()) {
     // Use setTimeout to allow user interaction to complete first
     setTimeout(() => {
       requestFullscreen().then((success) => {
         if (success) {
-          console.log('[Fullscreen] Entered fullscreen mode on mobile/tablet');
+          console.debug('[Fullscreen] Entered fullscreen mode on mobile/tablet');
         }
+      }).catch(() => {
+        // Silently fail - fullscreen may not be available
       });
     }, 100);
     return true;
   }
-  
+
   return false;
 };
 
