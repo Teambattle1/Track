@@ -3050,6 +3050,18 @@ const GameApp: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Device Preview Toolbox - Only in EDIT mode */}
+                {mode === GameMode.EDIT && (
+                    <DevicePreviewToolbox
+                        selectedDevice={teamEditDevice}
+                        selectedOrientation={teamEditOrientation}
+                        isOrientationLocked={teamEditOrientationLocked}
+                        onDeviceChange={setTeamEditDevice}
+                        onOrientationChange={setTeamEditOrientation}
+                        onOrientationLockToggle={setTeamEditOrientationLocked}
+                    />
+                )}
+
                 {/* Playzones Buttons - Bottom Center */}
                 {activeGame?.playgrounds && activeGame.playgrounds.length > 0 && (() => {
                     const visiblePlaygrounds = activeGame.playgrounds.filter(p => p.buttonVisible);
