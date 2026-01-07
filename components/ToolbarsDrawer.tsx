@@ -889,7 +889,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                             title="Set Game Time"
                                         >
                                             <Clock className="w-4 h-4" />
-                                            SET TIME
+                                            SET GAME TIME
                                         </button>
                                     )}
 
