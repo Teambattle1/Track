@@ -174,7 +174,13 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     onToggleMapLayer, onToggleZoneLayer, onToggleTaskLayer, onToggleLiveLayer,
     hoveredPlaygroundId, onHoverPlayground,
     collapsedSections, onCollapsedSectionsChange,
-    onShowRanking, onOpenTeams
+    onShowRanking, onOpenTeams,
+    teamEditDevice = 'desktop',
+    onTeamEditDeviceChange,
+    teamEditOrientation = 'landscape',
+    onTeamEditOrientationChange,
+    teamEditOrientationLocked = false,
+    onTeamEditOrientationLockToggle
 }, ref) => {
     // Device detection for multi-device layout support
     const [detectedDevice, setDetectedDevice] = useState<DeviceType>('desktop');
