@@ -7,7 +7,8 @@ import {
     Skull as SkullIcon, Ruler, Crosshair, Navigation,
     Hash, Type, Trophy, GitBranch, RouteIcon,
     MessageSquare, Settings, Clock, Play, Zap, Eye,
-    GripHorizontal, ScrollText, Mountain, Snowflake, Check, MapPin
+    GripHorizontal, ScrollText, Mountain, Snowflake, Check, MapPin,
+    Smartphone, Tablet, Monitor, RotateCw, Lock, Unlock
 } from 'lucide-react';
 import { Game, GameMode, LocationSearchProps, Coordinate, Team, MapStyleId } from '../types';
 import LocationSearch from './LocationSearch';
