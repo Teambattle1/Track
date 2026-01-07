@@ -2686,8 +2686,8 @@ const GameApp: React.FC = () => {
   // Wrap in simulation mode tablet frame if enabled
   const mainContent = (
     <div className="fixed inset-0 w-full h-full overflow-hidden bg-slate-900 text-white">
-        {/* Hide map for PLAYZONE games - they use playground editor only */}
-        {activeGame?.gameMode !== 'playzone' && (
+        {/* Map for EDIT/INSTRUCTOR modes only (PLAY mode uses device frame map) */}
+        {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (
             <div className="absolute inset-0 z-0">
                 <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
                     <GameMap
