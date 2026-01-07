@@ -103,6 +103,7 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRet
 
             const isNetworkError =
                 e?.message?.includes('Failed to fetch') ||
+                e?.message?.includes('Load failed') ||
                 e?.message?.includes('fetch') ||
                 e?.message?.includes('network') ||
                 e?.name === 'TypeError'; // Failed to fetch is a TypeError
