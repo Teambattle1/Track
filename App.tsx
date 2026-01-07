@@ -2701,13 +2701,10 @@ const GameApp: React.FC = () => {
   // Wrap in simulation mode tablet frame if enabled
   const mainContent = (
     <div className="fixed inset-0 overflow-hidden bg-slate-900 text-white flex flex-col">
-        {/* Map for EDIT/INSTRUCTOR modes - desktop: full screen, tablet/mobile: with device frame */}
+        {/* Map for EDIT/INSTRUCTOR modes - desktop: full screen, mobile/tablet: with device frame */}
         {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (() => {
-            // Show device frame only if:
-            // 1. Small screen (<=1024px) AND user selected Mobile/Tablet
-            // 2. NOT in Desktop mode
-            const showDeviceFrame = (isSmallScreen || (teamEditDevice !== 'desktop' && teamEditDevice !== 'mobile' && teamEditDevice !== 'tablet')) && teamEditDevice !== 'desktop';
-            const useDeviceFrame = teamEditDevice !== 'desktop' && (isSmallScreen || teamEditDevice === 'mobile' || teamEditDevice === 'tablet');
+            // Show device frame only if teamEditDevice is mobile or tablet (not desktop)
+            const useDeviceFrame = teamEditDevice === 'mobile' || teamEditDevice === 'tablet';
 
             return useDeviceFrame ? (
                 <div className="flex-1 flex items-center justify-center z-0 overflow-hidden">
