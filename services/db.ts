@@ -68,32 +68,6 @@ const isValidUUID = (str: string): boolean => {
     return uuidRegex.test(str);
 };
 
-// Connection test utility
-export const testDatabaseConnection = async (): Promise<{ success: boolean; error?: string; latency?: number }> => {
-    const startTime = Date.now();
-    try {
-        // Simple query to test connection
-        const { data, error } = await Promise.race([
-            supabase.from('games').select('id').limit(1),
-            new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Connection timeout after 5s')), 5000)
-            )
-        ]);
-
-        const latency = Date.now() - startTime;
-
-        if (error) {
-            return { success: false, error: error.message, latency };
-        }
-
-        console.log(`[DB Service] ✅ Connection test passed (${latency}ms)`);
-        return { success: true, latency };
-    } catch (e: any) {
-        const latency = Date.now() - startTime;
-        console.error(`[DB Service] ❌ Connection test failed (${latency}ms):`, e.message);
-        return { success: false, error: e.message, latency };
-    }
-};
 
 // Configuration for large table fetches
 const CHUNK_SIZE = 50; // Fetch 50 rows at a time (reduced to prevent timeouts)
@@ -101,7 +75,7 @@ const LIBRARY_CHUNK_SIZE = 5; // Very small chunks for library - large data obje
 const TAGS_CHUNK_SIZE = 20; // Smaller chunks for tag fetching (large data objects)
 const FETCH_TIMEOUT_MS = 20000; // 20 second timeout per chunk (reduced)
 const TAGS_FETCH_TIMEOUT_MS = 5000; // 5 second timeout for tag fetches (fail fast)
-const LIBRARY_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for library fetches
+const LIBRARY_FETCH_TIMEOUT_MS = 15000; // 15 second timeout for library fetches (reduced from 30s)
 
 // Retry helper for timeout and network errors with exponential backoff
 const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 3, timeoutMs?: number): Promise<T> => {
@@ -708,31 +682,40 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
             const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
             return normalizeTemplate({ ...rowData, id: row.id });
         });
-    } catch (e) {
+    } catch (e: any) {
         logError('fetchLibrary', e);
-        console.warn('[DB Service] Initial fetch failed for fetchLibrary. Check database connection and table permissions.');
-        // Try fallback: fetch fewer items with longer timeout
+        console.warn('[DB Service] Initial fetch failed for fetchLibrary. Trying lightweight fallback...');
+
+        // Try fallback 1: fetch just IDs without data (very fast)
         try {
-            console.warn('[DB Service] Attempting fetchLibrary fallback (minimal batch, reduced to 25 items)...');
+            console.warn('[DB Service] Fallback 1: Fetching 10 most recent items (IDs only)...');
             const { data, error } = await Promise.race([
-                supabase.from('library').select('id, data').limit(25).order('created_at', { ascending: false }),
-                new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Fallback query timeout after 30s')), 30000)
+                supabase.from('library').select('id, data').limit(10).order('created_at', { ascending: false }),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Fallback 1 timeout')), 8000)
                 )
             ]) as Promise<{ data: any[] | null; error: any }>;
 
             if (error) throw error;
-            if (!data) return [];
-            console.log(`[DB Service] ✅ Fallback library fetch successful - returned ${data.length} items (showing most recent)`);
-            return data.map((row: any) => {
-                const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-                return normalizeTemplate({ ...rowData, id: row.id });
-            });
-        } catch (fallbackError) {
-            logError('fetchLibrary[fallback]', fallbackError);
-            console.warn('[DB Service] All fetchLibrary attempts failed. Returning empty array.');
-            return [];
+            if (data && data.length > 0) {
+                console.log(`[DB Service] ✅ Fallback 1 successful - returned ${data.length} items`);
+                return data.map((row: any) => {
+                    const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+                    return normalizeTemplate({ ...rowData, id: row.id });
+                });
+            }
+        } catch (fallback1Error: any) {
+            console.warn(`[DB Service] Fallback 1 failed: ${fallback1Error?.message}`);
         }
+
+        // Try fallback 2: Just return empty - better UX than hanging
+        console.warn('[DB Service] ⚠️  All library fetch attempts failed.');
+        console.warn('[DB Service] Possible causes:');
+        console.warn('[DB Service]   1. Supabase project is PAUSED (free tier) - visit https://supabase.com/dashboard');
+        console.warn('[DB Service]   2. Database connection is too slow or unreachable');
+        console.warn('[DB Service]   3. Network timeout - check your internet connection');
+        console.warn('[DB Service] Application will continue with demo content.');
+        return [];
     }
 };
 
