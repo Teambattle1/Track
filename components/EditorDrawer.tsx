@@ -61,6 +61,13 @@ interface EditorDrawerProps {
   // Drawer State Props
   collapsedZones?: Record<string, boolean>;
   onCollapsedZonesChange?: (zones: Record<string, boolean>) => void;
+  // Device Preview Props (for desktop mode display)
+  teamEditDevice?: 'mobile' | 'tablet';
+  onTeamEditDeviceChange?: (device: 'mobile' | 'tablet') => void;
+  teamEditOrientation?: 'portrait' | 'landscape';
+  onTeamEditOrientationChange?: (orientation: 'portrait' | 'landscape') => void;
+  teamEditOrientationLocked?: boolean;
+  onTeamEditOrientationLockToggle?: (locked: boolean) => void;
 }
 
 const SortablePointItem: React.FC<{
