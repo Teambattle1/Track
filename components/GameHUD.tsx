@@ -11,11 +11,13 @@ import LocationSearch from './LocationSearch';
 import AdjustGameTimeModal from './AdjustGameTimeModal';
 import QRScannerModal from './QRScannerModal';
 import ToolbarsDrawer from './ToolbarsDrawer';
+import DangerZoneWarningModal from './DangerZoneWarningModal';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { parseGPX } from '../utils/gpx';
 import { timeService } from '../services/time';
 import * as db from '../services/db';
 import jsQR from 'jsqr';
+import { useDangerZoneDetection } from '../hooks/useDangerZoneDetection';
 
 // ... Imports ...
 
