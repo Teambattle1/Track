@@ -153,11 +153,11 @@ export const setupFullscreenOnInteraction = (): void => {
     if (fullscreenRequested || isFullscreen()) {
       return;
     }
-    
+
     fullscreenRequested = true;
     requestFullscreen().then((success) => {
       if (success) {
-        console.log('[Fullscreen] Entered fullscreen mode after user interaction');
+        console.debug('[Fullscreen] Entered fullscreen mode after user interaction');
         // Remove listeners after successful fullscreen
         document.removeEventListener('click', tryFullscreen);
         document.removeEventListener('touchstart', tryFullscreen);
@@ -165,6 +165,9 @@ export const setupFullscreenOnInteraction = (): void => {
       } else {
         fullscreenRequested = false;
       }
+    }).catch(() => {
+      // Silently fail - fullscreen may not be available or user denied
+      fullscreenRequested = false;
     });
   };
 
