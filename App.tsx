@@ -3321,6 +3321,12 @@ const GameApp: React.FC = () => {
             userAccessMode={userAccessMode}
             onShowRanking={() => setShowRankingModal(true)}
             onOpenTeams={() => setShowTeamsHub(true)}
+            teamEditDevice={teamEditDevice}
+            onTeamEditDeviceChange={setTeamEditDevice}
+            teamEditOrientation={teamEditOrientation}
+            onTeamEditOrientationChange={setTeamEditOrientation}
+            teamEditOrientationLocked={teamEditOrientationLocked}
+            onTeamEditOrientationLockToggle={setTeamEditOrientationLocked}
         />
         )}
 
