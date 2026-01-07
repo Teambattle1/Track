@@ -2688,9 +2688,7 @@ const GameApp: React.FC = () => {
     <div className="fixed inset-0 overflow-hidden bg-slate-900 text-white flex flex-col">
         {/* Map for EDIT/INSTRUCTOR modes only (PLAY mode uses device frame map) */}
         {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (
-            <div className="flex-1 flex items-center justify-center z-0 overflow-hidden">
-                <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
-                    <GameMap
+            <GameMap
                     ref={mapRef}
                     points={visiblePoints}
                     routes={activeGame?.routes || []}
@@ -2793,9 +2791,7 @@ const GameApp: React.FC = () => {
                     showZoneLayer={showZoneLayer}
                     showTaskLayer={showTaskLayer}
                     showLiveLayer={showLiveLayer}
-                    />
-                </MapDeviceFrame>
-            </div>
+            />
         )}
 
         {/* PLAY MODE: Team HUD with device frame centered */}
