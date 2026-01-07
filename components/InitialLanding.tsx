@@ -1260,7 +1260,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
           {/* Footer Branding */}
           <div className="mt-auto pt-10 border-t border-slate-900/50 flex justify-center items-center gap-4">
             <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest">
-                POWERED BY TEAMACTION
+                POWERED BY TEAMTRACK
             </p>
           </div>
         </div>
