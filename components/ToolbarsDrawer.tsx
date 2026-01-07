@@ -188,20 +188,20 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     teamEditOrientationLocked = false,
     onTeamEditOrientationLockToggle,
 }) => {
-    // Auto-collapse sections in editor mode by default
+    // Auto-collapse all sections in editor mode by default
     const defaultCollapsedState = {
-        mapmode: false,  // Expanded by default to show current mode (EDITOR/INSTRUCTOR/TEAM)
+        mapmode: true,   // All sections collapsed on entry to EDIT mode
         layers: true,
         location: true,
-        mapstyle: mode === GameMode.EDIT ? true : true,  // Always collapsed in editor
-        device: mode === GameMode.EDIT ? false : true,   // Expanded in EDIT mode (for device preview)
-        orientation: mode === GameMode.EDIT ? false : true, // Expanded in EDIT mode
-        zonechange: mode === GameMode.EDIT ? true : true,  // Always collapsed in editor
+        mapstyle: true,
+        device: true,    // Collapsed in EDIT mode
+        orientation: true, // Collapsed in EDIT mode
+        zonechange: true,
         pins: true,
         show: true,
         tools: true,
-        ranking: true,  // INSTRUCTOR: Show Ranking section
-        teams: true,    // INSTRUCTOR: Teams section
+        ranking: true,   // INSTRUCTOR: Collapsed by default
+        teams: true,     // INSTRUCTOR: Collapsed by default
     };
 
     const [collapsedSectionsLocal, setCollapsedSectionsLocal] = useState<Record<string, boolean>>(defaultCollapsedState);
