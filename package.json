@@ -1,7 +1,7 @@
 {
   "name": "teamtrack-2026",
   "private": true,
-  "version": "4.9",
+  "version": "5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
