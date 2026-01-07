@@ -331,12 +331,12 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const collapsedZones = collapsedZonesProp || collapsedZonesLocal;
   const [activeAddMenu, setActiveAddMenu] = useState<string | null>(null);
 
-  // Auto-collapse all right drawer sections when entering editor mode
+  // Auto-collapse all right drawer sections by default and when activeGame changes
   React.useEffect(() => {
     setIsRoutesCollapsed(true);
     setIsDangerZonesCollapsed(true);
     setCollapsedZonesLocal({ 'map': true });
-  }, []);
+  }, [activeGame?.id]);
   
   const gpxInputRef = useRef<HTMLInputElement>(null);
 
