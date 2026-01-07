@@ -47,19 +47,11 @@ export const DangerZoneWarningModal: React.FC<DangerZoneWarningModalProps> = ({
     <div className={`fixed inset-0 flex items-center justify-center z-[9999] ${isFlashing ? 'bg-red-900/60' : 'bg-red-900/30'} transition-all duration-200`}>
       {/* Flashing warning overlay */}
       <div className={`absolute inset-0 animate-pulse ${isFlashing ? 'bg-red-600/40' : 'bg-transparent'}`} />
-      
-      {/* Warning Modal */}
-      <div className={`relative bg-black border-4 border-red-600 rounded-2xl p-8 max-w-md mx-4 shadow-2xl transform transition-all ${
+
+      {/* Warning Modal - Cannot be closed or dismissed */}
+      <div className={`relative bg-black border-4 border-red-600 rounded-2xl p-8 max-w-md mx-4 shadow-2xl transform transition-all pointer-events-auto ${
         isFlashing ? 'scale-105 drop-shadow-2xl' : 'scale-100'
       }`}>
-        
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-red-500 hover:text-red-400 transition-colors"
-        >
-          <X className="w-6 h-6" />
-        </button>
 
         {/* Alert Icon - Animated */}
         <div className="flex justify-center mb-6">
