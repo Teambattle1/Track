@@ -274,6 +274,18 @@ const GameApp: React.FC = () => {
     };
   }, []);
 
+  // --- RESPONSIVE SCREEN SIZE TRACKING ---
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+
+    const handleMediaChange = (e: MediaQueryListEvent) => {
+      setIsSmallScreen(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleMediaChange);
+    return () => mediaQuery.removeEventListener('change', handleMediaChange);
+  }, []);
+
   // --- INITIALIZATION ---
   useEffect(() => {
     const init = async () => {
