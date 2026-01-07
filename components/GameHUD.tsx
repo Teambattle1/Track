@@ -1029,6 +1029,12 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 onShowRanking={onShowRanking}
                 onOpenTeams={onOpenTeams}
                 userAccessMode={userAccessMode}
+                teamEditDevice={teamEditDevice}
+                onTeamEditDeviceChange={onTeamEditDeviceChange}
+                teamEditOrientation={teamEditOrientation}
+                onTeamEditOrientationChange={onTeamEditOrientationChange}
+                teamEditOrientationLocked={teamEditOrientationLocked}
+                onTeamEditOrientationLockToggle={onTeamEditOrientationLockToggle}
             />
             <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-[1000]">
             {/* COUNTDOWN OVERLAY */}
