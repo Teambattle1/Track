@@ -683,6 +683,14 @@ const GameApp: React.FC = () => {
       loadTeams();
   }, [showGameStats, activeGameId]);
 
+  // --- DANGER ZONE DETECTION (PLAY MODE ONLY) ---
+  const dangerZoneState = useDangerZoneDetection(
+      mode === GameMode.PLAY ? userLocation : null,
+      mode === GameMode.PLAY ? (activeGame?.dangerZones || []) : [],
+      score,
+      (newScore) => setScore(newScore)
+  );
+
   // --- MEMOIZED DATA ---
   
   // Calculate Logic Links for Map Visualization (Edit/Instructor Mode)
