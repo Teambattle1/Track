@@ -122,6 +122,33 @@ const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRet
     throw lastError;
 };
 
+// Connection test utility
+export const testDatabaseConnection = async (): Promise<{ success: boolean; error?: string; latency?: number }> => {
+    const startTime = Date.now();
+    try {
+        // Simple query to test connection
+        const { data, error } = await Promise.race([
+            supabase.from('games').select('id').limit(1),
+            new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Connection timeout after 5s')), 5000)
+            )
+        ]);
+
+        const latency = Date.now() - startTime;
+
+        if (error) {
+            return { success: false, error: error.message, latency };
+        }
+
+        console.log(`[DB Service] ✅ Connection test passed (${latency}ms)`);
+        return { success: true, latency };
+    } catch (e: any) {
+        const latency = Date.now() - startTime;
+        console.debug(`[DB Service] ℹ️  Connection test (${latency}ms):`, e.message);
+        return { success: false, error: e.message, latency };
+    }
+};
+
 // Fetch large tables in chunks to prevent timeout
 const fetchInChunks = async <T>(
     query: (offset: number, limit: number) => Promise<{ data: any[] | null; error: any }>,
