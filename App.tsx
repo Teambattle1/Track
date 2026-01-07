@@ -2809,8 +2809,10 @@ const GameApp: React.FC = () => {
 
             return (
             <div className="flex items-center justify-center h-full w-full p-4 gap-4">
-                {/* Device Frame - Centered */}
-                <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
+                {/* Device Frame Container - with toolbar below */}
+                <div className="flex flex-col gap-0">
+                    {/* Device Frame - Centered */}
+                    <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
                     <div className="flex flex-col h-full bg-black">
                         {/* HUD Header */}
                         <div className="bg-orange-600 border-b border-orange-700 flex items-center justify-between px-2 py-1.5 shadow-lg flex-shrink-0 text-xs">
@@ -3047,7 +3049,18 @@ const GameApp: React.FC = () => {
                             </button>
                         </div>
                     </div>
-                </MapDeviceFrame>
+                    </MapDeviceFrame>
+
+                    {/* Device Preview Toolbar - below frame */}
+                    <DevicePreviewToolbar
+                        selectedDevice={teamEditDevice}
+                        selectedOrientation={teamEditOrientation}
+                        isOrientationLocked={teamEditOrientationLocked}
+                        onDeviceChange={setTeamEditDevice}
+                        onOrientationChange={setTeamEditOrientation}
+                        onOrientationLockToggle={setTeamEditOrientationLocked}
+                    />
+                </div>
             </div>
             );
         })()}
@@ -3088,17 +3101,6 @@ const GameApp: React.FC = () => {
         )}
 
 
-        {/* Device Preview Toolbox - Separate from HUD, in TEAM view */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (
-            <DevicePreviewToolbox
-                selectedDevice={teamEditDevice}
-                selectedOrientation={teamEditOrientation}
-                isOrientationLocked={teamEditOrientationLocked}
-                onDeviceChange={setTeamEditDevice}
-                onOrientationChange={setTeamEditOrientation}
-                onOrientationLockToggle={setTeamEditOrientationLocked}
-            />
-        )}
 
         {/* GameHUD - Only show in non-PLAY modes */}
         {mode !== GameMode.PLAY && (
