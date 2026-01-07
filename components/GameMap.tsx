@@ -166,7 +166,7 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
             const latLngs = validPoints.map(p => [p.location.lat, p.location.lng] as [number, number]);
             const bounds = L.latLngBounds(latLngs);
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [50, 50], animate: false, maxZoom: 17 });
+                map.fitBounds(bounds, { padding: [50, 50], animate: false, maxZoom: 20 });
                 initializedRef.current = true;
                 return;
             }
