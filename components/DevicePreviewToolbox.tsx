@@ -19,7 +19,7 @@ const DevicePreviewToolbox: React.FC<DevicePreviewToolboxProps> = ({
   onOrientationLockToggle,
 }) => {
   return (
-    <div className="fixed top-1/2 -translate-y-1/2 right-4 z-[2000] pointer-events-auto bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-500 rounded-lg p-2.5 shadow-xl w-48">
+    <div className="fixed bottom-4 right-4 z-[2000] pointer-events-auto bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-500 rounded-lg p-2.5 shadow-xl w-48">
       {/* Title */}
       <h3 className="text-white font-bold uppercase text-[8px] tracking-wider mb-2 pb-1.5 border-b border-blue-500">
         📱 Device Preview
