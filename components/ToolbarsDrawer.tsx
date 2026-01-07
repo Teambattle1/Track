@@ -180,6 +180,12 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     onShowRanking,
     onOpenTeams,
     userAccessMode,
+    teamEditDevice = 'desktop',
+    onTeamEditDeviceChange,
+    teamEditOrientation = 'landscape',
+    onTeamEditOrientationChange,
+    teamEditOrientationLocked = false,
+    onTeamEditOrientationLockToggle,
 }) => {
     // Auto-collapse MAPSTYLE and ZONE CHANGE in editor mode by default
     const defaultCollapsedState = {
