@@ -2703,7 +2703,13 @@ const GameApp: React.FC = () => {
     <div className="fixed inset-0 overflow-hidden bg-slate-900 text-white flex flex-col">
         {/* Map for EDIT/INSTRUCTOR modes - desktop: full screen, tablet/mobile: with device frame */}
         {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (() => {
-            return isSmallScreen ? (
+            // Show device frame only if:
+            // 1. Small screen (<=1024px) AND user selected Mobile/Tablet
+            // 2. NOT in Desktop mode
+            const showDeviceFrame = (isSmallScreen || (teamEditDevice !== 'desktop' && teamEditDevice !== 'mobile' && teamEditDevice !== 'tablet')) && teamEditDevice !== 'desktop';
+            const useDeviceFrame = teamEditDevice !== 'desktop' && (isSmallScreen || teamEditDevice === 'mobile' || teamEditDevice === 'tablet');
+
+            return useDeviceFrame ? (
                 <div className="flex-1 flex items-center justify-center z-0 overflow-hidden">
                     <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
                         <GameMap
