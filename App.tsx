@@ -3050,8 +3050,8 @@ const GameApp: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Device Preview Toolbox - Only in EDIT mode */}
-                {mode === GameMode.EDIT && (
+                {/* Device Preview Toolbox - In TEAM view for editors */}
+                {(
                     <DevicePreviewToolbox
                         selectedDevice={teamEditDevice}
                         selectedOrientation={teamEditOrientation}
