@@ -62,7 +62,7 @@ export const getLeafletIcon = (
     : `filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));`;
 
   // Container needs extra space for labels to not be clipped
-  const labelSpace = 80; // Extra space for label
+  const labelSpace = 220; // Extra space for label - increased to accommodate longer titles
   let html = `<div style="${glowStyle} transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: ${labelSpace}px; height: ${labelSpace}px;">`;
 
   // Center the icon within the expanded container
@@ -127,7 +127,7 @@ export const getLeafletIcon = (
     className: 'custom-game-icon',
     html: html,
     iconSize: [labelSpace, labelSpace + 24], // Extra height for label above
-    iconAnchor: [labelSpace/2, labelSpace], // Bottom center of expanded container
-    popupAnchor: [0, -labelSpace],
+    iconAnchor: [labelSpace/2, labelSpace/2], // Center of the expanded container
+    popupAnchor: [0, -labelSpace/2],
   });
 };
