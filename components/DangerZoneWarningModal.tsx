@@ -25,13 +25,28 @@ export const DangerZoneWarningModal: React.FC<DangerZoneWarningModalProps> = ({
 
   useEffect(() => {
     if (!isVisible) return;
-    
+
     // Flash animation effect
     const flashInterval = setInterval(() => {
       setIsFlashing(prev => !prev);
     }, 400); // Flash every 400ms
 
-    return () => clearInterval(flashInterval);
+    // Screen vibration effect if device supports it
+    const vibrationInterval = setInterval(() => {
+      if (navigator.vibrate) {
+        // Pattern: 100ms vibrate, 50ms pause, 100ms vibrate
+        navigator.vibrate([100, 50, 100]);
+      }
+    }, 1000); // Vibrate every second
+
+    return () => {
+      clearInterval(flashInterval);
+      clearInterval(vibrationInterval);
+      // Stop vibration on cleanup
+      if (navigator.vibrate) {
+        navigator.vibrate(0);
+      }
+    };
   }, [isVisible]);
 
   if (!isVisible || !zone) return null;
