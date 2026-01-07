@@ -65,9 +65,12 @@ export const getLeafletIcon = (
   const labelSpace = 80; // Extra space for label
   let html = `<div style="${glowStyle} transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: ${labelSpace}px; height: ${labelSpace}px;">`;
 
+  // Center the icon within the expanded container
+  const iconContainerStyle = `position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);`;
+
   if (iconUrl) {
       // CUSTOM ICON RENDERER
-      html += `<div style="width: ${size}px; height: ${size}px; background-image: url('${iconUrl}'); background-size: cover; background-position: center; border-radius: 50%; border: 2px solid ${color}; background-color: white;"></div>`;
+      html += `<div style="${iconContainerStyle} width: ${size}px; height: ${size}px; background-image: url('${iconUrl}'); background-size: cover; background-position: center; border-radius: 50%; border: 2px solid ${color}; background-color: white;"></div>`;
   } else {
       // DEFAULT SVG RENDERER
       const svgs: Record<IconId, string> = {
