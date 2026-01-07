@@ -38,12 +38,12 @@ const MapDeviceFrame: React.FC<MapDeviceFrameProps> = ({
 
   return (
     <div
-      className="mx-auto my-4 relative bg-gradient-to-br from-slate-900 to-slate-800 shadow-2xl"
+      className="relative bg-gradient-to-br from-slate-900 to-slate-800 shadow-2xl flex-shrink-0"
       style={{
         width: `${frameWidth}px`,
         height: `${frameHeight}px`,
         borderRadius: `${spec.cornerRadius}px`,
-        border: '4px solid #1e293b',
+        border: '3px solid #1e293b',
       }}
     >
       {/* Device bezel (frame) */}
