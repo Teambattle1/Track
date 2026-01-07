@@ -240,26 +240,44 @@ const GameApp: React.FC = () => {
   const [selectedPointForTooltip, setSelectedPointForTooltip] = useState<string | null>(null);
 
   // --- DRAWER & TOOLBAR STATE ---
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+  // Default state for EDIT mode - all sections collapsed for clean workspace
+  const EDIT_MODE_COLLAPSED_SECTIONS: Record<string, boolean> = {
     mapmode: true,
     layers: true,
     location: true,
     mapstyle: true,
+    device: true,
+    orientation: true,
     zonechange: true,
     pins: true,
     show: true,
     tools: true,
-  });
-  const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': false });
+    ranking: true,
+    teams: true,
+  };
 
-  // --- LOAD DRAWER STATES FROM ACTIVE GAME ---
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(EDIT_MODE_COLLAPSED_SECTIONS);
+  const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({ 'map': true });
+
+  // --- LOAD DRAWER STATES FROM ACTIVE GAME OR SET EDIT MODE DEFAULTS ---
   useEffect(() => {
+    // If entering EDIT mode, always force collapsed sections regardless of saved state
+    if (mode === GameMode.EDIT) {
+      setCollapsedSections(EDIT_MODE_COLLAPSED_SECTIONS);
+      setCollapsedZones({ 'map': true });
+      return;
+    }
+
+    // For other modes, load saved drawer states from game
     if (activeGame?.drawerStates) {
       if (activeGame.drawerStates.settingsCollapsedSections) {
         setCollapsedSections(activeGame.drawerStates.settingsCollapsedSections);
       }
+      if (activeGame.drawerStates.settingsCollapsedZones) {
+        setCollapsedZones(activeGame.drawerStates.settingsCollapsedZones);
+      }
     }
-  }, [activeGame?.id]);
+  }, [activeGame?.id, mode]);
 
   // --- SUPABASE ERROR DETECTION ---
   useEffect(() => {
