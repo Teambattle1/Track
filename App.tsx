@@ -3481,6 +3481,12 @@ const GameApp: React.FC = () => {
                 onHoverPlayground={setHoveredPlaygroundId}
                 collapsedZones={collapsedZones}
                 onCollapsedZonesChange={setCollapsedZones}
+                teamEditDevice={teamEditDevice}
+                onTeamEditDeviceChange={setTeamEditDevice}
+                teamEditOrientation={teamEditOrientation}
+                onTeamEditOrientationChange={setTeamEditOrientation}
+                teamEditOrientationLocked={teamEditOrientationLocked}
+                onTeamEditOrientationLockToggle={setTeamEditOrientationLocked}
             />
         )}
 
