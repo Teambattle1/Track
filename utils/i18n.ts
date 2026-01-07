@@ -150,7 +150,7 @@ export const getFlag = (lang?: string): string => {
 
 export const TRANSLATIONS: Record<Language, Record<string, string>> = {
   English: {
-    welcomeTitle: "TeamAction",
+    welcomeTitle: "TeamTrack",
     welcomeSubtitle: "by TeamBattle",
     systemReadiness: "SYSTEM READINESS",
     locationServices: "Location Services",
@@ -217,12 +217,12 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     taskBreakdown: "Task Breakdown",
     // Permission Help
     permHelpTitle: "Permission Required",
-    permHelpDesc: "To play TeamAction, we need access to your device sensors. Web browsers block this by default for your privacy.",
+    permHelpDesc: "To play TeamTrack, we need access to your device sensors. Web browsers block this by default for your privacy.",
     permHelpInstruction: "Tap the lock icon 🔒 in your browser address bar (top of screen) and switch permissions to 'Allow' or 'Ask'.",
     permHelpButton: "I've enabled it",
   },
   Danish: {
-    welcomeTitle: "TeamAction",
+    welcomeTitle: "TeamTrack",
     welcomeSubtitle: "af TeamBattle",
     systemReadiness: "SYSTEM STATUS",
     locationServices: "Lokationstjenester",
@@ -289,12 +289,12 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     taskBreakdown: "Opgave Oversigt",
     // Permission Help
     permHelpTitle: "Tilladelse Påkrævet",
-    permHelpDesc: "For at spille TeamAction skal vi bruge adgang til dine enhedssensorer. Browsere blokerer dette som standard.",
+    permHelpDesc: "For at spille TeamTrack skal vi bruge adgang til dine enhedssensorer. Browsere blokerer dette som standard.",
     permHelpInstruction: "Tryk på låseikonet 🔒 i din browsers adresselinje (toppen af skærmen) og skift tilladelser til 'Tillad'.",
     permHelpButton: "Jeg har aktiveret det",
   },
   German: {
-    welcomeTitle: "TeamAction",
+    welcomeTitle: "TeamTrack",
     welcomeSubtitle: "von TeamBattle",
     systemReadiness: "SYSTEMBEREITSCHAFT",
     locationServices: "Ortungsdienste",
@@ -359,12 +359,12 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     totalTasks: "Gesamtaufgaben",
     taskBreakdown: "Aufgabenübersicht",
     permHelpTitle: "Erlaubnis Erforderlich",
-    permHelpDesc: "Um TeamAction zu spielen, benötigen wir Zugriff auf Ihre Gerätesensoren.",
+    permHelpDesc: "Um TeamTrack zu spielen, benötigen wir Zugriff auf Ihre Gerätesensoren.",
     permHelpInstruction: "Tippen Sie auf das Schloss-Symbol 🔒 in der Adressleiste Ihres Browsers und ändern Sie die Berechtigungen auf 'Zulassen'.",
     permHelpButton: "Ich habe es aktiviert",
   },
   Spanish: {
-    welcomeTitle: "TeamAction",
+    welcomeTitle: "TeamTrack",
     welcomeSubtitle: "por TeamBattle",
     systemReadiness: "ESTADO DEL SISTEMA",
     locationServices: "Servicios de Ubicación",
@@ -429,7 +429,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     totalTasks: "Tareas Totales",
     taskBreakdown: "Desglose de Tareas",
     permHelpTitle: "Permiso Necesario",
-    permHelpDesc: "Para jugar TeamAction, necesitamos acceso a los sensores de tu dispositivo.",
+    permHelpDesc: "Para jugar TeamTrack, necesitamos acceso a los sensores de tu dispositivo.",
     permHelpInstruction: "Toca el icono de candado 🔒 en la barra de direcciones de tu navegador y cambia los permisos a 'Permitir'.",
     permHelpButton: "Lo he activado",
   },
