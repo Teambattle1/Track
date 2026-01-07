@@ -2688,7 +2688,7 @@ const GameApp: React.FC = () => {
     <div className="absolute inset-0 overflow-hidden bg-slate-900 text-white flex flex-col">
         {/* Map for EDIT/INSTRUCTOR modes only (PLAY mode uses device frame map) */}
         {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (
-            <div className="absolute inset-0 z-0">
+            <div className="flex-1 flex items-center justify-center z-0 overflow-hidden">
                 <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
                     <GameMap
                     ref={mapRef}
