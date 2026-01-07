@@ -16,7 +16,7 @@ export const requestFullscreen = async (): Promise<boolean> => {
       await elem.requestFullscreen();
       return true;
     }
-    
+
     // Safari (iOS/macOS)
     // @ts-ignore - Safari specific API
     if (elem.webkitRequestFullscreen) {
@@ -24,7 +24,7 @@ export const requestFullscreen = async (): Promise<boolean> => {
       await elem.webkitRequestFullscreen();
       return true;
     }
-    
+
     // Firefox
     // @ts-ignore - Firefox specific API
     if (elem.mozRequestFullScreen) {
@@ -32,7 +32,7 @@ export const requestFullscreen = async (): Promise<boolean> => {
       await elem.mozRequestFullScreen();
       return true;
     }
-    
+
     // IE/Edge legacy
     // @ts-ignore - IE specific API
     if (elem.msRequestFullscreen) {
@@ -43,8 +43,14 @@ export const requestFullscreen = async (): Promise<boolean> => {
 
     console.warn('[Fullscreen] Fullscreen API not supported on this browser');
     return false;
-  } catch (error) {
-    console.error('[Fullscreen] Error requesting fullscreen:', error);
+  } catch (error: any) {
+    // Silently handle common fullscreen rejection errors
+    // These occur when fullscreen is denied by user, in iframe context, or not allowed
+    if (error?.name === 'NotAllowedError' || error?.name === 'NotSupportedError') {
+      console.debug('[Fullscreen] Fullscreen request denied or not supported:', error?.name);
+    } else {
+      console.warn('[Fullscreen] Error requesting fullscreen:', error?.message);
+    }
     return false;
   }
 };
