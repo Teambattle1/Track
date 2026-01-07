@@ -118,14 +118,14 @@ export const getLeafletIcon = (
 
   // ID Label - Centered ABOVE the icon (pill shape) - Added last for highest visual z-order
   if (label) {
-      // For longer labels, allow 2-line wrapping; for short labels, keep single line
-      const maxWidth = label.length > 15 ? '60px' : 'auto';
+      // For longer labels, allow 2-line wrapping with increased width; for short labels, keep single line
+      const maxWidth = label.length > 15 ? '85px' : 'auto';
       const lineHeight = label.length > 15 ? '1.2' : '1';
       const topOffset = label.length > 15 ? '-36px' : '-24px';
       const paddingVertical = label.length > 15 ? '2px' : '1px';
-      const wordBreak = label.length > 15 ? 'word-break: break-word;' : '';
+      const whiteSpace = label.length > 15 ? 'white-space: normal;' : 'white-space: nowrap;';
 
-      html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: ${paddingVertical} 5px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${wordBreak} pointer-events: none;">${label}</div>`;
+      html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: ${paddingVertical} 5px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${whiteSpace} pointer-events: none; overflow-wrap: break-word;">${label}</div>`;
   }
 
   html += `</div>`;
