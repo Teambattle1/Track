@@ -137,6 +137,13 @@ interface GameHUDProps {
     // INSTRUCTOR Features
     onShowRanking?: () => void;
     onOpenTeams?: () => void;
+    // Device Preview Props
+    teamEditDevice?: 'mobile' | 'tablet' | 'desktop';
+    onTeamEditDeviceChange?: (device: 'mobile' | 'tablet' | 'desktop') => void;
+    teamEditOrientation?: 'portrait' | 'landscape';
+    onTeamEditOrientationChange?: (orientation: 'portrait' | 'landscape') => void;
+    teamEditOrientationLocked?: boolean;
+    onTeamEditOrientationLockToggle?: (locked: boolean) => void;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
