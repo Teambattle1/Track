@@ -515,6 +515,135 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                     </div>
                 )}
 
+                {/* DEVICE Section - Cyan/Indigo - EDIT mode only */}
+                {mode === GameMode.EDIT && (
+                    <div className="bg-indigo-600 border-2 border-indigo-500 rounded-xl p-3 space-y-3">
+                        <button
+                            onClick={() => toggleSection('device')}
+                            className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Smartphone className="w-4 h-4" />
+                                DEVICE
+                            </span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('device') ? '' : '-rotate-90'}`} />
+                        </button>
+
+                        {isVisible('device') && (
+                            <div className="grid grid-cols-3 gap-2">
+                                <button
+                                    onClick={() => onTeamEditDeviceChange?.('mobile')}
+                                    className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                        teamEditDevice === 'mobile'
+                                            ? 'bg-orange-600 text-white shadow-lg ring-2 ring-orange-400'
+                                            : 'bg-indigo-700 hover:bg-indigo-800 text-indigo-100'
+                                    }`}
+                                    title="Mobile Device Preview"
+                                >
+                                    <Smartphone className="w-4 h-4" />
+                                    <span className="text-[9px] leading-tight text-center">Mobile</span>
+                                </button>
+
+                                <button
+                                    onClick={() => onTeamEditDeviceChange?.('tablet')}
+                                    className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                        teamEditDevice === 'tablet'
+                                            ? 'bg-orange-600 text-white shadow-lg ring-2 ring-orange-400'
+                                            : 'bg-indigo-700 hover:bg-indigo-800 text-indigo-100'
+                                    }`}
+                                    title="Tablet Device Preview"
+                                >
+                                    <Tablet className="w-4 h-4" />
+                                    <span className="text-[9px] leading-tight text-center">Tablet</span>
+                                </button>
+
+                                <button
+                                    onClick={() => onTeamEditDeviceChange?.('desktop')}
+                                    className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                        teamEditDevice === 'desktop'
+                                            ? 'bg-orange-600 text-white shadow-lg ring-2 ring-orange-400'
+                                            : 'bg-indigo-700 hover:bg-indigo-800 text-indigo-100'
+                                    }`}
+                                    title="Desktop Fullscreen Editing"
+                                >
+                                    <Monitor className="w-4 h-4" />
+                                    <span className="text-[9px] leading-tight text-center">Desktop</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ORIENTATION Section - Green - EDIT mode only, hidden when Desktop */}
+                {mode === GameMode.EDIT && teamEditDevice !== 'desktop' && (
+                    <div className="bg-green-600 border-2 border-green-500 rounded-xl p-3 space-y-3">
+                        <button
+                            onClick={() => toggleSection('orientation')}
+                            className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
+                        >
+                            <span className="flex items-center gap-2">
+                                <RotateCw className="w-4 h-4" />
+                                ORIENTATION
+                            </span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('orientation') ? '' : '-rotate-90'}`} />
+                        </button>
+
+                        {isVisible('orientation') && (
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={() => onTeamEditOrientationChange?.('portrait')}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                            teamEditOrientation === 'portrait'
+                                                ? 'bg-orange-600 text-white shadow-lg ring-2 ring-orange-400'
+                                                : 'bg-green-700 hover:bg-green-800 text-green-100'
+                                        }`}
+                                        title="Portrait Orientation"
+                                    >
+                                        <span>⬜</span>
+                                        <span className="text-[9px] leading-tight">Portrait</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => onTeamEditOrientationChange?.('landscape')}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${
+                                            teamEditOrientation === 'landscape'
+                                                ? 'bg-orange-600 text-white shadow-lg ring-2 ring-orange-400'
+                                                : 'bg-green-700 hover:bg-green-800 text-green-100'
+                                        }`}
+                                        title="Landscape Orientation"
+                                    >
+                                        <span>⬛</span>
+                                        <span className="text-[9px] leading-tight">Landscape</span>
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={() => onTeamEditOrientationLockToggle?.(!teamEditOrientationLocked)}
+                                    className={`w-full py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 transition-all ${
+                                        teamEditOrientationLocked
+                                            ? 'bg-orange-600 text-white shadow-lg ring-2 ring-orange-400'
+                                            : 'bg-green-700 hover:bg-green-800 text-green-100'
+                                    }`}
+                                    title="Lock orientation to prevent auto-rotate"
+                                >
+                                    {teamEditOrientationLocked ? (
+                                        <>
+                                            <Lock className="w-3.5 h-3.5" />
+                                            <span>LOCKED</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Unlock className="w-3.5 h-3.5" />
+                                            <span>UNLOCKED</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* ZONE CHANGE Section - Yellow with glow when active, Pink when game ended (NO glow when ended) */}
                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && zoneChanges && zoneChanges.length > 0 && (() => {
                     const now = Date.now();
