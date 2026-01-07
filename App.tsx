@@ -50,6 +50,8 @@ import GameStatsTool from './components/GameStatsTool';
 import MessagePopup from './components/MessagePopup';
 import Dashboard from './components/Dashboard';
 import DangerZoneModal from './components/DangerZoneModal';
+import DangerZoneWarningModal from './components/DangerZoneWarningModal';
+import { useDangerZoneDetection } from './hooks/useDangerZoneDetection';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/OfflineIndicator';
 import MeasureBox from './components/MeasureBox';
