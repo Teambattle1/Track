@@ -61,9 +61,9 @@ export const getLeafletIcon = (
     ? `filter: drop-shadow(0px 0px 8px #f97316); border-radius: 50%; box-shadow: 0 0 0 3px #f97316, 0 0 15px 5px rgba(249, 115, 22, 0.6); animation: pulse-orange 2s infinite;`
     : `filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));`;
 
-  // Container needs extra space for labels to not be clipped
-  const labelSpace = 220; // Extra space for label - increased to accommodate longer titles
-  let html = `<div style="${glowStyle} transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: ${labelSpace}px; height: ${labelSpace}px;">`;
+  // Container for the icon marker - keep reasonable size for proper map positioning
+  const iconContainerSize = 60; // Size of the visible icon circle
+  let html = `<div style="${glowStyle} transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: ${iconContainerSize}px; height: ${iconContainerSize}px;">`;
 
   // Center the icon within the expanded container
   const iconContainerStyle = `position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);`;
