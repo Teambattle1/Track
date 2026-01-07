@@ -3520,6 +3520,9 @@ const GameApp: React.FC = () => {
 
         {renderModals()}
 
+        {/* Fullscreen Overlay - appears on all screens on mobile/tablet */}
+        {renderFullscreenOverlay()}
+
         {/* Media Approval Notifications for Editor/Instructor */}
         {activeGame && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
             <MediaApprovalNotification
