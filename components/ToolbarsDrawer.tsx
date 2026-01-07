@@ -211,14 +211,27 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     // Auto-collapse all sections when entering editor mode
     React.useEffect(() => {
         if (mode === GameMode.EDIT) {
-            const newState = defaultCollapsedState;
+            const newState = {
+                mapmode: true,
+                layers: true,
+                location: true,
+                mapstyle: true,
+                device: true,
+                orientation: true,
+                zonechange: true,
+                pins: true,
+                show: true,
+                tools: true,
+                ranking: true,
+                teams: true,
+            };
             if (onCollapsedSectionsChange) {
                 onCollapsedSectionsChange(newState);
             } else {
                 setCollapsedSectionsLocal(newState);
             }
         }
-    }, [mode]);
+    }, [mode, onCollapsedSectionsChange]);
 
     // Auto-collapse Zone Change section when game ends or when no active countdowns
     React.useEffect(() => {
