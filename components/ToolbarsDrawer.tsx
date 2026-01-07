@@ -187,12 +187,14 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     teamEditOrientationLocked = false,
     onTeamEditOrientationLockToggle,
 }) => {
-    // Auto-collapse MAPSTYLE and ZONE CHANGE in editor mode by default
+    // Auto-collapse sections in editor mode by default
     const defaultCollapsedState = {
         mapmode: false,  // Expanded by default to show current mode (EDITOR/INSTRUCTOR/TEAM)
         layers: true,
         location: true,
         mapstyle: mode === GameMode.EDIT ? true : true,  // Always collapsed in editor
+        device: mode === GameMode.EDIT ? false : true,   // Expanded in EDIT mode (for device preview)
+        orientation: mode === GameMode.EDIT ? false : true, // Expanded in EDIT mode
         zonechange: mode === GameMode.EDIT ? true : true,  // Always collapsed in editor
         pins: true,
         show: true,
