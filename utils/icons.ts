@@ -116,17 +116,29 @@ export const getLeafletIcon = (
       html += `<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background-color: ${badgeColor}; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 24;"><svg viewBox="0 0 24 24" width="16" height="16">${badgeIcon}</svg></div>`;
   }
 
-  // ID Label - Centered ABOVE the icon (pill shape) - Added last for highest visual z-order
+  // Parse label to extract task ID and title (format: "001 - Title" or just "001")
   if (label) {
-      // For longer labels, allow 2-line wrapping with increased width; for short labels, keep single line
-      const maxWidth = label.length > 15 ? '85px' : 'auto';
-      const lineHeight = label.length > 15 ? '1.2' : '1';
-      const topOffset = label.length > 15 ? '-36px' : '-24px';
-      const paddingVertical = label.length > 15 ? '2px' : '1px';
-      const whiteSpace = label.length > 15 ? 'white-space: normal;' : 'white-space: nowrap;';
+      const parts = label.split(' - ');
+      const taskId = parts[0]; // e.g., "001"
+      const taskTitle = parts.slice(1).join(' - '); // e.g., "Sillebroen Shopping"
 
-      html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: ${paddingVertical} 5px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${whiteSpace} pointer-events: none; overflow-wrap: break-word;">${label}</div>`;
+      // Task ID - Green circular badge positioned over the task area (slightly below icon)
+      html += `<div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background-color: #16a34a; color: white; font-size: 9px; font-weight: 900; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; z-index: 998; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none;">${taskId}</div>`;
+
+      // Task Title - If present, display above the icon in a compact label
+      if (taskTitle) {
+          const maxWidth = taskTitle.length > 15 ? '85px' : 'auto';
+          const lineHeight = taskTitle.length > 15 ? '1.2' : '1';
+          const topOffset = taskTitle.length > 15 ? '-36px' : '-24px';
+          const paddingVertical = taskTitle.length > 15 ? '2px' : '1px';
+          const whiteSpace = taskTitle.length > 15 ? 'white-space: normal;' : 'white-space: nowrap;';
+
+          html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: ${paddingVertical} 5px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${whiteSpace} pointer-events: none; overflow-wrap: break-word;">${taskTitle}</div>`;
+      }
   }
+
+  // Center dot - Mark the exact anchor point (bottom center of pin)
+  html += `<div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background-color: #22c55e; border-radius: 50%; border: 1px solid white; z-index: 997; box-shadow: 0 0 2px rgba(34, 197, 94, 0.8);"></div>`;
 
   html += `</div>`;
 
