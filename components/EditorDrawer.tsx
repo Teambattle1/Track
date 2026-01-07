@@ -545,6 +545,91 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
           </div>
       ) : (
           <>
+            {/* DEVICE AND ORIENTATION SECTION */}
+            <div className="px-4 py-3 bg-white dark:bg-gray-850 border-b border-gray-100 dark:border-gray-800 space-y-3">
+              <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Device Preview</div>
+
+              {/* DEVICE SELECTOR */}
+              <div>
+                <div className="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-2">Device</div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onTeamEditDeviceChange?.('mobile')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded text-[10px] font-bold uppercase transition-all ${
+                      teamEditDevice === 'mobile'
+                        ? 'bg-blue-600 text-white border border-blue-400'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <Smartphone className="w-3.5 h-3.5" />
+                    Mobile
+                  </button>
+                  <button
+                    onClick={() => onTeamEditDeviceChange?.('tablet')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded text-[10px] font-bold uppercase transition-all ${
+                      teamEditDevice === 'tablet'
+                        ? 'bg-blue-600 text-white border border-blue-400'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <Tablet className="w-3.5 h-3.5" />
+                    Tablet
+                  </button>
+                </div>
+              </div>
+
+              {/* ORIENTATION SELECTOR */}
+              <div>
+                <div className="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-2">Orientation</div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onTeamEditOrientationChange?.('portrait')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded text-[10px] font-bold uppercase transition-all ${
+                      teamEditOrientation === 'portrait'
+                        ? 'bg-green-600 text-white border border-green-400'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span>⬜</span>
+                    Port
+                  </button>
+                  <button
+                    onClick={() => onTeamEditOrientationChange?.('landscape')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded text-[10px] font-bold uppercase transition-all ${
+                      teamEditOrientation === 'landscape'
+                        ? 'bg-green-600 text-white border border-green-400'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span>⬛</span>
+                    Land
+                  </button>
+                </div>
+              </div>
+
+              {/* ORIENTATION LOCK */}
+              <button
+                onClick={() => onTeamEditOrientationLockToggle?.(!teamEditOrientationLocked)}
+                className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded text-[10px] font-bold uppercase transition-all ${
+                  teamEditOrientationLocked
+                    ? 'bg-orange-600 text-white border border-orange-400'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {teamEditOrientationLocked ? (
+                  <>
+                    <Lock className="w-3.5 h-3.5" />
+                    Locked
+                  </>
+                ) : (
+                  <>
+                    <Unlock className="w-3.5 h-3.5" />
+                    Unlocked
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* PLAYGROUND SELECTION TILES */}
             {activeGame?.playgrounds && activeGame.playgrounds.length > 0 && onOpenPlaygroundEditor && (
                 <div className="px-4 py-3 bg-white dark:bg-gray-850 border-b border-gray-100 dark:border-gray-800">
