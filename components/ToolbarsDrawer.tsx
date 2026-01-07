@@ -107,6 +107,14 @@ interface ToolbarsDrawerProps {
 
     // Access Mode Props
     userAccessMode?: 'EDITOR' | 'INSTRUCTOR' | 'TEAM' | null;
+
+    // Device Preview Props
+    teamEditDevice?: 'mobile' | 'tablet' | 'desktop';
+    onTeamEditDeviceChange?: (device: 'mobile' | 'tablet' | 'desktop') => void;
+    teamEditOrientation?: 'portrait' | 'landscape';
+    onTeamEditOrientationChange?: (orientation: 'portrait' | 'landscape') => void;
+    teamEditOrientationLocked?: boolean;
+    onTeamEditOrientationLockToggle?: (locked: boolean) => void;
 }
 
 const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
