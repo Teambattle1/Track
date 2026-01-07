@@ -87,7 +87,7 @@ export const getLeafletIcon = (
         world: `<circle cx="12" cy="12" r="10" fill="none" stroke="${color}" stroke-width="2"/><path d="M12 2a10 10 0 0 1 0 20 10 10 0 0 1 0-20z" fill="none" stroke="${color}" stroke-width="2"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="${color}" stroke-width="2"/>`
       };
 
-      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svgs[iconId] || svgs.default}</svg>`;
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${iconContainerStyle}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svgs[iconId] || svgs.default}</svg>`;
       html += svgContent;
   }
 
