@@ -67,7 +67,7 @@ export const DangerZoneWarningModal: React.FC<DangerZoneWarningModalProps> = ({
   const penaltyActive = zone.penaltyType === 'fixed' || elapsedSeconds >= zone.duration;
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center z-[9999] ${isFlashing ? 'bg-red-900/60' : 'bg-red-900/30'} transition-all duration-200`}>
+    <div className={`fixed inset-0 flex items-center justify-center z-[9999] ${isFlashing ? 'bg-red-900/60' : 'bg-red-900/30'} transition-all duration-200`} style={shakeStyle}>
       {/* Flashing warning overlay */}
       <div className={`absolute inset-0 animate-pulse ${isFlashing ? 'bg-red-600/40' : 'bg-transparent'}`} />
 
