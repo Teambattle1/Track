@@ -859,7 +859,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
 
                 {/* SHOW Section - Purple */}
                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
-                    <div className="bg-purple-600 border-2 border-purple-500 rounded-xl p-3 space-y-3">
+                    <div className="bg-yellow-600 border-2 border-yellow-500 rounded-xl p-3 space-y-3">
                         <button
                             onClick={() => toggleSection('show')}
                             className="w-full flex items-center justify-between text-white font-bold uppercase text-[10px] tracking-wider"
@@ -876,7 +876,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={onToggleTaskId}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showTaskId ? 'bg-black text-white' : 'bg-purple-700 hover:bg-purple-800 text-purple-100'}`}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showTaskId ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
                                         title="Toggle Task ID"
                                     >
                                         <Hash className="w-4 h-4" />
@@ -884,7 +884,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     </button>
                                     <button
                                         onClick={onToggleTaskTitle}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showTaskTitle ? 'bg-black text-white' : 'bg-purple-700 hover:bg-purple-800 text-purple-100'}`}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showTaskTitle ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
                                         title="Toggle Task Title"
                                     >
                                         <Type className="w-4 h-4" />
@@ -892,7 +892,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     </button>
                                     <button
                                         onClick={onToggleScores}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showScores ? 'bg-black text-white' : 'bg-purple-700 hover:bg-purple-800 text-purple-100'}`}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showScores ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
                                         title="Toggle Scores"
                                     >
                                         <Trophy className="w-4 h-4" />
@@ -900,7 +900,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                     </button>
                                     <button
                                         onClick={onToggleTaskActions}
-                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showTaskActions ? 'bg-black text-white' : 'bg-purple-700 hover:bg-purple-800 text-purple-100'}`}
+                                        className={`py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all ${showTaskActions ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
                                         title="Toggle Task Actions"
                                     >
                                         <GitBranch className="w-4 h-4" />
@@ -911,7 +911,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                 {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onToggleTeamPathSelector && (
                                     <button
                                         onClick={onToggleTeamPathSelector}
-                                        className={`w-full py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-between transition-all ${showTeamPathSelector || selectedTeamPaths.length > 0 ? 'bg-black text-white' : 'bg-purple-700 hover:bg-purple-800 text-purple-100'}`}
+                                        className={`w-full py-2 px-2 text-xs font-bold uppercase tracking-wider rounded-lg flex items-center justify-between transition-all ${showTeamPathSelector || selectedTeamPaths.length > 0 ? 'bg-black text-white' : 'bg-yellow-700 hover:bg-yellow-800 text-yellow-100'}`}
                                         title="Select Teams to Track - Shows historic path as dotted lines"
                                     >
                                         <span className="flex items-center gap-2">
