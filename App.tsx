@@ -3038,6 +3038,18 @@ const GameApp: React.FC = () => {
             );
         })()}
 
+        {/* Device Preview Toolbox - Separate from HUD, in TEAM view */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (
+            <DevicePreviewToolbox
+                selectedDevice={teamEditDevice}
+                selectedOrientation={teamEditOrientation}
+                isOrientationLocked={teamEditOrientationLocked}
+                onDeviceChange={setTeamEditDevice}
+                onOrientationChange={setTeamEditOrientation}
+                onOrientationLockToggle={setTeamEditOrientationLocked}
+            />
+        )}
+
         {/* GameHUD - Only show in non-PLAY modes */}
         {mode !== GameMode.PLAY && (
         <GameHUD
