@@ -118,7 +118,7 @@ export const getLeafletIcon = (
 
   // ID Label - Centered ABOVE the icon (pill shape) - Added last for highest visual z-order
   if (label) {
-      html += `<div style="position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 8px; border: 1px solid white; z-index: 999; white-space: nowrap; pointer-events: none;">${label}</div>`;
+      html += `<div style="position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: 1px 5px; border-radius: 8px; border: 1px solid white; z-index: 999; white-space: nowrap; pointer-events: none;">${label}</div>`;
   }
 
   html += `</div>`;
