@@ -43,7 +43,7 @@ import PlaygroundEditor from './components/PlaygroundEditor';
 import PlayzoneGameView from './components/PlayzoneGameView';
 import GameStatsModal from './components/GameStatsModal';
 import MapStyleLibrary from './components/MapStyleLibrary';
-import DevicePreviewToolbox from './components/DevicePreviewToolbox';
+import DevicePreviewToolbar from './components/DevicePreviewToolbar';
 import MapDeviceFrame from './components/MapDeviceFrame';
 import QRCodesTool from './components/QRCodesTool';
 import GameStatsTool from './components/GameStatsTool';
