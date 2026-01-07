@@ -32,7 +32,7 @@ const logError = (context: string, error: any) => {
     }
 
     // Special handling for network errors
-    if (errorMsg.includes('Failed to fetch') || errorMsg.includes('fetch') || errorMsg.includes('NetworkError')) {
+    if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Load failed') || errorMsg.includes('fetch') || errorMsg.includes('NetworkError')) {
         console.error(`[DB Service] ❌ SUPABASE CONNECTION FAILED
 
 📡 Most Likely Causes:
