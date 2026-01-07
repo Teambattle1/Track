@@ -118,7 +118,14 @@ export const getLeafletIcon = (
 
   // ID Label - Centered ABOVE the icon (pill shape) - Added last for highest visual z-order
   if (label) {
-      html += `<div style="position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: 1px 5px; border-radius: 8px; border: 1px solid white; z-index: 999; white-space: nowrap; pointer-events: none;">${label}</div>`;
+      // For longer labels, allow 2-line wrapping; for short labels, keep single line
+      const maxWidth = label.length > 15 ? '60px' : 'auto';
+      const lineHeight = label.length > 15 ? '1.2' : '1';
+      const topOffset = label.length > 15 ? '-36px' : '-24px';
+      const paddingVertical = label.length > 15 ? '2px' : '1px';
+      const wordBreak = label.length > 15 ? 'word-break: break-word;' : '';
+
+      html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: ${paddingVertical} 5px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${wordBreak} pointer-events: none;">${label}</div>`;
   }
 
   html += `</div>`;
