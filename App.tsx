@@ -1582,6 +1582,9 @@ const GameApp: React.FC = () => {
       );
   }
 
+  // Render fullscreen overlay on all screens
+  const renderFullscreenOverlay = () => <FullscreenOverlay />;
+
   const renderModals = () => (
       <>
           {showDashboard && (
