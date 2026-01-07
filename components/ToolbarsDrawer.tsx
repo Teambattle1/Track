@@ -208,6 +208,18 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     const [showMapStylesMenu, setShowMapStylesMenu] = useState(false);
     const [showToolbarsMenu, setShowToolbarsMenu] = useState(false);
 
+    // Auto-collapse all sections when entering editor mode
+    React.useEffect(() => {
+        if (mode === GameMode.EDIT) {
+            const newState = defaultCollapsedState;
+            if (onCollapsedSectionsChange) {
+                onCollapsedSectionsChange(newState);
+            } else {
+                setCollapsedSectionsLocal(newState);
+            }
+        }
+    }, [mode]);
+
     // Auto-collapse Zone Change section when game ends or when no active countdowns
     React.useEffect(() => {
         const isGameEnded = activeGame?.state === 'ended' || activeGame?.state === 'ending' || (timerConfig && timerConfig.timeLeft <= 0);
