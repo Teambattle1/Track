@@ -817,10 +817,12 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
             </div>
         )}
 
-        <MapContainer 
-            center={[center.lat, center.lng]} 
-            zoom={15} 
-            style={{ height: '100%', width: '100%', backgroundColor: 'transparent' }} 
+        <MapContainer
+            center={[center.lat, center.lng]}
+            zoom={15}
+            minZoom={2}
+            maxZoom={20}
+            style={{ height: '100%', width: '100%', backgroundColor: 'transparent' }}
             zoomControl={false}
         >
             <MapController handleRef={ref as any} />
