@@ -123,9 +123,6 @@ export const getLeafletIcon = (
 
   html += `</div>`;
 
-  // Icon size needs to be large enough to include the label without clipping
-  const labelSpace = 80;
-
   return L.divIcon({
     className: 'custom-game-icon',
     html: html,
