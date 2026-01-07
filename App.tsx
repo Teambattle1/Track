@@ -148,11 +148,10 @@ const GameApp: React.FC = () => {
   const [activeTaskActionPoint, setActiveTaskActionPoint] = useState<GamePoint | null>(null);
   const [pendingDrawRequest, setPendingDrawRequest] = useState<'onOpen' | 'onCorrect' | 'onIncorrect' | null>(null);
 
-  // --- TEAM PREVIEW MODE STATE (for editing device layouts in EDIT mode) ---
-  const [teamPreviewEnabled, setTeamPreviewEnabled] = useState(false);
-  const [teamPreviewDevice, setTeamPreviewDevice] = useState<'mobile' | 'tablet'>('tablet');
-  const [teamPreviewOrientation, setTeamPreviewOrientation] = useState<'portrait' | 'landscape'>('landscape');
-  const [teamPreviewOrientationLocked, setTeamPreviewOrientationLocked] = useState(false);
+  // --- DEVICE PREVIEW FOR EDIT MODE (viewing TEAM mode with device frames) ---
+  const [teamEditDevice, setTeamEditDevice] = useState<'mobile' | 'tablet'>('tablet');
+  const [teamEditOrientation, setTeamEditOrientation] = useState<'portrait' | 'landscape'>('landscape');
+  const [teamEditOrientationLocked, setTeamEditOrientationLocked] = useState(false);
 
   // --- INSTRUCTOR NOTIFICATION STATE ---
   const [instructorNotifications, setInstructorNotifications] = useState<InstructorNotification[]>([]);
