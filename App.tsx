@@ -150,7 +150,7 @@ const GameApp: React.FC = () => {
   const [pendingDrawRequest, setPendingDrawRequest] = useState<'onOpen' | 'onCorrect' | 'onIncorrect' | null>(null);
 
   // --- DEVICE PREVIEW FOR EDIT MODE (viewing TEAM mode with device frames) ---
-  const [teamEditDevice, setTeamEditDevice] = useState<'mobile' | 'tablet'>('tablet');
+  const [teamEditDevice, setTeamEditDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [teamEditOrientation, setTeamEditOrientation] = useState<'portrait' | 'landscape'>('landscape');
   const [teamEditOrientationLocked, setTeamEditOrientationLocked] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(() => {
