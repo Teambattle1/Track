@@ -1,5 +1,5 @@
 {
-  "name": "TeamAction 2026",
+  "name": "TeamTrack 2026",
   "description": "A location-based game app where users unlock tasks by physically visiting specific GPS coordinates. Features interactive maps, geofencing logic, and task management.",
   "requestFramePermissions": [
     "geolocation",
