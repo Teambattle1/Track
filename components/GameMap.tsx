@@ -579,29 +579,35 @@ const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }:
 
     return (
         <React.Fragment>
-            {/* Danger Zone Circle with slow glow */}
+            {/* Danger Zone Circle with slow pulsating glow */}
             <Circle
                 center={[zone.location.lat, zone.location.lng]}
                 radius={zone.radius}
                 pathOptions={{
                     color: isHovered ? '#ff0000' : '#ef4444',
                     fillColor: isHovered ? '#ff0000' : '#ef4444',
-                    fillOpacity: isHovered ? 0.3 : 0.2,
-                    weight: isHovered ? 3 : 2,
+                    fillOpacity: isHovered ? 0.4 : 0.25,
+                    weight: isHovered ? 4 : 3,
                     dashArray: '10, 10'
                 }}
                 interactive={false}
                 className="danger-zone-glow"
             />
 
-            {/* CSS for slow glow animation */}
+            {/* CSS for slow pulsating glow animation - visible in all modes */}
             <style>{`
                 @keyframes danger-glow {
-                    0%, 100% { opacity: 0.6; }
-                    50% { opacity: 1; }
+                    0%, 100% {
+                        opacity: 0.4;
+                        filter: drop-shadow(0px 0px 2px rgba(239, 68, 68, 0.4));
+                    }
+                    50% {
+                        opacity: 0.9;
+                        filter: drop-shadow(0px 0px 12px rgba(239, 68, 68, 0.8)) drop-shadow(0px 0px 20px rgba(239, 68, 68, 0.5));
+                    }
                 }
                 .danger-zone-glow {
-                    animation: danger-glow 3s ease-in-out infinite;
+                    animation: danger-glow 2.5s ease-in-out infinite;
                 }
             `}</style>
 
