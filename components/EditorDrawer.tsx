@@ -314,7 +314,13 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   hoveredPlaygroundId,
   onHoverPlayground,
   collapsedZones: collapsedZonesProp,
-  onCollapsedZonesChange
+  onCollapsedZonesChange,
+  teamEditDevice = 'tablet',
+  onTeamEditDeviceChange,
+  teamEditOrientation = 'landscape',
+  onTeamEditOrientationChange,
+  teamEditOrientationLocked = false,
+  onTeamEditOrientationLockToggle
 }) => {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [isSaved, setIsSaved] = useState(false);
