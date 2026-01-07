@@ -2798,6 +2798,260 @@ const GameApp: React.FC = () => {
             </div>
         )}
 
+        {/* PLAY MODE: Team HUD with device frame centered */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (() => {
+            const teamState = teamSync.getState();
+            const teamMembers = teamSync.getAllMembers();
+            const allTasks = activeGame?.points || [];
+            const correctTasks = allTasks.filter(t => t.isCompleted && !t.isSectionHeader).length;
+            const totalTasks = allTasks.filter(t => !t.isSectionHeader).length;
+            const incorrectTasks = totalTasks - correctTasks;
+
+            return (
+            <div className="flex items-center justify-center h-full w-full p-4 gap-4">
+                {/* Device Frame - Centered */}
+                <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
+                    <div className="flex flex-col h-full bg-black">
+                        {/* HUD Header */}
+                        <div className="bg-orange-600 border-b border-orange-700 flex items-center justify-between px-2 py-1.5 shadow-lg flex-shrink-0 text-xs">
+                            <div className="flex items-center justify-center gap-1.5 flex-1">
+                                <button
+                                    onClick={() => { setShowLanding(true); setActiveGameId(null); }}
+                                    className="p-1 hover:bg-orange-700 rounded transition-colors text-white hover:scale-110 flex flex-col items-center gap-0.5"
+                                    title="Back to Games"
+                                >
+                                    <Home className="w-3 h-3" />
+                                    <span className="text-[6px] font-bold uppercase">Back</span>
+                                </button>
+
+                                <div className="text-orange-700 font-bold">|</div>
+
+                                <div className="flex flex-col items-center flex-1">
+                                    <span className="text-[6px] font-bold text-white/80 uppercase">Team</span>
+                                    <span className="font-black text-white">{teamState.teamName || 'Team'}</span>
+                                </div>
+
+                                <div className="text-orange-700 font-bold">|</div>
+
+                                <div className="text-center flex-1">
+                                    <div className="text-base font-black text-white font-mono">--:--</div>
+                                    <span className="text-[6px] font-bold text-white/70 uppercase">Time</span>
+                                </div>
+
+                                <div className="text-orange-700 font-bold">|</div>
+
+                                <div className="flex items-center gap-1 flex-1">
+                                    <div className="flex items-center gap-0.5 px-1 py-0.5 bg-green-600/40 rounded text-[6px]">
+                                        <CheckCircle className="w-2 h-2 text-green-400" />
+                                        <span className="font-bold text-green-300">{correctTasks}</span>
+                                    </div>
+                                    <div className="flex items-center gap-0.5 px-1 py-0.5 bg-red-600/40 rounded text-[6px]">
+                                        <XCircle className="w-2 h-2 text-red-400" />
+                                        <span className="font-bold text-red-300">{incorrectTasks}</span>
+                                    </div>
+                                    <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-700/50 rounded">
+                                        <Trophy className="w-2 h-2 text-yellow-300" />
+                                        <span className="font-black text-white">{score}</span>
+                                    </div>
+                                </div>
+
+                                <div className="text-orange-700 font-bold">|</div>
+
+                                <div className="flex gap-0.5">
+                                    <button
+                                        onClick={() => { if (mapRef.current) mapRef.current.jumpTo(userLocation || { lat: 0, lng: 0 }); }}
+                                        className="p-0.5 bg-orange-700 hover:bg-orange-800 rounded transition-colors text-white hover:scale-110"
+                                        disabled={!userLocation}
+                                    >
+                                        <Compass className="w-2.5 h-2.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => { if (mapRef.current && activeGame?.points?.length) mapRef.current.fitBounds(activeGame.points); }}
+                                        className="p-0.5 bg-orange-700 hover:bg-orange-800 rounded transition-colors text-white hover:scale-110"
+                                    >
+                                        <Maximize2 className="w-2.5 h-2.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Game Map */}
+                        <div className="flex-1 overflow-hidden relative">
+                            <GameMap
+                            ref={mapRef}
+                            points={visiblePoints}
+                            routes={activeGame?.routes || []}
+                            dangerZones={activeGame?.dangerZones || []}
+                            logicLinks={logicLinks}
+                            measurePath={measurePath}
+                            mode={mode}
+                            mapStyle={localMapStyle || 'osm'}
+                            onPointClick={(point) => {
+                                setSelectedPointForTooltip(point.id);
+                                setTimeout(() => setSelectedPointForTooltip(null), 3000);
+                            }}
+                            onAreaColorClick={handleAreaColorClick}
+                            onZoneClick={(z) => {
+                                setSelectedPointForTooltip(z.id);
+                                setTimeout(() => setSelectedPointForTooltip(null), 3000);
+                            }}
+                            onZoneMove={async (zoneId, newLoc) => {
+                                if (!activeGame) return;
+                                const updatedZones = (activeGame.dangerZones || []).map(z =>
+                                    z.id === zoneId ? { ...z, location: newLoc } : z
+                                );
+                                await updateActiveGame({ ...activeGame, dangerZones: updatedZones });
+                            }}
+                            onMapClick={handleMapClick}
+                            onDeletePoint={handleDeleteItem}
+                            onPointMove={isRelocating ? undefined : async (id, loc) => {
+                                if (!activeGame) return;
+                                if (isMeasuring) {
+                                    const point = activeGame.points.find(p => p.id === id);
+                                    if (point && point.location) {
+                                        const oldLocation = point.location;
+                                        setMeasurePath(prev => prev.map(coord =>
+                                            (coord.lat === oldLocation.lat && coord.lng === oldLocation.lng)
+                                                ? { lat: loc.lat, lng: loc.lng }
+                                                : coord
+                                        ));
+                                    }
+                                }
+                                const plainLoc = { lat: loc.lat, lng: loc.lng };
+                                const updated = await db.updateGameItemLocation(activeGame.id, id, plainLoc, {
+                                    user: authUser?.name,
+                                    action: 'Moved Item'
+                                });
+                                if (!updated) return;
+                                setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
+                                setActiveGame(updated);
+                            }}
+                            onDragStart={isRelocating ? undefined : (pointId) => {
+                                if (!isMeasuring) {
+                                    const point = activeGame?.points.find(p => p.id === pointId);
+                                    if (point) setActiveTask(point);
+                                }
+                            }}
+                            accuracy={gpsAccuracy}
+                            isRelocating={isRelocating}
+                            isMeasuring={isMeasuring}
+                            snapToRoadMode={snapToRoadMode}
+                            snapSelectionStart={snapSelectionStart}
+                            snapSelectionEnd={snapSelectionEnd}
+                            selectedSnapTaskIds={selectedSnapTaskIds}
+                            relocateScopeCenter={relocateScopeCenter}
+                            relocateAllTaskIds={relocateAllTaskIds}
+                            showScores={showScores}
+                            showTaskId={showTaskId}
+                            showTaskTitle={showTaskTitle}
+                            showTaskActions={showTaskActions}
+                            measuredDistance={measuredDistance}
+                            hoveredPointId={hoveredPointId}
+                            hoveredDangerZoneId={hoveredDangerZoneId}
+                            onPointHover={(point) => setMapHoveredPointId(point?.id || null)}
+                            teamHistory={demoTeamHistory}
+                            showTeamPaths={showTeamPaths}
+                            gameStartTime={teamsForFogOfWar.length > 0 && teamsForFogOfWar[0]?.startedAt ? teamsForFogOfWar[0].startedAt : activeGame?.createdAt}
+                            fogOfWarEnabled={fogOfWarEnabled}
+                            selectedTeamId={selectedTeamForFogOfWar}
+                            selectedTeamCompletedPointIds={
+                                fogOfWarEnabled && selectedTeamForFogOfWar
+                                    ? teamsForFogOfWar.find(t => t.id === selectedTeamForFogOfWar)?.completedPointIds || []
+                                    : []
+                            }
+                            showMapLayer={showMapLayer}
+                            showZoneLayer={showZoneLayer}
+                            showTaskLayer={showTaskLayer}
+                            showLiveLayer={showLiveLayer}
+                            />
+
+                            {/* Playground Buttons */}
+                            {activeGame?.playgrounds && activeGame.playgrounds.length > 0 && (() => {
+                                const visiblePlaygrounds = activeGame.playgrounds.filter(p => p.buttonVisible);
+                                return visiblePlaygrounds.length > 0 ? (
+                                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex gap-2 pointer-events-auto">
+                                        {visiblePlaygrounds.map(pg => (
+                                            <button
+                                                key={pg.id}
+                                                onClick={() => setViewingPlaygroundId(pg.id)}
+                                                style={{ width: pg.buttonSize ? Math.max(pg.buttonSize * 0.6, 50) : 50, height: pg.buttonSize ? Math.max(pg.buttonSize * 0.6, 50) : 50 }}
+                                                className="rounded-2xl flex items-center justify-center transition-all border-2 group relative overflow-hidden"
+                                            >
+                                                {pg.iconUrl ? (
+                                                    <img src={pg.iconUrl} alt={pg.title} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold border-white/30">
+                                                        {pg.title?.charAt(0) || 'P'}
+                                                    </div>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : null;
+                            })()}
+
+                            {/* Tooltip */}
+                            {selectedPointForTooltip && (() => {
+                                const dangerZone = activeGame?.dangerZones?.find(dz => dz.id === selectedPointForTooltip);
+                                const point = activeGame?.points?.find(p => p.id === selectedPointForTooltip);
+                                const tooltipContent = dangerZone
+                                    ? `⚠️ ZONE\n${dangerZone.name || 'Area'}`
+                                    : point
+                                    ? `📍 ${point.title || 'Task'}`
+                                    : null;
+                                return tooltipContent ? (
+                                    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[51] bg-slate-900 border border-orange-500 rounded shadow-lg p-2 animate-in fade-in duration-200 pointer-events-auto max-w-xs text-xs">
+                                        <p className="font-bold text-white whitespace-pre-wrap">{tooltipContent}</p>
+                                    </div>
+                                ) : null;
+                            })()}
+                        </div>
+
+                        {/* Bottom Toolbar */}
+                        <div className="bg-orange-600 border-t border-orange-700 flex items-center justify-center gap-2 px-2 py-1.5 shadow-lg flex-shrink-0 text-xs">
+                            <button
+                                onClick={() => setShowTeamLobby(true)}
+                                className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-orange-700 hover:bg-orange-800 rounded font-bold text-white transition-colors"
+                                title="Team Lobby"
+                            >
+                                <Users className="w-3 h-3" />
+                                <span className="text-[6px] font-bold uppercase">Lobby</span>
+                            </button>
+
+                            <div className="text-orange-700 font-bold">|</div>
+
+                            <button
+                                onClick={() => setShowChatDrawer(!showChatDrawer)}
+                                className={`relative flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded font-bold text-white transition-colors ${
+                                    unreadMessageCount > 0 ? 'animate-chat-flash' : 'bg-orange-700 hover:bg-orange-800'
+                                }`}
+                            >
+                                <MessageSquare className="w-3 h-3" />
+                                <span className="text-[6px] font-bold uppercase">Chat</span>
+                                {unreadMessageCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-yellow-400 text-red-600 font-black text-[6px] rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-lg">
+                                        {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            <div className="text-orange-700 font-bold">|</div>
+
+                            <button
+                                onClick={() => setShowTeamViewQRScanner(true)}
+                                className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 bg-orange-700 hover:bg-orange-800 rounded font-bold text-white transition-colors"
+                                title="Scan QR"
+                            >
+                                <QrCode className="w-3 h-3" />
+                                <span className="text-[6px] font-bold uppercase">QR</span>
+                            </button>
+                        </div>
+                    </div>
+                </MapDeviceFrame>
+            </div>
+            );
+        })()}
+
         {/* DRAGGABLE MEASURE BOX */}
         {isMeasuring && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
             <MeasureBox
@@ -2833,214 +3087,6 @@ const GameApp: React.FC = () => {
             </div>
         )}
 
-        {/* Team View HUD - GPS Games in PLAY mode */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (() => {
-            const teamState = teamSync.getState();
-            const teamMembers = teamSync.getAllMembers();
-            const allTasks = activeGame?.points || [];
-            const correctTasks = allTasks.filter(t => t.isCompleted && !t.isSectionHeader).length;
-            const totalTasks = allTasks.filter(t => !t.isSectionHeader).length;
-            const incorrectTasks = totalTasks - correctTasks;
-
-            return (
-            <div className="fixed inset-0 pointer-events-none z-[1000] flex flex-col">
-                {/* Top Header */}
-                <div className="bg-orange-600 border-b-2 border-orange-700 flex items-center justify-between px-6 shadow-lg pointer-events-auto py-3">
-                    {/* Back Button */}
-                    <div className="flex flex-col items-center gap-1">
-                        <button
-                            onClick={() => { setShowLanding(true); setActiveGameId(null); }}
-                            className="p-2 hover:bg-orange-700 rounded-lg transition-colors text-white hover:scale-110"
-                            title="Back to Games"
-                        >
-                            <Home className="w-6 h-6" />
-                        </button>
-                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide whitespace-nowrap">Back</span>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
-
-                    {/* Team Info */}
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="flex items-center gap-3">
-                            <div className="flex flex-col items-center">
-                                <span className="text-xs font-bold text-white/80 uppercase tracking-wide">Team</span>
-                                <span className="text-lg font-black text-white">{teamState.teamName || 'Team'}</span>
-                            </div>
-                            <div className="flex items-center gap-1 px-3 py-1 bg-orange-700/50 rounded-lg">
-                                <Users className="w-4 h-4 text-yellow-300" />
-                                <span className="text-sm font-bold text-white">{teamMembers.length}</span>
-                            </div>
-                        </div>
-                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Members</span>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
-
-                    {/* Game Time */}
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="text-3xl font-black text-white font-mono">--:--</div>
-                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Time</span>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
-
-                    {/* Task Progress + Score */}
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="flex items-center gap-3">
-                            {/* Task Progress */}
-                            <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-1 px-2 py-1 bg-green-600/40 rounded-lg">
-                                    <CheckCircle className="w-4 h-4 text-green-400" />
-                                    <span className="text-xs font-bold text-green-300">{correctTasks}</span>
-                                </div>
-                                <div className="flex items-center gap-1 px-2 py-1 bg-red-600/40 rounded-lg">
-                                    <XCircle className="w-4 h-4 text-red-400" />
-                                    <span className="text-xs font-bold text-red-300">{incorrectTasks}</span>
-                                </div>
-                            </div>
-
-                            {/* Score */}
-                            <div className="flex items-center gap-2 px-4 py-2 bg-orange-700/50 rounded-xl">
-                                <Trophy className="w-5 h-5 text-yellow-300" />
-                                <span className="text-lg font-black text-white">{score}</span>
-                            </div>
-                        </div>
-                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Tasks</span>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-12 w-px bg-orange-700/60 mx-4"></div>
-
-                    {/* Map Controls (Right) */}
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => {
-                                    if (mapRef.current) {
-                                        mapRef.current.jumpTo(userLocation || { lat: 0, lng: 0 });
-                                    }
-                                }}
-                                className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
-                                title="Center on My Location"
-                                disabled={!userLocation}
-                            >
-                                <Compass className="w-5 h-5" />
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    if (mapRef.current && activeGame?.points && activeGame.points.length > 0) {
-                                        mapRef.current.fitBounds(activeGame.points);
-                                    }
-                                }}
-                                className="p-2 bg-orange-700 hover:bg-orange-800 rounded-lg transition-colors text-white hover:scale-110"
-                                title="Fit All Tasks on Screen - Zoom Level 16-17"
-                            >
-                                <Maximize2 className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <span className="text-xs font-bold text-white/70 uppercase tracking-wide">Map</span>
-                    </div>
-                </div>
-
-
-                {/* Playzones Buttons - Bottom Center */}
-                {activeGame?.playgrounds && activeGame.playgrounds.length > 0 && (() => {
-                    const visiblePlaygrounds = activeGame.playgrounds.filter(p => p.buttonVisible);
-                    return visiblePlaygrounds.length > 0 ? (
-                        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[1000] flex gap-4 pointer-events-auto items-end">
-                            {visiblePlaygrounds.map(pg => (
-                                <button
-                                    key={pg.id}
-                                    onClick={() => setViewingPlaygroundId(pg.id)}
-                                    title={pg.title || 'Playzone'}
-                                    style={{ width: pg.buttonSize || 80, height: pg.buttonSize || 80 }}
-                                    className={`rounded-3xl flex items-center justify-center transition-all border-4 group relative overflow-hidden ${pg.iconUrl ? 'bg-white border-white' : 'bg-gradient-to-br from-purple-600 to-indigo-600 border-white/30'} shadow-2xl hover:scale-105`}
-                                >
-                                    {pg.iconUrl ? (
-                                        <img src={pg.iconUrl} alt={pg.title} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-1/2 h-1/2 bg-white/20 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                            {pg.title?.charAt(0) || 'P'}
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    ) : null;
-                })()}
-
-                {/* Tooltip for clicked point or danger zone */}
-                {selectedPointForTooltip && (() => {
-                    const dangerZone = activeGame?.dangerZones?.find(dz => dz.id === selectedPointForTooltip);
-                    const point = activeGame?.points?.find(p => p.id === selectedPointForTooltip);
-
-                    const tooltipContent = dangerZone
-                        ? `⚠️ DANGER ZONE\n${dangerZone.name || 'Restricted Area'}\nPunishment: ${dangerZone.punishmentMessage || 'Score penalty'}`
-                        : point
-                        ? `📍 ${point.title || 'Task'}`
-                        : null;
-
-                    return tooltipContent ? (
-                        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900 border-2 border-orange-500 rounded-xl shadow-2xl p-4 animate-in fade-in duration-200 pointer-events-auto max-w-xs">
-                            <div className="flex justify-between items-start gap-3">
-                                <p className="text-sm font-bold text-white whitespace-pre-wrap">{tooltipContent}</p>
-                                <button
-                                    onClick={() => setSelectedPointForTooltip(null)}
-                                    className="flex-shrink-0 text-slate-400 hover:text-white"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    ) : null;
-                })()}
-
-                {/* Bottom Toolbox */}
-                <div className="mt-auto bg-orange-600 border-t-2 border-orange-700 flex items-center justify-center gap-4 px-6 py-3 shadow-lg pointer-events-auto">
-                    <button
-                        onClick={() => setShowTeamLobby(true)}
-                        className="flex flex-col items-center justify-center gap-1 px-4 py-2 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
-                        title="Team Lobby"
-                    >
-                        <Users className="w-5 h-5" />
-                        <span className="text-xs font-bold uppercase">Lobby</span>
-                    </button>
-
-                    <button
-                        onClick={() => setShowChatDrawer(!showChatDrawer)}
-                        className={`relative flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl font-bold text-white transition-colors shadow-lg ${
-                            unreadMessageCount > 0
-                                ? 'animate-chat-flash'
-                                : 'bg-orange-700 hover:bg-orange-800'
-                        }`}
-                        title={unreadMessageCount > 0 ? `${unreadMessageCount} unread message${unreadMessageCount !== 1 ? 's' : ''}` : 'Chat'}
-                    >
-                        <MessageSquare className="w-5 h-5" />
-                        <span className="text-xs font-bold uppercase">Chat</span>
-                        {unreadMessageCount > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-yellow-400 text-red-600 font-black text-xs rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
-                                {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
-                            </span>
-                        )}
-                    </button>
-
-                    <button
-                        onClick={() => setShowTeamViewQRScanner(true)}
-                        className="flex flex-col items-center justify-center gap-1 px-4 py-2 bg-orange-700 hover:bg-orange-800 rounded-xl font-bold text-white transition-colors shadow-lg"
-                        title="Scan QR Code"
-                    >
-                        <QrCode className="w-5 h-5" />
-                        <span className="text-xs font-bold uppercase">QR</span>
-                    </button>
-                </div>
-            </div>
-            );
-        })()}
 
         {/* Device Preview Toolbox - Separate from HUD, in TEAM view */}
         {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (
