@@ -2686,13 +2686,13 @@ const GameApp: React.FC = () => {
   // Wrap in simulation mode tablet frame if enabled
   const mainContent = (
     <div className="fixed inset-0 overflow-hidden bg-slate-900 text-white flex flex-col">
-        {/* Map for EDIT/INSTRUCTOR modes only (PLAY mode uses device frame map) */}
+        {/* Map for EDIT/INSTRUCTOR modes - fills entire screen */}
         {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (
             <GameMap
-                    ref={mapRef}
-                    points={visiblePoints}
-                    routes={activeGame?.routes || []}
-                    dangerZones={activeGame?.dangerZones || []}
+                ref={mapRef}
+                points={visiblePoints}
+                routes={activeGame?.routes || []}
+                dangerZones={activeGame?.dangerZones || []}
                     logicLinks={logicLinks} // Pass Logic Links!
                     measurePath={measurePath}
                     mode={mode}
