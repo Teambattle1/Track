@@ -57,11 +57,13 @@ export const getLeafletIcon = (
   
   // Base container style
   // If isPlaygroundActivator is true, add a heavy orange glow and border
-  const glowStyle = isPlaygroundActivator 
+  const glowStyle = isPlaygroundActivator
     ? `filter: drop-shadow(0px 0px 8px #f97316); border-radius: 50%; box-shadow: 0 0 0 3px #f97316, 0 0 15px 5px rgba(249, 115, 22, 0.6); animation: pulse-orange 2s infinite;`
     : `filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));`;
 
-  let html = `<div style="${glowStyle} transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%;">`;
+  // Container needs extra space for labels to not be clipped
+  const labelSpace = 80; // Extra space for label
+  let html = `<div style="${glowStyle} transition: all 0.2s; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: ${labelSpace}px; height: ${labelSpace}px;">`;
 
   if (iconUrl) {
       // CUSTOM ICON RENDERER
