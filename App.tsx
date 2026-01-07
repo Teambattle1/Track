@@ -153,6 +153,9 @@ const GameApp: React.FC = () => {
   const [teamEditDevice, setTeamEditDevice] = useState<'mobile' | 'tablet'>('tablet');
   const [teamEditOrientation, setTeamEditOrientation] = useState<'portrait' | 'landscape'>('landscape');
   const [teamEditOrientationLocked, setTeamEditOrientationLocked] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(() => {
+    return typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches;
+  });
 
   // --- INSTRUCTOR NOTIFICATION STATE ---
   const [instructorNotifications, setInstructorNotifications] = useState<InstructorNotification[]>([]);
