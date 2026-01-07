@@ -2686,9 +2686,14 @@ const GameApp: React.FC = () => {
   // Wrap in simulation mode tablet frame if enabled
   const mainContent = (
     <div className="fixed inset-0 overflow-hidden bg-slate-900 text-white flex flex-col">
-        {/* Map for EDIT/INSTRUCTOR modes - fills entire screen */}
-        {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (
-            <GameMap
+        {/* Map for EDIT/INSTRUCTOR modes - desktop: full screen, tablet/mobile: with device frame */}
+        {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (() => {
+            const isSmallScreen = typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches;
+
+            return isSmallScreen ? (
+                <div className="flex-1 flex items-center justify-center z-0 overflow-hidden">
+                    <MapDeviceFrame device={teamEditDevice} orientation={teamEditOrientation}>
+                        <GameMap
                 ref={mapRef}
                 points={visiblePoints}
                 routes={activeGame?.routes || []}
@@ -2790,9 +2795,110 @@ const GameApp: React.FC = () => {
                 showMapLayer={showMapLayer}
                 showZoneLayer={showZoneLayer}
                 showTaskLayer={showTaskLayer}
-                showLiveLayer={showLiveLayer}
-            />
-        )}
+                            showLiveLayer={showLiveLayer}
+                        />
+                    </MapDeviceFrame>
+                </div>
+            ) : (
+                <GameMap
+                    ref={mapRef}
+                    points={visiblePoints}
+                    routes={activeGame?.routes || []}
+                    dangerZones={activeGame?.dangerZones || []}
+                    logicLinks={logicLinks}
+                    measurePath={measurePath}
+                    mode={mode}
+                    mapStyle={localMapStyle || 'osm'}
+                    onPointClick={(point) => {
+                        if (mode === GameMode.PLAY) {
+                            setSelectedPointForTooltip(point.id);
+                            setTimeout(() => setSelectedPointForTooltip(null), 3000);
+                        } else {
+                            handlePointClick(point);
+                        }
+                    }}
+                    onAreaColorClick={handleAreaColorClick}
+                    onZoneClick={(z) => {
+                        if (mode === GameMode.PLAY) {
+                            setSelectedPointForTooltip(z.id);
+                            setTimeout(() => setSelectedPointForTooltip(null), 3000);
+                        } else {
+                            setActiveDangerZone(z);
+                        }
+                    }}
+                    onZoneMove={async (zoneId, newLoc) => {
+                        if (!activeGame) return;
+                        const updatedZones = (activeGame.dangerZones || []).map(z =>
+                            z.id === zoneId ? { ...z, location: newLoc } : z
+                        );
+                        await updateActiveGame({ ...activeGame, dangerZones: updatedZones });
+                    }}
+                    onMapClick={handleMapClick}
+                    onDeletePoint={handleDeleteItem}
+                    onPointMove={isRelocating ? undefined : async (id, loc) => {
+                        if (!activeGame) return;
+                        if (isMeasuring) {
+                            const point = activeGame.points.find(p => p.id === id);
+                            if (point && point.location) {
+                                const oldLocation = point.location;
+                                setMeasurePath(prev =>
+                                    prev.map(coord =>
+                                        (coord.lat === oldLocation.lat && coord.lng === oldLocation.lng)
+                                            ? { lat: loc.lat, lng: loc.lng }
+                                            : coord
+                                    )
+                                );
+                            }
+                        }
+                        const plainLoc = { lat: loc.lat, lng: loc.lng };
+                        const updated = await db.updateGameItemLocation(activeGame.id, id, plainLoc, {
+                            user: authUser?.name,
+                            action: 'Moved Item'
+                        });
+                        if (!updated) return;
+                        setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
+                        setActiveGame(updated);
+                    }}
+                    onDragStart={isRelocating ? undefined : (pointId) => {
+                        if (!isMeasuring) {
+                            const point = activeGame?.points.find(p => p.id === pointId);
+                            if (point) setActiveTask(point);
+                        }
+                    }}
+                    accuracy={gpsAccuracy}
+                    isRelocating={isRelocating}
+                    isMeasuring={isMeasuring}
+                    snapToRoadMode={snapToRoadMode}
+                    snapSelectionStart={snapSelectionStart}
+                    snapSelectionEnd={snapSelectionEnd}
+                    selectedSnapTaskIds={selectedSnapTaskIds}
+                    relocateScopeCenter={relocateScopeCenter}
+                    relocateAllTaskIds={relocateAllTaskIds}
+                    showScores={mode === GameMode.INSTRUCTOR ? instructorShowScores : showScores}
+                    showTaskId={mode === GameMode.INSTRUCTOR ? instructorShowTaskId : showTaskId}
+                    showTaskTitle={mode === GameMode.INSTRUCTOR ? instructorShowTaskTitle : showTaskTitle}
+                    showTaskActions={mode === GameMode.INSTRUCTOR ? instructorShowTaskActions : showTaskActions}
+                    measuredDistance={measuredDistance}
+                    hoveredPointId={hoveredPointId}
+                    hoveredDangerZoneId={hoveredDangerZoneId}
+                    onPointHover={(point) => setMapHoveredPointId(point?.id || null)}
+                    teamHistory={demoTeamHistory}
+                    showTeamPaths={showTeamPaths}
+                    gameStartTime={teamsForFogOfWar.length > 0 && teamsForFogOfWar[0]?.startedAt ? teamsForFogOfWar[0].startedAt : activeGame?.createdAt}
+                    fogOfWarEnabled={fogOfWarEnabled}
+                    selectedTeamId={selectedTeamForFogOfWar}
+                    selectedTeamCompletedPointIds={
+                        fogOfWarEnabled && selectedTeamForFogOfWar
+                            ? teamsForFogOfWar.find(t => t.id === selectedTeamForFogOfWar)?.completedPointIds || []
+                            : []
+                    }
+                    showMapLayer={showMapLayer}
+                    showZoneLayer={showZoneLayer}
+                    showTaskLayer={showTaskLayer}
+                    showLiveLayer={showLiveLayer}
+                />
+            );
+        })()}
 
         {/* PLAY MODE: Team HUD with device frame centered */}
         {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (() => {
