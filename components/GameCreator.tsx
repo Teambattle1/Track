@@ -1143,13 +1143,13 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                       <div className="grid grid-cols-2 gap-6">
                           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                               <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Playing Date</label>
-                              <div className="relative h-14">
+                              <div className="relative">
                                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                                   <input
                                       type="date"
                                       value={playingDate}
                                       onChange={(e) => setPlayingDate(e.target.value)}
-                                      className="w-full h-full pl-10 p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none"
+                                      className="w-full pl-10 p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none"
                                   />
                               </div>
                           </div>
