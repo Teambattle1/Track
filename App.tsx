@@ -2788,6 +2788,115 @@ const GameApp: React.FC = () => {
                 </div>
             )}
 
+            {/* TEAM LOBBY ACCESS MODALS */}
+            {/* GameManager for PLAY mode lobby game selection */}
+            {showGameManagerForLobby && (
+                <GameManager
+                    games={playableGames}
+                    taskLists={taskLists}
+                    activeGameId={activeGameId}
+                    activeGamePoints={activeGame?.points || []}
+                    onCreateGame={async (name, listId, desc, style) => {
+                        const newGame: Game = {
+                            id: `game-${Date.now()}`,
+                            name,
+                            description: desc || '',
+                            createdAt: Date.now(),
+                            points: [],
+                            defaultMapStyle: style,
+                            dbUpdatedAt: new Date().toISOString(),
+                            isGameTemplate: false
+                        };
+                        await db.saveGame(newGame);
+                        setGames([...games, newGame]);
+                        setActiveGameId(newGame.id);
+                        setMode(GameMode.EDIT);
+                        setShowGameManagerForLobby(false);
+                        setShowLanding(false);
+                    }}
+                    onSelectGame={(id) => {
+                        console.log('[App] GameManager lobby selection:', { id });
+                        setGameForLobbyAccess(id);
+                        setShowGameManagerForLobby(false);
+                        setShowTeamLobbySelectorModal(true);
+                    }}
+                    onDeleteGame={handleDeleteGame}
+                    onClose={() => setShowGameManagerForLobby(false)}
+                    onEditGame={(id) => {
+                        setActiveGameId(id);
+                        setMode(GameMode.EDIT);
+                        setShowGameManagerForLobby(false);
+                        setShowLanding(false);
+                    }}
+                    onEditGameSetup={(id) => {
+                        const game = games.find(g => g.id === id);
+                        if (game) {
+                            setGameToEdit(game);
+                            setActiveGameId(id);
+                            setShowGameCreator(true);
+                            setShowGameManagerForLobby(false);
+                        }
+                    }}
+                    onCreateFromTemplate={handleCreateGameFromTemplate}
+                    onEditPoint={setActiveTask}
+                    onReorderPoints={() => {}}
+                    onCreateTestGame={() => {}}
+                    onOpenTaskMaster={() => setShowTaskMaster(true)}
+                    onClearMap={() => updateActiveGame({ ...activeGame!, points: [] })}
+                    mode={mode}
+                    onSetMode={setMode}
+                    onOpenGameCreator={() => {
+                        setGameToEdit(null);
+                        setShowGameCreator(true);
+                        setShowGameManagerForLobby(false);
+                    }}
+                />
+            )}
+
+            {/* TeamsLobbySelector for INSTRUCTOR mode */}
+            {showTeamLobbySelectorModal && gameForLobbyAccess && (
+                <TeamsLobbySelector
+                    gameId={gameForLobbyAccess}
+                    isOpen={showTeamLobbySelectorModal}
+                    onClose={() => {
+                        setShowTeamLobbySelectorModal(false);
+                        setGameForLobbyAccess(null);
+                    }}
+                    onSelectTeam={(teamId) => {
+                        setSelectedTeamIdForLobby(teamId);
+                        setShowTeamLobbySelectorModal(false);
+                    }}
+                />
+            )}
+
+            {/* DemoTeamsSelector for EDIT mode */}
+            {showDemoTeamSelectorModal && demoTeamsForLobby.length > 0 && (
+                <DemoTeamsSelector
+                    isOpen={showDemoTeamSelectorModal}
+                    demoTeams={demoTeamsForLobby}
+                    onClose={() => setShowDemoTeamSelectorModal(false)}
+                    onSelectTeam={(teamId) => {
+                        setSelectedTeamIdForLobby(teamId);
+                        setShowDemoTeamSelectorModal(false);
+                    }}
+                />
+            )}
+
+            {/* TeamLobbyPanel with selectedTeamIdForLobby */}
+            {selectedTeamIdForLobby && (
+                <TeamLobbyPanel
+                    isOpen={true}
+                    onClose={() => {
+                        setSelectedTeamIdForLobby(null);
+                        setGameForLobbyAccess(null);
+                    }}
+                    teamId={selectedTeamIdForLobby}
+                    isDemoTeam={demoTeamsForLobby.some(t => t.id === selectedTeamIdForLobby)}
+                    isInstructorMode={mode === GameMode.INSTRUCTOR}
+                    isCaptain={false}
+                />
+            )}
+
             {/* ACCESS SCREEN - Player game code entry */}
             {showAccess && (
                 <Access
