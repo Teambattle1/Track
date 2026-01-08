@@ -27,6 +27,10 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
 }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
+    const [useSimpleEditor, setUseSimpleEditor] = useState(true);
+    const [simpleTitle, setSimpleTitle] = useState('');
+    const [simpleMessage, setSimpleMessage] = useState('');
 
     const handleDateTimeChange = (dateString?: string, timeString?: string) => {
         const currentDate = zoneChange.targetTime ? new Date(zoneChange.targetTime) : new Date();
