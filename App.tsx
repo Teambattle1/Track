@@ -140,6 +140,8 @@ const GameApp: React.FC = () => {
   const [showSystemSounds, setShowSystemSounds] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [introModalShown, setIntroModalShown] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [finishModalShown, setFinishModalShown] = useState(false);
 
   // --- TEAM LOBBY ACCESS STATE ---
   const [gameForLobbyAccess, setGameForLobbyAccess] = useState<string | null>(null);
