@@ -176,7 +176,7 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
       map.setView([center.lat, center.lng], 16);
       initializedRef.current = true;
     }
-  }, [center, points, mode, map]);
+  }, [mode, map]);
   return null;
 };
 
