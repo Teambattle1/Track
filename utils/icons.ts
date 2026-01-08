@@ -91,9 +91,9 @@ export const getLeafletIcon = (
       html += svgContent;
   }
 
-  // Score Badge - Bottom Center (bottom: -16px) to separate from label
+  // Score Badge - Below the icon with proper spacing
   if (score !== undefined) {
-      html += `<div style="position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); background-color: #3b82f6; color: white; font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; border: 1px solid white; box-shadow: 0 2px 2px rgba(0,0,0,0.2); z-index: 21;">${score}</div>`;
+      html += `<div style="position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background-color: #3b82f6; color: white; font-size: 10px; font-weight: 900; padding: 3px 7px; border-radius: 6px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 21; white-space: nowrap;">${score}</div>`;
   }
 
   // Hidden Badge - Top Left (Purple Eye)
@@ -103,7 +103,7 @@ export const getLeafletIcon = (
 
   // Logic Badge - Bottom Right (Red Dot)
   if (hasActions) {
-      html += `<div class="animate-pulse" style="position: absolute; bottom: 0px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 4px 1px rgba(239,68,68,0.8); border: 2px solid white; z-index: 23;"></div>`;
+      html += `<div class="animate-pulse" style="position: absolute; bottom: 2px; right: -6px; width: 12px; height: 12px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 4px 1px rgba(239,68,68,0.8); border: 2px solid white; z-index: 23;"></div>`;
   }
 
   // Completion Badge - Center Overlay (Green Checkmark or Red X)
@@ -122,18 +122,18 @@ export const getLeafletIcon = (
       const taskId = parts[0]; // e.g., "001"
       const taskTitle = parts.slice(1).join(' - '); // e.g., "Sillebroen Shopping"
 
-      // Task ID - Green circular badge positioned over the task area (slightly below icon)
-      html += `<div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background-color: #16a34a; color: white; font-size: 9px; font-weight: 900; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; z-index: 998; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none;">${taskId}</div>`;
+      // Task ID - Green circular badge positioned below score badge with proper spacing
+      html += `<div style="position: absolute; bottom: -46px; left: 50%; transform: translateX(-50%); background-color: #16a34a; color: white; font-size: 11px; font-weight: 900; width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; z-index: 998; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none; flex-shrink: 0;">${taskId}</div>`;
 
-      // Task Title - If present, display above the icon in a compact label
+      // Task Title - If present, display above the icon with good spacing
       if (taskTitle) {
-          const maxWidth = taskTitle.length > 15 ? '85px' : 'auto';
+          const maxWidth = taskTitle.length > 15 ? '90px' : 'auto';
           const lineHeight = taskTitle.length > 15 ? '1.2' : '1';
-          const topOffset = taskTitle.length > 15 ? '-36px' : '-24px';
-          const paddingVertical = taskTitle.length > 15 ? '2px' : '1px';
+          const topOffset = taskTitle.length > 15 ? '-44px' : '-32px';
+          const paddingVertical = taskTitle.length > 15 ? '3px' : '2px';
           const whiteSpace = taskTitle.length > 15 ? 'white-space: normal;' : 'white-space: nowrap;';
 
-          html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: ${paddingVertical} 5px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${whiteSpace} pointer-events: none; overflow-wrap: break-word;">${taskTitle}</div>`;
+          html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: rgba(15, 23, 42, 0.95); color: white; font-size: 9px; font-weight: 900; padding: ${paddingVertical} 6px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${whiteSpace} pointer-events: none; overflow-wrap: break-word; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">${taskTitle}</div>`;
       }
   }
 
