@@ -696,6 +696,15 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
         />
       )}
 
+      {/* Intro Message Modal (Team View Only) */}
+      {!isInstructor && game.introMessageConfig && (
+        <IntroMessageModal
+          isOpen={showIntroModal}
+          onClose={() => setShowIntroModal(false)}
+          message={game.introMessageConfig}
+        />
+      )}
+
       {/* Settings Password Modal (Team View Only) */}
       {!isInstructor && showSettingsModal && (
         <div className="fixed inset-0 z-[10000] bg-black/70 flex items-center justify-center">
