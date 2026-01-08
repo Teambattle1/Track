@@ -156,6 +156,42 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
     }
   }, [game.introMessageConfig, game.timerConfig?.startTime, introModalShown, isInstructor]);
 
+  // Finish Message Modal - Show when game ends for team view
+  useEffect(() => {
+    if (
+      !isInstructor &&
+      game.finishMessageConfig?.enabled &&
+      !finishModalShown
+    ) {
+      // Check if game has ended via state
+      if (game.state === 'ended') {
+        setShowFinishModal(true);
+        setFinishModalShown(true);
+        return;
+      }
+
+      // Check if timer has expired
+      if (game.timerConfig) {
+        const now = Date.now();
+        let hasExpired = false;
+
+        if (game.timerConfig.mode === 'scheduled_end' && game.timerConfig.endTime) {
+          const endTime = new Date(game.timerConfig.endTime).getTime();
+          hasExpired = now >= endTime;
+        } else if (game.timerConfig.mode === 'countdown' && game.timerConfig.startTime && game.timerConfig.durationMinutes) {
+          const startTime = new Date(game.timerConfig.startTime).getTime();
+          const endTime = startTime + (game.timerConfig.durationMinutes * 60 * 1000);
+          hasExpired = now >= endTime;
+        }
+
+        if (hasExpired) {
+          setShowFinishModal(true);
+          setFinishModalShown(true);
+        }
+      }
+    }
+  }, [game.finishMessageConfig, game.state, game.timerConfig, finishModalShown, isInstructor]);
+
   // Get tasks for this playground
   const playgroundTasks = game.points?.filter(p => p.playgroundId === playgroundId) || [];
 
