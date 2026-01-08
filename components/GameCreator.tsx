@@ -1113,18 +1113,18 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
                       {/* 1. Name & Identificator */}
                       <div className="grid grid-cols-2 gap-6">
-                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Game Name</label>
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-3">Game Name</label>
                               <input
                                   type="text"
                                   value={name}
                                   onChange={(e) => setName(e.target.value.toUpperCase())}
                                   placeholder="e.g. CITY EXPLORER 2025"
-                                  className="w-full p-4 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none transition-colors text-lg uppercase"
+                                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none transition-colors text-lg uppercase flex-1"
                               />
                           </div>
-                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-3">
                                   Identificator
                                   <span className="ml-1 text-[9px] text-slate-600">(City, Initials)</span>
                               </label>
@@ -1134,28 +1134,28 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   onChange={(e) => setIdentificator(e.target.value.toUpperCase())}
                                   placeholder="e.g. CPH, NYC, AA"
                                   maxLength={10}
-                                  className="w-full p-4 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-blue-500 outline-none transition-colors text-lg uppercase"
+                                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-blue-500 outline-none transition-colors text-lg uppercase flex-1"
                               />
                           </div>
                       </div>
 
                       {/* 2. Playing Date & Game Start Time */}
                       <div className="grid grid-cols-2 gap-6">
-                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Playing Date</label>
-                              <div className="relative">
-                                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-3">Playing Date</label>
+                              <div className="relative flex-1 flex">
+                                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                                   <input
                                       type="date"
                                       value={playingDate}
                                       onChange={(e) => setPlayingDate(e.target.value)}
-                                      className="w-full pl-10 p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none"
+                                      className="w-full pl-10 px-1 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none flex-1"
                                   />
                               </div>
                           </div>
 
-                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Game Start Time</label>
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-3">Game Start Time</label>
                               <input
                                   type="time"
                                   value={startTime}
@@ -1171,10 +1171,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           setLobbyOpenTime(lobbyTime);
                                       }
                                   }}
-                                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono focus:border-orange-500 outline-none"
+                                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono focus:border-orange-500 outline-none flex-1"
                                   placeholder="--:--"
                               />
-                              <p className="text-[9px] text-slate-600 mt-2">When the game officially starts</p>
+                              <p className="text-[9px] text-slate-600 mt-3">When the game officially starts</p>
                           </div>
                       </div>
 
