@@ -311,33 +311,150 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
                         </label>
                     </div>
 
-                    {/* Message */}
+                    {/* Message - Simple or HTML Editor */}
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
-                            Popup Message (HTML)
-                        </label>
-                        <textarea
-                            value={zoneChange.message}
-                            onChange={(e) => onUpdate({ message: e.target.value })}
-                            rows={5}
-                            placeholder="<h2>Time to Move!</h2><p>Head to the park zone now.</p>"
-                            className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:ring-2 focus:ring-orange-500 outline-none"
-                        />
-                        <p className="text-xs text-slate-500 mt-2">
-                            Use HTML for formatting (e.g., &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;)
-                        </p>
-                        
-                        {/* Preview */}
-                        {zoneChange.message && (
+                        <div className="flex items-center justify-between mb-3">
+                            <label className="block text-xs font-bold text-slate-400 uppercase">
+                                Popup Message
+                            </label>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPreview(true)}
+                                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                                >
+                                    <Eye className="w-3 h-3" />
+                                    PREVIEW
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setUseSimpleEditor(!useSimpleEditor)}
+                                    className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-colors"
+                                >
+                                    {useSimpleEditor ? 'HTML MODE' : 'SIMPLE MODE'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {useSimpleEditor ? (
+                            // Simple Editor for Non-Technical Admins
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs text-slate-500 mb-1">Title (Heading)</label>
+                                    <input
+                                        type="text"
+                                        value={simpleTitle}
+                                        onChange={(e) => setSimpleTitle(e.target.value)}
+                                        placeholder="e.g., Zone Change!"
+                                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-orange-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-slate-500 mb-1">Message (you can use line breaks)</label>
+                                    <textarea
+                                        value={simpleMessage}
+                                        onChange={(e) => setSimpleMessage(e.target.value)}
+                                        rows={4}
+                                        placeholder="Describe what teams should do. Leave a blank line between paragraphs."
+                                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleApplySimpleEditor}
+                                    className="w-full py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Check className="w-4 h-4" />
+                                    APPLY MESSAGE
+                                </button>
+                                <p className="text-xs text-slate-600">
+                                    Simple mode automatically formats your text into a nice popup message.
+                                </p>
+                            </div>
+                        ) : (
+                            // Advanced HTML Editor
+                            <div className="space-y-3">
+                                <textarea
+                                    value={zoneChange.message}
+                                    onChange={(e) => onUpdate({ message: e.target.value })}
+                                    rows={6}
+                                    placeholder="<h2>Time to Move!</h2><p>Head to the park zone now.</p>"
+                                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                                />
+                                <p className="text-xs text-slate-500">
+                                    Use HTML for formatting (e.g., &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;)
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Inline Preview */}
+                        {zoneChange.message && !useSimpleEditor && (
                             <div className="mt-3 p-4 bg-slate-800 border border-slate-600 rounded-xl">
                                 <p className="text-xs font-bold text-slate-400 uppercase mb-2">Preview:</p>
-                                <div 
+                                <div
                                     className="text-sm text-slate-200 prose prose-invert max-w-none"
                                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(zoneChange.message) }}
                                 />
                             </div>
                         )}
                     </div>
+
+                    {/* Full Screen Preview Modal */}
+                    {showPreview && (
+                        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                            <div className="bg-slate-900 border-2 border-orange-500 rounded-2xl max-w-md w-full max-h-[80vh] overflow-auto shadow-2xl">
+                                {/* Preview Header */}
+                                <div className="bg-gradient-to-r from-orange-600 to-orange-700 p-4 flex items-center justify-between sticky top-0">
+                                    <h3 className="text-white font-bold uppercase flex items-center gap-2">
+                                        <MapPin className="w-5 h-5" />
+                                        Zone Change Popup
+                                    </h3>
+                                    <button
+                                        onClick={() => setShowPreview(false)}
+                                        className="text-white hover:bg-orange-800 p-1 rounded transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                {/* Preview Content */}
+                                <div className="p-6">
+                                    {/* Image if exists */}
+                                    {zoneChange.imageUrl && (
+                                        <img
+                                            src={zoneChange.imageUrl}
+                                            alt="Zone Change"
+                                            className="w-full h-40 object-cover rounded-lg mb-4"
+                                        />
+                                    )}
+
+                                    {/* Message */}
+                                    <div
+                                        className="text-white prose prose-invert max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(zoneChange.message || '<p>No message set</p>') }}
+                                    />
+
+                                    {/* Close Button Preview */}
+                                    {zoneChange.requireCode ? (
+                                        <div className="mt-6 space-y-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Enter code to dismiss"
+                                                className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-center font-mono"
+                                            />
+                                            <button className="w-full py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg">
+                                                CONFIRM CODE
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button className="w-full mt-6 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg">
+                                            GOT IT
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Image Upload */}
                     <div>
