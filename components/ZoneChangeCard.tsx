@@ -120,6 +120,27 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
         return `${dateStr} at ${timeStr}`;
     };
 
+    const convertSimpleToHtml = (title: string, message: string) => {
+        let html = '';
+        if (title.trim()) {
+            html += `<h2>${DOMPurify.sanitize(title)}</h2>`;
+        }
+        if (message.trim()) {
+            const paragraphs = message.split('\n\n').map(p => {
+                const sanitized = DOMPurify.sanitize(p.trim());
+                return `<p>${sanitized}</p>`;
+            }).join('');
+            html += paragraphs;
+        }
+        return html;
+    };
+
+    const handleApplySimpleEditor = () => {
+        const html = convertSimpleToHtml(simpleTitle, simpleMessage);
+        onUpdate({ message: html });
+        setUseSimpleEditor(false);
+    };
+
     return (
         <div className={`bg-slate-900 border-2 rounded-2xl overflow-hidden transition-all ${
             zoneChange.enabled 
