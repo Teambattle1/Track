@@ -1153,41 +1153,48 @@ const GameApp: React.FC = () => {
               }
               return;
           }
+          // Relocate tool - move all tasks
+          if (mode === GameMode.EDIT && isRelocating && relocateScopeCenter && activeGame) {
+              console.log('[Relocate] Executing relocation to:', coord);
+
+              // Validate relocate scope center
+              if (!isValidCoordinate(relocateScopeCenter)) {
+                  console.warn('[Relocate] Invalid scope center:', relocateScopeCenter);
+                  return;
+              }
+
+              const offsetLat = coord.lat - relocateScopeCenter.lat;
+              const offsetLng = coord.lng - relocateScopeCenter.lng;
+
+              const updatedPoints = activeGame.points.map(p => {
+                  if (!p.location || p.playgroundId) return p; // Skip playground-only points
+                  return {
+                      ...p,
+                      location: {
+                          lat: p.location.lat + offsetLat,
+                          lng: p.location.lng + offsetLng
+                      }
+                  };
+              });
+
+              const updatedZones = (activeGame.dangerZones || []).map(z => ({
+                  ...z,
+                  location: {
+                      lat: z.location.lat + offsetLat,
+                      lng: z.location.lng + offsetLng
+                  }
+              }));
+
+              await updateActiveGame({ ...activeGame, points: updatedPoints, dangerZones: updatedZones });
+
+              // Update the scope center to the new location
+              setRelocateScopeCenter(coord);
+              console.log('[Relocate] Relocation complete. New center:', coord);
+          }
       } catch (error) {
           console.error('[Map Click] Error handling map click:', error);
+          // Silently handle the error - don't exit to landing page
           return;
-      }
-
-      // Relocate tool - move all tasks
-      if (mode === GameMode.EDIT && isRelocating && relocateScopeCenter && activeGame) {
-          console.log('[Relocate] Executing relocation to:', coord);
-          const offsetLat = coord.lat - relocateScopeCenter.lat;
-          const offsetLng = coord.lng - relocateScopeCenter.lng;
-
-          const updatedPoints = activeGame.points.map(p => {
-              if (!p.location || p.playgroundId) return p; // Skip playground-only points
-              return {
-                  ...p,
-                  location: {
-                      lat: p.location.lat + offsetLat,
-                      lng: p.location.lng + offsetLng
-                  }
-              };
-          });
-
-          const updatedZones = (activeGame.dangerZones || []).map(z => ({
-              ...z,
-              location: {
-                  lat: z.location.lat + offsetLat,
-                  lng: z.location.lng + offsetLng
-              }
-          }));
-
-          await updateActiveGame({ ...activeGame, points: updatedPoints, dangerZones: updatedZones });
-
-          // Update the scope center to the new location
-          setRelocateScopeCenter(coord);
-          console.log('[Relocate] Relocation complete. New center:', coord);
       }
   };
 
