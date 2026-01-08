@@ -236,8 +236,8 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
                     return;
                 }
 
-                // Clamp zoom to valid range (2-20)
-                const clampedZoom = Math.max(2, Math.min(20, zoom));
+                // Clamp zoom to valid range (2-19) - tile providers max at 19
+                const clampedZoom = Math.max(2, Math.min(19, zoom));
                 console.log('[GameMap] jumpTo:', { coord, requestedZoom: zoom, clampedZoom });
 
                 map.flyTo([coord.lat, coord.lng], clampedZoom, { duration: 1.5 });
