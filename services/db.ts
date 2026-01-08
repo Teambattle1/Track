@@ -70,12 +70,12 @@ const isValidUUID = (str: string): boolean => {
 
 
 // Configuration for large table fetches
-const CHUNK_SIZE = 50; // Fetch 50 rows at a time (reduced to prevent timeouts)
-const LIBRARY_CHUNK_SIZE = 5; // Very small chunks for library - large data objects cause timeouts (reduced from 12)
-const TAGS_CHUNK_SIZE = 20; // Smaller chunks for tag fetching (large data objects)
-const FETCH_TIMEOUT_MS = 20000; // 20 second timeout per chunk (reduced)
-const TAGS_FETCH_TIMEOUT_MS = 5000; // 5 second timeout for tag fetches (fail fast)
-const LIBRARY_FETCH_TIMEOUT_MS = 15000; // 15 second timeout for library fetches (reduced from 30s)
+const CHUNK_SIZE = 25; // Fetch 25 rows at a time (reduced from 50 to prevent timeouts on cold starts)
+const LIBRARY_CHUNK_SIZE = 3; // Very small chunks for library - large data objects cause timeouts
+const TAGS_CHUNK_SIZE = 15; // Smaller chunks for tag fetching (large data objects)
+const FETCH_TIMEOUT_MS = 40000; // 40 second timeout per chunk (increased from 20s for cold starts/slow servers)
+const TAGS_FETCH_TIMEOUT_MS = 8000; // 8 second timeout for tag fetches (increased from 5s)
+const LIBRARY_FETCH_TIMEOUT_MS = 25000; // 25 second timeout for library fetches (increased from 15s)
 
 // Retry helper for timeout and network errors with exponential backoff
 const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 3, timeoutMs?: number): Promise<T> => {
