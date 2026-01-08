@@ -841,7 +841,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
             center={[center.lat, center.lng]}
             zoom={15}
             minZoom={2}
-            maxZoom={20}
+            maxZoom={19}
             style={{ height: '100%', width: '100%', backgroundColor: 'transparent' }}
             zoomControl={false}
         >
