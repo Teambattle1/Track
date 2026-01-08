@@ -1428,6 +1428,15 @@ const GameApp: React.FC = () => {
       return () => clearTimeout(timeout);
   };
 
+  const handleNavigateToMeetingPoint = () => {
+      if (!mapRef.current || !activeGame?.endLocation) return;
+
+      // Jump to meeting point on map
+      mapRef.current.jumpTo(activeGame.endLocation);
+      setLocateFeedback('Navigating to meeting point...');
+      setTimeout(() => setLocateFeedback(null), 2000);
+  };
+
   const handleStartSimulation = () => {
       console.log('[Simulation] Starting simulation mode in tablet landscape view');
       // Switch to PLAY mode and enable simulation UI
