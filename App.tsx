@@ -2620,6 +2620,13 @@ const GameApp: React.FC = () => {
                   isUrgent={latestMessage.isUrgent}
               />
           )}
+          {activeGame?.introMessageConfig && (
+              <IntroMessageModal
+                  isOpen={showIntroModal}
+                  onClose={() => setShowIntroModal(false)}
+                  message={activeGame.introMessageConfig}
+              />
+          )}
           {activeDangerZone && (
               <DangerZoneModal
                   zone={activeDangerZone}
