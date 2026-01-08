@@ -152,7 +152,7 @@ const UserLocationMarker = ({ overrideLocation, overrideAccuracy, visible = true
 };
 
 const MapClickParams = ({ onClick }: { onClick?: (c: Coordinate) => void }) => {
-  useMapEvents({ click(e) { if (onClick) onClick(e.latlng); } });
+  useMapEvents({ click(e) { if (onClick) onClick({ lat: e.latlng.lat, lng: e.latlng.lng }); } });
   return null;
 };
 
