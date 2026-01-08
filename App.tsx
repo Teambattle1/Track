@@ -1245,6 +1245,30 @@ const GameApp: React.FC = () => {
       });
   };
 
+  const handleTeamLobbyClick = () => {
+      console.log('[TeamLobby] Button clicked, mode:', mode);
+
+      if (mode === GameMode.PLAY) {
+          // PLAY mode: Open GameManager for lobby game selection
+          console.log('[TeamLobby] PLAY mode - opening GameManager for lobby selection');
+          setShowGameManagerForLobby(true);
+      } else if (mode === GameMode.INSTRUCTOR) {
+          // INSTRUCTOR mode: Show TeamsLobbySelector for current game
+          if (activeGameId) {
+              console.log('[TeamLobby] INSTRUCTOR mode - opening TeamsLobbySelector');
+              setShowTeamLobbySelectorModal(true);
+          }
+      } else if (mode === GameMode.EDIT) {
+          // EDIT mode: Show DemoTeamsSelector if demo teams available
+          if (demoTeamsForLobby.length > 0) {
+              console.log('[TeamLobby] EDIT mode - opening DemoTeamsSelector');
+              setShowDemoTeamSelectorModal(true);
+          } else {
+              console.log('[TeamLobby] EDIT mode - no demo teams available');
+          }
+      }
+  };
+
   const handleUpdateGameTime = async (newEndTime: number) => {
       console.log('[App] handleUpdateGameTime called with:', new Date(newEndTime).toISOString());
       if (!activeGame) {
