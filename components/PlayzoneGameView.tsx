@@ -99,6 +99,8 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   const [showRanking, setShowRanking] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [introModalShown, setIntroModalShown] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [finishModalShown, setFinishModalShown] = useState(false);
   const [gameTime, setGameTime] = useState<string>('00:00');
   const [selectedMapStyle, setSelectedMapStyle] = useState<'standard' | 'satellite'>(() => {
     return game.defaultMapStyle === 'satellite' ? 'satellite' : 'standard';
