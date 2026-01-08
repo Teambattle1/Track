@@ -1377,7 +1377,17 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                           <div className="grid grid-cols-3 gap-2 mb-6">
                               <button onClick={() => setTimerMode('none')} className={`p-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${timerMode === 'none' ? 'bg-slate-800 border-white text-white' : 'border-slate-700 text-slate-500 hover:border-slate-500'}`}>NO TIMER</button>
                               <button onClick={() => setTimerMode('countdown')} className={`p-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${timerMode === 'countdown' ? 'bg-orange-900/20 border-orange-500 text-orange-500' : 'border-slate-700 text-slate-500 hover:border-slate-500'}`}>COUNTDOWN</button>
-                              <button onClick={() => setTimerMode('scheduled_end')} className={`p-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${timerMode === 'scheduled_end' ? 'bg-red-900/20 border-red-500 text-red-500' : 'border-slate-700 text-slate-500 hover:border-slate-500'}`}>END TIME</button>
+                              <button onClick={() => {
+                                  setTimerMode('scheduled_end');
+                                  // Auto-calculate end time (2 hours after start time) if not already set
+                                  if (startTime && !endDateTime) {
+                                      const [hours, minutes] = startTime.split(':').map(Number);
+                                      const endDate = new Date();
+                                      endDate.setHours(hours + 2, minutes, 0, 0);
+                                      const endTimeStr = endDate.toISOString();
+                                      setEndDateTime(endTimeStr);
+                                  }
+                              }} className={`p-4 rounded-xl border-2 transition-all text-xs font-black uppercase ${timerMode === 'scheduled_end' ? 'bg-red-900/20 border-red-500 text-red-500' : 'border-slate-700 text-slate-500 hover:border-slate-500'}`}>END TIME</button>
                           </div>
 
                           {timerMode === 'countdown' && (
@@ -1412,7 +1422,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                                   hour: '2-digit',
                                                   minute: '2-digit',
                                                   hour12: false
-                                              }) : 'Click to select date & time'}
+                                              }) : 'CLICK TO SELECT DATE & TIME'}
                                           </span>
                                           <Calendar className="w-5 h-5 text-red-500 group-hover:scale-110 transition-transform" />
                                       </button>
