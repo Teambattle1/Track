@@ -3214,6 +3214,19 @@ const GameApp: React.FC = () => {
             );
         })()}
 
+        {/* DANGER ZONE WARNING MODAL - PLAY MODE */}
+        {mode === GameMode.PLAY && (
+            <DangerZoneWarningModal
+                isVisible={dangerZoneState.currentZone !== null}
+                zone={dangerZoneState.currentZone}
+                currentScore={score}
+                scoreDeductedPerSecond={dangerZoneState.scoreDeductedPerSecond}
+                totalDeducted={dangerZoneState.totalDeducted}
+                elapsedSeconds={dangerZoneState.elapsedSeconds}
+                onClose={() => {}} // Modal cannot be closed by player
+            />
+        )}
+
         {/* DRAGGABLE MEASURE BOX */}
         {isMeasuring && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && (
             <MeasureBox
