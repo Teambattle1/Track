@@ -779,7 +779,7 @@ const GameApp: React.FC = () => {
   const liveTaskModalPoint = useMemo(() => {
       if (!activeTaskModalId || !activeGame) return null;
       return activeGame?.points?.find(p => p.id === activeTaskModalId) || null;
-  }, [activeTaskModalId, activeGame]);
+  }, [activeTaskModalId, activeGame?.id]);
 
   // Generate demo team history data (for testing/demo purposes)
   // TODO: Replace with actual team history from database
