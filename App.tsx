@@ -748,9 +748,13 @@ const GameApp: React.FC = () => {
       setScore(newScore);
   }, []);
 
+  const memoizedDangerZones = useMemo(() => {
+      return mode === GameMode.PLAY ? (activeGame?.dangerZones || []) : [];
+  }, [mode, activeGame?.id]);
+
   const dangerZoneState = useDangerZoneDetection(
       mode === GameMode.PLAY ? userLocation : null,
-      mode === GameMode.PLAY ? (activeGame?.dangerZones || []) : [],
+      memoizedDangerZones,
       score,
       handleScoreChange
   );
