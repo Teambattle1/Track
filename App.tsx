@@ -794,7 +794,7 @@ const GameApp: React.FC = () => {
 
       // Filter to only show selected team paths
       return allHistory.filter(history => selectedTeamPaths.includes(history.teamId));
-  }, [activeGame, selectedTeamPaths, teamsForFogOfWar]);
+  }, [activeGame?.id, selectedTeamPaths, teamsForFogOfWar.length]);
 
   // Filter tasks based on scheduled visibility
   const visiblePoints = useMemo(() => {
