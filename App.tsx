@@ -428,7 +428,7 @@ const GameApp: React.FC = () => {
     };
 
     loadTeams();
-  }, [mode, activeGame?.id, activeGame?.points]);
+  }, [mode, activeGame?.id]);
 
   // --- REALTIME: Games/Templates list updates across editors ---
   useEffect(() => {
