@@ -3374,6 +3374,7 @@ const GameApp: React.FC = () => {
             hoveredPlaygroundId={hoveredPlaygroundId}
             onHoverPlayground={setHoveredPlaygroundId}
             onOpenTeamDashboard={() => setShowTeamDashboard(true)}
+            onOpenTeamLobby={handleTeamLobbyClick}
             onRelocateGame={handleRelocateGame}
             isRelocating={isRelocating}
             onUpdateGameTime={handleUpdateGameTime}
