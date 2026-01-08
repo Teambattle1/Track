@@ -1,21 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, UserX, UserCheck, Shield } from 'lucide-react';
+import { X, Users, UserX, UserCheck, Shield, Zap } from 'lucide-react';
 import { teamSync } from '../services/teamSync';
 import { TeamMember } from '../types';
+import * as db from '../services/db';
 
 interface TeamLobbyPanelProps {
   isOpen: boolean;
   onClose: () => void;
   isCaptain: boolean;
+  teamId?: string; // Optional: view specific team (not just current team)
+  isDemoTeam?: boolean; // Optional: show demo badge and disable actions
+  isInstructorMode?: boolean; // Optional: read-only mode for instructors
 }
 
-const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCaptain }) => {
+const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ 
+  isOpen, 
+  onClose, 
+  isCaptain,
+  teamId,
+  isDemoTeam = false,
+  isInstructorMode = false
+}) => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(false);
   const myDeviceId = teamSync.getDeviceId();
 
   useEffect(() => {
     if (!isOpen) return;
 
+    // CASE 1: Demo Team - use mock members
+    if (isDemoTeam) {
+      // Generate mock members for demo
+      const mockMembers: TeamMember[] = [
+        {
+          deviceId: 'demo-1',
+          userName: 'Alex Chen',
+          lastSeen: Date.now(),
+          photoUrl: undefined,
+          role: 'captain',
+          isSolving: false,
+          isRetired: false,
+          deviceType: 'mobile'
+        },
+        {
+          deviceId: 'demo-2',
+          userName: 'Jordan Smith',
+          lastSeen: Date.now() - 5000,
+          photoUrl: undefined,
+          role: 'member',
+          isSolving: true,
+          isRetired: false,
+          deviceType: 'mobile'
+        },
+        {
+          deviceId: 'demo-3',
+          userName: 'Morgan Lee',
+          lastSeen: Date.now() - 15000,
+          photoUrl: undefined,
+          role: 'member',
+          isSolving: false,
+          isRetired: false,
+          deviceType: 'tablet'
+        }
+      ];
+      setTeamMembers(mockMembers);
+      return;
+    }
+
+    // CASE 2: Specific Team ID (INSTRUCTOR mode) - fetch from database
+    if (teamId && teamId !== 'current') {
+      setLoading(true);
+      const loadTeamMembers = async () => {
+        try {
+          const team = await db.fetchTeam(teamId);
+          if (team && team.members) {
+            // Convert TeamMemberData to TeamMember format
+            const members: TeamMember[] = team.members.map(m => ({
+              deviceId: m.deviceId,
+              userName: m.name,
+              lastSeen: Date.now(),
+              photoUrl: m.photo,
+              role: undefined,
+              isSolving: false,
+              isRetired: false,
+              deviceType: undefined
+            }));
+            setTeamMembers(members);
+          }
+        } catch (error) {
+          console.error('[TeamLobbyPanel] Error loading team members:', error);
+          setTeamMembers([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadTeamMembers();
+      return;
+    }
+
+    // CASE 3: Current Team (PLAY mode) - use teamSync subscription
     const unsubscribe = teamSync.subscribeToMembers((members) => {
       setTeamMembers(members);
     });
@@ -26,27 +109,29 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCapt
     return () => {
       unsubscribe();
     };
-  }, [isOpen]);
+  }, [isOpen, teamId, isDemoTeam]);
 
   const handleRetirePlayer = (deviceId: string) => {
-    if (isCaptain) {
+    if (isCaptain && !isInstructorMode && !isDemoTeam) {
       teamSync.retirePlayer(deviceId);
     }
   };
 
   const handleUnretirePlayer = (deviceId: string) => {
-    if (isCaptain) {
+    if (isCaptain && !isInstructorMode && !isDemoTeam) {
       teamSync.unretirePlayer(deviceId);
     }
   };
 
   const handleRetireMyself = () => {
+    if (isInstructorMode || isDemoTeam) return;
     if (confirm('Are you sure you want to retire from voting? Your votes will not count until you rejoin.')) {
       teamSync.retireMyself();
     }
   };
 
   const handleUnretireMyself = () => {
+    if (isInstructorMode || isDemoTeam) return;
     teamSync.unretireMyself();
   };
 
@@ -55,19 +140,46 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCapt
   const myMember = teamMembers.find(m => m.deviceId === myDeviceId);
   const otherMembers = teamMembers.filter(m => m.deviceId !== myDeviceId);
 
+  // Determine header styling based on mode
+  const headerColor = isDemoTeam 
+    ? { bg: 'bg-orange-100 dark:bg-orange-900/30', border: 'border-orange-200 dark:border-orange-800' }
+    : isInstructorMode
+    ? { bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-200 dark:border-indigo-800' }
+    : { bg: 'bg-blue-100 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800' };
+
+  const headerIcon = isDemoTeam 
+    ? <Zap className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+    : isInstructorMode
+    ? <Shield className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+    : <Users className="w-8 h-8 text-blue-600 dark:text-blue-400" />;
+
   return (
     <div className="fixed inset-0 z-[2500] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-6 bg-blue-100 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-800">
+        <div className={`p-6 ${headerColor.bg} border-b ${headerColor.border}`}>
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              {headerIcon}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Team Lobby</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Team Lobby</h2>
+                  {isDemoTeam && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-200 dark:bg-orange-800 text-orange-700 dark:text-orange-300 rounded-full text-xs font-bold uppercase">
+                      <Zap className="w-3 h-3" />
+                      Demo
+                    </span>
+                  )}
+                  {isInstructorMode && !isDemoTeam && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-200 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-bold uppercase">
+                      <Shield className="w-3 h-3" />
+                      Preview
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  {teamMembers.length} member{teamMembers.length !== 1 ? 's' : ''} online
+                  {loading ? 'Loading...' : `${teamMembers.length} member${teamMembers.length !== 1 ? 's' : ''} online`}
                 </p>
               </div>
             </div>
@@ -79,7 +191,9 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCapt
 
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1">
-          {isCaptain && (
+          
+          {/* Captain Controls - Only show in PLAY mode for current team */}
+          {isCaptain && !isInstructorMode && !isDemoTeam && (
             <div className="mb-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <Shield className="w-4 h-4 text-orange-600 dark:text-orange-400" />
@@ -91,9 +205,22 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCapt
             </div>
           )}
 
+          {/* Instructor Mode Badge */}
+          {isInstructorMode && !isDemoTeam && (
+            <div className="mb-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">Instructor View</p>
+              </div>
+              <p className="text-xs text-indigo-700 dark:text-indigo-300">
+                You are viewing this team's lobby. Player controls are disabled.
+              </p>
+            </div>
+          )}
+
           <div className="space-y-3">
-            {/* My Card */}
-            {myMember && (
+            {/* My Card - Only show in PLAY mode without teamId */}
+            {myMember && !teamId && !isInstructorMode && (
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-700 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -129,36 +256,40 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCapt
                   </div>
                 </div>
                 
-                {/* Self-Retire Button */}
-                <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                  {myMember.isRetired ? (
-                    <button
-                      onClick={handleUnretireMyself}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <UserCheck className="w-4 h-4" />
-                      REJOIN VOTING
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleRetireMyself}
-                      className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <UserX className="w-4 h-4" />
-                      RETIRE FROM VOTING
-                    </button>
-                  )}
-                </div>
+                {/* Self-Retire Button - Only in PLAY mode */}
+                {!isInstructorMode && !isDemoTeam && (
+                  <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                    {myMember.isRetired ? (
+                      <button
+                        onClick={handleUnretireMyself}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                        REJOIN VOTING
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleRetireMyself}
+                        className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        <UserX className="w-4 h-4" />
+                        RETIRE FROM VOTING
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Other Team Members */}
-            {otherMembers.length > 0 && (
+            {teamMembers.length > 0 && (
               <>
-                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-4 mb-2">
-                  Teammates
-                </h3>
-                {otherMembers.map((member) => (
+                {!myMember && (
+                  <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                    Team Members
+                  </h3>
+                )}
+                {(myMember ? otherMembers : teamMembers).map((member) => (
                   <div 
                     key={member.deviceId}
                     className={`border-2 rounded-xl p-4 transition-all ${
@@ -200,8 +331,8 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCapt
                       </div>
                     </div>
 
-                    {/* Captain Controls */}
-                    {isCaptain && (
+                    {/* Captain Controls - Only in PLAY mode for current team */}
+                    {isCaptain && !isInstructorMode && !isDemoTeam && (
                       <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                         {member.isRetired ? (
                           <button
@@ -225,6 +356,16 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({ isOpen, onClose, isCapt
                   </div>
                 ))}
               </>
+            )}
+
+            {/* Empty State */}
+            {teamMembers.length === 0 && !loading && (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400 font-medium">
+                  No members yet
+                </p>
+              </div>
             )}
           </div>
         </div>
