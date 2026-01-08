@@ -380,6 +380,54 @@ const GameApp: React.FC = () => {
     }
   }, [activeGameId]);
 
+  // --- DEMO TEAMS GENERATION FOR EDIT MODE (Lobby Preview) ---
+  useEffect(() => {
+    // Only generate demo teams in EDIT mode when there are no real teams
+    if (mode !== GameMode.EDIT || !activeGame) {
+      setDemoTeamsForLobby([]);
+      return;
+    }
+
+    // Fetch real teams for this game
+    const loadTeams = async () => {
+      try {
+        const realTeams = await db.fetchTeams(activeGame.id);
+
+        // If there are real teams, don't show demo teams
+        if (realTeams && realTeams.length > 0) {
+          setDemoTeamsForLobby([]);
+          return;
+        }
+
+        // No real teams - generate 3 demo teams
+        const gameCenter = activeGame.points?.[0]?.location || { lat: 55.6761, lng: 12.5683 };
+        const demoHistory = generateDemoTeamHistory(gameCenter, 3);
+
+        // Convert demo history to Team interface
+        const demoTeams: Team[] = demoHistory.map(history => ({
+          id: history.teamId,
+          gameId: activeGame.id,
+          name: history.teamName,
+          score: 1200 + Math.floor(Math.random() * 800),
+          completedPointIds: [],
+          updatedAt: new Date().toISOString(),
+          members: [], // Demo teams will have no members for now
+          photoUrl: undefined,
+          captainDeviceId: undefined,
+          isStarted: true,
+          startedAt: Date.now() - 1800000 // Started 30 min ago
+        }));
+
+        setDemoTeamsForLobby(demoTeams);
+      } catch (error) {
+        console.error('[Demo Teams] Error loading teams:', error);
+        setDemoTeamsForLobby([]);
+      }
+    };
+
+    loadTeams();
+  }, [mode, activeGame?.id, activeGame?.points]);
+
   // --- REALTIME: Games/Templates list updates across editors ---
   useEffect(() => {
       const channel = supabase.channel('games_list_changes');
