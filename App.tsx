@@ -746,6 +746,26 @@ const GameApp: React.FC = () => {
       loadTeams();
   }, [showGameStats, activeGameId]);
 
+  // --- INTRO MESSAGE MODAL (TEAM MODE ONLY) ---
+  useEffect(() => {
+      if (
+          mode === GameMode.PLAY &&
+          userAccessMode === 'TEAM' &&
+          activeGame?.introMessageConfig?.enabled &&
+          !introModalShown &&
+          activeGame?.timerConfig?.startTime
+      ) {
+          const now = Date.now();
+          const startTime = new Date(activeGame.timerConfig.startTime).getTime();
+
+          // Show intro modal when game starts (lobby timer expires)
+          if (now >= startTime) {
+              setShowIntroModal(true);
+              setIntroModalShown(true);
+          }
+      }
+  }, [mode, userAccessMode, activeGame?.introMessageConfig, activeGame?.timerConfig?.startTime, introModalShown]);
+
   // --- DANGER ZONE DETECTION (PLAY MODE ONLY) ---
   const handleScoreChange = useCallback((newScore: number) => {
       setScore(newScore);
