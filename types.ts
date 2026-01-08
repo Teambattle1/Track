@@ -1,6 +1,17 @@
 // Global version variable injected at build time by Vite
 declare const __APP_VERSION__: string;
 
+// Game Message Configuration (Intro/Finish Messages)
+export interface GameMessage {
+  enabled: boolean;
+  useImage: boolean; // If true, display image instead of text
+  text: string; // HTML formatted text
+  imageUrl?: string;
+  textColor: string; // Hex color
+  backgroundColor: string; // Hex color
+  fontSize: 'small' | 'medium' | 'large' | 'xlarge'; // Relative sizes
+}
+
 export interface Coordinate {
   lat: number;
   lng: number;
