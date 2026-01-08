@@ -1139,17 +1139,42 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                           </div>
                       </div>
 
-                      {/* 2. Playing Date */}
-                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-xs">
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Playing Date</label>
-                          <div className="relative h-14">
-                              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                      {/* 2. Playing Date & Game Start Time */}
+                      <div className="grid grid-cols-2 gap-6">
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Playing Date</label>
+                              <div className="relative h-14">
+                                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                  <input
+                                      type="date"
+                                      value={playingDate}
+                                      onChange={(e) => setPlayingDate(e.target.value)}
+                                      className="w-full h-full pl-10 p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none"
+                                  />
+                              </div>
+                          </div>
+
+                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Game Start Time</label>
                               <input
-                                  type="date"
-                                  value={playingDate}
-                                  onChange={(e) => setPlayingDate(e.target.value)}
-                                  className="w-full h-full pl-10 p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold focus:border-orange-500 outline-none uppercase"
+                                  type="time"
+                                  value={startTime}
+                                  onChange={(e) => {
+                                      setStartTime(e.target.value);
+                                      // Auto-calculate lobby open time (15 minutes before start)
+                                      if (e.target.value && !lobbyOpenTime) {
+                                          const [hours, minutes] = e.target.value.split(':').map(Number);
+                                          const startDate = new Date();
+                                          startDate.setHours(hours, minutes, 0, 0);
+                                          const lobbyDate = new Date(startDate.getTime() - 15 * 60 * 1000);
+                                          const lobbyTime = `${lobbyDate.getHours().toString().padStart(2, '0')}:${lobbyDate.getMinutes().toString().padStart(2, '0')}`;
+                                          setLobbyOpenTime(lobbyTime);
+                                      }
+                                  }}
+                                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono focus:border-orange-500 outline-none"
+                                  placeholder="--:--"
                               />
+                              <p className="text-[9px] text-slate-600 mt-2">When the game officially starts</p>
                           </div>
                       </div>
 
