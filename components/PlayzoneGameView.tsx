@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Game, Playground, GamePoint, DeviceType } from '../types';
+import IntroMessageModal from './IntroMessageModal';
 import { DEVICE_SPECS, getDeviceLayout } from '../utils/deviceUtils';
 import { X, Home, QrCode, Trophy, Settings, MessageSquare, Users, Map, MapPin, CheckCircle, XCircle, Compass, Maximize2 } from 'lucide-react';
 import { ICON_COMPONENTS } from '../utils/icons';
