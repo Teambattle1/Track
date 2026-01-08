@@ -1003,8 +1003,16 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
 
   // Zone Change Handlers
   const handleAddZoneChange = () => {
-      // Set default targetTime to 1 hour from now
-      const defaultTargetTime = Date.now() + (60 * 60 * 1000);
+      // Set default targetTime to 1 hour from game start time
+      let defaultTargetTime = Date.now() + (60 * 60 * 1000);
+
+      if (startTime) {
+          // Parse the start time (HH:MM format) and add 1 hour
+          const [hours, minutes] = startTime.split(':').map(Number);
+          const targetDate = new Date();
+          targetDate.setHours(hours + 1, minutes, 0, 0);
+          defaultTargetTime = targetDate.getTime();
+      }
 
       const newZoneChange: ZoneChangeEvent = {
           id: `zc-${Date.now()}`,
