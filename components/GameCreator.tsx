@@ -1347,37 +1347,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           case 'TIMING': // NEW TAB
               return (
                   <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
-                      {/* Game Start Time & Lobby Settings */}
+                      {/* Team Lobby Settings */}
                       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-4">Game Schedule</label>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-4">Lobby Settings</label>
 
                           <div className="space-y-4">
-                              {/* Start Time */}
-                              <div>
-                                  <label className="block text-[9px] font-bold text-slate-500 uppercase mb-2">
-                                      Game Start Time
-                                  </label>
-                                  <input
-                                      type="time"
-                                      value={startTime}
-                                      onChange={(e) => {
-                                          setStartTime(e.target.value);
-                                          // Auto-calculate lobby open time (15 minutes before start)
-                                          if (e.target.value && !lobbyOpenTime) {
-                                              const [hours, minutes] = e.target.value.split(':').map(Number);
-                                              const startDate = new Date();
-                                              startDate.setHours(hours, minutes, 0, 0);
-                                              const lobbyDate = new Date(startDate.getTime() - 15 * 60 * 1000);
-                                              const lobbyTime = `${lobbyDate.getHours().toString().padStart(2, '0')}:${lobbyDate.getMinutes().toString().padStart(2, '0')}`;
-                                              setLobbyOpenTime(lobbyTime);
-                                          }
-                                      }}
-                                      className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono focus:border-blue-500 outline-none"
-                                      placeholder="--:--"
-                                  />
-                                  <p className="text-[9px] text-slate-600 mt-1">When the game officially starts</p>
-                              </div>
-
                               {/* Team Lobby Open Time */}
                               <div>
                                   <label className="block text-[9px] font-bold text-slate-500 uppercase mb-2">
