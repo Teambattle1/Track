@@ -515,10 +515,12 @@ const GameApp: React.FC = () => {
 
       let isSubscribed = false;
       let pollingId: number | null = null;
+      let lastReceivedDbUpdatedAt = activeGame?.dbUpdatedAt;
       const channel = supabase.channel(`game_changes_${activeGameId}`);
 
       const applyRemoteGame = (remote: Game) => {
-          if (remote.dbUpdatedAt && remote.dbUpdatedAt === activeGame?.dbUpdatedAt) return;
+          if (remote.dbUpdatedAt && remote.dbUpdatedAt === lastReceivedDbUpdatedAt) return;
+          lastReceivedDbUpdatedAt = remote.dbUpdatedAt;
           setGames(prev => prev.map(g => (g.id === remote.id ? remote : g)));
           setActiveGame(remote);
       };
@@ -555,7 +557,7 @@ const GameApp: React.FC = () => {
           if (pollingId) window.clearInterval(pollingId);
           supabase.removeChannel(channel);
       };
-  }, [activeGameId, mode, activeTask, activeGame?.dbUpdatedAt]);
+  }, [activeGameId, mode, activeTask]);
 
   // --- CHAT NOTIFICATIONS ---
   useEffect(() => {
