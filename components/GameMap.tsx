@@ -230,11 +230,20 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
         },
         getCenter: () => { const c = map.getCenter(); return { lat: c.lat, lng: c.lng }; },
         jumpTo: (coord: Coordinate, zoom: number = 17) => {
-            if (!isValidCoordinate(coord)) {
-                console.warn('[GameMap] Invalid coordinate for jumpTo:', coord);
-                return;
+            try {
+                if (!isValidCoordinate(coord)) {
+                    console.warn('[GameMap] Invalid coordinate for jumpTo:', coord);
+                    return;
+                }
+
+                // Clamp zoom to valid range (2-20)
+                const clampedZoom = Math.max(2, Math.min(20, zoom));
+                console.log('[GameMap] jumpTo:', { coord, requestedZoom: zoom, clampedZoom });
+
+                map.flyTo([coord.lat, coord.lng], clampedZoom, { duration: 1.5 });
+            } catch (error) {
+                console.error('[GameMap] Error in jumpTo:', error);
             }
-            map.flyTo([coord.lat, coord.lng], zoom, { duration: 1.5 });
         }
     }));
     return null;
