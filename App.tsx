@@ -658,7 +658,7 @@ const GameApp: React.FC = () => {
       });
 
       return () => unsubscribe?.();
-  }, [activeGameId, activeGame]);
+  }, [activeGameId]);
 
   // --- GEOFENCING ENGINE ---
   useEffect(() => {
