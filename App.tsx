@@ -773,7 +773,7 @@ const GameApp: React.FC = () => {
           addLinks('onIncorrect', '#ef4444');
       });
       return links;
-  }, [activeGame, mode]);
+  }, [activeGame?.id, mode]);
 
   // Derived Active Modal Point (Live Data)
   const liveTaskModalPoint = useMemo(() => {
