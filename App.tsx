@@ -1108,36 +1108,53 @@ const GameApp: React.FC = () => {
   };
 
   const handleMapClick = async (coord: Coordinate) => {
-      // DISABLED: Measure tool should ONLY work with tasks, not random map points
-      // Users should click tasks to measure between them
-      if (mode === GameMode.EDIT && isMeasuring) {
-          console.log('[Measure] Map click ignored - please click tasks to measure between them');
-          return;
-      }
-
-      // Snap to Road - Rectangle selection
-      if (mode === GameMode.EDIT && snapToRoadMode) {
-          if (!snapSelectionStart) {
-              // First click - set start point
-              console.log('[Snap to Road] Setting selection start:', coord);
-              setSnapSelectionStart(coord);
-          } else {
-              // Second click - set end point and select tasks
-              console.log('[Snap to Road] Setting selection end:', coord);
-              setSnapSelectionEnd(coord);
-
-              // Find all tasks within the rectangle
-              if (activeGame) {
-                  const tasksInBox = activeGame.points.filter(p => {
-                      if (!p.location || p.playgroundId) return false;
-                      return isPointInBox(p.location, snapSelectionStart, coord);
-                  });
-
-                  const taskIds = tasksInBox.map(t => t.id);
-                  setSelectedSnapTaskIds(taskIds);
-                  console.log('[Snap to Road] Selected', taskIds.length, 'tasks in rectangle');
-              }
+      try {
+          // Validate coordinate
+          if (!coord || !isValidCoordinate(coord)) {
+              console.warn('[Map Click] Invalid coordinate:', coord);
+              return;
           }
+
+          // DISABLED: Measure tool should ONLY work with tasks, not random map points
+          // Users should click tasks to measure between them
+          if (mode === GameMode.EDIT && isMeasuring) {
+              console.log('[Measure] Map click ignored - please click tasks to measure between them');
+              return;
+          }
+
+          // Snap to Road - Rectangle selection
+          if (mode === GameMode.EDIT && snapToRoadMode) {
+              if (!snapSelectionStart) {
+                  // First click - set start point
+                  console.log('[Snap to Road] Setting selection start:', coord);
+                  setSnapSelectionStart(coord);
+              } else {
+                  // Validate both coordinates before using isPointInBox
+                  if (!isValidCoordinate(snapSelectionStart)) {
+                      console.warn('[Snap to Road] Invalid start coordinate:', snapSelectionStart);
+                      return;
+                  }
+
+                  // Second click - set end point and select tasks
+                  console.log('[Snap to Road] Setting selection end:', coord);
+                  setSnapSelectionEnd(coord);
+
+                  // Find all tasks within the rectangle
+                  if (activeGame) {
+                      const tasksInBox = activeGame.points.filter(p => {
+                          if (!p.location || p.playgroundId) return false;
+                          return isPointInBox(p.location, snapSelectionStart, coord);
+                      });
+
+                      const taskIds = tasksInBox.map(t => t.id);
+                      setSelectedSnapTaskIds(taskIds);
+                      console.log('[Snap to Road] Selected', taskIds.length, 'tasks in rectangle');
+                  }
+              }
+              return;
+          }
+      } catch (error) {
+          console.error('[Map Click] Error handling map click:', error);
           return;
       }
 
