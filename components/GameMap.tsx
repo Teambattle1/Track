@@ -189,35 +189,39 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
     }, [map]);
     useImperativeHandle(handleRef, () => ({
         fitBounds: (pts: GamePoint[] | Coordinate[]) => {
-            console.log('[GameMap] fitBounds called with:', pts?.length, 'items');
+            try {
+                console.log('[GameMap] fitBounds called with:', pts?.length, 'items');
 
-            let latLngs: L.LatLngExpression[] = [];
-            if (pts && pts.length > 0 && 'location' in pts[0]) {
-                 const validPts = (pts as GamePoint[]).filter(p => isValidCoordinate(p.location));
-                 console.log('[GameMap] Filtered to', validPts.length, 'valid GamePoints from', pts.length);
-                 latLngs = validPts.map(p => [p.location.lat, p.location.lng]);
-            } else if (pts && pts.length > 0) {
-                 const validCoords = (pts as Coordinate[]).filter(c => isValidCoordinate(c));
-                 console.log('[GameMap] Filtered to', validCoords.length, 'valid Coordinates from', pts.length);
-                 latLngs = validCoords.map(c => [c.lat, c.lng]);
-            }
+                let latLngs: L.LatLngExpression[] = [];
+                if (pts && pts.length > 0 && 'location' in pts[0]) {
+                     const validPts = (pts as GamePoint[]).filter(p => isValidCoordinate(p.location));
+                     console.log('[GameMap] Filtered to', validPts.length, 'valid GamePoints from', pts.length);
+                     latLngs = validPts.map(p => [p.location.lat, p.location.lng]);
+                } else if (pts && pts.length > 0) {
+                     const validCoords = (pts as Coordinate[]).filter(c => isValidCoordinate(c));
+                     console.log('[GameMap] Filtered to', validCoords.length, 'valid Coordinates from', pts.length);
+                     latLngs = validCoords.map(c => [c.lat, c.lng]);
+                }
 
-            console.log('[GameMap] latLngs to fit:', latLngs);
+                console.log('[GameMap] latLngs to fit:', latLngs);
 
-            if (latLngs.length === 0) {
-                console.warn('[GameMap] fitBounds: No valid coordinates to fit');
-                return;
-            }
+                if (latLngs.length === 0) {
+                    console.warn('[GameMap] fitBounds: No valid coordinates to fit');
+                    return;
+                }
 
-            const bounds = L.latLngBounds(latLngs);
-            console.log('[GameMap] Calculated bounds:', bounds.toBBoxString());
+                const bounds = L.latLngBounds(latLngs);
+                console.log('[GameMap] Calculated bounds:', bounds.toBBoxString());
 
-            if (bounds.isValid()) {
-                console.log('[GameMap] Fitting bounds to', latLngs.length, 'points with maxZoom 20');
-                // Use same zoom settings as initial fit: padding: [50, 50], animate: false, maxZoom: 20
-                map.fitBounds(bounds, { padding: [50, 50], animate: false, maxZoom: 20 });
-            } else {
-                console.warn('[GameMap] Invalid bounds calculated');
+                if (bounds.isValid()) {
+                    console.log('[GameMap] Fitting bounds to', latLngs.length, 'points with maxZoom 20');
+                    // Use same zoom settings as initial fit: padding: [50, 50], animate: false, maxZoom: 20
+                    map.fitBounds(bounds, { padding: [50, 50], animate: false, maxZoom: 20 });
+                } else {
+                    console.warn('[GameMap] Invalid bounds calculated');
+                }
+            } catch (error) {
+                console.error('[GameMap] Error in fitBounds:', error);
             }
         },
         getBounds: () => {
