@@ -135,6 +135,14 @@ const GameApp: React.FC = () => {
   const [showPlayzoneSelector, setShowPlayzoneSelector] = useState(false);
   const [showSystemSounds, setShowSystemSounds] = useState(false);
 
+  // --- TEAM LOBBY ACCESS STATE ---
+  const [gameForLobbyAccess, setGameForLobbyAccess] = useState<string | null>(null);
+  const [showGameManagerForLobby, setShowGameManagerForLobby] = useState(false);
+  const [selectedTeamIdForLobby, setSelectedTeamIdForLobby] = useState<string | null>(null);
+  const [demoTeamsForLobby, setDemoTeamsForLobby] = useState<Team[]>([]);
+  const [showTeamLobbySelectorModal, setShowTeamLobbySelectorModal] = useState(false);
+  const [showDemoTeamSelectorModal, setShowDemoTeamSelectorModal] = useState(false);
+
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
   const gameTemplates = useMemo(() => games.filter(g => g.isGameTemplate), [games]);
   
