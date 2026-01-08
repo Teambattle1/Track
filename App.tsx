@@ -35,6 +35,8 @@ import DatabaseToolsModal from './components/DatabaseToolsModal';
 import ChatDrawer from './components/ChatDrawer';
 import TeamsHubModal from './components/TeamsHubModal';
 import TeamLobbyPanel from './components/TeamLobbyPanel';
+import TeamsLobbySelector from './components/TeamsLobbySelector';
+import DemoTeamsSelector from './components/DemoTeamsSelector';
 import QRScannerModal from './components/QRScannerModal';
 import ClientSubmissionView from './components/ClientSubmissionView';
 import GameCreator from './components/GameCreator';
