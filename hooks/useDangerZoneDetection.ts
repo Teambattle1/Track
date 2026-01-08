@@ -149,7 +149,7 @@ export const useDangerZoneDetection = (
         deductionIntervalRef.current = null;
       }
     };
-  }, [dangerZoneState.currentZone, dangerZoneState.enteredTime, onScoreChange]);
+  }, [dangerZoneState.currentZone?.id, dangerZoneState.enteredTime, onScoreChange]);
 
   // Cleanup on unmount
   useEffect(() => {
