@@ -96,6 +96,8 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   const [settingsPassword, setSettingsPassword] = useState('');
   const [settingsPasswordError, setSettingsPasswordError] = useState('');
   const [showRanking, setShowRanking] = useState(false);
+  const [showIntroModal, setShowIntroModal] = useState(false);
+  const [introModalShown, setIntroModalShown] = useState(false);
   const [gameTime, setGameTime] = useState<string>('00:00');
   const [selectedMapStyle, setSelectedMapStyle] = useState<'standard' | 'satellite'>(() => {
     return game.defaultMapStyle === 'satellite' ? 'satellite' : 'standard';
@@ -131,6 +133,25 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [game.timerConfig, isInstructor]);
+
+  // Intro Message Modal - Show when game starts for team view
+  useEffect(() => {
+    if (
+      !isInstructor &&
+      game.introMessageConfig?.enabled &&
+      !introModalShown &&
+      game.timerConfig?.startTime
+    ) {
+      const now = Date.now();
+      const startTime = new Date(game.timerConfig.startTime).getTime();
+
+      // Show intro modal when game starts (lobby timer expires)
+      if (now >= startTime) {
+        setShowIntroModal(true);
+        setIntroModalShown(true);
+      }
+    }
+  }, [game.introMessageConfig, game.timerConfig?.startTime, introModalShown, isInstructor]);
 
   // Get tasks for this playground
   const playgroundTasks = game.points?.filter(p => p.playgroundId === playgroundId) || [];
