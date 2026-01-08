@@ -225,9 +225,9 @@ export const fetchGames = async (): Promise<Game[]> => {
         try {
             console.warn('[DB Service] Attempting fetchGames fallback (small batch)...');
             const { data, error } = await Promise.race([
-                supabase.from('games').select('id, data, updated_at').limit(500).order('id', { ascending: false }),
+                supabase.from('games').select('id, data, updated_at').limit(250).order('id', { ascending: false }),
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Fallback query timeout after 10s')), 10000)
+                    setTimeout(() => reject(new Error('Fallback query timeout after 30s')), 30000)
                 )
             ]) as Promise<{ data: any[] | null; error: any }>;
 
