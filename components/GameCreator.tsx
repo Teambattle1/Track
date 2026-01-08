@@ -1816,35 +1816,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                       )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                          {/* Pin Settings / PLAYZONE Task Settings */}
-                          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                              <label className="block text-[10px] font-bold text-white uppercase mb-4">{gameMode === 'playzone' ? 'PLAYZONE Task' : 'Pin'} settings</label>
-                              <div className="space-y-3">
-                                  <RadioOption
-                                      label="Display task order on pin"
-                                      selected={pinDisplayMode === 'order'}
-                                      onClick={() => setPinDisplayMode('order')}
-                                  />
-                                  <RadioOption
-                                      label="Display task score on map"
-                                      selected={pinDisplayMode === 'score'}
-                                      onClick={() => setPinDisplayMode('score')}
-                                  />
-                                  <RadioOption
-                                      label="Display nothing on pin"
-                                      selected={pinDisplayMode === 'none'}
-                                      onClick={() => setPinDisplayMode('none')}
-                                  />
-                                  <div className="pt-2 border-t border-slate-800">
-                                      <CheckboxOption
-                                          label="Display task short intro under pin"
-                                          checked={showShortIntroUnderPin}
-                                          onChange={setShowShortIntroUnderPin}
-                                      />
-                                  </div>
-                              </div>
-                          </div>
-
                           {/* Map Interaction Settings - Only for GPS-based games */}
                           {gameMode !== 'playzone' && (
                               <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
