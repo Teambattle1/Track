@@ -495,7 +495,7 @@ const GameApp: React.FC = () => {
               }
           }
       }
-  }, [activeGameId]);
+  }, [activeGameId, games]);
 
   // --- ENSURE EDIT MODE WHEN GAME OPENED FROM MANAGER ---
   useEffect(() => {
