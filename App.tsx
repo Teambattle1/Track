@@ -702,7 +702,7 @@ const GameApp: React.FC = () => {
 
       const interval = setInterval(checkGeofences, 2000); // Check every 2 seconds
       return () => clearInterval(interval);
-  }, [userLocation, activeGame, mode]);
+  }, [userLocation, activeGame?.id, mode]);
 
   // --- FOG OF WAR TEAMS DATA FETCHING ---
   useEffect(() => {
