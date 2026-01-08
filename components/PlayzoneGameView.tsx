@@ -744,6 +744,16 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
         />
       )}
 
+      {/* Finish Message Modal (Team View Only) */}
+      {!isInstructor && game.finishMessageConfig && (
+        <FinishMessageModal
+          isOpen={showFinishModal}
+          onClose={() => setShowFinishModal(false)}
+          message={game.finishMessageConfig}
+          enableMeetingPoint={false}
+        />
+      )}
+
       {/* Settings Password Modal (Team View Only) */}
       {!isInstructor && showSettingsModal && (
         <div className="fixed inset-0 z-[10000] bg-black/70 flex items-center justify-center">
