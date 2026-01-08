@@ -2676,6 +2676,16 @@ const GameApp: React.FC = () => {
                   message={activeGame.introMessageConfig}
               />
           )}
+          {activeGame?.finishMessageConfig && (
+              <FinishMessageModal
+                  isOpen={showFinishModal}
+                  onClose={() => setShowFinishModal(false)}
+                  message={activeGame.finishMessageConfig}
+                  enableMeetingPoint={activeGame.enableMeetingPoint}
+                  meetingPoint={activeGame.endLocation}
+                  onNavigateToMeetingPoint={handleNavigateToMeetingPoint}
+              />
+          )}
           {activeDangerZone && (
               <DangerZoneModal
                   zone={activeDangerZone}
