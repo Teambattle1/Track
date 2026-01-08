@@ -303,6 +303,7 @@ const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.
           className={layer.className || ''}
           errorTileUrl={layer.errorTileUrl}
           detectRetina={true}
+          maxZoom={19}
         />
       )}
 
