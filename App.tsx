@@ -828,7 +828,7 @@ const GameApp: React.FC = () => {
           teamStartTime,
           activeGame.timerConfig
       );
-  }, [activeGame, mode, currentTeam, selectedTeamForFogOfWar, teamsForFogOfWar]);
+  }, [activeGame?.id, mode, currentTeam?.startedAt, selectedTeamForFogOfWar, teamsForFogOfWar.length]);
 
 
   const ensureSession = (callback: () => void) => {
