@@ -744,11 +744,15 @@ const GameApp: React.FC = () => {
   }, [showGameStats, activeGameId]);
 
   // --- DANGER ZONE DETECTION (PLAY MODE ONLY) ---
+  const handleScoreChange = useCallback((newScore: number) => {
+      setScore(newScore);
+  }, []);
+
   const dangerZoneState = useDangerZoneDetection(
       mode === GameMode.PLAY ? userLocation : null,
       mode === GameMode.PLAY ? (activeGame?.dangerZones || []) : [],
       score,
-      (newScore) => setScore(newScore)
+      handleScoreChange
   );
 
   // --- MEMOIZED DATA ---
