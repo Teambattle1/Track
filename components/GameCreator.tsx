@@ -1683,26 +1683,36 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
               return (
                   <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
                       {/* Intro Message */}
-                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col min-h-[300px]">
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
-                              <MessageSquare className="w-4 h-4" /> Intro Message
-                          </label>
-                          <RichTextEditor 
-                              value={description}
-                              onChange={setDescription}
-                              placeholder="Briefing shown to players upon entering the game..."
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <div className="flex items-center gap-2 mb-4">
+                              <MessageSquare className="w-4 h-4 text-orange-500" />
+                              <h3 className="text-sm font-bold text-white uppercase">Intro Message</h3>
+                          </div>
+                          <p className="text-xs text-slate-400 mb-4">
+                            Displayed when players enter the game after the lobby timer expires
+                          </p>
+                          <GameMessageEditor
+                              message={introMessageConfig}
+                              onChange={setIntroMessageConfig}
+                              label="Game Introduction"
+                              placeholder="Welcome to the game! Your mission begins now..."
                           />
                       </div>
 
                       {/* Finish Message */}
-                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col min-h-[300px]">
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
-                              <Flag className="w-4 h-4" /> Finish Message
-                          </label>
-                          <RichTextEditor 
-                              value={finishMessage} 
-                              onChange={setFinishMessage} 
-                              placeholder="Message shown when game ends..."
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <div className="flex items-center gap-2 mb-4">
+                              <Flag className="w-4 h-4 text-green-500" />
+                              <h3 className="text-sm font-bold text-white uppercase">Finish Message</h3>
+                          </div>
+                          <p className="text-xs text-slate-400 mb-4">
+                            Displayed when the game timer expires or the game ends
+                          </p>
+                          <GameMessageEditor
+                              message={finishMessageConfig}
+                              onChange={setFinishMessageConfig}
+                              label="Game Completion"
+                              placeholder="Congratulations! The game has ended..."
                           />
                       </div>
 
