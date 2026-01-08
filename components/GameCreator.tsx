@@ -1161,12 +1161,12 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   value={startTime}
                                   onChange={(e) => {
                                       setStartTime(e.target.value);
-                                      // Auto-calculate lobby open time (15 minutes before start)
+                                      // Auto-calculate lobby open time (60 minutes before start)
                                       if (e.target.value && !lobbyOpenTime) {
                                           const [hours, minutes] = e.target.value.split(':').map(Number);
                                           const startDate = new Date();
                                           startDate.setHours(hours, minutes, 0, 0);
-                                          const lobbyDate = new Date(startDate.getTime() - 15 * 60 * 1000);
+                                          const lobbyDate = new Date(startDate.getTime() - 60 * 60 * 1000);
                                           const lobbyTime = `${lobbyDate.getHours().toString().padStart(2, '0')}:${lobbyDate.getMinutes().toString().padStart(2, '0')}`;
                                           setLobbyOpenTime(lobbyTime);
                                       }
