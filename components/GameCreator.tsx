@@ -248,6 +248,29 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [identificator, setIdentificator] = useState(baseGame?.identificator || '');
   const [description, setDescription] = useState(baseGame?.description || '');
   const [finishMessage, setFinishMessage] = useState(baseGame?.finishMessage || '');
+
+  // New: Rich message configurations
+  const [introMessageConfig, setIntroMessageConfig] = useState<GameMessage>(
+    baseGame?.introMessageConfig || {
+      enabled: false,
+      useImage: false,
+      text: '',
+      textColor: '#ffffff',
+      backgroundColor: '#1e293b',
+      fontSize: 'medium'
+    }
+  );
+  const [finishMessageConfig, setFinishMessageConfig] = useState<GameMessage>(
+    baseGame?.finishMessageConfig || {
+      enabled: false,
+      useImage: false,
+      text: '',
+      textColor: '#ffffff',
+      backgroundColor: '#1e293b',
+      fontSize: 'large'
+    }
+  );
+
   const [language, setLanguage] = useState<Language>(baseGame?.language || 'Danish');
   
   // Tags
