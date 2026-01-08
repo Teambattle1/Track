@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Ruler, Crosshair, Navigation, Plus, Library, Home, Trophy, Users, MessageSquare, QrCode, CheckCircle, XCircle, Compass, Maximize2, X } from 'lucide-react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, PlaygroundTemplate, InstructorNotification } from './types';
 import { APP_VERSION } from './utils/version';
