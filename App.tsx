@@ -136,6 +136,8 @@ const GameApp: React.FC = () => {
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
   const [showPlayzoneSelector, setShowPlayzoneSelector] = useState(false);
   const [showSystemSounds, setShowSystemSounds] = useState(false);
+  const [showIntroModal, setShowIntroModal] = useState(false);
+  const [introModalShown, setIntroModalShown] = useState(false);
 
   // --- TEAM LOBBY ACCESS STATE ---
   const [gameForLobbyAccess, setGameForLobbyAccess] = useState<string | null>(null);
