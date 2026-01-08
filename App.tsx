@@ -769,6 +769,43 @@ const GameApp: React.FC = () => {
       }
   }, [mode, userAccessMode, activeGame?.introMessageConfig, activeGame?.timerConfig?.startTime, introModalShown]);
 
+  // --- FINISH MESSAGE MODAL (TEAM MODE ONLY) ---
+  useEffect(() => {
+      if (
+          mode === GameMode.PLAY &&
+          userAccessMode === 'TEAM' &&
+          activeGame?.finishMessageConfig?.enabled &&
+          !finishModalShown
+      ) {
+          // Check if game has ended via state
+          if (activeGame?.state === 'ended') {
+              setShowFinishModal(true);
+              setFinishModalShown(true);
+              return;
+          }
+
+          // Check if timer has expired (for countdown/scheduled end games)
+          if (activeGame?.timerConfig) {
+              const now = Date.now();
+              let hasExpired = false;
+
+              if (activeGame.timerConfig.mode === 'scheduled_end' && activeGame.timerConfig.endTime) {
+                  const endTime = new Date(activeGame.timerConfig.endTime).getTime();
+                  hasExpired = now >= endTime;
+              } else if (activeGame.timerConfig.mode === 'countdown' && activeGame.timerConfig.startTime && activeGame.timerConfig.durationMinutes) {
+                  const startTime = new Date(activeGame.timerConfig.startTime).getTime();
+                  const endTime = startTime + (activeGame.timerConfig.durationMinutes * 60 * 1000);
+                  hasExpired = now >= endTime;
+              }
+
+              if (hasExpired) {
+                  setShowFinishModal(true);
+                  setFinishModalShown(true);
+              }
+          }
+      }
+  }, [mode, userAccessMode, activeGame?.finishMessageConfig, activeGame?.state, activeGame?.timerConfig, finishModalShown]);
+
   // --- DANGER ZONE DETECTION (PLAY MODE ONLY) ---
   const handleScoreChange = useCallback((newScore: number) => {
       setScore(newScore);
