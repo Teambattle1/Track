@@ -654,8 +654,10 @@ export interface Game {
   id: string;
   name: string;
   identificator?: string; // City, initials, or identifier to distinguish games from same customer
-  description: string; // Used as Intro Message
-  finishMessage?: string; // New: Finish Message
+  description: string; // Used as Intro Message (legacy - use introMessageConfig for new games)
+  finishMessage?: string; // New: Finish Message (legacy - use finishMessageConfig for new games)
+  introMessageConfig?: GameMessage; // New: Rich intro message configuration
+  finishMessageConfig?: GameMessage; // New: Rich finish message configuration
   tags?: string[]; // New: Game Tags
   language?: Language;
   points: GamePoint[];
