@@ -1754,3 +1754,141 @@ export const rejectMediaSubmission = async (submissionId: string, reviewerName: 
         return false;
     }
 };
+
+// --- PLAYER RECOVERY CODES ---
+// Allows players to reconnect on a new device after losing access (battery died, etc.)
+
+export interface RecoveryCodeData {
+    code: string;
+    gameId: string;
+    teamName: string;
+    deviceId: string;
+    userName: string;
+    userPhoto?: string;
+    createdAt: number;
+    expiresAt: number;
+}
+
+// Generate a 6-character alphanumeric recovery code
+const generateRecoveryCode = (): string => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed ambiguous: 0, O, 1, I
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+};
+
+export const createRecoveryCode = async (
+    gameId: string,
+    teamName: string,
+    deviceId: string,
+    userName: string,
+    userPhoto?: string
+): Promise<string | null> => {
+    try {
+        const code = generateRecoveryCode();
+        const now = Date.now();
+        const expiresAt = now + (24 * 60 * 60 * 1000); // 24 hours
+
+        const recoveryData: RecoveryCodeData = {
+            code,
+            gameId,
+            teamName,
+            deviceId,
+            userName,
+            userPhoto,
+            createdAt: now,
+            expiresAt
+        };
+
+        const { error } = await supabase
+            .from('player_recovery_codes')
+            .upsert({
+                code,
+                device_id: deviceId,
+                game_id: gameId,
+                data: recoveryData,
+                expires_at: new Date(expiresAt).toISOString()
+            });
+
+        if (error) {
+            // If table doesn't exist, fall back to localStorage
+            if (error.code === '42P01') {
+                console.warn('[DB Service] player_recovery_codes table not found. Using localStorage fallback.');
+                localStorage.setItem(`recovery_code_${code}`, JSON.stringify(recoveryData));
+                return code;
+            }
+            throw error;
+        }
+
+        // Also store locally as backup
+        localStorage.setItem(`recovery_code_${code}`, JSON.stringify(recoveryData));
+
+        return code;
+    } catch (e) {
+        logError('createRecoveryCode', e);
+        return null;
+    }
+};
+
+export const verifyRecoveryCode = async (code: string): Promise<RecoveryCodeData | null> => {
+    try {
+        // First try database
+        const { data, error } = await supabase
+            .from('player_recovery_codes')
+            .select('data, expires_at')
+            .eq('code', code.toUpperCase())
+            .single();
+
+        if (!error && data) {
+            const expiresAt = new Date(data.expires_at).getTime();
+            if (Date.now() > expiresAt) {
+                console.warn('[Recovery] Code expired');
+                return null;
+            }
+            return data.data as RecoveryCodeData;
+        }
+
+        // Fallback to localStorage
+        const localData = localStorage.getItem(`recovery_code_${code.toUpperCase()}`);
+        if (localData) {
+            const recoveryData = JSON.parse(localData) as RecoveryCodeData;
+            if (Date.now() > recoveryData.expiresAt) {
+                localStorage.removeItem(`recovery_code_${code.toUpperCase()}`);
+                console.warn('[Recovery] Local code expired');
+                return null;
+            }
+            return recoveryData;
+        }
+
+        return null;
+    } catch (e) {
+        // If table doesn't exist, try localStorage only
+        if ((e as any)?.code === '42P01') {
+            const localData = localStorage.getItem(`recovery_code_${code.toUpperCase()}`);
+            if (localData) {
+                const recoveryData = JSON.parse(localData) as RecoveryCodeData;
+                if (Date.now() > recoveryData.expiresAt) {
+                    localStorage.removeItem(`recovery_code_${code.toUpperCase()}`);
+                    return null;
+                }
+                return recoveryData;
+            }
+        }
+        logError('verifyRecoveryCode', e);
+        return null;
+    }
+};
+
+export const deleteRecoveryCode = async (code: string): Promise<void> => {
+    try {
+        await supabase
+            .from('player_recovery_codes')
+            .delete()
+            .eq('code', code.toUpperCase());
+    } catch (e) {
+        // Ignore errors - code cleanup is best-effort
+    }
+    localStorage.removeItem(`recovery_code_${code.toUpperCase()}`);
+};

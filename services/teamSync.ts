@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { TaskVote, TeamMember, ChatMessage, Coordinate, DeviceType } from '../types';
 import { detectDeviceTypeWithUA } from '../utils/deviceUtils';
+import { createRecoveryCode, verifyRecoveryCode, deleteRecoveryCode, RecoveryCodeData } from './db';
 
 const roundCoord = (c: Coordinate, digits = 5): Coordinate => ({
     lat: Number(c.lat.toFixed(digits)),
@@ -632,6 +633,78 @@ class TeamSyncService {
   public getAllMembers(): TeamMember[] {
       return Array.from(this.members.values());
   }
+
+  // --- RECOVERY CODE METHODS ---
+  // Generate a recovery code for this player to reconnect on a new device
+
+  public async generateRecoveryCode(): Promise<string | null> {
+      if (!this.gameId || !this.teamKey) {
+          console.error('[TeamSync] Cannot generate recovery code: not connected to a game');
+          return null;
+      }
+
+      const userPhoto = localStorage.getItem('geohunt_temp_user_photo') || undefined;
+      const teamName = this.teamName || this.teamKey.replace(/_/g, ' ');
+
+      const code = await createRecoveryCode(
+          this.gameId,
+          teamName,
+          this.deviceId,
+          this.userName,
+          userPhoto
+      );
+
+      if (code) {
+          // Store the code locally so we can show it again
+          localStorage.setItem('geohunt_recovery_code', code);
+          console.log(`[TeamSync] Recovery code generated: ${code}`);
+      }
+
+      return code;
+  }
+
+  // Get the current recovery code if one exists
+  public getCurrentRecoveryCode(): string | null {
+      return localStorage.getItem('geohunt_recovery_code');
+  }
+
+  // Reconnect using a recovery code - this takes over the old device's identity
+  public async reconnectWithCode(code: string): Promise<RecoveryCodeData | null> {
+      const recoveryData = await verifyRecoveryCode(code);
+
+      if (!recoveryData) {
+          console.warn('[TeamSync] Invalid or expired recovery code');
+          return null;
+      }
+
+      // Transfer identity: set this device to use the old deviceId
+      localStorage.setItem('geohunt_device_id', recoveryData.deviceId);
+      this.deviceId = recoveryData.deviceId;
+
+      // Restore user photo if available
+      if (recoveryData.userPhoto) {
+          localStorage.setItem('geohunt_temp_user_photo', recoveryData.userPhoto);
+      }
+
+      // Clean up the used recovery code
+      await deleteRecoveryCode(code);
+      localStorage.removeItem('geohunt_recovery_code');
+
+      console.log(`[TeamSync] Reconnected as ${recoveryData.userName} (device: ${recoveryData.deviceId})`);
+
+      return recoveryData;
+  }
+
+  // Get current connection info for display
+  public getConnectionInfo(): { gameId: string | null; teamName: string | null; userName: string; deviceId: string } {
+      return {
+          gameId: this.gameId,
+          teamName: this.teamName || (this.teamKey ? this.teamKey.replace(/_/g, ' ') : null),
+          userName: this.userName,
+          deviceId: this.deviceId
+      };
+  }
 }
 
 export const teamSync = new TeamSyncService();
+export type { RecoveryCodeData };

@@ -5,8 +5,10 @@ import {
     Map as MapIcon, Layers, Crosshair, ChevronLeft, Ruler, Settings,
     MessageSquare, Shield, Globe, Skull, Clock,
     Route as RouteIcon, Eye, EyeOff, Snowflake, GripHorizontal, Mountain, Sun, Navigation, Upload, Users,
-    MapPin, Play, LogOut, Navigation as NavigationIcon, ExternalLink, Trophy, Hash, Type, QrCode, Target, Maximize, GitBranch, ScrollText, ChevronDown, Zap, Filter, X, Loader2, Lock
+    MapPin, Play, LogOut, Navigation as NavigationIcon, ExternalLink, Trophy, Hash, Type, QrCode, Target, Maximize, GitBranch, ScrollText, ChevronDown, Zap, Filter, X, Loader2, Lock,
+    Smartphone
 } from 'lucide-react';
+import RecoveryCodeModal from './RecoveryCodeModal';
 import LocationSearch from './LocationSearch';
 import AdjustGameTimeModal from './AdjustGameTimeModal';
 import QRScannerModal from './QRScannerModal';
@@ -194,6 +196,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     const [showLocationMapStyles, setShowLocationMapStyles] = useState(false);
     const [showAdjustGameTime, setShowAdjustGameTime] = useState(false);
     const [showFogOfWarMenu, setShowFogOfWarMenu] = useState(false);
+    const [showRecoveryModal, setShowRecoveryModal] = useState(false);
     // Countdown State
     const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
 
@@ -1290,6 +1293,20 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                     </div>
                                 )}
 
+                                {/* Recovery Code Button - PLAY MODE ONLY */}
+                                {mode === GameMode.PLAY && (
+                                    <div className="flex flex-col items-center gap-0.5">
+                                        <button
+                                            onClick={() => setShowRecoveryModal(true)}
+                                            className="w-10 h-10 rounded-lg transition-all border flex flex-col items-center justify-center group/toolbar relative bg-slate-800 border-green-600/50 text-green-400 hover:bg-green-900/50 hover:text-green-300 hover:border-green-500"
+                                            title="Generate Recovery Code (for device switch)"
+                                        >
+                                            <Smartphone className="w-4 h-4" />
+                                        </button>
+                                        <div className="text-[7px] font-black text-green-500 uppercase tracking-widest leading-tight whitespace-nowrap">BACKUP</div>
+                                    </div>
+                                )}
+
                                 {/* ADJUST GAMETIME Button (Editor Mode) */}
                                 {mode === GameMode.EDIT && timerConfig && (
                                     <div className="flex flex-col items-center gap-0.5">
@@ -1927,6 +1944,11 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     timerConfig={timerConfig}
                     onUpdateGameTime={onUpdateGameTime || (async () => {})}
                 />
+            )}
+
+            {/* Recovery Code Modal */}
+            {showRecoveryModal && (
+                <RecoveryCodeModal onClose={() => setShowRecoveryModal(false)} />
             )}
 
             {/* Fixed Map Style Preview - Square Thumbnail */}
