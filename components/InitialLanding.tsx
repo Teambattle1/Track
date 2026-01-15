@@ -17,7 +17,7 @@ import WalkingExplorer from './WalkingExplorer';
 import './InitialLandingStyles.css';
 
 interface InitialLandingProps {
-  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS') => void;
+  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS' | 'TRANSLATIONS' | 'CLIENT') => void;
   version: string;
   games: Game[];
   activeGameId: string | null;
@@ -1143,8 +1143,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 </div>
             )}
 
-            {/* Gemini API Key Warning Banner - Only show in EDIT mode when game is loaded */}
-            {view === 'EDIT' && showGeminiWarning && hasCheckedGeminiKey && (
+            {/* Gemini API Key Warning Banner - Only show in EDIT menu when game is loaded */}
+            {view === 'EDIT_MENU' && showGeminiWarning && hasCheckedGeminiKey && (
                 <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 w-full max-w-2xl px-4 animate-in slide-in-from-top-4 fade-in duration-500">
                     <div className="bg-gradient-to-r from-yellow-900/90 to-orange-900/90 backdrop-blur-md border-2 border-yellow-500/60 rounded-xl p-4 shadow-2xl shadow-yellow-500/20">
                         <div className="flex items-start gap-3">

@@ -114,7 +114,7 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
   const gamesBySearch = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return games;
-    return games.filter(g => (g.title || g.name || '').toLowerCase().includes(q));
+    return games.filter(g => (g.name || '').toLowerCase().includes(q));
   }, [games, search]);
 
   const tabCounts = useMemo(() => {
@@ -195,7 +195,7 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
         color: { dark: '#000000', light: '#ffffff' }
       });
 
-      const fileName = safeFileName(`${game.title || game.name || 'game'}-${point.title}-QR.png`);
+      const fileName = safeFileName(`${game.name || 'game'}-${point.title}-QR.png`);
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = fileName;
@@ -242,7 +242,7 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
 
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
-        pdf.text(String(selectedGame.title || selectedGame.name || 'Game'), 60, titleY);
+        pdf.text(String(selectedGame.name || 'Game'), 60, titleY);
 
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
@@ -263,7 +263,7 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
         pdf.setTextColor(0, 0, 0);
       }
 
-      const pdfName = safeFileName(`${selectedGame.title || selectedGame.name || 'game'}-QR-CODES.pdf`);
+      const pdfName = safeFileName(`${selectedGame.name || 'game'}-QR-CODES.pdf`);
       pdf.save(pdfName);
     } catch (e) {
       console.error('Bulk QR PDF failed', e);
@@ -390,7 +390,7 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
                         : 'bg-slate-950/60 border-slate-800 hover:border-white/10 hover:bg-slate-900/60'
                     }`}
                   >
-                    <p className="text-sm font-black text-white uppercase tracking-wider truncate">{g.title || g.name || 'UNTITLED GAME'}</p>
+                    <p className="text-sm font-black text-white uppercase tracking-wider truncate">{g.name || 'UNTITLED GAME'}</p>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
                       {(g.points || []).filter(p => !p.isSectionHeader).length} tasks
                     </p>
@@ -414,7 +414,7 @@ const QRCodesTool: React.FC<QRCodesToolProps> = ({ games, activeGameId, onSelect
               <>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                   <div>
-                    <p className="text-sm font-black text-white uppercase tracking-widest">{selectedGame.title || selectedGame.name}</p>
+                    <p className="text-sm font-black text-white uppercase tracking-widest">{selectedGame.name}</p>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
                       Showing {nonGpsTasks.length} task(s) with non-GPS activation
                     </p>

@@ -62,8 +62,8 @@ interface EditorDrawerProps {
   collapsedZones?: Record<string, boolean>;
   onCollapsedZonesChange?: (zones: Record<string, boolean>) => void;
   // Device Preview Props (for desktop mode display)
-  teamEditDevice?: 'mobile' | 'tablet';
-  onTeamEditDeviceChange?: (device: 'mobile' | 'tablet') => void;
+  teamEditDevice?: 'mobile' | 'tablet' | 'desktop';
+  onTeamEditDeviceChange?: (device: 'mobile' | 'tablet' | 'desktop') => void;
   teamEditOrientation?: 'portrait' | 'landscape';
   onTeamEditOrientationChange?: (orientation: 'portrait' | 'landscape') => void;
   teamEditOrientationLocked?: boolean;

@@ -1003,15 +1003,18 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const isEditMode = !!baseGame;
 
   // --- Helper Components for Task Config ---
-  const RadioOption = ({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) => (
-      <div 
+  const RadioOption = ({ label, sublabel, selected, onClick }: { label: string; sublabel?: string; selected: boolean; onClick: () => void }) => (
+      <div
           onClick={onClick}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-start gap-3 cursor-pointer group"
       >
-          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selected ? 'border-white' : 'border-slate-600 group-hover:border-slate-500'}`}>
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 mt-0.5 ${selected ? 'border-white' : 'border-slate-600 group-hover:border-slate-500'}`}>
               {selected && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
           </div>
-          <span className={`text-xs ${selected ? 'text-white font-bold' : 'text-slate-400 group-hover:text-slate-300'}`}>{label}</span>
+          <div className="flex flex-col">
+              <span className={`text-xs ${selected ? 'text-white font-bold' : 'text-slate-400 group-hover:text-slate-300'}`}>{label}</span>
+              {sublabel && <span className="text-[10px] text-slate-500 mt-0.5">{sublabel}</span>}
+          </div>
       </div>
   );
 

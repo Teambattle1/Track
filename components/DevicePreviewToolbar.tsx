@@ -2,10 +2,10 @@ import React from 'react';
 import { Smartphone, Tablet, Lock, Unlock } from 'lucide-react';
 
 interface DevicePreviewToolbarProps {
-  selectedDevice: 'mobile' | 'tablet';
+  selectedDevice: 'mobile' | 'tablet' | 'desktop';
   selectedOrientation: 'portrait' | 'landscape';
   isOrientationLocked: boolean;
-  onDeviceChange: (device: 'mobile' | 'tablet') => void;
+  onDeviceChange: (device: 'mobile' | 'tablet' | 'desktop') => void;
   onOrientationChange: (orientation: 'portrait' | 'landscape') => void;
   onOrientationLockToggle: (locked: boolean) => void;
 }

@@ -10,7 +10,7 @@ import {
     GripHorizontal, ScrollText, Mountain, Snowflake, Check, MapPin,
     Smartphone, Tablet, Monitor, RotateCw, Lock, Unlock
 } from 'lucide-react';
-import { Game, GameMode, LocationSearchProps, Coordinate, Team, MapStyleId } from '../types';
+import { Game, GameMode, Coordinate, Team, MapStyleId } from '../types';
 import LocationSearch from './LocationSearch';
 import InfoBox from './InfoBox';
 import ZoneChangeItem from './ZoneChangeItem';
@@ -55,7 +55,7 @@ interface ToolbarsDrawerProps {
     onFitBounds: () => void;
     onSearchLocation: (coord: Coordinate) => void;
     onSetMapStyle: (styleId: string) => void;
-    locateFeedback?: boolean;
+    locateFeedback?: string | null;
     mapStyle?: string;
     
     // PINS
@@ -1014,7 +1014,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         </button>
                                     )}
 
-                                    {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onStartSimulation && activeGame?.gameMode !== 'playzone' && (
+                                    {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && onStartSimulation && (
                                         <button
                                             onClick={onStartSimulation}
                                             className="py-2 px-2 bg-green-700 hover:bg-green-800 text-green-200 text-xs font-bold uppercase tracking-wider rounded-lg flex flex-col items-center gap-1 transition-all"

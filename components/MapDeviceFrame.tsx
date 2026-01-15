@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface MapDeviceFrameProps {
-  device: 'mobile' | 'tablet';
+  device: 'mobile' | 'tablet' | 'desktop';
   orientation: 'portrait' | 'landscape';
   children: React.ReactNode;
 }
@@ -18,6 +18,12 @@ const DEVICE_SPECS = {
     screenHeight: 768,
     bezel: 24,
     cornerRadius: 32,
+  },
+  desktop: {
+    screenWidth: 1920,
+    screenHeight: 1080,
+    bezel: 8,
+    cornerRadius: 12,
   },
 };
 

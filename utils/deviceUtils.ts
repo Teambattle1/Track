@@ -101,11 +101,11 @@ export const getDefaultDeviceLayouts = (): Record<DeviceType, DeviceLayout> => (
  * Falls back to default if not configured
  */
 export const getDeviceLayout = (
-  deviceLayouts: Record<DeviceType, DeviceLayout> | undefined,
+  deviceLayouts: Partial<Record<DeviceType, DeviceLayout>> | undefined,
   deviceType: DeviceType
 ): DeviceLayout => {
   if (deviceLayouts && deviceLayouts[deviceType]) {
-    return deviceLayouts[deviceType];
+    return deviceLayouts[deviceType]!;
   }
 
   return getDefaultDeviceLayouts()[deviceType];

@@ -3,21 +3,21 @@ import { Game, GamePoint, Language, TaskTranslation } from '../types';
 /**
  * Check if a specific field in a translation is approved
  */
-const isFieldApproved = (translation: TaskTranslation, field: keyof TaskTranslation): boolean => {
+const isFieldApproved = (translation: TaskTranslation, field: keyof TaskTranslation | string): boolean => {
   // If the field doesn't exist, consider it approved (not applicable)
-  if (translation[field] === undefined || translation[field] === null) {
+  if ((translation as any)[field] === undefined || (translation as any)[field] === null) {
     return true;
   }
 
   // Check the corresponding approval field
-  const approvalField = `${field}Approved` as keyof TaskTranslation;
+  const approvalField = `${field}Approved`;
   
   // If approval field doesn't exist or is undefined, consider NOT approved (default for AI translations)
-  if (translation[approvalField] === undefined) {
+  if ((translation as any)[approvalField] === undefined) {
     return false;
   }
 
-  return translation[approvalField] as boolean;
+  return (translation as any)[approvalField] as boolean;
 };
 
 /**
@@ -254,7 +254,7 @@ export const getAllMissingTranslations = (games: Game[]): MissingTranslation[] =
  * Returns { valid: boolean, missingLanguages: Language[] }
  */
 export const validateTaskTranslations = (
-  task: { translations?: Record<Language, any> },
+  task: { translations?: Partial<Record<Language, any>> },
   requiredLanguages: Language[]
 ): { valid: boolean; missingLanguages: Language[] } => {
   const missingLanguages: Language[] = [];

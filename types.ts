@@ -23,7 +23,7 @@ export type DeviceType = 'mobile' | 'tablet' | 'desktop';
 
 export type TaskType = 'text' | 'multiple_choice' | 'checkbox' | 'boolean' | 'slider' | 'dropdown' | 'multi_select_dropdown' | 'timeline' | 'photo' | 'video' | 'info';
 
-export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'clean' | 'winter' | 'ski' | 'historic' | 'treasure' | 'desert' | 'google_custom' | 'none';
+export type MapStyleId = 'osm' | 'satellite' | 'dark' | 'clean' | 'winter' | 'ski' | 'norwegian' | 'historic' | 'treasure' | 'desert' | 'google_custom' | 'none';
 
 export type Language = 'English' | 'Danish' | 'German' | 'Spanish' | 'French' | 'Swedish' | 'Norwegian' | 'Dutch' | 'Belgian' | 'Hebrew';
 
@@ -33,6 +33,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: 'Owner' | 'Admin' | 'Instructor' | 'Editor';
+  createdAt?: string;
 }
 
 // --- Team Sync Types ---
@@ -53,14 +54,16 @@ export interface Team {
   gameId: string;
   name: string;
   joinCode?: string;
-  photoUrl?: string; 
-  members: TeamMemberData[]; 
+  photoUrl?: string;
+  members: TeamMemberData[];
   score: number;
   completedPointIds?: string[];
   updatedAt: string;
-  captainDeviceId?: string; 
-  isStarted?: boolean; 
-  startedAt?: number; 
+  captainDeviceId?: string;
+  isStarted?: boolean;
+  startedAt?: number;
+  createdAt?: number; // Timestamp when team was created
+  color?: string; // Team color (hex)
 }
 
 export interface TeamMemberData {
@@ -140,7 +143,7 @@ export interface GameTask {
   };
 
   // Translations
-  translations?: Record<Language, TaskTranslation>;
+  translations?: Partial<Record<Language, TaskTranslation>>;
 }
 
 // Translation Entry for Multilingual Tasks
@@ -212,6 +215,8 @@ export interface TaskColorScheme {
   buttonColor: string; // Submit/action buttons
   buttonTextColor: string; // Button text
   borderColor: string; // Borders and dividers
+  primary?: string; // Primary accent color (used in playzone markers)
+  secondary?: string; // Secondary accent color (used for borders in playzone)
 }
 
 export type PointActivationType = 'radius' | 'nfc' | 'qr' | 'click' | 'ibeacon';
@@ -341,9 +346,15 @@ export interface Playground {
   titleText?: string;
   titleTextColor?: string; // Hex color
   titleTextFontSize?: number; // Font size in pixels
+  titleTextContent?: string; // Alternative content for title
+  titleTextPos?: { x: number; y: number }; // Position of title text
+
+  // Background scaling
+  backgroundScale?: number; // Scale factor for background image
+  backgroundOffset?: { x: number; y: number }; // Background pan offset
 
   // Device-specific layouts (for multi-device support)
-  deviceLayouts?: Record<DeviceType, DeviceLayout>;
+  deviceLayouts?: Partial<Record<DeviceType, DeviceLayout>>;
 }
 
 export interface DangerZone {
@@ -422,7 +433,7 @@ export interface GamePoint {
   // Playground Specific
   playgroundId?: string;
   playgroundPosition?: { x: number; y: number }; // Legacy: shared across all devices
-  devicePositions?: Record<DeviceType, { x: number; y: number }>; // NEW: device-specific positions
+  devicePositions?: Partial<Record<DeviceType, { x: number; y: number }>>; // NEW: device-specific positions
   playgroundScale?: number;
   textLabelScale?: number; // NEW: text label size scale (0.5 to 2.0, default 1.0)
   iconImageScale?: number; // Image size within the icon circle (0.5 to 2.0, default 0.9)
@@ -435,7 +446,8 @@ export interface GamePoint {
   incorrectIconUrl?: string; // Custom icon URL for incorrect answer
   completedIconId?: IconId; // Icon to show when task is completed (correct answer)
   completedIconUrl?: string; // Custom icon URL to show when task is completed
-  areaColor?: string; 
+  areaColor?: string;
+  openingAudioUrl?: string; // Audio to play when task opens
 
   // Logic & Scoring
   points: number;
@@ -502,6 +514,7 @@ export interface TaskTemplate {
   task: GameTask;
   tags: string[];
   iconId: IconId;
+  iconUrl?: string; // Custom URL for standard icon
   createdAt: number;
   points?: number;
   intro?: string;
@@ -636,16 +649,18 @@ export interface ToolbarPositions {
   viewSwitcherPos?: ToolbarPosition;
   pinsToolboxPos?: ToolbarPosition;
   showToolboxPos?: ToolbarPosition;
+  layersToolboxPos?: ToolbarPosition;
+  qrScannerPos?: ToolbarPosition;
   editorOrientationPos?: ToolbarPosition;
   editorShowPos?: ToolbarPosition;
   editorToolsPos?: ToolbarPosition;
   editorQRScannerPos?: ToolbarPosition;
 
   // Device-specific editor toolbar positions
-  editorOrientationPosPerDevice?: Record<DeviceType, ToolbarPosition>;
-  editorShowPosPerDevice?: Record<DeviceType, ToolbarPosition>;
-  editorToolsPosPerDevice?: Record<DeviceType, ToolbarPosition>;
-  editorQRScannerPosPerDevice?: Record<DeviceType, ToolbarPosition>;
+  editorOrientationPosPerDevice?: Partial<Record<DeviceType, ToolbarPosition>>;
+  editorShowPosPerDevice?: Partial<Record<DeviceType, ToolbarPosition>>;
+  editorToolsPosPerDevice?: Partial<Record<DeviceType, ToolbarPosition>>;
+  editorQRScannerPosPerDevice?: Partial<Record<DeviceType, ToolbarPosition>>;
 }
 
 // ------------------------
@@ -670,6 +685,7 @@ export interface Game {
   toolbarPositions?: ToolbarPositions; // Per-game toolbar positions
   drawerStates?: {
     settingsCollapsedSections?: Record<string, boolean>; // Settings drawer collapsed sections (mapmode, layers, location, pins, show, tools)
+    settingsCollapsedZones?: Record<string, boolean>; // Collapsed states for playzone sections
     visibleToolbars?: Record<string, boolean>; // Visible toolbars on map (mapmode, layers, location, pins, show, tools)
   };
 
@@ -718,10 +734,13 @@ export interface Game {
   soundSettings?: SoundSettings; // Game-specific sound overrides (uses global sounds if not set)
 
   // Game Lifecycle / End Game
-  state?: 'active' | 'ending' | 'ended';
+  state?: 'draft' | 'active' | 'ending' | 'ended';
   endingAt?: number; // Timestamp when game will end (during countdown)
   endLocation?: Coordinate; // Fixed end position
   enableMeetingPoint?: boolean; // New Flag
+
+  // Task List References
+  taskListIds?: string[]; // IDs of task lists used in this game
 
   // New Template Fields
   isGameTemplate?: boolean;

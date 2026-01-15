@@ -86,9 +86,9 @@ const LoquizImporter: React.FC<LoquizImporterProps> = ({ onClose, onImportTasks 
     // Ensure GPS (radius) is enabled by default for all imported tasks
     const tasksWithGps = selected.map(t => ({
       ...t,
-      activationTypes: t.activationTypes && t.activationTypes.length > 0 ? t.activationTypes : ['radius']
+      activationTypes: t.activationTypes && t.activationTypes.length > 0 ? t.activationTypes : ['radius' as const]
     }));
-    onImportTasks(tasksWithGps);
+    onImportTasks(tasksWithGps as any);
   };
 
   const filteredGames = games.filter(g => 

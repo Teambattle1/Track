@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Ruler, Crosshair, Navigation, Plus, Library, Home, Trophy, Users, MessageSquare, QrCode, CheckCircle, XCircle, Compass, Maximize2, X } from 'lucide-react';
-import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, PlaygroundTemplate, InstructorNotification } from './types';
+import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, PlaygroundTemplate, InstructorNotification, Playground, IconId } from './types';
 import { APP_VERSION } from './utils/version';
 import * as db from './services/db';
 import { supabase } from './lib/supabase';
@@ -650,7 +650,7 @@ const GameApp: React.FC = () => {
 
           // Find the task to check if multiple submissions are allowed
           const task = activeGame.points.find(p => p.id === submission.pointId);
-          const allowMultipleSubmissions = task?.task?.requireMedia?.allowMultipleSubmissions ?? false;
+          const allowMultipleSubmissions = task?.task?.mediaSettings?.allowMultipleSubmissions ?? false;
 
           // Set the rejection data to show popup
           setRejectedSubmission({
@@ -694,7 +694,7 @@ const GameApp: React.FC = () => {
                   if (navigator.vibrate) navigator.vibrate(200);
 
                   const remote = await db.patchGamePoints(activeGame.id, patches, {
-                      user: authUser?.username,
+                      user: authUser?.name,
                       action: 'Geofence Unlock'
                   });
 
@@ -1534,7 +1534,7 @@ const GameApp: React.FC = () => {
       const remote = await db.patchGamePoints(
           activeGame.id,
           [{ pointId, patch: { isUnlocked: true } }],
-          { user: authUser?.username, action: 'Manual Unlock' }
+          { user: authUser?.name, action: 'Manual Unlock' }
       );
 
       if (remote) {
@@ -1550,7 +1550,7 @@ const GameApp: React.FC = () => {
   const addInstructorNotification = (taskId: string, taskTitle: string, trigger: 'onOpen' | 'onCorrect' | 'onIncorrect') => {
       if (!activeGame) return;
 
-      const teamName = teamSync.getTeamName() || 'Unknown Team';
+      const teamName = teamSync.getConnectionInfo().teamName || 'Unknown Team';
       const notification: InstructorNotification = {
           id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           gameId: activeGame.id,
@@ -1965,7 +1965,7 @@ const GameApp: React.FC = () => {
                           const remote = await db.patchGamePoints(
                               activeGame.id,
                               [{ pointId: id, patch: { isCompleted: true } }],
-                              { user: authUser?.username, action: 'Task Completed' }
+                              { user: authUser?.name, action: 'Task Completed' }
                           );
 
                           if (remote) {
@@ -3064,21 +3064,13 @@ const GameApp: React.FC = () => {
                 mode={mode}
                 mapStyle={localMapStyle || 'osm'}
                 onPointClick={(point) => {
-                    if (mode === GameMode.PLAY) {
-                        setSelectedPointForTooltip(point.id);
-                        setTimeout(() => setSelectedPointForTooltip(null), 3000);
-                    } else {
-                        handlePointClick(point);
-                    }
+                    // In EDIT/INSTRUCTOR modes, clicking opens the point editor
+                    handlePointClick(point);
                 }}
                 onAreaColorClick={handleAreaColorClick}
                 onZoneClick={(z) => {
-                    if (mode === GameMode.PLAY) {
-                        setSelectedPointForTooltip(z.id);
-                        setTimeout(() => setSelectedPointForTooltip(null), 3000);
-                    } else {
-                        setActiveDangerZone(z);
-                    }
+                    // In EDIT/INSTRUCTOR modes, clicking opens the danger zone editor
+                    setActiveDangerZone(z);
                 }}
                 onZoneMove={async (zoneId, newLoc) => {
                     if (!activeGame) return;
@@ -3171,21 +3163,13 @@ const GameApp: React.FC = () => {
                     mode={mode}
                     mapStyle={localMapStyle || 'osm'}
                     onPointClick={(point) => {
-                        if (mode === GameMode.PLAY) {
-                            setSelectedPointForTooltip(point.id);
-                            setTimeout(() => setSelectedPointForTooltip(null), 3000);
-                        } else {
-                            handlePointClick(point);
-                        }
+                        // In EDIT/INSTRUCTOR modes, clicking opens the point editor
+                        handlePointClick(point);
                     }}
                     onAreaColorClick={handleAreaColorClick}
                     onZoneClick={(z) => {
-                        if (mode === GameMode.PLAY) {
-                            setSelectedPointForTooltip(z.id);
-                            setTimeout(() => setSelectedPointForTooltip(null), 3000);
-                        } else {
-                            setActiveDangerZone(z);
-                        }
+                        // In EDIT/INSTRUCTOR modes, clicking opens the danger zone editor
+                        setActiveDangerZone(z);
                     }}
                     onZoneMove={async (zoneId, newLoc) => {
                         if (!activeGame) return;
@@ -3460,7 +3444,7 @@ const GameApp: React.FC = () => {
                                 const dangerZone = activeGame?.dangerZones?.find(dz => dz.id === selectedPointForTooltip);
                                 const point = activeGame?.points?.find(p => p.id === selectedPointForTooltip);
                                 const tooltipContent = dangerZone
-                                    ? `⚠️ ZONE\n${dangerZone.name || 'Area'}`
+                                    ? `⚠️ ZONE\n${dangerZone.title || 'Area'}`
                                     : point
                                     ? `📍 ${point.title || 'Task'}`
                                     : null;
@@ -3636,7 +3620,7 @@ const GameApp: React.FC = () => {
             onToggleChat={() => setShowChatDrawer(!showChatDrawer)}
             unreadMessagesCount={0}
             onAddDangerZone={handleAddDangerZone}
-            activeDangerZone={mode === GameMode.PLAY ? currentDangerZone : null}
+            activeDangerZone={null}
             onEditGameSettings={() => { setGameToEdit(activeGame || null); setShowGameCreator(true); }}
             onOpenGameChooser={() => setShowGameChooser(true)}
             routes={activeGame?.routes}
@@ -3778,11 +3762,11 @@ const GameApp: React.FC = () => {
                             const newPlaygroundId = `pg-${Date.now()}`;
                             const center = mapRef.current?.getCenter() || { lat: 55.6761, lng: 12.5683 };
 
-                            const newPlayground = {
+                            const newPlayground: Playground = {
                                 id: newPlaygroundId,
                                 title: 'New Playzone',
                                 buttonVisible: true,
-                                iconId: 'default',
+                                iconId: 'default' as IconId,
                                 location: center
                             };
 
@@ -3873,11 +3857,11 @@ const GameApp: React.FC = () => {
                                 if (!activeGame) return;
                                 const newPlaygroundId = `pg-${Date.now()}`;
                                 const center = mapRef.current?.getCenter() || { lat: 55.6761, lng: 12.5683 };
-                                const newPlayground = {
+                                const newPlayground: Playground = {
                                     id: newPlaygroundId,
                                     title: 'New Playzone',
                                     buttonVisible: true,
-                                    iconId: 'default',
+                                    iconId: 'default' as IconId,
                                     location: center
                                 };
                                 updateActiveGame({

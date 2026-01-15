@@ -107,8 +107,8 @@ const FullscreenOverlay: React.FC = () => {
     }
 
     // Try to lock orientation
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('portrait-primary').catch(() => {
+    if (screen.orientation && (screen.orientation as any).lock) {
+      (screen.orientation as any).lock('portrait-primary').catch(() => {
         // Orientation lock not supported or failed
       });
     }

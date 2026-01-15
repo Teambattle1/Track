@@ -22,7 +22,7 @@ export const updateLastLogin = (): void => {
  */
 export const getPendingMediaCount = async (gameId: string): Promise<number> => {
   try {
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from('media_submissions')
       .select('id', { count: 'exact', head: true })
       .eq('game_id', gameId)
@@ -35,7 +35,7 @@ export const getPendingMediaCount = async (gameId: string): Promise<number> => {
       return 0;
     }
 
-    return data || 0;
+    return count || 0;
   } catch (error) {
     return 0;
   }

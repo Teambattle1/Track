@@ -85,9 +85,18 @@ export const cleanPlayzoneGame = (game: Game): Game => {
 
     // Ensure map config is set appropriately
     if (!cleaned.mapConfig) {
-        cleaned.mapConfig = {};
+        cleaned.mapConfig = {
+            pinDisplayMode: 'none',
+            showShortIntroUnderPin: false,
+            mapInteraction: 'disable_click',
+            hideMyLocation: true,
+            showMyTrack: false,
+            allowNavigation: false,
+            allowWeakGps: false
+        };
+    } else {
+        cleaned.mapConfig.hideMyLocation = true;
     }
-    cleaned.mapConfig.hideMyLocation = true;
 
     return cleaned;
 };

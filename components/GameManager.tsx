@@ -47,6 +47,7 @@ interface GameManagerProps {
   onOpenAiGenerator?: () => void;
   onOpenGameCreator?: () => void;
   onEditGameSetup?: (gameId: string) => void;
+  onStartSimulation?: (game: Game) => void;
 }
 
 type GameStatusTab = 'TODAY' | 'PLANNED' | 'COMPLETED';

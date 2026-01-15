@@ -99,6 +99,7 @@ const GameApp: React.FC = () => {
   const [showScores, setShowScores] = useState(true);
   const [showTaskId, setShowTaskId] = useState(true); // Task order (001, 002, etc.)
   const [showTaskTitle, setShowTaskTitle] = useState(true); // Task name/title
+  const [showTaskActions, setShowTaskActions] = useState(true); // Task action indicators
 
   // --- COOLDOWN STATE ---
   // Map of taskId -> timestamp when cooldown expires
@@ -1554,7 +1555,10 @@ const GameApp: React.FC = () => {
                           setShowGameCreator(true);
                       }
                   }}
-                  // onExportGameToLibrary removed - all tasks auto-sync now
+                  taskLists={taskLists}
+                  onUpdateTaskLists={setTaskLists}
+                  taskLibrary={taskLibrary}
+                  onUpdateTaskLibrary={setTaskLibrary}
               />
           )}
           {showChatDrawer && activeGameId && (
@@ -1877,6 +1881,8 @@ const GameApp: React.FC = () => {
             onToggleTaskId={() => setShowTaskId(!showTaskId)}
             showTaskTitle={showTaskTitle}
             onToggleTaskTitle={() => setShowTaskTitle(!showTaskTitle)}
+            showTaskActions={showTaskActions}
+            onToggleTaskActions={() => setShowTaskActions(!showTaskActions)}
             hiddenPlaygroundIds={[]}
             onToggleChat={() => setShowChatDrawer(!showChatDrawer)}
             unreadMessagesCount={0}

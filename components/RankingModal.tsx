@@ -22,7 +22,7 @@ const RankingModal: React.FC<RankingModalProps> = ({ isOpen, onClose, teams }) =
         // Calculate points and rank teams
         const teamsWithPoints = teams.map(team => ({
             ...team,
-            points: team.completedPoints?.length || 0
+            points: team.completedPointIds?.length || 0
         }));
 
         // Sort by points (descending) and assign ranks
@@ -129,7 +129,7 @@ const RankingModal: React.FC<RankingModalProps> = ({ isOpen, onClose, teams }) =
                                         <div className="flex items-center gap-2">
                                             <Target className="w-4 h-4 text-white/60" />
                                             <span className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                                                {team.completedPoints?.length || 0} Tasks Completed
+                                                {team.completedPointIds?.length || 0} Tasks Completed
                                             </span>
                                         </div>
                                     </div>

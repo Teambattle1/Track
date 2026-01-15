@@ -1,4 +1,4 @@
-import { GamePoint, TaskAction } from '../types';
+import { GamePoint, GameAction } from '../types';
 
 /**
  * Remaps all targetId references in task logic using an ID mapping table.
@@ -27,7 +27,7 @@ export function remapTaskLogicTargets(
     }
 
     // Helper function to remap a single action array
-    const remapActions = (actions: TaskAction[] | undefined): TaskAction[] | undefined => {
+    const remapActions = (actions: GameAction[] | undefined): GameAction[] | undefined => {
       if (!actions || actions.length === 0) return actions;
 
       return actions.map(action => {

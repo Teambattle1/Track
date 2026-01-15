@@ -75,7 +75,7 @@ export const startBeaconScan = async (filter?: iBeaconFilter): Promise<iBeaconSc
         };
 
         // Request device discovery
-        const device = await (navigator.bluetooth as any).requestDevice({
+        const device = await ((navigator as any).bluetooth).requestDevice({
             filters: filter ? [{ 
                 name: filter.uuid,
                 services: ['180a'] // Device Information Service
@@ -277,10 +277,9 @@ export const monitorBeaconRegion = (
     onExit: (beacon: iBeaconDevice) => void
 ): (() => void) => {
     const detectedBeacons = new Map<string, iBeaconDevice>();
+    let isMonitoring = true;
 
     const monitor = async () => {
-        let isMonitoring = true;
-
         while (isMonitoring) {
             try {
                 const result = await startBeaconScan({
@@ -291,11 +290,11 @@ export const monitorBeaconRegion = (
 
                 result.devicesFound.forEach(beacon => {
                     const wasKnown = detectedBeacons.has(beacon.id);
-                    
+
                     if (!wasKnown && region.notifyOnEntry) {
                         onEnter(beacon);
                     }
-                    
+
                     detectedBeacons.set(beacon.id, beacon);
                 });
 
@@ -315,12 +314,13 @@ export const monitorBeaconRegion = (
 
             await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second interval
         }
-
-        return () => {
-            isMonitoring = false;
-        };
     };
 
-    // Start monitoring
-    return monitor();
+    // Start monitoring (fire and forget)
+    monitor();
+
+    // Return cleanup function
+    return () => {
+        isMonitoring = false;
+    };
 };

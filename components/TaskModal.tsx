@@ -12,7 +12,7 @@ import TimesUpPopup from './TimesUpPopup';
 
 interface TaskModalProps {
   point: GamePoint | null;
-  onClose: () => void;
+  onClose: (completed?: boolean) => void;
   onComplete: (pointId: string, customScore?: number) => void;
   onPenalty?: (amount: number) => void;
   onUnlock?: (pointId: string) => void;
@@ -1080,7 +1080,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="p-1 rounded-full hover:bg-black/10 transition-colors">
+            <button onClick={() => onClose()} className="p-1 rounded-full hover:bg-black/10 transition-colors">
               <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
@@ -1192,15 +1192,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
                        point.task.type === 'text' ? '📝 Text Input' :
                        point.task.type === 'slider' ? '🎚️ Slider' :
                        point.task.type === 'boolean' ? '✓ True/False' :
-                       point.task.type === 'timeline' ? '📅 Timeline' :
                        point.task.type === 'photo' ? '📸 Photo Task' :
                        point.task.type === 'video' ? '🎥 Video Task' :
                        point.task.type}
                     </span>
                   </div>
 
-                  {/* Possible Answers (Multiple Choice, Checkbox, Radio, Dropdown) */}
-                  {(point.task.type === 'multiple_choice' || point.task.type === 'checkbox' || point.task.type === 'radio' || point.task.type === 'dropdown') && point.task.options && (
+                  {/* Possible Answers (Multiple Choice, Checkbox, Dropdown) */}
+                  {(point.task.type === 'multiple_choice' || point.task.type === 'checkbox' || point.task.type === 'dropdown') && point.task.options && (
                     <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
                       <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-3">Possible Answers</span>
                       <div className="space-y-2">
@@ -1253,8 +1252,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mb-2">Solution / Correct Answer</span>
                     <p className="text-orange-900 dark:text-orange-200 font-medium">
                         {point.task.type === 'slider' ?
-                          (point.task.range?.correctValue !== undefined ? `${point.task.range.correctValue}` : point.task.correctAnswer || "See logic") :
-                          point.task.type === 'checkbox' || point.task.type === 'radio' ?
+                          (point.task.range?.correctValue !== undefined ? `${point.task.range.correctValue}` : point.task.correctAnswers?.[0] || "See logic") :
+                          point.task.type === 'checkbox' ?
                           point.task.correctAnswers?.join(', ') || point.task.answer || "See logic" :
                           point.task.type === 'dropdown' ?
                           point.task.answer || point.task.correctAnswers?.[0] || "See logic" :
@@ -1270,7 +1269,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <div className="text-center">
                     <button
                       type="button"
-                      onClick={onClose}
+                      onClick={() => onClose()}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-blue-600/20"
                     >
                       OK

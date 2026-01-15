@@ -41,7 +41,6 @@ interface GameHUDProps {
     onSetMode: (mode: GameMode) => void;
     onOpenGameManager: () => void;
     onOpenTaskMaster: () => void;
-    onOpenTeams: () => void;
     mapStyle: MapStyleId;
     onSetMapStyle: (style: MapStyleId) => void;
     language: Language;
@@ -59,7 +58,7 @@ interface GameHUDProps {
     onRelocateGame: () => void;
     isRelocating: boolean;
     timerConfig?: TimerConfig;
-    onFitBounds: () => void;
+    onFitBounds: (coords?: Coordinate[]) => void;
     onLocateMe: () => void;
     onSearchLocation: (coord: Coordinate) => void;
     isDrawerExpanded: boolean;
@@ -987,7 +986,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 onFitBounds={onFitBounds}
                 onSearchLocation={onSearchLocation}
                 onSetMapStyle={onSetMapStyle}
-                locateFeedback={locateFeedback === 'success'}
+                locateFeedback={locateFeedback}
                 mapStyle={mapStyle}
                 isMeasuring={isMeasuring}
                 isRelocating={isRelocating}
@@ -1208,9 +1207,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                     <div className="text-[7px] font-black text-green-100 uppercase tracking-widest leading-tight whitespace-nowrap">FIT</div>
                                 </div>
 
-                                {/* MAPSTYLE Button - Hidden in Instructor Mode */}
-                                {mode !== GameMode.INSTRUCTOR && (
-                                    <div className="flex flex-col items-center gap-0.5">
+                                {/* MAPSTYLE Button */}
+                                <div className="flex flex-col items-center gap-0.5">
                                         <div className="relative">
                                             <button
                                                 onClick={() => setShowLocationMapStyles(!showLocationMapStyles)}
@@ -1241,7 +1239,6 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                                         </div>
                                         <div className="text-[7px] font-black text-green-100 uppercase tracking-widest leading-tight whitespace-nowrap">MAP</div>
                                     </div>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -1766,14 +1763,6 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                         />
                     )}
 
-                    {/* QR Scanner Modal - PLAY and INSTRUCTOR modes */}
-                    {(mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR) && (
-                        <QRScannerModal
-                            isOpen={isQRScannerActive}
-                            onClose={() => setIsQRScannerActive(false)}
-                            onScan={handleQRScan}
-                        />
-                    )}
                 </div>
             )}
 

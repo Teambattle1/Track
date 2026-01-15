@@ -217,7 +217,7 @@ const GameAccessPrintable: React.FC<GameAccessPrintableProps> = ({ game, qrCodeD
       </div>
 
       {/* Print-specific styles */}
-      <style jsx>{`
+      <style>{`
         @media print {
           .no-print {
             display: none !important;

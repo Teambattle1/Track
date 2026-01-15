@@ -206,7 +206,9 @@ const ZoneChangeCard: React.FC<ZoneChangeCardProps> = ({
                         </div>
                     )}
                     {zoneChange.showOnTeamView && (
-                        <Eye className="w-4 h-4 text-blue-400" title="Visible to teams" />
+                        <span title="Visible to teams">
+                            <Eye className="w-4 h-4 text-blue-400" />
+                        </span>
                     )}
                 </div>
 

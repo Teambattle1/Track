@@ -380,7 +380,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
 
   // Generate QR Code when relevant fields change or tab opens
   useEffect(() => {
-      if (activeTab === 'ACTIONS' && (editedPoint.activationTypes.includes('qr') || editedPoint.activationTypes.includes('click') || editedPoint.isHiddenBeforeScan)) {
+      if (activeTab === 'ACTIVATION' && (editedPoint.activationTypes.includes('qr') || editedPoint.activationTypes.includes('click') || editedPoint.isHiddenBeforeScan)) {
           // Payload: Use ID as unique identifier for unlocking
           const payload = JSON.stringify({ id: editedPoint.id, action: 'unlock' });
           QRCode.toDataURL(payload, { width: 300, margin: 2, color: { dark: '#000000', light: '#ffffff' } })

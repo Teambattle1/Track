@@ -1,4 +1,6 @@
 {
+  "include": ["**/*.ts", "**/*.tsx", "global.d.ts"],
+  "exclude": ["supabase/functions/**/*"],
   "compilerOptions": {
     "target": "ES2022",
     "experimentalDecorators": true,
@@ -11,7 +13,8 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "node"
+      "node",
+      "jest"
     ],
     "moduleResolution": "bundler",
     "isolatedModules": true,

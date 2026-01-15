@@ -271,7 +271,7 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
   useEffect(() => {
     if (!isInstructor && typeof window !== 'undefined' && window.screen?.orientation) {
       try {
-        window.screen.orientation.lock('landscape').catch((error: any) => {
+        (window.screen.orientation as any).lock('landscape').catch((error: any) => {
           console.log('Orientation lock request failed (may not be supported):', error);
         });
       } catch (error) {
@@ -722,14 +722,15 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
         <TaskModal
           point={activeTask}
           onClose={(completed) => handleTaskClose(completed || false, activeTask.id)}
-          onEdit={() => {}}
-          canEdit={false}
+          onComplete={(taskId) => handleTaskClose(true, taskId)}
+          distance={0}
         />
       )}
 
       {/* QR Scanner Modal */}
       {isQRScannerActive && (
         <QRScannerModal
+          isOpen={isQRScannerActive}
           onScan={handleQRScan}
           onClose={() => setIsQRScannerActive(false)}
         />

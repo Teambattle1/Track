@@ -24,6 +24,64 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        chunkSizeWarningLimit: 1600,
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              // React core
+              if (id.includes('node_modules/react-dom')) {
+                return 'vendor-react-dom';
+              }
+              if (id.includes('node_modules/react/')) {
+                return 'vendor-react';
+              }
+              // Maps
+              if (id.includes('node_modules/leaflet') || id.includes('node_modules/react-leaflet')) {
+                return 'vendor-maps';
+              }
+              // Supabase
+              if (id.includes('node_modules/@supabase')) {
+                return 'vendor-supabase';
+              }
+              // Google GenAI
+              if (id.includes('node_modules/@google/genai')) {
+                return 'vendor-google';
+              }
+              // PDF generation
+              if (id.includes('node_modules/jspdf')) {
+                return 'vendor-jspdf';
+              }
+              if (id.includes('node_modules/html2canvas')) {
+                return 'vendor-html2canvas';
+              }
+              if (id.includes('node_modules/jszip')) {
+                return 'vendor-jszip';
+              }
+              // QR code
+              if (id.includes('node_modules/qrcode') || id.includes('node_modules/jsqr')) {
+                return 'vendor-qr';
+              }
+              // DnD kit
+              if (id.includes('node_modules/@dnd-kit')) {
+                return 'vendor-dnd';
+              }
+              // Lucide icons
+              if (id.includes('node_modules/lucide-react')) {
+                return 'vendor-icons';
+              }
+              // Date picker and crop
+              if (id.includes('node_modules/react-datepicker') || id.includes('node_modules/react-easy-crop')) {
+                return 'vendor-ui-utils';
+              }
+              // DOMPurify
+              if (id.includes('node_modules/dompurify')) {
+                return 'vendor-purify';
+              }
+            }
+          }
+        }
       }
     };
 });

@@ -19,7 +19,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onPlayAsGuest, on
     const [password, setPassword] = useState('');
     
     // INSTRUCTOR login
-    const [instructorCode, setInstructorCode] = useState('');
+    const [InstructorCode, setInstructorCode] = useState('');
     
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -48,18 +48,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onPlayAsGuest, on
 
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        if (instructorCode === '4027') {
-            // Create instructor user
-            const instructorUser: AuthUser = {
-                id: 'instructor-temp',
-                email: 'instructor@teambattle.dk',
+        if (InstructorCode === '4027') {
+            // Create Instructor user
+            const InstructorUser: AuthUser = {
+                id: 'Instructor-temp',
+                email: 'Instructor@teambattle.dk',
                 name: 'Instructor',
-                role: 'instructor',
+                role: 'Instructor',
                 createdAt: new Date().toISOString()
             };
-            onLoginSuccess(instructorUser, 'INSTRUCTOR');
+            onLoginSuccess(InstructorUser, 'INSTRUCTOR');
         } else {
-            setError("Invalid instructor code.");
+            setError("Invalid Instructor code.");
         }
         setLoading(false);
     };
@@ -237,7 +237,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onPlayAsGuest, on
                             <input 
                                 type="text" 
                                 required
-                                value={instructorCode}
+                                value={InstructorCode}
                                 onChange={(e) => setInstructorCode(e.target.value)}
                                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-center text-white font-black text-2xl tracking-[0.5em] outline-none focus:border-orange-500 transition-colors"
                                 placeholder="####"

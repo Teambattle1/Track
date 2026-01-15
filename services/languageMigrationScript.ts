@@ -87,11 +87,11 @@ export const bulkMigrateLibraryLanguages = async (): Promise<{ updated: number; 
                 // Detect language from question text
                 const detectedLanguage = detectLanguageFromText(task.task.question || '');
                 
-                // Only update if language changed or was GLOBAL
-                const shouldUpdate = 
-                    currentLang !== detectedLanguage || 
-                    currentLang === 'GLOBAL' || 
-                    currentLang === 'global' ||
+                // Only update if language changed or was GLOBAL (legacy value)
+                const shouldUpdate =
+                    currentLang !== detectedLanguage ||
+                    (currentLang as string) === 'GLOBAL' ||
+                    (currentLang as string) === 'global' ||
                     !currentLang;
                 
                 if (shouldUpdate) {
@@ -169,10 +169,10 @@ export const bulkMigrateTaskListLanguages = async (): Promise<{ updated: number;
                     const currentLang = task.settings?.language || 'English';
                     const detectedLanguage = detectLanguageFromText(task.task.question || '');
                     
-                    const shouldUpdate = 
-                        currentLang !== detectedLanguage || 
-                        currentLang === 'GLOBAL' || 
-                        currentLang === 'global' ||
+                    const shouldUpdate =
+                        currentLang !== detectedLanguage ||
+                        (currentLang as string) === 'GLOBAL' ||
+                        (currentLang as string) === 'global' ||
                         !currentLang;
                     
                     if (shouldUpdate) {

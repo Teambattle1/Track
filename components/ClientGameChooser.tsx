@@ -22,10 +22,10 @@ const ClientGameChooser: React.FC<ClientGameChooserProps> = ({ onClose, onSelect
     setLoading(true);
     try {
       const allGames = await db.fetchGames();
-      // Filter for active or completed games (exclude templates and planned)
-      const clientGames = allGames.filter(g => 
-        !g.isGameTemplate && 
-        (g.status === 'active' || g.status === 'completed')
+      // Filter for active or ended games (exclude templates and drafts)
+      const clientGames = allGames.filter(g =>
+        !g.isGameTemplate &&
+        (g.state === 'active' || g.state === 'ended')
       );
       setGames(clientGames);
     } catch (error) {
@@ -40,34 +40,40 @@ const ClientGameChooser: React.FC<ClientGameChooserProps> = ({ onClose, onSelect
     game.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
+  const getStatusIcon = (state?: string) => {
+    switch (state) {
       case 'active':
         return <Trophy className="w-5 h-5 text-green-500" />;
-      case 'completed':
+      case 'ended':
         return <CheckCircle className="w-5 h-5 text-blue-500" />;
+      case 'ending':
+        return <Clock className="w-5 h-5 text-yellow-500" />;
       default:
         return <Clock className="w-5 h-5 text-gray-500" />;
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
+  const getStatusLabel = (state?: string) => {
+    switch (state) {
       case 'active':
         return 'Active';
-      case 'completed':
+      case 'ended':
         return 'Completed';
+      case 'ending':
+        return 'Ending Soon';
       default:
-        return status;
+        return state || 'Unknown';
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (state?: string) => {
+    switch (state) {
       case 'active':
         return 'bg-green-500/20 border-green-500 text-green-400';
-      case 'completed':
+      case 'ended':
         return 'bg-blue-500/20 border-blue-500 text-blue-400';
+      case 'ending':
+        return 'bg-yellow-500/20 border-yellow-500 text-yellow-400';
       default:
         return 'bg-gray-500/20 border-gray-500 text-gray-400';
     }
@@ -143,12 +149,12 @@ const ClientGameChooser: React.FC<ClientGameChooserProps> = ({ onClose, onSelect
                         </p>
                       )}
                     </div>
-                    {getStatusIcon(game.status)}
+                    {getStatusIcon(game.state)}
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${getStatusColor(game.status)}`}>
-                      {getStatusLabel(game.status)}
+                    <div className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${getStatusColor(game.state)}`}>
+                      {getStatusLabel(game.state)}
                     </div>
                     {game.points && (
                       <span className="text-xs text-gray-500">
@@ -159,15 +165,15 @@ const ClientGameChooser: React.FC<ClientGameChooserProps> = ({ onClose, onSelect
 
                   {/* Game Stats */}
                   <div className="mt-3 pt-3 border-t border-purple-500/20 flex items-center gap-4 text-xs text-gray-400">
-                    {game.timerConfig?.endingAt && (
+                    {game.endingAt && (
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {new Date(game.timerConfig.endingAt).toLocaleDateString()}
+                        {new Date(game.endingAt).toLocaleDateString()}
                       </div>
                     )}
-                    {game.mapStyle && (
+                    {game.defaultMapStyle && (
                       <div className="capitalize">
-                        {game.mapStyle.replace('_', ' ')}
+                        {game.defaultMapStyle.replace('_', ' ')}
                       </div>
                     )}
                   </div>

@@ -1066,7 +1066,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
             description: `Created with ${addToTasksSelection.length} task${addToTasksSelection.length !== 1 ? 's' : ''}`,
             tasks: addToTasksSelection,
             imageUrl: '',
-            createdAt: new Date().toISOString()
+            color: '#3b82f6',
+            createdAt: Date.now()
         };
 
         await db.saveTaskList(newList);
@@ -1644,7 +1645,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                 description: `AI-generated tasks about ${name}`,
                                 tasks: tasks,
                                 imageUrl: '',
-                                createdAt: new Date().toISOString()
+                                color: '#3b82f6',
+                                createdAt: Date.now()
                             };
                             onUpdateTaskLists([...taskLists, newList]);
 
@@ -2533,7 +2535,8 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                             description: `AI-generated tasks about ${name}`,
                             tasks: tasks,
                             imageUrl: '',
-                            createdAt: new Date().toISOString()
+                            color: '#3b82f6',
+                            createdAt: Date.now()
                         };
                         onUpdateTaskLists([...taskLists, newList]);
 

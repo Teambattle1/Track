@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Game, GamePoint, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage, Coordinate, GameChangeLogEntry, MediaSubmission } from '../types';
+import { Game, GamePoint, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage, Coordinate, GameChangeLogEntry, MediaSubmission, MapStyleId } from '../types';
 import { DEMO_TASKS, DEMO_LISTS, getDemoGames } from '../utils/demoContent';
 import { detectLanguageFromText, normalizeLanguage } from '../utils/i18n';
 
@@ -78,7 +78,7 @@ const TAGS_FETCH_TIMEOUT_MS = 8000; // 8 second timeout for tag fetches (increas
 const LIBRARY_FETCH_TIMEOUT_MS = 25000; // 25 second timeout for library fetches (increased from 15s)
 
 // Retry helper for timeout and network errors with exponential backoff
-const retryWithBackoff = async <T>(fn: () => Promise<T>, context: string, maxRetries = 3, timeoutMs?: number): Promise<T> => {
+const retryWithBackoff = async <T>(fn: () => PromiseLike<T>, context: string, maxRetries = 3, timeoutMs?: number): Promise<T> => {
     let lastError: any;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -152,7 +152,7 @@ export const testDatabaseConnection = async (): Promise<{ success: boolean; erro
 
 // Fetch large tables in chunks to prevent timeout
 const fetchInChunks = async <T>(
-    query: (offset: number, limit: number) => Promise<{ data: any[] | null; error: any }>,
+    query: (offset: number, limit: number) => PromiseLike<{ data: any[] | null; error: any }>,
     context: string,
     chunkSize: number = CHUNK_SIZE,
     timeoutMs?: number
@@ -226,10 +226,10 @@ export const fetchGames = async (): Promise<Game[]> => {
             console.warn('[DB Service] Attempting fetchGames fallback (small batch)...');
             const { data, error } = await Promise.race([
                 supabase.from('games').select('id, data, updated_at').limit(250).order('id', { ascending: false }),
-                new Promise((_, reject) =>
+                new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Fallback query timeout after 30s')), 30000)
                 )
-            ]) as Promise<{ data: any[] | null; error: any }>;
+            ]);
 
             if (error) throw error;
             if (!data) return [];
@@ -266,7 +266,7 @@ export const saveGames = async (
                         .from('games')
                         .upsert(
                             chunk.map(g => ({ id: g.id, data: g, updated_at: updatedAt })),
-                            { onConflict: 'id', returning: 'minimal' }
+                            { onConflict: 'id' }
                         )
                         .then(result => {
                             if (result.error) throw result.error;
@@ -431,7 +431,7 @@ export const replaceMapStyleInGames = async (oldStyleId: string, newStyleId: str
         for (const game of affectedGames) {
             const updatedGame = {
                 ...game,
-                defaultMapStyle: newStyleId
+                defaultMapStyle: newStyleId as MapStyleId
             };
             await saveGame(updatedGame);
         }
@@ -722,7 +722,7 @@ export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
                 new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Fallback 1 timeout')), 8000)
                 )
-            ]) as Promise<{ data: any[] | null; error: any }>;
+            ]);
 
             if (error) throw error;
             if (data && data.length > 0) {
@@ -802,7 +802,7 @@ export const saveTemplates = async (
                         .from('library')
                         .upsert(
                             chunk.map(t => ({ id: t.id, data: t, updated_at: updatedAt })),
-                            { onConflict: 'id', returning: 'minimal' }
+                            { onConflict: 'id' }
                         )
                         .then(result => {
                             if (result.error) throw result.error;
@@ -821,12 +821,13 @@ export const saveTemplates = async (
     }
 };
 
-export const saveTemplate = async (template: TaskTemplate) => {
+export const saveTemplate = async (template: TaskTemplate): Promise<{ ok: boolean }> => {
     const { ok } = await saveTemplates([template]);
     if (!ok) {
         // Keep existing behavior (log + don't throw), but ensure saveTemplate logs show up.
         console.warn('[DB Service] saveTemplate failed (see previous error for details)');
     }
+    return { ok };
 };
 
 export const deleteTemplate = async (id: string) => {
@@ -924,10 +925,10 @@ export const fetchTaskLists = async (): Promise<TaskList[]> => {
             console.warn('[DB Service] Attempting fetchTaskLists fallback (small batch)...');
             const { data, error } = await Promise.race([
                 supabase.from('task_lists').select('id, data').limit(200).order('id', { ascending: false }),
-                new Promise((_, reject) =>
+                new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Fallback query timeout after 10s')), 10000)
                 )
-            ]) as Promise<{ data: any[] | null; error: any }>;
+            ]);
 
             if (error) throw error;
             if (!data) return [];
@@ -1003,7 +1004,7 @@ export const saveTaskLists = async (
                         .from('task_lists')
                         .upsert(
                             chunk.map(list => ({ id: list.id, data: list, updated_at: updatedAt })),
-                            { onConflict: 'id', returning: 'minimal' }
+                            { onConflict: 'id' }
                         )
                         .then(result => {
                             if (result.error) throw result.error;

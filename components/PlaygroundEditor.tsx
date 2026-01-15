@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Game, Playground, GamePoint, IconId, TaskTemplate, TaskList, DeviceType, PlaygroundTemplate } from '../types';
+import { Game, Playground, GamePoint, IconId, TaskTemplate, TaskList, DeviceType, PlaygroundTemplate, GameMode, DeviceLayout } from '../types';
 import { DEVICE_SPECS, getDeviceLayout, ensureDeviceLayouts, DEVICE_SPECS as SPECS } from '../utils/deviceUtils';
 import {
     X, Plus, LayoutGrid, Globe, Map as MapIcon, ArrowLeft, Trash2, Edit2,
@@ -31,7 +31,7 @@ interface PlaygroundEditorProps {
   onClose: () => void;
   onEditPoint: (point: GamePoint) => void;
   onPointClick: (point: GamePoint) => void;
-  onAddTask: (type: 'MANUAL' | 'AI' | 'LIBRARY', playgroundId?: string) => void;
+  onAddTask: (type: 'MANUAL' | 'AI' | 'LIBRARY' | 'TASKLIST', playgroundId?: string) => void;
   onOpenLibrary: (playgroundId: string) => void;
   showScores: boolean;
   onToggleScores: () => void;
@@ -751,10 +751,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     // Save QR Scanner settings to playground device layout
     const saveQRScannerSettings = () => {
         if (activePlayground) {
-            const newLayouts = { ...activePlayground.deviceLayouts } || {};
+            const newLayouts: Partial<Record<DeviceType, DeviceLayout>> = { ...(activePlayground.deviceLayouts || {}) };
             // Ensure device layout exists before updating
             if (!newLayouts[selectedDevice]) {
-                newLayouts[selectedDevice] = {};
+                newLayouts[selectedDevice] = {} as DeviceLayout;
             }
             newLayouts[selectedDevice] = {
                 ...newLayouts[selectedDevice],
@@ -854,9 +854,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     // Save Title Text settings to playground
     const saveTitleTextSettings = () => {
         if (activePlayground) {
-            const newLayouts = { ...activePlayground.deviceLayouts } || {};
+            const newLayouts: Partial<Record<DeviceType, DeviceLayout>> = { ...(activePlayground.deviceLayouts || {}) };
             if (!newLayouts[selectedDevice]) {
-                newLayouts[selectedDevice] = {};
+                newLayouts[selectedDevice] = {} as DeviceLayout;
             }
             newLayouts[selectedDevice] = {
                 ...newLayouts[selectedDevice],
@@ -2106,7 +2106,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 return point;
             });
 
-            await updateActiveGame({ ...game, points: updatedPoints }, `Snapped ${tasksToSnap.length} tasks to road`);
+            onUpdateGame({ ...game, points: updatedPoints });
             alert(`✓ Successfully snapped ${tasksToSnap.length} task${tasksToSnap.length !== 1 ? 's' : ''} to road`);
         } catch (error) {
             console.error('Error snapping to road:', error);
@@ -5170,7 +5170,8 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                             iconId: newTask.iconId,
                                             iconUrl: newTask.iconUrl,
                                             settings: newTask.settings,
-                                            logic: newTask.logic
+                                            logic: newTask.logic,
+                                            createdAt: Date.now()
                                         };
                                         const { ok } = await db.saveTemplates([taskTemplate]);
                                         if (!ok) {
@@ -6134,7 +6135,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CORRECT ANSWER</label>
                                     <div className="p-3 bg-green-600/20 border-2 border-green-500 rounded-lg">
                                         <p className="text-green-300 font-black text-lg uppercase">
-                                            {selectedTask.task.answer === 'true' || selectedTask.task.answer === true ? '✓ TRUE' : '✗ FALSE'}
+                                            {selectedTask.task.answer === 'true' ? '✓ TRUE' : '✗ FALSE'}
                                         </p>
                                     </div>
                                 </div>
@@ -6958,7 +6959,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         onClose={() => setActiveSimulationTaskId(null)}
                         onComplete={(pointId, customScore) => {
                             // Update simulation score
-                            const scoreDelta = customScore !== undefined ? customScore : (task.score || 0);
+                            const scoreDelta = customScore !== undefined ? customScore : (task.points || 0);
                             setSimulationScore(prev => prev + scoreDelta);
 
                             // Update task status

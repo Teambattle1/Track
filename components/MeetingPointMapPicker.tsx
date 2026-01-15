@@ -6,8 +6,11 @@ import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icon in react-leaflet
 import L from 'leaflet';
+// @ts-ignore - leaflet image imports work at runtime via bundler
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
+// @ts-ignore - leaflet image imports work at runtime via bundler
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+// @ts-ignore - leaflet image imports work at runtime via bundler
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;

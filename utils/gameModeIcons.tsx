@@ -54,7 +54,7 @@ export const EliminationModeIcon: React.FC<{ className?: string }> = ({ classNam
 );
 
 // Get icon and color based on game mode
-export const getGameModeIcon = (gameMode?: 'map' | 'playzone' | 'elimination') => {
+export const getGameModeIcon = (gameMode?: 'standard' | 'map' | 'playzone' | 'elimination') => {
   switch (gameMode) {
     case 'playzone':
       return {
@@ -72,6 +72,7 @@ export const getGameModeIcon = (gameMode?: 'map' | 'playzone' | 'elimination') =
         bgColor: 'bg-red-100 dark:bg-red-900/30',
         borderColor: 'border-red-300 dark:border-red-700'
       };
+    case 'standard':
     case 'map':
     default:
       return {

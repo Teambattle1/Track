@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Game, GamePoint, Team, Coordinate } from '../types';
+import { Game, GamePoint, Team, Coordinate, GameMode } from '../types';
 import { Bomb, MapPin, Trophy, Clock, AlertCircle, Users } from 'lucide-react';
 import GameMap from './GameMap';
 
@@ -169,10 +169,16 @@ const EliminationGameMode: React.FC<EliminationGameModeProps> = ({
           points={visiblePoints}
           teams={teams.map(team => ({
             team,
-            location: team.members?.[0]?.location || { lat: 0, lng: 0 },
+            location: userLocation || { lat: 0, lng: 0 },
           }))}
           userLocation={userLocation}
           dangerZones={game.dangerZones}
+          mode={GameMode.PLAY}
+          mapStyle={game.defaultMapStyle || 'osm'}
+          onPointClick={(point) => {
+            // Handle point click in elimination mode - triggers task capture flow
+            if (point) onTaskCapture(point.id);
+          }}
           showMapLayer={true}
           showZoneLayer={true}
           showTaskLayer={true}
