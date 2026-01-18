@@ -438,8 +438,8 @@ const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.
   );
 });
 
-// Task Marker Component - EXACT SAME PATTERN AS DANGERZONEMARKER (which works!)
-const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isSnapSelected, isHovered, isMeasuring, isRelocating, snapToRoadMode, onClick, onAreaColorClick, onMove, onDelete, onDragStart, onDragEnd, onHover }: any) => {
+// Task Marker Component - NO React.memo to ensure re-renders happen
+const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSnapSelected, isHovered, isMeasuring, isRelocating, snapToRoadMode, onClick, onAreaColorClick, onMove, onDelete, onDragStart, onDragEnd, onHover }: any) => {
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
 
@@ -479,29 +479,26 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                 draggable={draggable}
                 eventHandlers={{
                     click: () => {
-                        if (onClick && point) onClick(point);
-                    },
-                    mouseover: () => {
-                        if (onHover && point) onHover(point);
-                    },
-                    mouseout: () => {
-                        if (onHover) onHover(null);
-                    },
-                    dragstart() {
-                        if (onDragStart && point?.id) onDragStart(point.id);
+                        try {
+                            if (onClick && point) onClick(point);
+                        } catch (error) {
+                            console.error('[MapTaskMarker] Error handling click:', error);
+                        }
                     },
                     dragend(e: any) {
-                        // EXACT SAME PATTERN AS DANGERZONEMARKER
-                        if (onMove && e?.target?.getLatLng) {
-                            const latlng = e.target.getLatLng();
-                            if (latlng && point?.id) {
-                                // Check trash detection
-                                const shouldDelete = onDragEnd ? onDragEnd(point.id, e) : false;
-                                if (shouldDelete === true) {
-                                    return; // Deletion handled
+                        // EXACT SAME AS DANGERZONEMARKER - NO EXTRA LOGIC
+                        try {
+                            if (onMove && e?.target?.getLatLng) {
+                                const latlng = e.target.getLatLng();
+                                if (latlng && point?.id) {
+                                    console.log('[MapTaskMarker] dragend - calling onMove with:', point.id, latlng.lat, latlng.lng);
+                                    onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
                                 }
-                                onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
+                            } else {
+                                console.warn('[MapTaskMarker] dragend - onMove or getLatLng missing:', { hasOnMove: !!onMove, hasGetLatLng: !!e?.target?.getLatLng });
                             }
+                        } catch (error) {
+                            console.error('[MapTaskMarker] Error handling dragend:', error);
                         }
                     }
                 }}
@@ -616,7 +613,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
             )}
         </React.Fragment>
     );
-});
+};
 
 const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }: any) => {
     // Allow dragging in both EDIT and INSTRUCTOR modes

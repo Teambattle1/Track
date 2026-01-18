@@ -919,7 +919,7 @@ const GameApp: React.FC = () => {
           teamStartTime,
           activeGame.timerConfig
       );
-  }, [activeGame?.id, mode, currentTeam?.startedAt, selectedTeamForFogOfWar, teamsForFogOfWar.length]);
+  }, [activeGame, mode, currentTeam?.startedAt, selectedTeamForFogOfWar, teamsForFogOfWar.length]);
 
 
   const ensureSession = (callback: () => void) => {
@@ -934,11 +934,14 @@ const GameApp: React.FC = () => {
       const updatedAt = new Date().toISOString();
       const gameToSave = { ...updatedGame, dbUpdatedAt: updatedAt };
 
-      await db.saveGame(gameToSave);
+      // Update local state FIRST for instant UI feedback (prevents marker snap-back)
       setGames(prev => prev.map(g => g.id === gameToSave.id ? gameToSave : g));
       if (activeGameId === gameToSave.id) {
           setActiveGame(gameToSave);
       }
+
+      // Then save to database in background
+      await db.saveGame(gameToSave);
   };
 
   const handleSaveGameTemplate = async () => {
@@ -3224,6 +3227,7 @@ const GameApp: React.FC = () => {
                 onMapClick={handleMapClick}
                 onDeletePoint={handleDeleteItem}
                 onPointMove={isRelocating ? undefined : async (id, loc) => {
+                    console.log('[App] onPointMove called:', id, loc);
                     if (!activeGame) return;
 
                     // If in measure mode, update measurePath to reflect new location

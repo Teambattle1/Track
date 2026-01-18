@@ -284,7 +284,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
         pins: { x: window.innerWidth - 180, y: 75 },
         tools: { x: window.innerWidth - 180, y: 140 },
         mapmode: { x: window.innerWidth - 180, y: 205 },
-        location: { x: window.innerWidth - 180, y: 270 },
+        location: { x: Math.max(10, (window.innerWidth / 2) - 70), y: 10 }, // Top center
         qr: { x: window.innerWidth - 80, y: window.innerHeight - 100 }
     };
 
@@ -1157,8 +1157,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
             </div>
 
 
-            {/* Draggable Location Search Toolbox - Only for GPS-based games */}
-            {mode === GameMode.EDIT && activeGame?.gameMode !== 'playzone' && visibleToolbars['location'] && (
+            {/* Draggable Location Search Toolbox - Only for GPS-based games (EDIT and INSTRUCTOR modes) */}
+            {(mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && activeGame?.gameMode !== 'playzone' && visibleToolbars['location'] && (
                 <div
                     className="absolute z-[1100] pointer-events-auto touch-none"
                     style={{ left: locationToolboxPos.x, top: locationToolboxPos.y }}
