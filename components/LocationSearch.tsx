@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Loader2, MapPin, X, Target, Maximize } from 'lucide-react';
+import { Search, Loader2, MapPin, X, Target, Maximize, Star, Plus, Trash2 } from 'lucide-react';
 import { Coordinate } from '../types';
 import { isValidCoordinate } from '../utils/geo';
+import { supabase } from '../lib/supabase';
+
+// Saved Location interface
+interface SavedLocation {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  address?: string;
+}
 
 // Extracted to prevent re-mounting on every render
 const ActionButton = ({ onClick, icon: Icon, label, colorClass, active = false, compact = false, showLabel = false, title }: { onClick: (e: React.MouseEvent) => void, icon: any, label: string, colorClass: string, active?: boolean, compact?: boolean, showLabel?: boolean, title?: string }) => (
@@ -29,6 +39,8 @@ interface LocationSearchProps {
   locateFeedback?: string | null;
   compact?: boolean;
   showLabels?: boolean;
+  fullWidth?: boolean; // Make search field full width of container
+  showSavedLocations?: boolean; // Show saved locations button
 }
 
 const LocationSearch: React.FC<LocationSearchProps> = ({
@@ -40,7 +52,9 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
     labelButtons = false,
     locateFeedback,
     compact = false,
-    showLabels = false
+    showLabels = false,
+    fullWidth = false,
+    showSavedLocations = true
 }) => {
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -48,6 +62,100 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   const [showResults, setShowResults] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Saved locations state
+  const [savedLocations, setSavedLocations] = useState<SavedLocation[]>([]);
+  const [showSavedDropdown, setShowSavedDropdown] = useState(false);
+  const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [newLocationName, setNewLocationName] = useState('');
+  const [lastSelectedCoord, setLastSelectedCoord] = useState<Coordinate | null>(null);
+  const [lastSelectedAddress, setLastSelectedAddress] = useState<string>('');
+
+  // Load saved locations from Supabase
+  useEffect(() => {
+    const loadSavedLocations = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('saved_locations')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('[LocationSearch] Error loading saved locations:', error);
+          return;
+        }
+
+        if (data) {
+          setSavedLocations(data);
+        }
+      } catch (err) {
+        console.error('[LocationSearch] Failed to load saved locations:', err);
+      }
+    };
+
+    if (showSavedLocations) {
+      loadSavedLocations();
+    }
+  }, [showSavedLocations]);
+
+  // Save new location
+  const handleSaveLocation = async () => {
+    if (!newLocationName.trim() || !lastSelectedCoord) return;
+
+    const newLocation: SavedLocation = {
+      id: `loc-${Date.now()}`,
+      name: newLocationName.trim(),
+      lat: lastSelectedCoord.lat,
+      lng: lastSelectedCoord.lng,
+      address: lastSelectedAddress || undefined
+    };
+
+    try {
+      const { error } = await supabase
+        .from('saved_locations')
+        .insert([newLocation]);
+
+      if (error) {
+        console.error('[LocationSearch] Error saving location:', error);
+        alert('Failed to save location');
+        return;
+      }
+
+      setSavedLocations(prev => [newLocation, ...prev]);
+      setNewLocationName('');
+      setIsAddingLocation(false);
+    } catch (err) {
+      console.error('[LocationSearch] Failed to save location:', err);
+    }
+  };
+
+  // Delete saved location
+  const handleDeleteLocation = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    try {
+      const { error } = await supabase
+        .from('saved_locations')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('[LocationSearch] Error deleting location:', error);
+        return;
+      }
+
+      setSavedLocations(prev => prev.filter(loc => loc.id !== id));
+    } catch (err) {
+      console.error('[LocationSearch] Failed to delete location:', err);
+    }
+  };
+
+  // Select saved location
+  const handleSelectSavedLocation = (location: SavedLocation) => {
+    onSelectLocation({ lat: location.lat, lng: location.lng });
+    setQuery(location.name);
+    setShowSavedDropdown(false);
+  };
 
   // Auto-search with debounce as user types
   useEffect(() => {
@@ -143,13 +251,16 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       onSelectLocation({ lat, lng });
       setShowResults(false);
       setQuery(res.display_name);
+      // Store for potential saving
+      setLastSelectedCoord({ lat, lng });
+      setLastSelectedAddress(res.display_name);
     } else {
       console.error('Invalid coordinates from geocoding result:', res);
     }
   };
 
   return (
-    <div className={`flex items-center gap-2 pointer-events-auto ${className}`}>
+    <div className={`flex items-center gap-2 pointer-events-auto ${fullWidth ? 'w-full' : ''} ${className}`}>
 
       {/* Moved Action Buttons to the Left */}
       {onLocateMe && (
@@ -186,7 +297,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       )}
 
       {!hideSearch && (
-        <div className={`relative ${compact ? 'w-full' : 'w-full min-w-[180px] sm:w-[260px]'} ${compact ? 'h-10' : 'h-12'}`}>
+        <div className={`relative ${fullWidth ? 'flex-1' : (compact ? 'w-full' : 'w-full min-w-[180px] sm:w-[260px]')} ${compact ? 'h-10' : 'h-12'}`}>
           <form onSubmit={handleSearch} className="group relative flex items-center h-full">
             <div className={`absolute text-gray-400 group-focus-within:text-orange-500 transition-colors z-10 ${compact ? 'left-2.5' : 'left-3.5'}`}>
               {isSearching ? <Loader2 className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} animate-spin`} /> : <Search className={compact ? 'w-3 h-3' : 'w-4 h-4'} />}
@@ -196,20 +307,33 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={compact ? "Search..." : "Search location..."}
-              className={`w-full h-full ${compact ? 'pl-8 pr-8' : 'pl-10 pr-10'} bg-[#1a202c] dark:bg-gray-900 backdrop-blur-md border-2 border-slate-700 hover:border-slate-600 rounded-2xl shadow-xl ${compact ? 'text-[11px]' : 'text-xs sm:text-sm'} outline-none focus:border-orange-500 transition-all text-white font-bold placeholder:text-slate-500`}
+              className={`w-full h-full ${compact ? 'pl-8 pr-16' : 'pl-10 pr-20'} bg-[#1a202c] dark:bg-gray-900 backdrop-blur-md border-2 border-slate-700 hover:border-slate-600 rounded-2xl shadow-xl ${compact ? 'text-[11px]' : 'text-xs sm:text-sm'} outline-none focus:border-orange-500 transition-all text-white font-bold placeholder:text-slate-500`}
             />
-            {query && (
-              <button
-                type="button"
-                onClick={() => { setQuery(''); setResults([]); setShowResults(false); }}
-                className={`absolute ${compact ? 'right-2' : 'right-3'} p-1.5 text-gray-400 hover:text-white z-10 bg-white/5 hover:bg-white/10 rounded-lg transition-colors`}
-              >
-                <X className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
-              </button>
-            )}
+            <div className={`absolute ${compact ? 'right-2' : 'right-3'} flex items-center gap-1 z-10`}>
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => { setQuery(''); setResults([]); setShowResults(false); }}
+                  className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
+                </button>
+              )}
+              {showSavedLocations && (
+                <button
+                  type="button"
+                  onClick={() => setShowSavedDropdown(!showSavedDropdown)}
+                  className={`p-1.5 rounded-lg transition-colors ${showSavedDropdown ? 'bg-yellow-500/30 text-yellow-400' : 'text-gray-400 hover:text-yellow-400 bg-white/5 hover:bg-yellow-500/20'}`}
+                  title="Saved Locations"
+                >
+                  <Star className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} fill={showSavedDropdown ? 'currentColor' : 'none'} />
+                </button>
+              )}
+            </div>
           </form>
 
-          {showResults && (results.length > 0 || (!isSearching && query)) && (
+          {/* Search Results Dropdown */}
+          {showResults && (results.length > 0 || (!isSearching && query)) && !showSavedDropdown && (
             <div className={`absolute top-full left-0 right-0 ${compact ? 'mt-1' : 'mt-2'} bg-slate-900 border border-white/10 shadow-2xl rounded-2xl overflow-hidden z-[3000] animate-in slide-in-from-top-2`}>
               {results.length > 0 ? (
                 results.map((res, idx) => (
@@ -221,6 +345,92 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
               ) : !isSearching && (
                 <div className={`text-center text-slate-500 font-black uppercase tracking-widest ${compact ? 'p-2 text-[9px]' : 'p-4 text-[10px]'}`}>No results</div>
               )}
+            </div>
+          )}
+
+          {/* Saved Locations Dropdown */}
+          {showSavedDropdown && showSavedLocations && (
+            <div className={`absolute top-full left-0 right-0 ${compact ? 'mt-1' : 'mt-2'} bg-slate-900 border border-yellow-500/30 shadow-2xl rounded-2xl overflow-hidden z-[3000] animate-in slide-in-from-top-2`}>
+              {/* Header */}
+              <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-3 py-2 flex items-center justify-between">
+                <span className={`font-black uppercase tracking-widest text-yellow-400 ${compact ? 'text-[9px]' : 'text-[10px]'}`}>
+                  <Star className="w-3 h-3 inline mr-1" fill="currentColor" /> Saved Locations
+                </span>
+                {lastSelectedCoord && !isAddingLocation && (
+                  <button
+                    onClick={() => setIsAddingLocation(true)}
+                    className="text-[9px] font-bold uppercase bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Save Current
+                  </button>
+                )}
+              </div>
+
+              {/* Add new location form */}
+              {isAddingLocation && (
+                <div className="p-3 border-b border-yellow-500/20 bg-slate-950">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newLocationName}
+                      onChange={(e) => setNewLocationName(e.target.value)}
+                      placeholder="Location name..."
+                      className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-yellow-500"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSaveLocation}
+                      disabled={!newLocationName.trim()}
+                      className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-lg text-xs font-bold"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => { setIsAddingLocation(false); setNewLocationName(''); }}
+                      className="px-2 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                  {lastSelectedAddress && (
+                    <p className="text-[9px] text-slate-500 mt-1 truncate">{lastSelectedAddress}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Saved locations list */}
+              <div className="max-h-[200px] overflow-y-auto">
+                {savedLocations.length > 0 ? (
+                  savedLocations.map((loc) => (
+                    <button
+                      key={loc.id}
+                      onClick={() => handleSelectSavedLocation(loc)}
+                      className={`w-full text-left hover:bg-yellow-500/10 border-b last:border-0 border-white/5 flex items-center gap-2 transition-colors group ${compact ? 'p-2' : 'p-3'}`}
+                    >
+                      <Star className={`text-yellow-500 shrink-0 ${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} fill="currentColor" />
+                      <div className="flex-1 min-w-0">
+                        <span className={`font-bold leading-tight text-white block ${compact ? 'text-[10px]' : 'text-xs'}`}>{loc.name}</span>
+                        {loc.address && (
+                          <span className={`text-slate-500 truncate block ${compact ? 'text-[8px]' : 'text-[9px]'}`}>{loc.address}</span>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => handleDeleteLocation(loc.id, e)}
+                        className="p-1 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </button>
+                  ))
+                ) : (
+                  <div className={`text-center text-slate-500 font-bold ${compact ? 'p-3 text-[9px]' : 'p-4 text-[10px]'}`}>
+                    No saved locations yet.
+                    <br />
+                    <span className="text-slate-600">Search and select a location first, then save it.</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

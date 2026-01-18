@@ -125,6 +125,7 @@ interface GameMapProps {
   showZoneLayer?: boolean; // NEW: Toggle danger zones visibility
   showTaskLayer?: boolean; // NEW: Toggle task pins visibility
   showLiveLayer?: boolean; // NEW: Toggle live team positions visibility
+  isDevicePreview?: boolean; // NEW: Hide certain UI elements (like trash bin) in device preview mode
 }
 
 // Internal component to handle user location updates without re-rendering the whole map
@@ -166,7 +167,7 @@ const RecenterMap = ({ center, points, mode }: { center: Coordinate | null, poin
             const latLngs = validPoints.map(p => [p.location.lat, p.location.lng] as [number, number]);
             const bounds = L.latLngBounds(latLngs);
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [50, 50], animate: false, maxZoom: 19 });
+                map.fitBounds(bounds, { padding: [50, 50], animate: false, maxZoom: 17 });
                 initializedRef.current = true;
                 return;
             }
@@ -214,9 +215,9 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
                 console.log('[GameMap] Calculated bounds:', bounds.toBBoxString());
 
                 if (bounds.isValid()) {
-                    console.log('[GameMap] Fitting bounds to', latLngs.length, 'points with maxZoom 19');
-                    // Use same zoom settings as initial fit: padding: [50, 50], animate: false, maxZoom: 19
-                    map.fitBounds(bounds, { padding: [50, 50], animate: false, maxZoom: 19 });
+                    console.log('[GameMap] Fitting bounds to', latLngs.length, 'points with maxZoom 17');
+                    // Use reasonable maxZoom to prevent over-zooming when points are close together
+                    map.fitBounds(bounds, { padding: [50, 50], animate: true, maxZoom: 17 });
                 } else {
                     console.warn('[GameMap] Invalid bounds calculated');
                 }
@@ -718,7 +719,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     showMapLayer = true, // Toggle map tile layer visibility
     showZoneLayer = true, // Toggle danger zones visibility
     showTaskLayer = true, // Toggle task pins visibility
-    showLiveLayer = true // Toggle live team positions visibility
+    showLiveLayer = true, // Toggle live team positions visibility
+    isDevicePreview = false // Hide certain UI elements in device preview mode
 }, ref) => {
   // Get user location from context for proximity filtering
   const { userLocation: ctxLocation } = useLocation();
@@ -1145,8 +1147,8 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
 
         </MapContainer>
 
-        {/* Visual Trash Bin - Editor Mode Only */}
-        {mode === GameMode.EDIT && (
+        {/* Visual Trash Bin - Editor Mode Only, hide in device preview */}
+        {mode === GameMode.EDIT && !isDevicePreview && (
             <div
                 id="map-trash-bin"
                 className="absolute bottom-6 right-6 z-[1000] pointer-events-auto"

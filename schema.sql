@@ -151,6 +151,20 @@ CREATE TABLE IF NOT EXISTS player_recovery_codes (
 CREATE INDEX IF NOT EXISTS idx_player_recovery_codes_device_id ON player_recovery_codes(device_id);
 CREATE INDEX IF NOT EXISTS idx_player_recovery_codes_expires_at ON player_recovery_codes(expires_at);
 
+-- Saved Locations table - stores favorite/saved map locations
+CREATE TABLE IF NOT EXISTS saved_locations (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    lat DOUBLE PRECISION NOT NULL,
+    lng DOUBLE PRECISION NOT NULL,
+    address TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_saved_locations_name ON saved_locations(name);
+CREATE INDEX IF NOT EXISTS idx_saved_locations_created_at ON saved_locations(created_at DESC);
+
 -- ============================================
 -- MAP & STYLING TABLES
 -- ============================================

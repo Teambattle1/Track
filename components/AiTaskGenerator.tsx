@@ -645,125 +645,84 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   };
 
   return (
-    <div className="fixed inset-0 z-[9100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-        <div className="bg-[#0f172a] border border-slate-800 w-full max-w-5xl h-[90vh] rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative">
-            
-            {/* Header */}
-            <div className="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-purple-600/20 rounded-2xl flex items-center justify-center border border-purple-500/30">
-                        <Wand2 className="w-6 h-6 text-purple-400" />
+    <div className="fixed inset-0 z-[9100] bg-black/90 backdrop-blur-md flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-300">
+        <div className="bg-[#0f172a] border border-slate-800 w-full max-w-7xl h-[95vh] md:h-[90vh] rounded-2xl md:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative">
+
+            {/* Header - Compact */}
+            <div className="px-4 py-3 md:p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center border border-purple-500/30">
+                        <Wand2 className="w-5 h-5 text-purple-400" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">
+                        <h2 className="text-base md:text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
                             AI TASK GENERATOR
-                            <span className="text-[10px] bg-purple-900/50 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30">BETA</span>
+                            <span className="text-[8px] md:text-[10px] bg-purple-900/50 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">BETA</span>
                         </h2>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mt-1">CLAUDE (TEXT) + STABILITY AI (IMAGES)</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">CLAUDE (TEXT) + STABILITY AI (IMAGES)</p>
                     </div>
                 </div>
                 <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors">
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                 </button>
             </div>
 
             <div className="flex-1 flex overflow-hidden">
-                
-                {/* Left Panel: Controls */}
-                <div className="w-80 bg-slate-900/50 border-r border-slate-800 p-6 overflow-y-auto custom-scrollbar flex flex-col">
-                    <div className="space-y-6">
-                        {/* Topic Input */}
+
+                {/* Left Panel: Controls - Wider with compact layout */}
+                <div className="w-[340px] lg:w-[400px] bg-slate-900/50 border-r border-slate-800 p-3 md:p-4 overflow-y-auto custom-scrollbar flex flex-col">
+                    <div className="space-y-3">
+                        {/* Topic Input - Compact */}
                         <div>
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">TOPIC / THEME</label>
-                            <textarea 
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 block">TOPIC / THEME</label>
+                            <textarea
                                 ref={topicInputRef}
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
-                                placeholder="e.g. Historical monuments in Copenhagen with fun facts..."
-                                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white text-sm font-medium outline-none focus:border-purple-500 transition-colors h-24 resize-none"
+                                placeholder="e.g. Historical monuments in Copenhagen..."
+                                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white text-sm font-medium outline-none focus:border-purple-500 transition-colors h-16 resize-none"
                             />
                         </div>
 
-                        {/* Branding - 3 options: Find Logo, Generate AI, Upload */}
-                        <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block flex items-center justify-between">
-                                <span>BRANDING (OPTIONAL)</span>
-                                {(isGeneratingLogo || isGeneratingAiImage) && <Loader2 className="w-3 h-3 animate-spin" />}
-                            </label>
-
-                            {/* 3 Action Buttons */}
-                            <div className="space-y-2 mb-3">
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={handleSearchLogo}
-                                        disabled={!topic || isGeneratingLogo || isGeneratingAiImage}
-                                        className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[9px] font-bold uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5"
-                                    >
-                                        <Search className="w-3 h-3" /> FIND LOGO
-                                    </button>
-                                    <button
-                                        onClick={handleGenerateAiImage}
-                                        disabled={!topic || isGeneratingLogo || isGeneratingAiImage}
-                                        className="flex-1 py-2 bg-purple-600/30 hover:bg-purple-600/50 disabled:opacity-50 disabled:cursor-not-allowed text-purple-300 text-[9px] font-bold uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-purple-500/30"
-                                    >
-                                        <Sparkles className="w-3 h-3" /> AI IMAGE
-                                    </button>
-                                </div>
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isGeneratingLogo || isGeneratingAiImage}
-                                    className="w-full py-2 bg-slate-700/50 hover:bg-slate-700 disabled:opacity-50 text-slate-300 text-[9px] font-bold uppercase rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-dashed border-slate-600"
-                                >
-                                    <ImageIcon className="w-3 h-3" /> UPLOAD IMAGE
-                                </button>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleUploadImage}
-                                    className="hidden"
-                                />
+                        {/* Branding - Compact row */}
+                        <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                    <ImageIcon className="w-3 h-3" /> BRANDING
+                                </label>
+                                {(isGeneratingLogo || isGeneratingAiImage) && <Loader2 className="w-3 h-3 animate-spin text-purple-400" />}
                             </div>
 
-                            {/* Image Preview */}
-                            {logoUrl && (
-                                <div className="flex items-center gap-3 bg-slate-900 p-2 rounded-lg border border-green-500/30">
+                            {logoUrl ? (
+                                <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-lg border border-green-500/30">
                                     <div className="relative group">
-                                        <img src={logoUrl} className="w-10 h-10 object-contain bg-white rounded cursor-pointer" />
-                                        {/* Hover preview - full size */}
+                                        <img src={logoUrl} className="w-8 h-8 object-contain bg-white rounded cursor-pointer" />
                                         <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden group-hover:block z-[9999] animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
                                             <div className="bg-slate-950 p-3 rounded-2xl border border-slate-700 shadow-2xl">
-                                                <img src={logoUrl} className="max-w-[512px] max-h-[512px] w-auto h-auto object-contain bg-white rounded-xl" />
-                                                <p className="text-[10px] text-slate-500 text-center mt-2 font-bold uppercase">1024 × 1024 px</p>
+                                                <img src={logoUrl} className="max-w-[400px] max-h-[400px] w-auto h-auto object-contain bg-white rounded-xl" />
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[9px] text-green-400 font-bold uppercase truncate">IMAGE READY</p>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                id="useLogo"
-                                                checked={useLogoForTasks}
-                                                onChange={(e) => setUseLogoForTasks(e.target.checked)}
-                                                className="rounded bg-slate-700 border-slate-600 text-purple-600 focus:ring-purple-500 w-3 h-3"
-                                            />
-                                            <label htmlFor="useLogo" className="text-[9px] text-slate-300 font-bold uppercase cursor-pointer">USE FOR TASKS</label>
-                                        </div>
+                                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                                        <input type="checkbox" id="useLogo" checked={useLogoForTasks} onChange={(e) => setUseLogoForTasks(e.target.checked)} className="rounded bg-slate-700 border-slate-600 text-purple-600 w-3 h-3" />
+                                        <label htmlFor="useLogo" className="text-[8px] text-green-400 font-bold uppercase cursor-pointer">USE FOR TASKS</label>
                                     </div>
-                                    <button
-                                        onClick={() => { setLogoUrl(null); setUseLogoForTasks(false); }}
-                                        className="p-1 text-slate-500 hover:text-red-400 transition-colors"
-                                        title="Remove image"
-                                    >
-                                        <X className="w-3 h-3" />
+                                    <button onClick={() => { setLogoUrl(null); setUseLogoForTasks(false); }} className="p-1 text-slate-500 hover:text-red-400"><X className="w-3 h-3" /></button>
+                                </div>
+                            ) : (
+                                <div className="flex gap-1.5">
+                                    <button onClick={handleSearchLogo} disabled={!topic || isGeneratingLogo || isGeneratingAiImage} className="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-[8px] font-bold uppercase rounded-lg flex items-center justify-center gap-1">
+                                        <Search className="w-2.5 h-2.5" /> LOGO
+                                    </button>
+                                    <button onClick={handleGenerateAiImage} disabled={!topic || isGeneratingLogo || isGeneratingAiImage} className="flex-1 py-1.5 bg-purple-600/30 hover:bg-purple-600/50 disabled:opacity-50 text-purple-300 text-[8px] font-bold uppercase rounded-lg flex items-center justify-center gap-1 border border-purple-500/30">
+                                        <Sparkles className="w-2.5 h-2.5" /> AI
+                                    </button>
+                                    <button onClick={() => fileInputRef.current?.click()} disabled={isGeneratingLogo || isGeneratingAiImage} className="flex-1 py-1.5 bg-slate-700/50 hover:bg-slate-700 disabled:opacity-50 text-slate-300 text-[8px] font-bold uppercase rounded-lg flex items-center justify-center gap-1 border border-dashed border-slate-600">
+                                        <ImageIcon className="w-2.5 h-2.5" /> UP
                                     </button>
                                 </div>
                             )}
-
-                            {!logoUrl && (
-                                <p className="text-[8px] text-slate-500 text-center">No image selected - AI will auto-generate one</p>
-                            )}
+                            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUploadImage} className="hidden" />
                         </div>
 
                         {/* Settings */}

@@ -449,6 +449,11 @@ export interface GamePoint {
   areaColor?: string;
   openingAudioUrl?: string; // Audio to play when task opens
 
+  // Task-specific sounds (override global defaults)
+  useDefaultSounds?: boolean; // If true (default), use global sound settings; if false, use task-specific sounds
+  correctSoundUrl?: string; // Custom sound to play on correct answer (max 10s)
+  incorrectSoundUrl?: string; // Custom sound to play on incorrect answer (max 10s)
+
   // Logic & Scoring
   points: number;
   pointsOnCorrect?: number; // Optional: Points to award for correct answer (overrides default points)

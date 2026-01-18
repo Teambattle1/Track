@@ -347,16 +347,46 @@ const GameWizard: React.FC<GameWizardProps> = ({
     return `${typeLabel} Game - ${dateStr}`;
   }, [session.gameType, session.gameDate]);
 
+  // Helper function to calculate spiral placement with 50m spacing
+  const getOffsetLocation = (center: { lat: number; lng: number } | null, index: number): { lat: number; lng: number } | null => {
+    if (!center) return null;
+    if (index === 0) return center; // First task at center
+
+    // Spiral pattern: each subsequent task is placed in a spiral outward
+    const spacing = 50; // meters between points
+    const metersPerLat = 111320; // approx meters per degree latitude
+    const metersPerLng = 111320 * Math.cos(center.lat * Math.PI / 180); // varies by latitude
+
+    // Calculate spiral position (Archimedean spiral)
+    const angle = index * 2.4; // Golden angle in radians for nice distribution
+    const radius = spacing * Math.sqrt(index); // Increase radius with sqrt for even spacing
+
+    const latOffset = (radius * Math.sin(angle)) / metersPerLat;
+    const lngOffset = (radius * Math.cos(angle)) / metersPerLng;
+
+    return {
+      lat: center.lat + latOffset,
+      lng: center.lng + lngOffset
+    };
+  };
+
   // Handle create
   const handleCreate = () => {
     const now = Date.now();
 
-    // Map pending tasks to game points
+    console.log('[GameWizard] Creating session:', {
+      name: session.sessionName,
+      pendingTasksCount: session.pendingTasks.length,
+      location: session.location,
+      gameType: session.gameType
+    });
+
+    // Map pending tasks to game points with spiral placement
     const points: GamePoint[] = session.pendingTasks.map((t, i) => ({
       id: `pt-${now}-${i}`,
       title: t.title,
       task: t.task,
-      location: session.location,
+      location: getOffsetLocation(session.location, i),
       radiusMeters: 30,
       activationTypes: t.activationTypes || ['radius'],
       isUnlocked: i === 0,
@@ -372,6 +402,8 @@ const GameWizard: React.FC<GameWizardProps> = ({
       colorScheme: t.colorScheme,
       playgroundId: session.importedPlayground?.playgroundData?.id,
     }));
+
+    console.log('[GameWizard] Created', points.length, 'points from', session.pendingTasks.length, 'pending tasks');
 
     // Build playgrounds array
     const playgrounds: Playground[] = [];
@@ -402,6 +434,13 @@ const GameWizard: React.FC<GameWizardProps> = ({
       } : undefined,
       state: 'draft',
     };
+
+    console.log('[GameWizard] Sending game to App:', {
+      id: newGame.id,
+      name: newGame.name,
+      pointsCount: newGame.points?.length,
+      playgroundsCount: newGame.playgrounds?.length
+    });
 
     onCreate(newGame, session.openSettings);
   };
@@ -459,10 +498,11 @@ const GameWizard: React.FC<GameWizardProps> = ({
               WHERE WILL YOU PLAY?
             </h2>
 
-            <div className="max-w-md mx-auto">
+            <div className="w-full max-w-2xl mx-auto px-4">
               <LocationSearch
                 onSelectLocation={handleLocationSelect}
-                className="mb-4"
+                fullWidth={true}
+                showSavedLocations={true}
               />
             </div>
 

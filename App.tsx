@@ -499,20 +499,27 @@ const GameApp: React.FC = () => {
 
   useEffect(() => {
       if (activeGameId) {
-          const game = games.find(g => g.id === activeGameId) || null;
-          setActiveGame(game);
-          if (game?.defaultMapStyle) setLocalMapStyle(game.defaultMapStyle);
+          const game = games.find(g => g.id === activeGameId);
+          // Only update activeGame if we found the game in the array
+          // This prevents overriding a directly-set activeGame when games array hasn't synced yet
+          if (game) {
+              setActiveGame(game);
+              if (game.defaultMapStyle) setLocalMapStyle(game.defaultMapStyle);
 
-          // For PLAYZONE games, go directly to playground editor, skip map view
-          if (game?.gameMode === 'playzone') {
-              setMode(GameMode.EDIT);
-              // Open the first playground if available
-              if (game?.playgrounds && game.playgrounds.length > 0) {
-                  setViewingPlaygroundId(game.playgrounds[0].id);
+              // For PLAYZONE games, go directly to playground editor, skip map view
+              if (game.gameMode === 'playzone') {
+                  setMode(GameMode.EDIT);
+                  // Open the first playground if available
+                  if (game.playgrounds && game.playgrounds.length > 0) {
+                      setViewingPlaygroundId(game.playgrounds[0].id);
+                  }
               }
           }
+      } else {
+          // Only clear activeGame when activeGameId is explicitly cleared
+          setActiveGame(null);
       }
-  }, [activeGameId]);
+  }, [activeGameId, games]); // Include games so it re-runs when games array is updated
 
   // --- ENSURE EDIT MODE WHEN GAME OPENED FROM MANAGER ---
   useEffect(() => {
@@ -2285,11 +2292,16 @@ const GameApp: React.FC = () => {
                       const isPlayzone = gameData.gameMode === 'playzone';
                       const playgroundId = gameData.playgrounds?.[0]?.id || `pg-${Date.now()}`;
 
+                      // Ensure points array is preserved from wizard
+                      const points = gameData.points || [];
+                      console.log('[GameWizard] Creating game with', points.length, 'tasks');
+
                       const newGame = {
                           ...gameData,
                           id: gameData.id || `game-${Date.now()}`,
                           createdAt: gameData.createdAt || Date.now(),
-                          defaultMapStyle: isPlayzone ? 'none' : gameData.defaultMapStyle,
+                          defaultMapStyle: isPlayzone ? 'none' : (gameData.defaultMapStyle || 'osm'),
+                          points, // Explicitly include points
                           playgrounds: isPlayzone && (!gameData.playgrounds || gameData.playgrounds.length === 0)
                               ? [{
                                   id: playgroundId,
@@ -2301,9 +2313,17 @@ const GameApp: React.FC = () => {
                               : (gameData.playgrounds || [])
                       } as Game;
 
-                      await db.saveGame(newGame);
+                      // Save to database
+                      try {
+                          await db.saveGame(newGame);
+                          console.log('[GameWizard] Game saved to database:', newGame.id, 'with', newGame.points.length, 'points');
+                      } catch (err) {
+                          console.error('[GameWizard] Failed to save game:', err);
+                      }
+
                       setGames([...games, newGame]);
                       setActiveGameId(newGame.id);
+                      setActiveGame(newGame); // Also set activeGame directly
                       setShowGameWizard(false);
 
                       if (openSettings) {
@@ -2317,6 +2337,18 @@ const GameApp: React.FC = () => {
                           setMode(GameMode.EDIT);
                           setShowLanding(false);
                           setShowGameChooser(false);
+
+                          // Jump map to the game location after a short delay (let map render)
+                          setTimeout(() => {
+                              if (points.length > 0 && mapRef.current) {
+                                  // Fit bounds to show all points
+                                  mapRef.current.fitBounds(points);
+                                  console.log('[GameWizard] Map jumped to', points.length, 'points');
+                              } else if (points[0]?.location && mapRef.current) {
+                                  // Or jump to first point
+                                  mapRef.current.jumpTo(points[0].location);
+                              }
+                          }, 300);
                       }
                   }}
                   existingPlaygrounds={activeGame?.playgrounds}
@@ -3250,6 +3282,7 @@ const GameApp: React.FC = () => {
                 showZoneLayer={showZoneLayer}
                 showTaskLayer={showTaskLayer}
                             showLiveLayer={showLiveLayer}
+                            isDevicePreview={true}
                         />
                     </MapDeviceFrame>
                 </div>
@@ -3513,6 +3546,7 @@ const GameApp: React.FC = () => {
                             showZoneLayer={showZoneLayer}
                             showTaskLayer={showTaskLayer}
                             showLiveLayer={showLiveLayer}
+                            isDevicePreview={true}
                             />
 
                             {/* Playground Buttons */}

@@ -1,10 +1,21 @@
 import React from 'react';
+import { Home, Map, ListChecks, Trophy, Users, Settings } from 'lucide-react';
 
 interface MapDeviceFrameProps {
   device: 'mobile' | 'tablet' | 'desktop';
   orientation: 'portrait' | 'landscape';
   children: React.ReactNode;
 }
+
+// Button bar colors for 6 buttons
+const BUTTON_BAR_ITEMS = [
+  { icon: Home, label: 'Home', color: 'bg-red-500' },
+  { icon: Map, label: 'Map', color: 'bg-orange-500' },
+  { icon: ListChecks, label: 'Tasks', color: 'bg-yellow-500' },
+  { icon: Trophy, label: 'Score', color: 'bg-green-500' },
+  { icon: Users, label: 'Team', color: 'bg-blue-500' },
+  { icon: Settings, label: 'Menu', color: 'bg-purple-500' },
+];
 
 const DEVICE_SPECS = {
   mobile: {
@@ -34,10 +45,10 @@ const MapDeviceFrame: React.FC<MapDeviceFrameProps> = ({
 }) => {
   const spec = DEVICE_SPECS[device];
 
-  // Swap dimensions for landscape
-  const isLandscape = orientation === 'landscape';
-  const screenWidth = isLandscape ? spec.screenHeight : spec.screenWidth;
-  const screenHeight = isLandscape ? spec.screenWidth : spec.screenHeight;
+  // Portrait = tall (swap width/height), Landscape = wide (use natural dimensions)
+  const isPortrait = orientation === 'portrait';
+  const screenWidth = isPortrait ? spec.screenHeight : spec.screenWidth;
+  const screenHeight = isPortrait ? spec.screenWidth : spec.screenHeight;
 
   const frameWidth = screenWidth + spec.bezel * 2;
   const frameHeight = screenHeight + spec.bezel * 2;
@@ -63,7 +74,7 @@ const MapDeviceFrame: React.FC<MapDeviceFrameProps> = ({
 
       {/* Screen content area */}
       <div
-        className="absolute bg-black overflow-hidden"
+        className="absolute bg-black overflow-hidden flex flex-col"
         style={{
           width: `${screenWidth}px`,
           height: `${screenHeight}px`,
@@ -72,7 +83,27 @@ const MapDeviceFrame: React.FC<MapDeviceFrameProps> = ({
           borderRadius: `${Math.max(4, spec.cornerRadius / 4)}px`,
         }}
       >
-        {children}
+        {/* Main content - takes remaining space */}
+        <div className="flex-1 overflow-hidden relative">
+          {children}
+        </div>
+
+        {/* Button bar for tablet portrait mode */}
+        {device === 'tablet' && isPortrait && (
+          <div className="flex-shrink-0 bg-slate-900 border-t border-slate-700 px-4 py-3">
+            <div className="flex justify-between items-center gap-2 max-w-lg mx-auto">
+              {BUTTON_BAR_ITEMS.map((item, idx) => (
+                <button
+                  key={idx}
+                  className={`${item.color} hover:opacity-90 flex flex-col items-center justify-center rounded-xl p-2 min-w-[60px] transition-all shadow-lg`}
+                >
+                  <item.icon className="w-5 h-5 text-white mb-0.5" />
+                  <span className="text-[8px] font-black text-white uppercase tracking-wider">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Device label (bottom of frame) */}
