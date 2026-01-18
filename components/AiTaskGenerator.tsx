@@ -473,9 +473,23 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
               onAddToLibrary(finalTasks);
           }
       }
-      // 2. Add to Library only
-      else if (targetMode === 'LIBRARY' && onAddToLibrary) {
-          onAddToLibrary(finalTasks);
+      // 2. Add to Library OR Task List (based on user choice)
+      else if (targetMode === 'LIBRARY') {
+          if (librarySaveTarget === 'list') {
+              // Save to task list
+              if (selectedTaskListId === 'NEW') {
+                  if (onCreateListWithTasks && newListName.trim()) {
+                      onCreateListWithTasks(newListName.trim(), finalTasks);
+                  }
+              } else if (selectedTaskListId && onAddTasksToList) {
+                  onAddTasksToList(selectedTaskListId, finalTasks);
+              }
+          } else {
+              // Save to library
+              if (onAddToLibrary) {
+                  onAddToLibrary(finalTasks);
+              }
+          }
       }
       // 3. Add to List / Create List
       else if (targetMode === 'LIST') {
@@ -498,11 +512,59 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
       onClose();
   };
 
+  // For LIBRARY mode, allow saving to library OR task list
+  const [librarySaveTarget, setLibrarySaveTarget] = useState<'library' | 'list'>('library');
+
   const renderDestinationSelector = () => {
       if (targetMode === 'LIBRARY') {
           return (
-              <div className="p-4 bg-purple-900/20 border border-purple-500/30 rounded-xl mb-4 text-center">
-                  <p className="text-purple-300 font-bold text-xs uppercase tracking-widest">SAVING TO GLOBAL LIBRARY</p>
+              <div className="space-y-3 mb-4">
+                  {/* Toggle: Library vs Task List */}
+                  <div className="flex bg-slate-800 p-1 rounded-xl">
+                      <button
+                          type="button"
+                          onClick={() => setLibrarySaveTarget('library')}
+                          className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all flex items-center justify-center gap-1 ${librarySaveTarget === 'library' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                      >
+                          <Library className="w-3 h-3" /> LIBRARY
+                      </button>
+                      <button
+                          type="button"
+                          onClick={() => setLibrarySaveTarget('list')}
+                          className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all flex items-center justify-center gap-1 ${librarySaveTarget === 'list' ? 'bg-orange-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                      >
+                          <LayoutList className="w-3 h-3" /> TASK LIST
+                      </button>
+                  </div>
+
+                  {librarySaveTarget === 'library' ? (
+                      <div className="p-3 bg-purple-900/20 border border-purple-500/30 rounded-xl text-center">
+                          <p className="text-purple-300 font-bold text-[10px] uppercase tracking-widest">SAVING TO GLOBAL LIBRARY</p>
+                      </div>
+                  ) : (
+                      <div className="space-y-2">
+                          <select
+                              value={selectedTaskListId}
+                              onChange={(e) => setSelectedTaskListId(e.target.value)}
+                              className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-bold outline-none focus:border-orange-500 uppercase"
+                          >
+                              <option value="" disabled>SELECT LIST...</option>
+                              <option value="NEW">+ CREATE NEW LIST</option>
+                              {taskLists?.map(l => (
+                                  <option key={l.id} value={l.id}>{l.name} ({l.tasks?.length || 0})</option>
+                              ))}
+                          </select>
+                          {selectedTaskListId === 'NEW' && (
+                              <input
+                                  type="text"
+                                  value={newListName}
+                                  onChange={(e) => setNewListName(e.target.value)}
+                                  placeholder="Enter list name..."
+                                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-bold outline-none focus:border-orange-500"
+                              />
+                          )}
+                      </div>
+                  )}
               </div>
           );
       }
@@ -875,73 +937,75 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-slate-600">
-                                <label className="text-[9px] font-bold text-slate-500 uppercase mb-2 block flex items-center gap-1">
-                                    <Music className="w-3 h-3" /> OPENING SOUND
-                                    <span className="text-[7px] bg-indigo-900/50 text-indigo-400 px-1.5 py-0.5 rounded ml-1">BETA</span>
-                                </label>
-                                <div className="space-y-2">
-                                    <button
-                                        onClick={handleGenerateSound}
-                                        disabled={!topic.trim() || isGeneratingSound}
-                                        className={`w-full py-2 text-xs font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-2 ${
-                                            isGeneratingSound
-                                                ? 'bg-indigo-600/50 text-indigo-300 cursor-wait'
-                                                : batchAudioUrl
-                                                ? 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40 border border-indigo-600/40 hover:border-indigo-500'
-                                                : 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40 border border-indigo-600/40 hover:border-indigo-500'
-                                        }`}
-                                        type="button"
-                                    >
-                                        {isGeneratingSound ? (
-                                            <>
-                                                <Loader2 className="w-3 h-3 animate-spin" />
-                                                GENERATING...
-                                            </>
-                                        ) : batchAudioUrl ? (
-                                            <>
-                                                <Check className="w-3 h-3" />
-                                                AUDIO READY
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Music className="w-3 h-3" />
-                                                GENERATE SOUND
-                                            </>
-                                        )}
-                                    </button>
+                        </div>
 
-                                    {batchAudioUrl && (
-                                        <div className="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-indigo-500/30">
-                                            <button
-                                                onClick={handlePlaySound}
-                                                className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors flex-shrink-0"
-                                                type="button"
-                                                title={isPlayingSound ? 'Pause' : 'Play'}
-                                            >
-                                                {isPlayingSound ? <Square className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                                            </button>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-[8px] font-bold text-indigo-400 uppercase truncate">2.5 second vignette</p>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    setBatchAudioUrl(null);
-                                                    if (audioRef.current) {
-                                                        audioRef.current.removeAttribute('src');
-                                                        audioRef.current.load();
-                                                    }
-                                                    setIsPlayingSound(false);
-                                                }}
-                                                className="p-1 text-slate-500 hover:text-red-500 transition-colors flex-shrink-0"
-                                                type="button"
-                                                title="Remove sound"
-                                            >
-                                                <X className="w-3 h-3" />
-                                            </button>
-                                        </div>
+                        {/* Opening Sound - Separate Section */}
+                        <div className="bg-slate-800/50 p-4 rounded-xl border border-indigo-500/20">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-1">
+                                <Music className="w-3 h-3 text-indigo-400" /> OPENING SOUND
+                                <span className="text-[7px] bg-indigo-900/50 text-indigo-400 px-1.5 py-0.5 rounded ml-1">BETA</span>
+                            </label>
+                            <div className="space-y-2">
+                                <button
+                                    onClick={handleGenerateSound}
+                                    disabled={!topic.trim() || isGeneratingSound}
+                                    className={`w-full py-2.5 text-xs font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-2 ${
+                                        isGeneratingSound
+                                            ? 'bg-indigo-600/50 text-indigo-300 cursor-wait'
+                                            : batchAudioUrl
+                                            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                            : 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40 border border-indigo-600/40 hover:border-indigo-500'
+                                    }`}
+                                    type="button"
+                                >
+                                    {isGeneratingSound ? (
+                                        <>
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            GENERATING...
+                                        </>
+                                    ) : batchAudioUrl ? (
+                                        <>
+                                            <Check className="w-3 h-3" />
+                                            SOUND READY
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Music className="w-3 h-3" />
+                                            GENERATE SOUND
+                                        </>
                                     )}
-                                </div>
+                                </button>
+
+                                {batchAudioUrl && (
+                                    <div className="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-indigo-500/30">
+                                        <button
+                                            onClick={handlePlaySound}
+                                            className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors flex-shrink-0"
+                                            type="button"
+                                            title={isPlayingSound ? 'Pause' : 'Play'}
+                                        >
+                                            {isPlayingSound ? <Square className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                                        </button>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[8px] font-bold text-indigo-400 uppercase truncate">2 second vignette</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setBatchAudioUrl(null);
+                                                if (audioRef.current) {
+                                                    audioRef.current.removeAttribute('src');
+                                                    audioRef.current.load();
+                                                }
+                                                setIsPlayingSound(false);
+                                            }}
+                                            className="p-1 text-slate-500 hover:text-red-500 transition-colors flex-shrink-0"
+                                            type="button"
+                                            title="Remove sound"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -1045,19 +1109,19 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                             <button
                                 onClick={() => handleGenerate(false)}
                                 disabled={!topic.trim() || isGenerating}
-                                className={`flex-1 py-4 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:grayscale text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-purple-900/20 transition-all active:scale-95 flex items-center justify-center gap-2 ${approvedTasks.length > 0 ? 'flex-[2]' : ''}`}
+                                className={`flex-1 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:grayscale text-white rounded-xl font-black uppercase text-xs tracking-wider shadow-lg shadow-purple-900/20 transition-all active:scale-95 flex items-center justify-center gap-2 ${approvedTasks.length > 0 ? 'flex-[2]' : ''}`}
                             >
-                                {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                                 {isGenerating ? 'GENERATING...' : approvedTasks.length > 0 ? 'NEW BATCH' : 'GENERATE TASKS'}
                             </button>
                             {approvedTasks.length > 0 && (
                                 <button
                                     onClick={() => handleGenerate(true)}
                                     disabled={!topic.trim() || isGenerating}
-                                    className="flex-1 py-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:grayscale text-white rounded-xl font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                                    className="px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:grayscale text-white rounded-xl font-black uppercase text-xs tracking-wider shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1"
                                 >
-                                    <Plus className="w-5 h-5" />
-                                    +{taskCount} MORE
+                                    <Plus className="w-3 h-3" />
+                                    {taskCount}
                                 </button>
                             )}
                         </div>

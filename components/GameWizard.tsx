@@ -1107,6 +1107,37 @@ const GameWizard: React.FC<GameWizardProps> = ({
             onClose={() => setSubModal(null)}
             onAddTasks={handleAiTasksAdded}
             onAddToLibrary={handleAiTasksAdded}
+            onAddTasksToList={(listId, tasks) => {
+              // Add tasks to the wizard's pending tasks
+              handleAiTasksAdded(tasks);
+              // Also update the task list if callback provided
+              if (onUpdateTaskLists) {
+                const updatedLists = internalTaskLists.map(list =>
+                  list.id === listId
+                    ? { ...list, tasks: [...(list.tasks || []), ...tasks] }
+                    : list
+                );
+                setInternalTaskLists(updatedLists);
+                onUpdateTaskLists(updatedLists);
+              }
+            }}
+            onCreateListWithTasks={(name, tasks) => {
+              // Add tasks to the wizard's pending tasks
+              handleAiTasksAdded(tasks);
+              // Also create the new task list
+              if (onUpdateTaskLists) {
+                const newList = {
+                  id: `list-${Date.now()}`,
+                  name,
+                  tasks,
+                  createdAt: Date.now(),
+                };
+                const updatedLists = [...internalTaskLists, newList];
+                setInternalTaskLists(updatedLists);
+                onUpdateTaskLists(updatedLists);
+              }
+            }}
+            taskLists={internalTaskLists}
             targetMode="LIBRARY"
           />
         </div>
