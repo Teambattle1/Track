@@ -1106,6 +1106,7 @@ const GameWizard: React.FC<GameWizardProps> = ({
           <AiTaskGenerator
             onClose={() => setSubModal(null)}
             onAddTasks={handleAiTasksAdded}
+            onAddToLibrary={handleAiTasksAdded}
             targetMode="LIBRARY"
           />
         </div>
