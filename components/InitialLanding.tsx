@@ -3,8 +3,8 @@ import {
   Users, Gamepad2, Library, LayoutList, Shield, Edit2,
   UserCircle, Settings, Play,
   LayoutDashboard, LayoutGrid, UserPlus,
-  Plus, Database, ArrowLeft,
-  Globe, ChevronDown, QrCode, MessageSquare, Anchor, Home, Trash2, Smartphone, FilePlus, Check, ChevronRight, LogOut, BarChart3, Bomb, MapPin, Gauge, Map, KeyRound, Search, X as XIcon, ExternalLink, Volume2, Eye
+  Plus, Database, ArrowLeft, Code,
+  Globe, ChevronDown, QrCode, MessageSquare, Anchor, Home, Trash2, Smartphone, FilePlus, Check, ChevronRight, LogOut, BarChart3, Bomb, MapPin, Gauge, Map, KeyRound, Search, X as XIcon, ExternalLink, Volume2, Eye, Wand2
 } from 'lucide-react';
 import { Game, AuthUser } from '../types';
 import { getGameDisplayId, matchesGameSearch, formatGameNameWithId } from '../utils/gameIdUtils';
@@ -24,6 +24,7 @@ interface InitialLandingProps {
   onSelectGame: (id: string) => void;
   authUser?: AuthUser | null;
   onLogout?: () => void;
+  onOpenWizard?: () => void;
 }
 
 type CategoryView = 'HOME' | 'SETTINGS' | 'CREATE' | 'CREATE_GAME_SUBMENU' | 'EDIT_MENU' | 'PLAY_MENU' | 'PLAY_TEAMS_MENU' | 'GAMES' | 'TEAMS' | 'TASKS' | 'ADMIN' | 'PREVIEW_SELECT';
@@ -259,7 +260,7 @@ const getGameModeBadge = (gameMode?: string): { label: string; bgColor: string; 
   }
 };
 
-const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, games, activeGameId, onSelectGame, authUser, onLogout }) => {
+const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, games, activeGameId, onSelectGame, authUser, onLogout, onOpenWizard }) => {
   const [view, setView] = useState<CategoryView>('HOME');
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [gameSearchQuery, setGameSearchQuery] = useState('');
@@ -574,12 +575,23 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const renderGameTypeSubmenu = () => (
       <div className="flex flex-col items-center w-full">
           <div className="flex flex-col md:flex-row gap-12 md:gap-16 lg:gap-20 items-center justify-center w-full px-4 pb-10">
+              {onOpenWizard && (
+                  <MapPinButton
+                      title="WIZARD"
+                      icon={Wand2}
+                      gradient="bg-gradient-to-br from-amber-500 to-orange-500"
+                      onClick={onOpenWizard}
+                      delay={0}
+                      scale={0.75}
+                      badge="NEW"
+                  />
+              )}
               <MapPinButton
                   title="MAP"
                   icon={MapPin}
                   gradient="bg-gradient-to-br from-orange-500 to-red-500"
                   onClick={() => onAction('CREATE_MAP_GAME')}
-                  delay={0}
+                  delay={50}
                   scale={0.75}
               />
               <MapPinButton
@@ -587,7 +599,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   icon={Smartphone}
                   gradient="bg-gradient-to-br from-teal-500 to-emerald-500"
                   onClick={() => setShowPlayzoneChoiceModal(true)}
-                  delay={50}
+                  delay={100}
                   scale={0.75}
               />
               <MapPinButton
@@ -595,7 +607,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   icon={Bomb}
                   gradient="bg-gradient-to-br from-red-500 to-pink-500"
                   onClick={() => onAction('CREATE_ELIMINATION_GAME')}
-                  delay={100}
+                  delay={150}
                   scale={0.75}
                   badge="BETA"
               />
@@ -724,114 +736,80 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               return renderPlayTeamsMenu();
           case 'SETTINGS':
               return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-right-4">
-                      {/* Operator Status */}
-                      {authUser && (
-                          <div className="group relative bg-slate-900/80 border border-green-500/60 rounded-[1.5rem] p-5 text-left shadow-xl overflow-hidden flex flex-col h-full backdrop-blur-sm">
-                              {/* Green glow effect */}
-                              <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full blur-3xl opacity-[0.08] transition-opacity group-hover:opacity-[0.16] bg-green-500" />
-
-                              <div className="relative z-10 flex flex-col h-full">
-                                  <div className="flex items-start justify-between gap-4">
-                                      <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:scale-110 group-hover:rotate-3 duration-300 bg-green-500 bg-opacity-20 border border-green-500">
-                                          <UserCircle className="w-6 h-6 text-green-500" />
-                                      </div>
-                                      <div className="mt-1 flex items-center gap-2">
-                                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                  <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
+                      {/* === USER SECTION === */}
+                      <div>
+                          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                              <UserCircle className="w-4 h-4" />
+                              USER
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              {/* Operator Status */}
+                              {authUser && (
+                                  <div className="group relative bg-slate-900/80 border border-green-500/60 rounded-[1.5rem] p-5 text-left shadow-xl overflow-hidden flex flex-col h-full backdrop-blur-sm">
+                                      <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full blur-3xl opacity-[0.08] transition-opacity group-hover:opacity-[0.16] bg-green-500" />
+                                      <div className="relative z-10 flex flex-col h-full">
+                                          <div className="flex items-start justify-between gap-4">
+                                              <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:scale-110 group-hover:rotate-3 duration-300 bg-green-500 bg-opacity-20 border border-green-500">
+                                                  <UserCircle className="w-6 h-6 text-green-500" />
+                                              </div>
+                                              <div className="mt-1 flex items-center gap-2">
+                                                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />
+                                              </div>
+                                          </div>
+                                          <div className="flex-1">
+                                              <h3 className="text-lg font-black text-white uppercase tracking-wider mb-1">OPERATOR</h3>
+                                              <p className="text-[9px] font-bold text-green-400 uppercase tracking-widest leading-tight truncate">{authUser.name}</p>
+                                          </div>
+                                          <button onClick={onLogout} className="mt-6 flex items-center gap-1 text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] hover:text-red-400 transition-colors hover:translate-x-1 group">
+                                              <LogOut className="w-3 h-3" />
+                                              LOGOUT
+                                          </button>
                                       </div>
                                   </div>
-
-                                  <div className="flex-1">
-                                      <h3 className="text-lg font-black text-white uppercase tracking-wider mb-1">
-                                          OPERATOR
-                                      </h3>
-                                      <p className="text-[9px] font-bold text-green-400 uppercase tracking-widest leading-tight truncate">
-                                          {authUser.name}
-                                      </p>
-                                  </div>
-
-                                  <button
-                                      onClick={onLogout}
-                                      className="mt-6 flex items-center gap-1 text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] hover:text-red-400 transition-colors hover:translate-x-1 group"
-                                  >
-                                      <LogOut className="w-3 h-3" />
-                                      LOGOUT
-                                  </button>
-                              </div>
+                              )}
+                              <NavCard title="USERS" subtitle="ACCESS & ROLES" icon={UserCircle} color="bg-purple-500" onClick={() => onAction('USERS')} />
                           </div>
-                      )}
+                      </div>
 
-                      {/* Admin Tools */}
-                      <NavCard
-                          title="USERS"
-                          subtitle="ACCESS & ROLES"
-                          icon={UserCircle}
-                          color="bg-purple-500"
-                          onClick={() => onAction('USERS')}
-                      />
-                      <NavCard
-                          title="AI SETTINGS"
-                          subtitle="GEMINI API KEY"
-                          icon={KeyRound}
-                          color="bg-blue-600"
-                          onClick={() => onAction('DATABASE')}
-                      />
-                      <NavCard
-                          title="DATABASE TOOLS"
-                          subtitle="MAINTENANCE & CLEANUP"
-                          icon={Database}
-                          color="bg-orange-600"
-                          onClick={() => onAction('DATABASE_TOOLS')}
-                      />
-                      <NavCard
-                          title="QR CODES"
-                          subtitle="PRINT & DOWNLOAD"
-                          icon={QrCode}
-                          color="bg-indigo-500"
-                          onClick={() => onAction('QR_CODES')}
-                      />
-                      <NavCard
-                          title="GAMESTATS"
-                          subtitle="GAME ANALYTICS"
-                          icon={BarChart3}
-                          color="bg-cyan-500"
-                          onClick={() => onAction('GAMESTATS')}
-                      />
-                      <NavCard
-                          title="MAP STYLES"
-                          subtitle="CUSTOM MAP LIBRARY"
-                          icon={Map}
-                          color="bg-purple-600"
-                          onClick={() => onAction('MAP_STYLES')}
-                      />
-                      <NavCard
-                          title="SUPABASE"
-                          subtitle="SQL SCRIPTS & MIGRATIONS"
-                          icon={Database}
-                          color="bg-green-600"
-                          onClick={() => setShowSupabaseScripts(true)}
-                      />
-                      <NavCard
-                          title="SYSTEM SOUNDS"
-                          subtitle="GLOBAL AUDIO SETTINGS"
-                          icon={Volume2}
-                          color="bg-purple-600"
-                          onClick={() => onAction('SYSTEM_SOUNDS')}
-                      />
-                      <NavCard
-                          title="MEDIA"
-                          subtitle="PHOTOS & VIDEOS MANAGER"
-                          icon={Smartphone}
-                          color="bg-orange-600"
-                          onClick={() => onAction('MEDIA')}
-                      />
-                      <NavCard
-                          title="DELETE GAMES"
-                          subtitle="REMOVE SESSIONS"
-                          icon={Trash2}
-                          color="bg-red-600"
-                          onClick={() => onAction('DELETE_GAMES')}
-                      />
+                      {/* === GAME SECTION === */}
+                      <div>
+                          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                              <Gamepad2 className="w-4 h-4" />
+                              GAME
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <NavCard title="GAMESTATS" subtitle="GAME ANALYTICS" icon={BarChart3} color="bg-cyan-500" onClick={() => onAction('GAMESTATS')} />
+                              <NavCard title="QR CODES" subtitle="PRINT & DOWNLOAD" icon={QrCode} color="bg-indigo-500" onClick={() => onAction('QR_CODES')} />
+                              <NavCard title="DELETE GAMES" subtitle="REMOVE SESSIONS" icon={Trash2} color="bg-red-600" onClick={() => onAction('DELETE_GAMES')} />
+                          </div>
+                      </div>
+
+                      {/* === SETTINGS SECTION === */}
+                      <div>
+                          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                              <Settings className="w-4 h-4" />
+                              SETTINGS
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <NavCard title="AI SETTINGS" subtitle="CLAUDE & GEMINI API" icon={KeyRound} color="bg-blue-600" onClick={() => onAction('DATABASE')} />
+                              <NavCard title="MAP STYLES" subtitle="CUSTOM MAP LIBRARY" icon={Map} color="bg-purple-600" onClick={() => onAction('MAP_STYLES')} />
+                              <NavCard title="SYSTEM SOUNDS" subtitle="GLOBAL AUDIO SETTINGS" icon={Volume2} color="bg-teal-600" onClick={() => onAction('SYSTEM_SOUNDS')} />
+                              <NavCard title="MEDIA" subtitle="PHOTOS & VIDEOS MANAGER" icon={Smartphone} color="bg-orange-600" onClick={() => onAction('MEDIA')} />
+                          </div>
+                      </div>
+
+                      {/* === CODE / DATABASE SECTION === */}
+                      <div>
+                          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                              <Code className="w-4 h-4" />
+                              CODE & DATABASE
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <NavCard title="DATABASE TOOLS" subtitle="MAINTENANCE & CLEANUP" icon={Database} color="bg-orange-600" onClick={() => onAction('DATABASE_TOOLS')} />
+                              <NavCard title="SUPABASE" subtitle="SQL SCRIPTS & MIGRATIONS" icon={Database} color="bg-green-600" onClick={() => setShowSupabaseScripts(true)} />
+                          </div>
+                      </div>
                   </div>
               );
           case 'PREVIEW_SELECT':

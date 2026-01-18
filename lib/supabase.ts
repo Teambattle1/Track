@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 // For production, prefer providing Vite env vars (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
 // or setting localStorage keys (SUPABASE_URL / SUPABASE_ANON_KEY) so you can rotate without code changes.
 const DEFAULT_SUPABASE_URL = 'https://yktaxljydisfjyqhbnja.supabase.co';
-// Using newer publishable key format (more reliable)
-const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_p-hMXBWqcvE4l_Ud7D0L8Q_faGIPYOc';
+// Standard Supabase JWT anon key
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrdGF4bGp5ZGlzZmp5cWhibmphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxMzQ2ODYsImV4cCI6MjA4MTcxMDY4Nn0.XeTW4vHGbEm6C7U94zMLsZiDB80cyvuqYbSRNX8oyQI';
 
 const getSupabaseUrl = () => {
   const local = typeof window !== 'undefined' ? localStorage.getItem('SUPABASE_URL') : null;

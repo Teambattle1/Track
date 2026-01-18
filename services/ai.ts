@@ -1,33 +1,86 @@
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import Anthropic from "@anthropic-ai/sdk";
 import { TaskTemplate, IconId, TaskType } from "../types";
 import { normalizeLanguage } from "../utils/i18n";
 
-// Security Fix: Do not rely solely on process.env in built client code.
-// Allow override via LocalStorage for instructor/admin usage.
-const getApiKey = (): string => {
+// ============================================================================
+// API KEY MANAGEMENT
+// ============================================================================
+
+// Get Anthropic API key (for Claude - used for text generation)
+const getAnthropicApiKey = (): string => {
+    const localKey = typeof window !== 'undefined' ? localStorage.getItem('ANTHROPIC_API_KEY') : null;
+    if (localKey) return localKey;
+    const envKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
+    return envKey || '';
+};
+
+// Get Gemini API key (for image generation only)
+const getGeminiApiKey = (): string => {
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null;
     if (localKey) return localKey;
-    
-    // Fallback to build-time env if available.
-    // Vite defines these at build time (see vite.config.ts).
-    // In the built bundle, this becomes a plain string literal (no runtime `process` required).
     const envKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
     return envKey || '';
 };
 
-// Check if API key is available (exported for UI to check before showing modal)
+// Legacy: getApiKey returns Anthropic key first, then Gemini as fallback
+const getApiKey = (): string => {
+    return getAnthropicApiKey() || getGeminiApiKey();
+};
+
+// Check if API key is available (for text generation - prefers Claude)
 export const hasApiKey = (): boolean => {
-    const key = getApiKey();
+    const claudeKey = getAnthropicApiKey();
+    if (claudeKey && claudeKey.trim().length > 0) return true;
+    const geminiKey = getGeminiApiKey();
+    return !!geminiKey && geminiKey.trim().length > 0;
+};
+
+// Check if Gemini key is available (for image generation)
+export const hasGeminiKey = (): boolean => {
+    const key = getGeminiApiKey();
     return !!key && key.trim().length > 0;
 };
 
-// Check if key exists before making calls
-const ensureApiKey = () => {
-    const key = getApiKey();
+// Get Stability AI API key (for image generation)
+const getStabilityApiKey = (): string => {
+    const localKey = typeof window !== 'undefined' ? localStorage.getItem('STABILITY_API_KEY') : null;
+    if (localKey) return localKey;
+    const envKey = process.env.STABILITY_API_KEY || process.env.VITE_STABILITY_API_KEY;
+    return envKey || '';
+};
+
+// Check if Stability AI key is available
+export const hasStabilityKey = (): boolean => {
+    const key = getStabilityApiKey();
+    return !!key && key.trim().length > 0;
+};
+
+// Ensure Anthropic API key exists
+const ensureAnthropicApiKey = () => {
+    const key = getAnthropicApiKey();
     if (!key) {
-        throw new Error("AI API Key missing. Please set GEMINI_API_KEY in Local Storage or Settings. Get a free API key at https://aistudio.google.com/app/apikey");
+        throw new Error("Claude API Key missing. Please set ANTHROPIC_API_KEY in Settings. Get your API key at https://console.anthropic.com/");
     }
     return key;
+};
+
+// Ensure Gemini API key exists (for images)
+const ensureGeminiApiKey = () => {
+    const key = getGeminiApiKey();
+    if (!key) {
+        throw new Error("Gemini API Key missing for image generation. Please set GEMINI_API_KEY in Settings.");
+    }
+    return key;
+};
+
+// Legacy ensureApiKey - tries Claude first, then Gemini
+const ensureApiKey = () => {
+    const claudeKey = getAnthropicApiKey();
+    if (claudeKey) return claudeKey;
+    const geminiKey = getGeminiApiKey();
+    if (geminiKey) return geminiKey;
+    throw new Error("AI API Key missing. Please set ANTHROPIC_API_KEY (for Claude) or GEMINI_API_KEY in Settings.");
 };
 
 // ... Schema definitions ...
@@ -72,19 +125,78 @@ export const generateAiTasks = async (
   additionalTag?: string,
   onProgress?: (current: number, total: number) => void
 ): Promise<TaskTemplate[]> => {
-  const key = ensureApiKey();
-  const ai = new GoogleGenAI({ apiKey: key });
-
   // Normalize the language parameter (it may come with emoji+name format)
   const normalizedLanguage = normalizeLanguage(language);
 
   // Create base timestamp for all tasks in this batch
-  const baseTimestamp = new Date().toISOString();
+  const baseTimestamp = Date.now();
 
-  try {
-    const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Create exactly ${count} diverse scavenger hunt tasks. Topic: "${topic}". Language: ${normalizedLanguage}.
+  // Try Claude first, fallback to Gemini
+  const claudeKey = getAnthropicApiKey();
+
+  let rawData: any[] = [];
+
+  if (claudeKey) {
+    // Use Claude for task generation
+    console.log('[AI Tasks] Using Claude (Anthropic) for task generation');
+    const anthropic = new Anthropic({ apiKey: claudeKey, dangerouslyAllowBrowser: true });
+
+    const prompt = `Create exactly ${count} diverse scavenger hunt tasks. Topic: "${topic}". Language: ${normalizedLanguage}.
+
+CRITICAL REQUIREMENTS:
+1. For "multiple_choice" tasks: ALWAYS create 3-4 answer options in the "options" array
+2. For "multiple_choice" tasks: ALWAYS mark the correct answer(s) in the "correctAnswers" array
+3. For "checkbox" tasks: ALWAYS create 4-6 options and mark 2-3 correct answers in "correctAnswers" array
+4. For "dropdown" tasks: ALWAYS create 4-5 options and mark the correct answer in "correctAnswers" array
+5. For "boolean" tasks: The answer MUST be either "YES" or "NO" (uppercase)
+6. For "text" tasks: Provide the correct answer in the "answer" field
+7. If the topic/context clearly indicates a correct answer, ensure it's properly marked
+
+Return ONLY a JSON array with objects containing these fields:
+- title: string (task title)
+- question: string (the question/instruction)
+- type: "text" | "multiple_choice" | "boolean" | "slider" | "checkbox" | "dropdown"
+- answer: string | null (for text/boolean tasks)
+- options: string[] | null (for choice tasks)
+- correctAnswers: string[] | null (correct options)
+- numericRange: { min: number, max: number, correctValue: number } | null
+- iconId: "default" | "star" | "flag" | "trophy" | "camera" | "question" | "skull" | "treasure"
+- hint: string | null`;
+
+    try {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      const textContent = response.content.find(c => c.type === 'text');
+      const responseText = textContent?.type === 'text' ? textContent.text : '';
+
+      // Extract JSON from response (Claude might wrap it in markdown)
+      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        rawData = JSON.parse(jsonMatch[0]);
+      }
+    } catch (error) {
+      console.error('[AI Tasks] Claude error, falling back to Gemini:', error);
+    }
+  }
+
+  // Fallback to Gemini if Claude didn't work or no key
+  if (rawData.length === 0) {
+    const geminiKey = getGeminiApiKey();
+    if (!geminiKey) {
+      throw new Error("No AI API key available. Please set ANTHROPIC_API_KEY or GEMINI_API_KEY in Settings.");
+    }
+
+    console.log('[AI Tasks] Using Gemini for task generation');
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+
+    try {
+      const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: `Create exactly ${count} diverse scavenger hunt tasks. Topic: "${topic}". Language: ${normalizedLanguage}.
 
 CRITICAL REQUIREMENTS:
 1. For "multiple_choice" tasks: ALWAYS create 3-4 answer options in the "options" array
@@ -96,19 +208,23 @@ CRITICAL REQUIREMENTS:
 7. If the topic/context clearly indicates a correct answer, ensure it's properly marked
 
 Return JSON array with all fields properly filled.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: responseSchema,
-        thinkingConfig: { thinkingBudget: 0 }
-      },
-    }));
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: responseSchema,
+          thinkingConfig: { thinkingBudget: 0 }
+        },
+      }));
 
-    let rawData: any = [];
-    try {
-      rawData = JSON.parse(response.text || "[]");
-    } catch {
-      rawData = [];
+      try {
+        rawData = JSON.parse(response.text || "[]");
+      } catch {
+        rawData = [];
+      }
+    } catch (error) {
+      console.error('[AI Tasks] Gemini error:', error);
+      throw error;
     }
+  }
 
     if (!Array.isArray(rawData)) rawData = [];
 
@@ -222,63 +338,92 @@ Return JSON array with all fields properly filled.`,
             }
         };
     });
-  } catch (error) {
-    console.error("AI Generation Error", error);
-    throw error;
-  }
 };
 
 export const generateAiImage = async (prompt: string, style: string = 'cartoon'): Promise<string | null> => {
-    const key = ensureApiKey();
-    const ai = new GoogleGenAI({ apiKey: key });
+    // Danish to English translations
+    const translations: Record<string, string> = {
+        'sne': 'snow', 'ski': 'skiing', 'strand': 'beach', 'skov': 'forest',
+        'by': 'city', 'hav': 'ocean', 'bjerg': 'mountain', 'mad': 'food',
+        'musik': 'music', 'sport': 'sports', 'natur': 'nature', 'dyr': 'animals',
+        'blomster': 'flowers', 'sol': 'sun', 'regn': 'rain', 'vinter': 'winter',
+        'sommer': 'summer', 'forår': 'spring', 'efterår': 'autumn', 'kunst': 'art',
+        'eventyr': 'adventure', 'spil': 'game', 'fest': 'party', 'løb': 'running',
+        'hold': 'team', 'konkurrence': 'competition', 'opgave': 'task', 'mission': 'mission'
+    };
 
-    const fullPrompt = `Simple vector illustration: ${prompt}. Style: ${style}. Minimal background.`;
+    // Translate Danish words to English
+    const words = prompt.toLowerCase().split(/\s+/);
+    const translatedWords = words.map(w => translations[w] || w);
+    const englishPrompt = translatedWords.join(' ');
 
-    try {
-        console.log('[AI Image] Generating with Gemini 2.5 Flash Image');
-        console.log('[AI Image] Prompt:', fullPrompt);
+    // Try Stability AI first if key is available
+    const stabilityKey = getStabilityApiKey();
+    if (stabilityKey) {
+        try {
+            console.log('[AI Image] Generating with Stability AI:', englishPrompt);
 
-        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: fullPrompt,
-        }));
+            const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${stabilityKey}`,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    text_prompts: [
+                        {
+                            text: `${englishPrompt}, ${style} style, vibrant colors, clean design, suitable for mobile app icon`,
+                            weight: 1
+                        },
+                        {
+                            text: 'blurry, bad quality, text, watermark, signature',
+                            weight: -1
+                        }
+                    ],
+                    cfg_scale: 7,
+                    height: 1024,
+                    width: 1024,
+                    steps: 30,
+                    samples: 1
+                })
+            });
 
-        console.log('[AI Image] Response received:', {
-            hasCandidates: !!response.candidates,
-            candidateCount: response.candidates?.length,
-            finishReason: response.candidates?.[0]?.finishReason
-        });
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[AI Image] Stability AI error:', response.status, errorText);
+                throw new Error(`Stability AI error: ${response.status}`);
+            }
 
-        const candidate = response.candidates?.[0];
+            const data = await response.json();
+            if (data.artifacts && data.artifacts[0]?.base64) {
+                console.log('[AI Image] Stability AI success!');
+                return `data:image/png;base64,${data.artifacts[0].base64}`;
+            }
 
-        if (candidate?.content?.parts?.[0]?.inlineData) {
-            const inlineData = candidate.content.parts[0].inlineData;
-            console.log('[AI Image] Successfully generated image');
-            return `data:${inlineData.mimeType};base64,${inlineData.data}`;
+            console.warn('[AI Image] No image in Stability response');
+        } catch (e: any) {
+            console.error('[AI Image] Stability AI failed:', e.message);
+            // Fall through to Unsplash fallback
         }
-
-        console.warn('[AI Image] No image data in response');
-        console.log('[AI Image] Response structure:', {
-            finishReason: candidate?.finishReason,
-            hasSafetyRatings: !!candidate?.safetyRatings,
-            safetyRatings: candidate?.safetyRatings,
-            contentParts: candidate?.content?.parts?.map(p => ({
-                hasText: !!p.text,
-                hasInlineData: !!p.inlineData,
-                text: p.text?.substring(0, 100)
-            }))
-        });
-
-        return null;
-    } catch (e: any) {
-        console.error('[AI Image] Error generating:', e);
-        console.error('[AI Image] Error details:', {
-            message: e.message,
-            status: e.status,
-            errorDetails: e.errorDetails
-        });
-        throw e; // Re-throw to allow caller to handle
     }
+
+    // Fallback to placeholder image with theme color
+    // Note: Unsplash source API is unreliable, use a simple colored placeholder
+    console.log('[AI Image] Stability AI unavailable, using placeholder for:', englishPrompt);
+
+    // Generate a simple SVG placeholder with theme-based color
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+    const colorIndex = englishPrompt.charCodeAt(0) % colors.length;
+    const bgColor = colors[colorIndex];
+    const initials = englishPrompt.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('');
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+        <rect width="512" height="512" fill="${bgColor}"/>
+        <text x="256" y="280" font-size="120" font-weight="bold" font-family="Arial, sans-serif" fill="white" text-anchor="middle" dominant-baseline="middle">${initials}</text>
+    </svg>`;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
 };
 
 export const generateAvatar = async (keywords: string): Promise<string | null> => {
@@ -286,69 +431,91 @@ export const generateAvatar = async (keywords: string): Promise<string | null> =
 };
 
 export const generateAiBackground = async (keywords: string, zoneName?: string): Promise<string | null> => {
-    const key = ensureApiKey();
-    const ai = new GoogleGenAI({ apiKey: key });
+    // Danish to English translations
+    const translations: Record<string, string> = {
+        'sne': 'snow', 'ski': 'skiing', 'strand': 'beach', 'skov': 'forest',
+        'by': 'city', 'hav': 'ocean', 'bjerg': 'mountain', 'mad': 'food',
+        'musik': 'music', 'sport': 'sports', 'natur': 'nature', 'dyr': 'animals',
+        'blomster': 'flowers', 'sol': 'sun', 'regn': 'rain', 'vinter': 'winter',
+        'sommer': 'summer', 'forår': 'spring', 'efterår': 'autumn', 'kunst': 'art',
+        'eventyr': 'adventure', 'spil': 'game', 'fest': 'party', 'løb': 'running'
+    };
 
-    // Use the keywords provided by the user and optionally include zone name for context
-    const zoneContext = zoneName ? ` for game zone "${zoneName}"` : '';
-    const prompt = `Create a vibrant widescreen game background image${zoneContext}. Theme and elements: ${keywords}. 16:9 landscape format. Bright, colorful, engaging scene suitable for adventure game.`;
+    const words = keywords.toLowerCase().split(/\s+/);
+    const translatedWords = words.map(w => translations[w] || w);
+    const englishKeywords = translatedWords.join(' ');
 
-    try {
-        console.log('[AI Background] Generating with Gemini 2.5 Flash Image');
-        console.log('[AI Background] Keywords:', keywords);
-        console.log('[AI Background] Full prompt:', prompt);
+    // Try Stability AI first if key is available
+    const stabilityKey = getStabilityApiKey();
+    if (stabilityKey) {
+        try {
+            const zoneContext = zoneName ? ` for ${zoneName}` : '';
+            console.log('[AI Background] Generating with Stability AI:', englishKeywords);
 
-        // NOTE: Imagen 3 (imagen-3.0-generate-002) is only available through Vertex AI, not the Gemini Developer API
-        // To use Imagen 3, you would need to:
-        // 1. Set up Google Cloud Project with billing
-        // 2. Enable Vertex AI API
-        // 3. Use: new GoogleGenAI({ vertexai: true, project: 'project-id', location: 'us-central1' })
-        // 4. Then call: ai.models.generateImages({ model: 'imagen-3.0-generate-002', ... })
-        //
-        // For now, we use Gemini 2.5 Flash Image which works with API keys
-        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: prompt,
-        }));
+            const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${stabilityKey}`,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    text_prompts: [
+                        {
+                            text: `Wide panoramic game background${zoneContext}, theme: ${englishKeywords}, vibrant colors, adventure game style, 16:9 aspect ratio`,
+                            weight: 1
+                        },
+                        {
+                            text: 'text, watermark, signature, ui elements, blurry',
+                            weight: -1
+                        }
+                    ],
+                    cfg_scale: 7,
+                    height: 768,  // SDXL allowed: 1344x768 (close to 16:9)
+                    width: 1344,
+                    steps: 30,
+                    samples: 1
+                })
+            });
 
-        console.log('[AI Background] Response received:', {
-            hasCandidates: !!response.candidates,
-            candidateCount: response.candidates?.length,
-            finishReason: response.candidates?.[0]?.finishReason
-        });
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[AI Background] Stability AI error:', response.status, errorText);
+                throw new Error(`Stability AI error: ${response.status}`);
+            }
 
-        const candidate = response.candidates?.[0];
-
-        // Extract image from Gemini response (inlineData format)
-        if (candidate?.content?.parts?.[0]?.inlineData) {
-            const inlineData = candidate.content.parts[0].inlineData;
-            console.log('[AI Background] Successfully generated image');
-            return `data:${inlineData.mimeType};base64,${inlineData.data}`;
+            const data = await response.json();
+            if (data.artifacts && data.artifacts[0]?.base64) {
+                console.log('[AI Background] Stability AI success!');
+                return `data:image/png;base64,${data.artifacts[0].base64}`;
+            }
+        } catch (e: any) {
+            console.error('[AI Background] Stability AI failed:', e.message);
         }
-
-        // Log detailed info if no image
-        console.warn('[AI Background] No image data in response');
-        console.log('[AI Background] Response structure:', {
-            finishReason: candidate?.finishReason,
-            hasSafetyRatings: !!candidate?.safetyRatings,
-            safetyRatings: candidate?.safetyRatings,
-            contentParts: candidate?.content?.parts?.map(p => ({
-                hasText: !!p.text,
-                hasInlineData: !!p.inlineData,
-                text: p.text?.substring(0, 100)
-            }))
-        });
-
-        return null;
-    } catch (e: any) {
-        console.error('[AI Background] Error generating:', e);
-        console.error('[AI Background] Error details:', {
-            message: e.message,
-            status: e.status,
-            errorDetails: e.errorDetails
-        });
-        return null;
     }
+
+    // Fallback to gradient placeholder
+    console.log('[AI Background] Stability AI unavailable, using gradient placeholder for:', englishKeywords);
+
+    // Generate a simple gradient SVG placeholder
+    const gradients = [
+        ['#667eea', '#764ba2'], ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'],
+        ['#43e97b', '#38f9d7'], ['#fa709a', '#fee140'], ['#30cfd0', '#330867']
+    ];
+    const gradientIndex = englishKeywords.charCodeAt(0) % gradients.length;
+    const [color1, color2] = gradients[gradientIndex];
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1344" height="768" viewBox="0 0 1344 768">
+        <defs>
+            <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${color1}"/>
+                <stop offset="100%" style="stop-color:${color2}"/>
+            </linearGradient>
+        </defs>
+        <rect width="1344" height="768" fill="url(#bg)"/>
+    </svg>`;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
 };
 
 export const searchLogoUrl = async (query: string): Promise<string | null> => {
@@ -535,21 +702,61 @@ export const translateTaskContent = async (
         hint: string;
     };
 }> => {
-    const key = ensureApiKey();
-    const ai = new GoogleGenAI({ apiKey: key });
-
     const normalizedLanguage = normalizeLanguage(targetLanguage);
 
-    try {
-        const prompt = `Translate this task content to ${normalizedLanguage}. Maintain the meaning and context. Return ONLY a JSON object with the same structure.
+    const prompt = `Translate this task content to ${normalizedLanguage}. Maintain the meaning and context. Return ONLY a JSON object with the same structure.
 
 Task Content:
 ${JSON.stringify(content, null, 2)}
 
 IMPORTANT: Return ONLY the translated JSON object. No additional text or explanations.`;
 
+    // Try Claude first
+    const claudeKey = getAnthropicApiKey();
+    if (claudeKey) {
+        try {
+            console.log('[AI Translation] Using Claude');
+            const anthropic = new Anthropic({ apiKey: claudeKey, dangerouslyAllowBrowser: true });
+
+            const response = await anthropic.messages.create({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 2048,
+                messages: [{ role: 'user', content: prompt }],
+            });
+
+            const textContent = response.content.find(c => c.type === 'text');
+            const responseText = textContent?.type === 'text' ? textContent.text : '';
+
+            // Extract JSON from response
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const translatedContent = JSON.parse(jsonMatch[0]);
+                return {
+                    question: translatedContent.question || content.question,
+                    options: translatedContent.options || content.options,
+                    answer: translatedContent.answer || content.answer,
+                    correctAnswers: translatedContent.correctAnswers || content.correctAnswers,
+                    placeholder: translatedContent.placeholder || content.placeholder,
+                    feedback: translatedContent.feedback || content.feedback,
+                };
+            }
+        } catch (error) {
+            console.error('[AI Translation] Claude error, trying Gemini:', error);
+        }
+    }
+
+    // Fallback to Gemini
+    const geminiKey = getGeminiApiKey();
+    if (!geminiKey) {
+        throw new Error("No AI API key available for translation.");
+    }
+
+    console.log('[AI Translation] Using Gemini');
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+
+    try {
         const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+            model: 'gemini-2.0-flash',
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -573,72 +780,160 @@ IMPORTANT: Return ONLY the translated JSON object. No additional text or explana
     }
 };
 
-// Generate a mood-based audio vignette using Web Audio API
+// Generate a mood-based audio vignette using Web Audio API (BETA - no API required)
 export const generateMoodAudio = async (topic: string): Promise<string | null> => {
     try {
-        // Use Gemini to get a brief description of the mood/style
-        const key = getApiKey();
-        if (!key) throw new Error("API key missing");
+        // Analyze topic keywords to determine mood (no API call needed)
+        const topicLower = topic.toLowerCase();
 
-        const ai = new GoogleGenAI({ apiKey: key });
-        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: `Describe the musical/audio mood for "${topic}" in ONE line. Be specific: instrument (e.g., piano), tempo (e.g., slow/fast), emotional tone (e.g., triumphant, calm, mysterious). Example: "Slow classical piano, calm and peaceful" or "Fast violins, energetic and exciting".`,
-        }));
-
-        const moodDescription = response.text || '';
+        // Mood detection from keywords
+        const isCalm = /nature|forest|ocean|calm|peace|relax|zen|meditation|spa/.test(topicLower);
+        const isEnergetic = /sport|race|run|adventure|party|dance|action|fast|extreme/.test(topicLower);
+        const isMysterious = /mystery|secret|treasure|hidden|dark|night|detective/.test(topicLower);
+        const isHappy = /happy|fun|joy|celebrate|birthday|festival|carnival/.test(topicLower);
+        const isEpic = /epic|hero|battle|quest|warrior|champion|victory/.test(topicLower);
 
         // Create audio using Web Audio API
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const duration = 2.5; // 2.5 seconds
+        const duration = 2.0; // 2 seconds
         const sampleRate = audioContext.sampleRate;
-        const samples = duration * sampleRate;
+        const samples = Math.floor(duration * sampleRate);
 
-        const audioBuffer = audioContext.createBuffer(1, samples, sampleRate);
-        const data = audioBuffer.getChannelData(0);
+        const audioBuffer = audioContext.createBuffer(2, samples, sampleRate); // Stereo
+        const leftChannel = audioBuffer.getChannelData(0);
+        const rightChannel = audioBuffer.getChannelData(1);
 
-        // Generate simple procedural audio based on mood keywords
-        const isCalm = moodDescription.toLowerCase().includes('calm') ||
-                      moodDescription.toLowerCase().includes('slow') ||
-                      moodDescription.toLowerCase().includes('peaceful');
-        const isFast = moodDescription.toLowerCase().includes('fast') ||
-                      moodDescription.toLowerCase().includes('energetic') ||
-                      moodDescription.toLowerCase().includes('exciting');
-        const isClassical = moodDescription.toLowerCase().includes('classical') ||
-                           moodDescription.toLowerCase().includes('piano') ||
-                           moodDescription.toLowerCase().includes('violin');
+        // Select musical parameters based on mood
+        let baseFreq = 440; // A4
+        let decayRate = 1.0;
+        let harmonicRichness = 0.3;
 
-        // Base frequency and tempo
-        const baseFreq = isClassical ? 261.63 : 440; // C4 or A4
-        const tempo = isFast ? 0.2 : (isCalm ? 0.05 : 0.1);
-
-        // Generate simple melody
-        for (let i = 0; i < samples; i++) {
-            const t = i / sampleRate;
-
-            // Main tone with envelope
-            const envelope = Math.exp(-t * (isCalm ? 0.5 : 1.5));
-
-            // Simple melody: oscillate between base frequency and harmonies
-            const harmonyFactor = Math.sin(t * tempo * Math.PI) * 0.5 + 0.5;
-            const freq = baseFreq + (harmonyFactor * 200);
-
-            const wave = Math.sin(2 * Math.PI * freq * t) * envelope;
-
-            // Add slight chorus/richness with overtones
-            const harmonic = Math.sin(2 * Math.PI * (freq * 1.5) * t) * envelope * 0.3;
-
-            data[i] = (wave + harmonic) * 0.3; // Keep volume reasonable
+        if (isCalm) {
+            baseFreq = 261.63; // C4 - calming
+            decayRate = 0.5;
+            harmonicRichness = 0.2;
+        } else if (isEnergetic) {
+            baseFreq = 329.63; // E4 - energetic
+            decayRate = 2.0;
+            harmonicRichness = 0.5;
+        } else if (isMysterious) {
+            baseFreq = 220; // A3 - darker
+            decayRate = 0.8;
+            harmonicRichness = 0.4;
+        } else if (isHappy) {
+            baseFreq = 392; // G4 - bright
+            decayRate = 1.2;
+            harmonicRichness = 0.35;
+        } else if (isEpic) {
+            baseFreq = 293.66; // D4 - powerful
+            decayRate = 0.7;
+            harmonicRichness = 0.45;
         }
 
-        // Create blob and object URL
-        const audioBlob = new Blob([audioBuffer.getChannelData(0)], { type: 'audio/wav' });
+        // Generate a simple melodic phrase
+        const notes = [1, 1.25, 1.5, 1.25, 1]; // Simple up-down pattern
+        const noteLength = samples / notes.length;
+
+        for (let i = 0; i < samples; i++) {
+            const t = i / sampleRate;
+            const noteIndex = Math.floor(i / noteLength);
+            const noteT = (i % noteLength) / noteLength;
+
+            const freq = baseFreq * notes[noteIndex % notes.length];
+
+            // Envelope: attack-decay for each note
+            const attack = Math.min(noteT * 10, 1);
+            const decay = Math.exp(-noteT * decayRate * 3);
+            const envelope = attack * decay;
+
+            // Main tone
+            const wave = Math.sin(2 * Math.PI * freq * t);
+
+            // Harmonics for richness
+            const h2 = Math.sin(2 * Math.PI * freq * 2 * t) * harmonicRichness * 0.5;
+            const h3 = Math.sin(2 * Math.PI * freq * 3 * t) * harmonicRichness * 0.25;
+
+            // Slight stereo spread
+            const stereoPhase = Math.sin(t * 2) * 0.1;
+
+            const sample = (wave + h2 + h3) * envelope * 0.25;
+            leftChannel[i] = sample * (1 + stereoPhase);
+            rightChannel[i] = sample * (1 - stereoPhase);
+        }
+
+        // Fade out last 10%
+        const fadeStart = Math.floor(samples * 0.9);
+        for (let i = fadeStart; i < samples; i++) {
+            const fade = 1 - (i - fadeStart) / (samples - fadeStart);
+            leftChannel[i] *= fade;
+            rightChannel[i] *= fade;
+        }
+
+        // Convert to WAV format
+        const wavBuffer = audioBufferToWav(audioBuffer);
+        const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
         const url = URL.createObjectURL(audioBlob);
 
         return url;
     } catch (error) {
-        console.warn("Failed to generate mood audio:", error);
-        // Return a placeholder or null
+        console.warn("[Audio] Failed to generate mood audio:", error);
         return null;
     }
 };
+
+// Helper function to convert AudioBuffer to WAV format
+function audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const format = 1; // PCM
+    const bitDepth = 16;
+
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numChannels * bytesPerSample;
+
+    const samples = buffer.length;
+    const dataSize = samples * blockAlign;
+    const bufferSize = 44 + dataSize;
+
+    const arrayBuffer = new ArrayBuffer(bufferSize);
+    const view = new DataView(arrayBuffer);
+
+    // WAV header
+    const writeString = (offset: number, str: string) => {
+        for (let i = 0; i < str.length; i++) {
+            view.setUint8(offset + i, str.charCodeAt(i));
+        }
+    };
+
+    writeString(0, 'RIFF');
+    view.setUint32(4, bufferSize - 8, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true); // fmt chunk size
+    view.setUint16(20, format, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // Interleave channels and write samples
+    const channels = [];
+    for (let i = 0; i < numChannels; i++) {
+        channels.push(buffer.getChannelData(i));
+    }
+
+    let offset = 44;
+    for (let i = 0; i < samples; i++) {
+        for (let ch = 0; ch < numChannels; ch++) {
+            const sample = Math.max(-1, Math.min(1, channels[ch][i]));
+            const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+            view.setInt16(offset, intSample, true);
+            offset += 2;
+        }
+    }
+
+    return arrayBuffer;
+}

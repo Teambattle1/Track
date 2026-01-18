@@ -1,7 +1,7 @@
 {
   "name": "teamtrack-2026",
   "private": true,
-  "version": "5.1",
+  "version": "5.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,6 +17,7 @@
     "test:report": "playwright show-report"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/sortable": "10.0.0",
     "@dnd-kit/utilities": "3.2.2",

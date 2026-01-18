@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Ruler, Crosshair, Navigation, Plus, Library, Home, Trophy, Users, MessageSquare, QrCode, CheckCircle, XCircle, Compass, Maximize2, X } from 'lucide-react';
 import { Game, GamePoint, TaskList, TaskTemplate, AuthUser, GameMode, Coordinate, MapStyleId, DangerZone, GameRoute, Team, ChatMessage, PlaygroundTemplate, InstructorNotification, Playground, IconId } from './types';
 import { APP_VERSION } from './utils/version';
@@ -17,9 +17,7 @@ import { generateDemoTeamHistory } from './services/teamHistoryDemo';
 import GameMap, { GameMapHandle } from './components/GameMap';
 import GameHUD from './components/GameHUD';
 import GameManager from './components/GameManager';
-import TaskMaster from './components/TaskMaster';
 import TeamsModal from './components/TeamsModal';
-import InstructorDashboard from './components/InstructorDashboard';
 import TeamDashboard from './components/TeamDashboard';
 import TabletFrame from './components/TabletFrame';
 import WelcomeScreen from './components/WelcomeScreen';
@@ -27,11 +25,7 @@ import InitialLanding from './components/InitialLanding';
 import LoginPage from './components/LoginPage';
 import EditorDrawer from './components/EditorDrawer';
 import TaskModal from './components/TaskModal';
-import TaskEditor from './components/TaskEditor';
 import DeleteGamesModal from './components/DeleteGamesModal';
-import PlaygroundManager from './components/PlaygroundManager';
-import AdminModal from './components/AdminModal';
-import DatabaseToolsModal from './components/DatabaseToolsModal';
 import ChatDrawer from './components/ChatDrawer';
 import TeamsHubModal from './components/TeamsHubModal';
 import TeamLobbyPanel from './components/TeamLobbyPanel';
@@ -39,26 +33,16 @@ import TeamsLobbySelector from './components/TeamsLobbySelector';
 import DemoTeamsSelector from './components/DemoTeamsSelector';
 import QRScannerModal from './components/QRScannerModal';
 import ClientSubmissionView from './components/ClientSubmissionView';
-import GameCreator from './components/GameCreator';
 import TaskActionModal from './components/TaskActionModal';
-import PlaygroundEditor from './components/PlaygroundEditor';
-import PlayzoneGameView from './components/PlayzoneGameView';
-import GameStatsModal from './components/GameStatsModal';
-import MapStyleLibrary from './components/MapStyleLibrary';
 import DevicePreviewToolbar from './components/DevicePreviewToolbar';
 import MapDeviceFrame from './components/MapDeviceFrame';
-import QRCodesTool from './components/QRCodesTool';
-import GameStatsTool from './components/GameStatsTool';
 import MessagePopup from './components/MessagePopup';
-import Dashboard from './components/Dashboard';
 import DangerZoneModal from './components/DangerZoneModal';
 import DangerZoneWarningModal from './components/DangerZoneWarningModal';
 import { useDangerZoneDetection } from './hooks/useDangerZoneDetection';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/OfflineIndicator';
 import MeasureBox from './components/MeasureBox';
-import SupabaseDiagnostic from './components/SupabaseDiagnostic';
-import SupabaseToolsModal from './components/SupabaseToolsModal';
 import SystemSoundsModal from './components/SystemSoundsModal';
 import ImpossibleTravelWarnings from './components/ImpossibleTravelWarnings';
 import RemoteOverrideModal from './components/RemoteOverrideModal';
@@ -66,15 +50,41 @@ import ClientLobby from './components/ClientLobby';
 import FullscreenOverlay from './components/FullscreenOverlay';
 import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
-import PlayzoneSelector from './components/PlayzoneSelector';
-import TranslationsManager from './components/TranslationsManager';
-import MediaManager from './components/MediaManager';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
 import RankingModal from './components/RankingModal';
 import InstructorNotificationPopup from './components/InstructorNotificationPopup';
 import IntroMessageModal from './components/IntroMessageModal';
 import FinishMessageModal from './components/FinishMessageModal';
+
+// Lazy-loaded heavy components for code splitting
+const TaskMaster = lazy(() => import('./components/TaskMaster'));
+const InstructorDashboard = lazy(() => import('./components/InstructorDashboard'));
+const TaskEditor = lazy(() => import('./components/TaskEditor'));
+const PlaygroundManager = lazy(() => import('./components/PlaygroundManager'));
+const AdminModal = lazy(() => import('./components/AdminModal'));
+const DatabaseToolsModal = lazy(() => import('./components/DatabaseToolsModal'));
+const GameCreator = lazy(() => import('./components/GameCreator'));
+const GameWizard = lazy(() => import('./components/GameWizard'));
+const PlaygroundEditor = lazy(() => import('./components/PlaygroundEditor'));
+const PlayzoneGameView = lazy(() => import('./components/PlayzoneGameView'));
+const GameStatsModal = lazy(() => import('./components/GameStatsModal'));
+const MapStyleLibrary = lazy(() => import('./components/MapStyleLibrary'));
+const QRCodesTool = lazy(() => import('./components/QRCodesTool'));
+const GameStatsTool = lazy(() => import('./components/GameStatsTool'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const SupabaseDiagnostic = lazy(() => import('./components/SupabaseDiagnostic'));
+const SupabaseToolsModal = lazy(() => import('./components/SupabaseToolsModal'));
+const PlayzoneSelector = lazy(() => import('./components/PlayzoneSelector'));
+const TranslationsManager = lazy(() => import('./components/TranslationsManager'));
+const MediaManager = lazy(() => import('./components/MediaManager'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-50">
+    <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
+  </div>
+);
 import { approveMediaSubmission, rejectMediaSubmission, subscribeToMediaSubmissions} from './services/mediaUpload';
 import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
 import { createTaskIdMap, remapTaskLogicTargets, validateTaskReferences } from './utils/taskIdRemapping';
@@ -124,6 +134,7 @@ const GameApp: React.FC = () => {
   const [showTeamLobby, setShowTeamLobby] = useState(false);
   const [showTeamViewQRScanner, setShowTeamViewQRScanner] = useState(false);
   const [showGameCreator, setShowGameCreator] = useState(false);
+  const [showGameWizard, setShowGameWizard] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
   const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | null>(null);
   const [showGameStats, setShowGameStats] = useState(false);
@@ -1822,6 +1833,7 @@ const GameApp: React.FC = () => {
   const renderModals = () => (
       <>
           {showDashboard && (
+              <Suspense fallback={<LoadingFallback />}>
               <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-md animate-in fade-in">
                   <Dashboard 
                       games={games}
@@ -1847,6 +1859,7 @@ const GameApp: React.FC = () => {
                       onRenameTagGlobally={handleRenameTagGlobally}
                   />
               </div>
+              </Suspense>
           )}
 
           {showGameChooser && (
@@ -1912,11 +1925,16 @@ const GameApp: React.FC = () => {
                       setShowGameCreator(true);
                       setShowGameChooser(false);
                   }}
+                  onOpenWizard={() => {
+                      setShowGameWizard(true);
+                      setShowGameChooser(false);
+                  }}
               />
           )}
 
           {/* Task Editor for EDIT mode */}
           {activeTask && mode === GameMode.EDIT && taskEditorOpen && (
+              <Suspense fallback={<LoadingFallback />}>
               <TaskEditor
                   point={activeTask}
                   onSave={async (updatedPoint) => {
@@ -1936,6 +1954,7 @@ const GameApp: React.FC = () => {
                       setActiveTask(null);
                   }}
               />
+              </Suspense>
           )}
 
           {/* Task Modal for PLAY/INSTRUCTOR modes */}
@@ -1993,6 +2012,7 @@ const GameApp: React.FC = () => {
               />
           )}
           {showTaskMaster && (
+              <Suspense fallback={<LoadingFallback />}>
               <TaskMaster
                   initialTab={taskMasterInitialTab}
                   initialModal={taskMasterInitialModal}
@@ -2191,9 +2211,11 @@ const GameApp: React.FC = () => {
                   onDeleteTagGlobally={handleDeleteTagGlobally}
                   onRenameTagGlobally={handleRenameTagGlobally}
               />
+              </Suspense>
           )}
           {/* ... Rest of modals ... */}
           {showGameCreator && (
+              <Suspense fallback={<LoadingFallback />}>
               <GameCreator
                   onClose={() => {
                       setShowGameCreator(false);
@@ -2253,6 +2275,58 @@ const GameApp: React.FC = () => {
                   onDelete={handleDeleteGame}
                   initialGameMode={initialGameMode}
               />
+              </Suspense>
+          )}
+          {showGameWizard && (
+              <Suspense fallback={<LoadingFallback />}>
+              <GameWizard
+                  onClose={() => setShowGameWizard(false)}
+                  onCreate={async (gameData, openSettings) => {
+                      const isPlayzone = gameData.gameMode === 'playzone';
+                      const playgroundId = gameData.playgrounds?.[0]?.id || `pg-${Date.now()}`;
+
+                      const newGame = {
+                          ...gameData,
+                          id: gameData.id || `game-${Date.now()}`,
+                          createdAt: gameData.createdAt || Date.now(),
+                          defaultMapStyle: isPlayzone ? 'none' : gameData.defaultMapStyle,
+                          playgrounds: isPlayzone && (!gameData.playgrounds || gameData.playgrounds.length === 0)
+                              ? [{
+                                  id: playgroundId,
+                                  title: 'New Playground',
+                                  buttonVisible: true,
+                                  iconId: 'default',
+                                  location: { lat: 0, lng: 0 }
+                              }]
+                              : (gameData.playgrounds || [])
+                      } as Game;
+
+                      await db.saveGame(newGame);
+                      setGames([...games, newGame]);
+                      setActiveGameId(newGame.id);
+                      setShowGameWizard(false);
+
+                      if (openSettings) {
+                          setGameToEdit(newGame);
+                          setShowGameCreator(true);
+                      } else if (isPlayzone) {
+                          setMode(GameMode.EDIT);
+                          setViewingPlaygroundId(playgroundId);
+                          setShowLanding(false);
+                      } else {
+                          setMode(GameMode.EDIT);
+                          setShowLanding(false);
+                          setShowGameChooser(false);
+                      }
+                  }}
+                  existingPlaygrounds={activeGame?.playgrounds}
+                  taskLibrary={taskLibrary}
+                  taskLists={taskLists}
+                  onUpdateTaskLibrary={setTaskLibrary}
+                  onUpdateTaskLists={setTaskLists}
+                  games={games}
+              />
+              </Suspense>
           )}
           {showTeamsHub && (
               <TeamsHubModal 
@@ -2279,6 +2353,7 @@ const GameApp: React.FC = () => {
               />
           )}
           {showInstructorDashboard && activeGame && (
+              <Suspense fallback={<LoadingFallback />}>
               <TabletFrame onClose={() => setShowInstructorDashboard(false)}>
                   <InstructorDashboard
                       game={activeGame}
@@ -2293,6 +2368,7 @@ const GameApp: React.FC = () => {
                       }}
                   />
               </TabletFrame>
+              </Suspense>
           )}
           {showTeamDashboard && activeGameId && (
               <TabletFrame onClose={() => setShowTeamDashboard(false)}>
@@ -2314,6 +2390,7 @@ const GameApp: React.FC = () => {
               />
           )}
           {showPlaygroundManager && (
+              <Suspense fallback={<LoadingFallback />}>
               <PlaygroundManager
                   onClose={() => setShowPlaygroundManager(false)}
                   onEdit={(template) => {
@@ -2355,8 +2432,10 @@ const GameApp: React.FC = () => {
                       console.log('[App] \u2705 Games state updated after playzone import');
                   }}
               />
+              </Suspense>
           )}
           {playgroundTemplateToEdit && (
+              <Suspense fallback={<LoadingFallback />}>
               <PlaygroundEditor
                   game={{
                       id: 'template-edit',
@@ -2459,11 +2538,13 @@ const GameApp: React.FC = () => {
                       setShowPlaygroundManager(true);
                   }}
               />
+              </Suspense>
           )}
           {viewingPlaygroundId && activeGame && (
               <>
                   {/* EDITOR MODE: Full authoring environment */}
                   {mode === GameMode.EDIT && (
+                      <Suspense fallback={<LoadingFallback />}>
                       <PlaygroundEditor
                           game={activeGame}
                           initialPlaygroundId={viewingPlaygroundId}
@@ -2556,10 +2637,12 @@ const GameApp: React.FC = () => {
                           }}
                           // onExportGameToLibrary removed - all tasks auto-sync now
                       />
+                      </Suspense>
                   )}
 
                   {/* INSTRUCTOR/TEAMPLAY MODE: Canvas-only gameplay view */}
                   {(mode === GameMode.INSTRUCTOR || mode === GameMode.PLAY) && (
+                      <Suspense fallback={<LoadingFallback />}>
                       <PlayzoneGameView
                           game={activeGame}
                           playgroundId={viewingPlaygroundId}
@@ -2593,6 +2676,7 @@ const GameApp: React.FC = () => {
                               }
                           }}
                       />
+                      </Suspense>
                   )}
               </>
           )}
@@ -2808,8 +2892,10 @@ const GameApp: React.FC = () => {
                         }
                     });
                 }}
+                onOpenWizard={() => setShowGameWizard(true)}
             />
             {showDatabaseTools && (
+                <Suspense fallback={<LoadingFallback />}>
                 <AdminModal
                     games={games}
                     onClose={() => setShowDatabaseTools(false)}
@@ -2819,45 +2905,58 @@ const GameApp: React.FC = () => {
                         setTaskLibrary(updatedLib);
                     }}
                 />
+                </Suspense>
             )}
             {showDatabaseToolsModal && (
+                <Suspense fallback={<LoadingFallback />}>
                 <DatabaseToolsModal
                     onClose={() => setShowDatabaseToolsModal(false)}
                 />
+                </Suspense>
             )}
             {showGameStats && (
+                <Suspense fallback={<LoadingFallback />}>
                 <GameStatsTool
                     games={playableGames}
                     activeGameId={activeGameId}
                     onSelectGame={setActiveGameId}
                     onClose={() => setShowGameStats(false)}
                 />
+                </Suspense>
             )}
             {showMediaManager && (
+                <Suspense fallback={<LoadingFallback />}>
                 <MediaManager
                     onClose={() => setShowMediaManager(false)}
                     games={games}
                 />
+                </Suspense>
             )}
             {showMapStyleLibrary && (
+                <Suspense fallback={<LoadingFallback />}>
                 <MapStyleLibrary
                     onClose={() => setShowMapStyleLibrary(false)}
                 />
+                </Suspense>
             )}
 
             {showQRCodesTool && (
+                <Suspense fallback={<LoadingFallback />}>
                 <QRCodesTool
                     games={playableGames}
                     activeGameId={activeGameId}
                     onSelectGame={setActiveGameId}
                     onClose={() => setShowQRCodesTool(false)}
                 />
+                </Suspense>
             )}
 
             {showSupabaseDiagnostic && (
+                <Suspense fallback={<LoadingFallback />}>
                 <SupabaseToolsModal
                     onClose={() => setShowSupabaseDiagnostic(false)}
                 />
+                </Suspense>
             )}
 
             {showSystemSounds && (
@@ -2867,6 +2966,7 @@ const GameApp: React.FC = () => {
             )}
 
             {showTranslationsManager && (
+                <Suspense fallback={<LoadingFallback />}>
                 <TranslationsManager
                     onClose={() => setShowTranslationsManager(false)}
                     onEditTask={(gameId, pointId) => {
@@ -2887,6 +2987,7 @@ const GameApp: React.FC = () => {
                         }
                     }}
                 />
+                </Suspense>
             )}
 
             {/* CLIENT ZONE */}
@@ -3900,6 +4001,7 @@ const GameApp: React.FC = () => {
         )}
 
         {showPlayzoneSelector && (
+            <Suspense fallback={<LoadingFallback />}>
             <PlayzoneSelector
                 onClose={() => setShowPlayzoneSelector(false)}
                 onBack={() => {
@@ -4011,6 +4113,7 @@ const GameApp: React.FC = () => {
                     });
                 }}
             />
+            </Suspense>
         )}
 
         {showAccess && (

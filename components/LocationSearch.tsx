@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, Loader2, MapPin, X, Target, Maximize } from 'lucide-react';
 import { Coordinate } from '../types';
 import { isValidCoordinate } from '../utils/geo';
@@ -46,18 +46,60 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  // Auto-search with debounce as user types
+  useEffect(() => {
+    // Clear previous timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Abort previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const trimmedQuery = query.trim();
+
+    // Only search if query is at least 3 characters
+    if (trimmedQuery.length < 3) {
+      setResults([]);
+      setShowResults(false);
+      setIsSearching(false);
+      return;
+    }
+
+    // Debounce: wait 400ms before searching
+    debounceTimerRef.current = setTimeout(() => {
+      performSearch(trimmedQuery);
+    }, 400);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [query]);
+
+  const performSearch = async (searchQuery: string) => {
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
+
     setIsSearching(true);
     setShowResults(true);
+
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`, {
-        headers: {
-          'User-Agent': 'TeamBattle-App/1.0 (+https://teambattle.io)'
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`,
+        {
+          headers: {
+            'User-Agent': 'TeamBattle-App/1.0 (+https://teambattle.io)'
+          },
+          signal: abortControllerRef.current.signal
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Geocoding service error: ${response.status}`);
@@ -71,12 +113,25 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
         console.warn('Unexpected geocoding response format:', data);
         setResults([]);
       }
-    } catch (err) {
-      console.error("Geocoding error:", err);
-      setResults([]);
+    } catch (err: any) {
+      // Ignore abort errors
+      if (err.name !== 'AbortError') {
+        console.error("Geocoding error:", err);
+        setResults([]);
+      }
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    // Trigger immediate search on form submit
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    performSearch(query.trim());
   };
 
   const selectResult = (res: any) => {

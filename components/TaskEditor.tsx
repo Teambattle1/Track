@@ -18,7 +18,7 @@ import {
   Plus, AlertCircle, AlertTriangle, ZoomIn, Scissors, Image as ImageIcon, Tag,
   Copy, KeyRound, ChevronDown, ChevronsUpDown, RotateCw, Type,
   Palette, Bold, Italic, Underline, MonitorPlay, Speaker, MapPin,
-  Settings, Zap, MessageSquare, Clock, Globe, Lock, Check, Wand2, Hash,
+  Settings, Zap, MessageSquare, Clock, Globe, Lock, Check, Wand2, Hash, Sparkles,
   Edit2, MousePointerClick, EyeOff, Eye, Maximize, Smartphone, Monitor, QrCode, Download, Map as MapIcon, Info,
   ListOrdered, Wifi, Users
 } from 'lucide-react';
@@ -258,6 +258,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
   // Image states
   const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [showAiImagePrompt, setShowAiImagePrompt] = useState(false);
+  const [aiImageTopic, setAiImageTopic] = useState('');
   const [isCropping, setIsCropping] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -400,11 +402,12 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
       }
   }, [activeTab, editedPoint.qrCodeString]);
 
-  const handleGenerateImage = async () => {
-      const prompt = editedPoint.task.question.replace(/<[^>]*>?/gm, '') + " " + editedPoint.title;
+  const handleGenerateImage = async (customTopic?: string) => {
+      const prompt = customTopic || (editedPoint.task.question.replace(/<[^>]*>?/gm, '') + " " + editedPoint.title);
       if (!prompt.trim()) return;
 
       setIsGeneratingImage(true);
+      setShowAiImagePrompt(false);
       try {
           console.log('[TaskEditor] Generating AI illustration for:', prompt);
           const img = await generateAiImage(prompt);
@@ -416,18 +419,19 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
               setEditedPoint(prev => ({ ...prev, task: { ...prev.task, imageUrl: url || img } }));
           } else {
               console.warn('[TaskEditor] AI returned null');
-              alert('⚠️ Image generation failed\n\nPlease check your Gemini API key in the settings or try again with a different prompt.');
+              alert('⚠️ Image generation failed\n\nPlease check your Stability AI API key in the settings or try again with a different prompt.');
           }
       } catch (error: any) {
           console.error('[TaskEditor] Error generating image:', error);
           const errorMessage = error?.message || '';
           if (errorMessage.includes('AI API Key missing')) {
-              alert('Gemini API Key is missing. Please set your API key in Local Storage or contact an administrator.\n\nGet a free API key at https://aistudio.google.com/app/apikey');
+              alert('Stability AI API Key is missing. Please set your API key in Settings.');
           } else {
               alert('Error generating image. Please try again.\n\n' + errorMessage);
           }
       } finally {
           setIsGeneratingImage(false);
+          setAiImageTopic('');
       }
   };
 
@@ -1525,9 +1529,59 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
                                        <>
                                            <img src={editedPoint.task.imageUrl} className="max-w-full max-h-[400px] object-contain" alt="Task Cover" />
                                            <div className="absolute top-4 right-4 flex gap-2">
-                                              <button type="button" onClick={() => { setPendingImage(editedPoint.task.imageUrl || null); setIsCropping(true); }} className="p-2 bg-blue-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"><Scissors className="w-4 h-4"/></button>
-                                              <button type="button" onClick={() => setEditedPoint({...editedPoint, task: {...editedPoint.task, imageUrl: undefined}})} className="p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"><Trash2 className="w-4 h-4"/></button>
+                                              <button type="button" onClick={() => { setPendingImage(editedPoint.task.imageUrl || null); setIsCropping(true); }} className="p-2 bg-blue-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Crop"><Scissors className="w-4 h-4"/></button>
+                                              <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 bg-orange-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Upload new"><Upload className="w-4 h-4"/></button>
+                                              <button type="button" onClick={() => { setAiImageTopic(editedPoint.title || ''); setShowAiImagePrompt(true); }} className="p-2 bg-purple-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Generate AI image"><Wand2 className="w-4 h-4"/></button>
+                                              <button type="button" onClick={() => setEditedPoint({...editedPoint, task: {...editedPoint.task, imageUrl: undefined}})} className="p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Remove"><Trash2 className="w-4 h-4"/></button>
                                            </div>
+                                           {/* AI Image Topic Input Overlay */}
+                                           {showAiImagePrompt && (
+                                               <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                                                   <div className="bg-gray-900 border border-purple-500/50 rounded-2xl p-5 w-full max-w-md shadow-2xl">
+                                                       <div className="flex items-center gap-2 mb-4">
+                                                           <div className="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center">
+                                                               <Wand2 className="w-5 h-5 text-purple-400" />
+                                                           </div>
+                                                           <div>
+                                                               <h4 className="text-sm font-black text-white uppercase tracking-wider">AI Image Generator</h4>
+                                                               <p className="text-[10px] text-gray-400">Using Stability AI</p>
+                                                           </div>
+                                                       </div>
+                                                       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">TOPIC / DESCRIPTION</label>
+                                                       <input
+                                                           type="text"
+                                                           value={aiImageTopic}
+                                                           onChange={(e) => setAiImageTopic(e.target.value)}
+                                                           placeholder="e.g. skiing in mountains, winter sports..."
+                                                           className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm outline-none focus:border-purple-500 mb-4"
+                                                           autoFocus
+                                                           onKeyDown={(e) => {
+                                                               if (e.key === 'Enter' && aiImageTopic.trim()) {
+                                                                   handleGenerateImage(aiImageTopic);
+                                                               }
+                                                           }}
+                                                       />
+                                                       <div className="flex gap-2">
+                                                           <button
+                                                               type="button"
+                                                               onClick={() => { setShowAiImagePrompt(false); setAiImageTopic(''); }}
+                                                               className="flex-1 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+                                                           >
+                                                               Cancel
+                                                           </button>
+                                                           <button
+                                                               type="button"
+                                                               onClick={() => handleGenerateImage(aiImageTopic)}
+                                                               disabled={!aiImageTopic.trim() || isGeneratingImage}
+                                                               className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                                                           >
+                                                               {isGeneratingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                                               Generate
+                                                           </button>
+                                                       </div>
+                                                   </div>
+                                               </div>
+                                           )}
                                        </>
                                    ) : (
                                        <div className="text-center opacity-30 group-hover:opacity-50 transition-opacity p-8">

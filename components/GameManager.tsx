@@ -12,7 +12,8 @@ import {
   Play,
   Settings,
   Plus,
-  LayoutTemplate
+  LayoutTemplate,
+  Wand2
 } from 'lucide-react';
 import { getGameModeIcon } from '../utils/gameModeIcons';
 import { getGameDisplayId, formatGameNameWithId } from '../utils/gameIdUtils';
@@ -48,6 +49,7 @@ interface GameManagerProps {
   onOpenGameCreator?: () => void;
   onEditGameSetup?: (gameId: string) => void;
   onStartSimulation?: (game: Game) => void;
+  onOpenWizard?: () => void;
 }
 
 type GameStatusTab = 'TODAY' | 'PLANNED' | 'COMPLETED';
@@ -220,6 +222,7 @@ const GameManager: React.FC<GameManagerProps> = ({
   onCreateFromTemplate,
   onOpenGameCreator,
   onEditGameSetup,
+  onOpenWizard,
   mode
 }) => {
   const [section, setSection] = useState<'GAMES' | 'TEMPLATES'>('GAMES');
@@ -348,9 +351,20 @@ const GameManager: React.FC<GameManagerProps> = ({
           <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
             <Settings className="w-5 h-5" /> Game Manager
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-            <X className="w-6 h-6 text-gray-500" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenWizard && (
+              <button
+                onClick={onOpenWizard}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold text-xs uppercase tracking-wide transition-all shadow-lg"
+              >
+                <Wand2 className="w-4 h-4" />
+                Quick Create
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <X className="w-6 h-6 text-gray-500" />
+            </button>
+          </div>
         </div>
 
         <div className="p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-4">

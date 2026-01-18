@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supabase Diagnostic</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="font-family: monospace; padding: 20px; background: #1a1a2e; color: #eee;">
+  <h1>Supabase Connection Diagnostic</h1>
+  <div id="output"></div>
+  <button onclick="clearLocalStorage()" style="margin: 10px 0; padding: 10px 20px; background: #f44; color: white; border: none; cursor: pointer; border-radius: 5px;">
+    Clear Supabase LocalStorage & Reload
+  </button>
+  <script>
+    var out = document.getElementById('output');
+    function log(msg, color) {
+      color = color || '#0f0';
+      out.innerHTML += '<div style="color: ' + color + '; margin: 5px 0;">' + msg + '</div>';
+    }
+
+    function clearLocalStorage() {
+      localStorage.removeItem('SUPABASE_URL');
+      localStorage.removeItem('SUPABASE_ANON_KEY');
+      location.reload();
+    }
+
+    // Check localStorage
+    var localUrl = localStorage.getItem('SUPABASE_URL');
+    var localKey = localStorage.getItem('SUPABASE_ANON_KEY');
+
+    log('=== LocalStorage Check ===', '#ff0');
+    log('SUPABASE_URL in localStorage: ' + (localUrl || '(not set)'));
+    log('SUPABASE_ANON_KEY in localStorage: ' + (localKey ? localKey.substring(0, 40) + '...' : '(not set)'));
+
+    // Default values from lib/supabase.ts
+    var DEFAULT_URL = 'https://yktaxljydisfjyqhbnja.supabase.co';
+    var DEFAULT_KEY = 'sb_publishable_p-hMXBWqcvE4l_Ud7D0L8Q_faGIPYOc';
+
+    var url = localUrl || DEFAULT_URL;
+    var key = localKey || DEFAULT_KEY;
+
+    log('');
+    log('=== Effective Credentials ===', '#ff0');
+    log('URL: ' + url);
+    log('Key: ' + key.substring(0, 40) + '...');
+    log('Key format: ' + (key.startsWith('eyJ') ? 'JWT (standard)' : 'Non-JWT (may be invalid)'), key.startsWith('eyJ') ? '#0f0' : '#f80');
+
+    // Test connection
+    log('');
+    log('=== Testing Table Access ===', '#ff0');
+
+    var supabase = window.supabase.createClient(url, key);
+
+    var tables = ['games', 'library', 'task_lists', 'user_settings', 'teams', 'playground_library'];
+
+    (async function() {
+      for (var i = 0; i < tables.length; i++) {
+        var table = tables[i];
+        try {
+          var result = await supabase.from(table).select('*').limit(1);
+          if (result.error) {
+            log('❌ ' + table + ': ' + result.error.message, '#f00');
+          } else {
+            log('✅ ' + table + ': OK (found ' + (result.data ? result.data.length : 0) + ' rows)', '#0f0');
+          }
+        } catch (e) {
+          log('❌ ' + table + ': ' + e.message, '#f00');
+        }
+      }
+
+      log('');
+      log('=== Diagnosis ===', '#ff0');
+      if (localUrl || localKey) {
+        log('⚠️ Custom credentials found in localStorage!', '#f80');
+        log('Click the red button above to clear them and reload.', '#ffa');
+      } else {
+        log('Using default credentials from code.', '#aaa');
+        if (!key.startsWith('eyJ')) {
+          log('⚠️ The default anon key does not look like a valid Supabase JWT.', '#f80');
+          log('You may need to update lib/supabase.ts with your actual Supabase anon key.', '#ffa');
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
