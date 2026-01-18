@@ -25,6 +25,7 @@ interface InitialLandingProps {
   authUser?: AuthUser | null;
   onLogout?: () => void;
   onOpenWizard?: () => void;
+  onUpdateGames?: (games: Game[]) => void;
 }
 
 type CategoryView = 'HOME' | 'SETTINGS' | 'CREATE' | 'CREATE_GAME_SUBMENU' | 'EDIT_MENU' | 'PLAY_MENU' | 'PLAY_TEAMS_MENU' | 'GAMES' | 'TEAMS' | 'TASKS' | 'ADMIN' | 'PREVIEW_SELECT';
@@ -260,7 +261,7 @@ const getGameModeBadge = (gameMode?: string): { label: string; bgColor: string; 
   }
 };
 
-const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, games, activeGameId, onSelectGame, authUser, onLogout, onOpenWizard }) => {
+const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, games, activeGameId, onSelectGame, authUser, onLogout, onOpenWizard, onUpdateGames }) => {
   const [view, setView] = useState<CategoryView>('HOME');
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [gameSearchQuery, setGameSearchQuery] = useState('');
@@ -792,21 +793,20 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                               SETTINGS
                           </h3>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                              <NavCard title="AI SETTINGS" subtitle="CLAUDE & GEMINI API" icon={KeyRound} color="bg-blue-600" onClick={() => onAction('DATABASE')} />
                               <NavCard title="MAP STYLES" subtitle="CUSTOM MAP LIBRARY" icon={Map} color="bg-purple-600" onClick={() => onAction('MAP_STYLES')} />
                               <NavCard title="SYSTEM SOUNDS" subtitle="GLOBAL AUDIO SETTINGS" icon={Volume2} color="bg-teal-600" onClick={() => onAction('SYSTEM_SOUNDS')} />
                               <NavCard title="MEDIA" subtitle="PHOTOS & VIDEOS MANAGER" icon={Smartphone} color="bg-orange-600" onClick={() => onAction('MEDIA')} />
                           </div>
                       </div>
 
-                      {/* === CODE / DATABASE SECTION === */}
+                      {/* === CODE & AI SETTINGS SECTION === */}
                       <div>
                           <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
                               <Code className="w-4 h-4" />
-                              CODE & DATABASE
+                              CODE & AI SETTINGS
                           </h3>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                              <NavCard title="DATABASE TOOLS" subtitle="MAINTENANCE & CLEANUP" icon={Database} color="bg-orange-600" onClick={() => onAction('DATABASE_TOOLS')} />
+                              <NavCard title="AI SETTINGS" subtitle="CLAUDE & GEMINI API" icon={KeyRound} color="bg-blue-600" onClick={() => onAction('DATABASE')} />
                               <NavCard title="SUPABASE" subtitle="SQL SCRIPTS & MIGRATIONS" icon={Database} color="bg-green-600" onClick={() => setShowSupabaseScripts(true)} />
                           </div>
                       </div>
@@ -1138,7 +1138,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => onAction('ADMIN')}
+                                        onClick={() => onAction('DATABASE')}
                                         className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-yellow-950 rounded-lg font-black uppercase text-[10px] tracking-widest transition-colors flex items-center gap-2 shadow-lg"
                                     >
                                         <KeyRound className="w-3.5 h-3.5" />
@@ -1238,7 +1238,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
           {/* Footer Branding */}
           <div className="mt-auto pt-10 border-t border-slate-900/50 flex justify-center items-center gap-4">
             <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest">
-                POWERED BY TEAMTRACK
+                POWERED BY TEAMBATTLE
             </p>
           </div>
         </div>
@@ -1301,6 +1301,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
         {showSupabaseScripts && (
             <SupabaseScriptsModal
                 onClose={() => setShowSupabaseScripts(false)}
+                games={games}
+                onUpdateGames={onUpdateGames}
             />
         )}
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, KeyRound, Eye, EyeOff, Check, ExternalLink, Sparkles, Image, Palette } from 'lucide-react';
+import { X, KeyRound, Eye, EyeOff, Check, ExternalLink, Sparkles, Palette, Zap } from 'lucide-react';
 
 interface GeminiApiKeyModalProps {
   isOpen: boolean;
@@ -8,11 +8,14 @@ interface GeminiApiKeyModalProps {
 }
 
 const GeminiApiKeyModal: React.FC<GeminiApiKeyModalProps> = ({ isOpen, onClose, onSave }) => {
+  const [geminiKey, setGeminiKey] = useState('');
   const [anthropicKey, setAnthropicKey] = useState('');
   const [stabilityKey, setStabilityKey] = useState('');
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [showAnthropicKey, setShowAnthropicKey] = useState(false);
   const [showStabilityKey, setShowStabilityKey] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [hasExistingGemini, setHasExistingGemini] = useState(false);
   const [hasExistingAnthropic, setHasExistingAnthropic] = useState(false);
   const [hasExistingStability, setHasExistingStability] = useState(false);
 
@@ -20,9 +23,14 @@ const GeminiApiKeyModal: React.FC<GeminiApiKeyModalProps> = ({ isOpen, onClose, 
     if (isOpen) {
       // Check for existing keys
       try {
+        const existingGemini = localStorage.getItem('GEMINI_API_KEY');
         const existingAnthropic = localStorage.getItem('ANTHROPIC_API_KEY');
         const existingStability = localStorage.getItem('STABILITY_API_KEY');
 
+        if (existingGemini) {
+          setGeminiKey('••••••••••••••••••••');
+          setHasExistingGemini(true);
+        }
         if (existingAnthropic) {
           setAnthropicKey('••••••••••••••••••••');
           setHasExistingAnthropic(true);
@@ -39,6 +47,18 @@ const GeminiApiKeyModal: React.FC<GeminiApiKeyModalProps> = ({ isOpen, onClose, 
 
   const handleSave = () => {
     let saved = false;
+
+    // Save Gemini key if provided and not masked
+    const geminiKeyTrimmed = geminiKey.trim();
+    if (geminiKeyTrimmed && !geminiKeyTrimmed.startsWith('•')) {
+      try {
+        localStorage.setItem('GEMINI_API_KEY', geminiKeyTrimmed);
+        saved = true;
+      } catch (error) {
+        alert('Failed to save Google Gemini API key');
+        return;
+      }
+    }
 
     // Save Anthropic key if provided and not masked
     const anthropicKeyTrimmed = anthropicKey.trim();
@@ -105,10 +125,49 @@ const GeminiApiKeyModal: React.FC<GeminiApiKeyModalProps> = ({ isOpen, onClose, 
           {/* Info */}
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
             <p className="text-sm text-slate-300 leading-relaxed">
+              <strong className="text-white">Google Gemini</strong> - AI background & icon generation
+              <br />
               <strong className="text-white">Claude (Anthropic)</strong> - Task generation & translations
               <br />
               <strong className="text-white">Stability AI</strong> - Image generation (icons, backgrounds)
             </p>
+          </div>
+
+          {/* Google Gemini API Key */}
+          <div className="bg-slate-950 rounded-xl p-4 border border-blue-500/30">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="w-4 h-4 text-blue-400" />
+              <p className="text-xs text-blue-400 font-black uppercase tracking-wider">Google Gemini - AI Generation</p>
+              {hasExistingGemini && <span className="text-[9px] bg-green-600/30 text-green-400 px-2 py-0.5 rounded-full font-bold">CONFIGURED</span>}
+            </div>
+            <div className="relative mb-2">
+              <input
+                type={showGeminiKey ? 'text' : 'password'}
+                value={geminiKey}
+                onChange={(e) => {
+                  setGeminiKey(e.target.value);
+                  setIsSaved(false);
+                }}
+                placeholder="AIza..."
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 pr-12 text-sm text-white font-mono outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowGeminiKey(!showGeminiKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                {showGeminiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <a
+              href="https://aistudio.google.com/api-keys"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold text-xs transition-colors"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Get API key from Google AI Studio (Free tier available)
+            </a>
           </div>
 
           {/* Anthropic API Key */}
@@ -138,13 +197,13 @@ const GeminiApiKeyModal: React.FC<GeminiApiKeyModalProps> = ({ isOpen, onClose, 
               </button>
             </div>
             <a
-              href="https://console.anthropic.com/settings/keys"
+              href="https://platform.claude.com/settings/keys"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-purple-400 hover:text-purple-300 font-bold text-xs transition-colors"
             >
               <ExternalLink className="w-3 h-3" />
-              Get API key from Anthropic Console
+              Get API key from Claude Platform
             </a>
           </div>
 

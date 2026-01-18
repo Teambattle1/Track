@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { X, AlertTriangle, CheckCircle, XCircle, RefreshCw, ExternalLink, Terminal, Copy, Check } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle, XCircle, RefreshCw, ExternalLink, Terminal, Copy, Check, Trash2, Database } from 'lucide-react';
 import { testDatabaseConnection } from '../services/db';
+import { Game } from '../types';
 
 interface SupabaseToolsModalProps {
   onClose: () => void;
+  games?: Game[];
+  onUpdateGames?: (games: Game[]) => void;
 }
 
 // SQL code constant - shared between component and helper function
@@ -252,7 +255,7 @@ CREATE INDEX IF NOT EXISTS idx_media_submissions_game_status ON public.media_sub
 
 NOTIFY pgrst, 'reload config';`;
 
-const SupabaseToolsModal: React.FC<SupabaseToolsModalProps> = ({ onClose }) => {
+const SupabaseToolsModal: React.FC<SupabaseToolsModalProps> = ({ onClose, games = [], onUpdateGames }) => {
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; error?: string; latency?: number } | null>(null);
   const [supabaseUrl, setSupabaseUrl] = useState('');
@@ -261,6 +264,70 @@ const SupabaseToolsModal: React.FC<SupabaseToolsModalProps> = ({ onClose }) => {
   const [showSql, setShowSql] = useState(false);
   const [copied, setCopied] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
+  const [isCleaningOrphans, setIsCleaningOrphans] = useState(false);
+
+  // Calculate orphaned points across all games
+  const orphanedPointsInfo = useMemo(() => {
+    let totalOrphaned = 0;
+    const affectedGames: { gameId: string; gameName: string; count: number }[] = [];
+
+    games.forEach(game => {
+      if (!game.points || !game.playgrounds) return;
+
+      const playzoneIds = new Set(game.playgrounds.map(pg => pg.id));
+      const orphaned = game.points.filter(p =>
+        p.playgroundId && !playzoneIds.has(p.playgroundId)
+      );
+
+      if (orphaned.length > 0) {
+        totalOrphaned += orphaned.length;
+        affectedGames.push({
+          gameId: game.id,
+          gameName: game.name || 'Unnamed Game',
+          count: orphaned.length
+        });
+      }
+    });
+
+    return { total: totalOrphaned, games: affectedGames };
+  }, [games]);
+
+  const handleCleanOrphanedPoints = async () => {
+    if (!onUpdateGames || orphanedPointsInfo.total === 0) return;
+
+    const confirmed = confirm(
+      `This will permanently delete ${orphanedPointsInfo.total} orphaned point(s) from ${orphanedPointsInfo.games.length} game(s).\n\n` +
+      `Affected games:\n${orphanedPointsInfo.games.map(g => `• ${g.gameName}: ${g.count} points`).join('\n')}\n\n` +
+      `This action cannot be undone. Continue?`
+    );
+
+    if (!confirmed) return;
+
+    setIsCleaningOrphans(true);
+    try {
+      const updatedGames = games.map(game => {
+        if (!game.points || !game.playgrounds) return game;
+
+        const playzoneIds = new Set(game.playgrounds.map(pg => pg.id));
+        const cleanedPoints = game.points.filter(p =>
+          !p.playgroundId || playzoneIds.has(p.playgroundId)
+        );
+
+        if (cleanedPoints.length !== game.points.length) {
+          return { ...game, points: cleanedPoints };
+        }
+        return game;
+      });
+
+      onUpdateGames(updatedGames);
+      alert(`✅ Successfully removed ${orphanedPointsInfo.total} orphaned points!`);
+    } catch (error) {
+      console.error('Failed to clean orphaned points:', error);
+      alert('❌ Failed to clean orphaned points. Please try again.');
+    } finally {
+      setIsCleaningOrphans(false);
+    }
+  };
 
   // Generate a simple hash from the SQL code to detect changes
   const sqlCodeHash = useMemo(() => {
@@ -551,6 +618,59 @@ const SupabaseToolsModal: React.FC<SupabaseToolsModalProps> = ({ onClose }) => {
               )}
             </div>
           )}
+
+          {/* Database Tools Section */}
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+            <h3 className="text-sm font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+              <Database className="w-4 h-4" /> Database Tools
+            </h3>
+            <div className="space-y-3">
+              {/* Orphaned Points Cleanup */}
+              <div className={`p-3 rounded-lg border ${orphanedPointsInfo.total > 0 ? 'bg-red-900/20 border-red-500/30' : 'bg-slate-700/30 border-slate-600'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                      Orphaned Points
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Points linked to deleted playzones
+                    </p>
+                  </div>
+                  <span className={`text-lg font-black ${orphanedPointsInfo.total > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                    {orphanedPointsInfo.total}
+                  </span>
+                </div>
+
+                {orphanedPointsInfo.total > 0 && (
+                  <>
+                    <div className="text-[9px] text-slate-500 mb-2">
+                      {orphanedPointsInfo.games.map(g => (
+                        <div key={g.gameId}>• {g.gameName}: {g.count} point{g.count !== 1 ? 's' : ''}</div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={handleCleanOrphanedPoints}
+                      disabled={isCleaningOrphans || !onUpdateGames}
+                      className="w-full py-2 bg-red-600 hover:bg-red-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-2 transition-colors"
+                    >
+                      {isCleaningOrphans ? (
+                        <><RefreshCw className="w-3 h-3 animate-spin" /> Cleaning...</>
+                      ) : (
+                        <><Trash2 className="w-3 h-3" /> Remove Orphaned Points</>
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {orphanedPointsInfo.total === 0 && (
+                  <div className="text-[10px] text-green-400 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> No orphaned points found
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

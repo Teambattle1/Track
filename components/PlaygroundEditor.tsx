@@ -7004,8 +7004,11 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 icon="warning"
                 onConfirm={() => {
                     if (activePlayground) {
+                        // Remove the playground
                         const remaining = game.playgrounds?.filter(p => p.id !== activePlayground.id) || [];
-                        onUpdateGame({ ...game, playgrounds: remaining });
+                        // Also delete all points that belong to this playground
+                        const remainingPoints = game.points.filter(p => p.playgroundId !== activePlayground.id);
+                        onUpdateGame({ ...game, playgrounds: remaining, points: remainingPoints });
                         if (remaining.length > 0) setActivePlaygroundId(remaining[0].id);
                         else setActivePlaygroundId(null);
                     }

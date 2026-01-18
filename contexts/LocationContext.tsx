@@ -146,11 +146,50 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, []);
 
-  // Initialize Tracking
+  // Initialize Tracking - wait for user gesture to avoid browser violation
   useEffect(() => {
-    startTracking();
+    let started = false;
+
+    const initTracking = () => {
+      if (started) return;
+      started = true;
+      startTracking();
+      // Remove listeners after first interaction
+      document.removeEventListener('click', initTracking);
+      document.removeEventListener('touchstart', initTracking);
+      document.removeEventListener('keydown', initTracking);
+    };
+
+    // Check if we already have geolocation permission (user granted before)
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        if (result.state === 'granted') {
+          // Permission already granted, start immediately
+          initTracking();
+        } else {
+          // Wait for user gesture before requesting
+          document.addEventListener('click', initTracking, { once: true });
+          document.addEventListener('touchstart', initTracking, { once: true });
+          document.addEventListener('keydown', initTracking, { once: true });
+        }
+      }).catch(() => {
+        // Permissions API not supported, wait for user gesture
+        document.addEventListener('click', initTracking, { once: true });
+        document.addEventListener('touchstart', initTracking, { once: true });
+        document.addEventListener('keydown', initTracking, { once: true });
+      });
+    } else {
+      // Permissions API not supported, wait for user gesture
+      document.addEventListener('click', initTracking, { once: true });
+      document.addEventListener('touchstart', initTracking, { once: true });
+      document.addEventListener('keydown', initTracking, { once: true });
+    }
+
     return () => {
-        if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
+      document.removeEventListener('click', initTracking);
+      document.removeEventListener('touchstart', initTracking);
+      document.removeEventListener('keydown', initTracking);
+      if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
     };
   }, []);
 

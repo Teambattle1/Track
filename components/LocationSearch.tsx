@@ -81,7 +81,10 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('[LocationSearch] Error loading saved locations:', error);
+          // Silently ignore if table doesn't exist (PGRST205)
+          if (error.code !== 'PGRST205') {
+            console.error('[LocationSearch] Error loading saved locations:', error);
+          }
           return;
         }
 

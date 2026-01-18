@@ -1,13 +1,37 @@
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap, useMapEvents, Polyline, Tooltip, Rectangle } from 'react-leaflet';
 import L from 'leaflet';
-import { GamePoint, Coordinate, GameMode, MapStyleId, Team, DangerZone, TeamStatus, GameRoute } from '../types';
+import { GamePoint, Coordinate, GameMode, MapStyleId, Team, DangerZone, TeamStatus, GameRoute, Playground } from '../types';
 import { getLeafletIcon } from '../utils/icons';
 import { Trash2, Crosshair, EyeOff, Image as ImageIcon, CheckCircle, HelpCircle, Zap, AlertTriangle, Lock, Users, Trophy, MessageSquare, MapPin } from 'lucide-react';
 import { useLocation } from '../contexts/LocationContext';
 import { isValidCoordinate } from '../utils/geo';
 import TeamHistoryOverlay from './TeamHistoryOverlay';
 import { isTaskVisibleByProximity } from '../utils/proximityTriggers';
+
+// Dynamic Circle that properly updates position when center changes
+// Uses key-based remounting to ensure position updates correctly
+const DynamicCircle: React.FC<{
+    center: [number, number];
+    radius: number;
+    pathOptions: L.PathOptions;
+    interactive?: boolean;
+    eventHandlers?: L.LeafletEventHandlerFnMap;
+}> = ({ center, radius, pathOptions, interactive = true, eventHandlers }) => {
+    // Use a key that changes when center changes to force remount
+    const positionKey = `${center[0].toFixed(6)}-${center[1].toFixed(6)}`;
+
+    return (
+        <Circle
+            key={positionKey}
+            center={center}
+            radius={radius}
+            pathOptions={pathOptions}
+            interactive={interactive}
+            eventHandlers={eventHandlers}
+        />
+    );
+};
 
 const UserIcon = L.divIcon({
   className: 'custom-user-icon',
@@ -59,6 +83,66 @@ const createTeammateIcon = (memberName: string) => {
         html: `<div style="width: 30px; height: 30px; background-color: #3b82f6; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">${memberName.substring(0, 1)}</div>`,
         iconSize: [30, 30],
         iconAnchor: [15, 15]
+    });
+};
+
+// Create icon for playground location markers - matches HUD/Drawer style
+const createPlaygroundIcon = (playground: Playground, isHovered: boolean = false) => {
+    const size = 50;
+    const ringStyle = isHovered
+        ? 'ring-4 ring-orange-500 ring-offset-2 ring-offset-transparent'
+        : '';
+    const hoverScale = isHovered ? 'transform: scale(1.1);' : '';
+
+    // SVG icons for default iconIds - simplified versions
+    const defaultIconSvgs: Record<string, string> = {
+        default: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="white"/><circle cx="12" cy="10" r="3" fill="#7c3aed"/>',
+        star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="white"/>',
+        flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="white"/><line x1="4" y1="22" x2="4" y2="15" stroke="white" stroke-width="2"/>',
+        trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 22l1-9h2l1 9M12 6V2" fill="none" stroke="white" stroke-width="2"/>',
+        camera: '<rect x="2" y="6" width="20" height="12" rx="2" fill="white"/><circle cx="12" cy="12" r="3" fill="#7c3aed"/>',
+        question: '<circle cx="12" cy="12" r="10" fill="white"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="#7c3aed" stroke-width="2" fill="none"/><circle cx="12" cy="17" r="1" fill="#7c3aed"/>',
+        skull: '<circle cx="9" cy="12" r="1" fill="#7c3aed"/><circle cx="15" cy="12" r="1" fill="#7c3aed"/><path d="M12 2a8 8 0 0 0-8 8c0 4.5 3.5 7.5 5 9h6c1.5-1.5 5-4.5 5-9a8 8 0 0 0-8-8z" fill="white"/>',
+        treasure: '<path d="M6 3h12l4 6-10 13L2 9z" fill="white"/>',
+        music: '<path d="M9 18V5l12-2v13" fill="none" stroke="white" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="white"/>',
+        nature: '<path d="M12 22c-3-2-5-5-5-8 0-4 2-7 5-9 3 2 5 5 5 9 0 3-2 6-5 8z" fill="white"/>',
+        world: '<circle cx="12" cy="12" r="10" fill="none" stroke="white" stroke-width="2"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="white" stroke-width="2"/>'
+    };
+
+    let iconContent: string;
+    if (playground.iconUrl) {
+        // Custom image icon
+        iconContent = `<img src="${playground.iconUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 24px;" alt="${playground.title}" />`;
+    } else {
+        // Default SVG icon with purple gradient background
+        const iconSvg = defaultIconSvgs[playground.iconId || 'default'] || defaultIconSvgs.default;
+        iconContent = `
+            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); border-radius: 24px; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: white;">
+                    ${iconSvg}
+                </svg>
+            </div>
+        `;
+    }
+
+    const html = `
+        <div style="width: ${size}px; height: ${size}px; ${hoverScale} transition: transform 0.2s; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">
+            <div style="width: 100%; height: 100%; border-radius: 24px; border: 3px solid white; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                ${iconContent}
+            </div>
+            ${isHovered ? '<div style="position: absolute; inset: -4px; border-radius: 28px; border: 3px solid #f97316; pointer-events: none;"></div>' : ''}
+        </div>
+        <div style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis; text-align: center;">
+            ${playground.title}
+        </div>
+    `;
+
+    return L.divIcon({
+        className: 'custom-playground-icon',
+        html: html,
+        iconSize: [size, size + 24], // Extra space for label
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -size / 2]
     });
 };
 
@@ -126,6 +210,10 @@ interface GameMapProps {
   showTaskLayer?: boolean; // NEW: Toggle task pins visibility
   showLiveLayer?: boolean; // NEW: Toggle live team positions visibility
   isDevicePreview?: boolean; // NEW: Hide certain UI elements (like trash bin) in device preview mode
+  // Playground Location Markers
+  playgrounds?: Playground[];
+  hoveredPlaygroundId?: string | null;
+  onOpenPlayground?: (id: string) => void;
 }
 
 // Internal component to handle user location updates without re-rendering the whole map
@@ -195,19 +283,38 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
 
                 let latLngs: L.LatLngExpression[] = [];
                 if (pts && pts.length > 0 && 'location' in pts[0]) {
-                     const validPts = (pts as GamePoint[]).filter(p => isValidCoordinate(p.location));
+                     // Filter GamePoints: must have valid location (not playground-only, not NaN)
+                     const validPts = (pts as GamePoint[]).filter(p => {
+                         if (!p.location) return false;
+                         if (!Number.isFinite(p.location.lat) || !Number.isFinite(p.location.lng)) return false;
+                         // Check for reasonable lat/lng ranges
+                         if (Math.abs(p.location.lat) > 90 || Math.abs(p.location.lng) > 180) return false;
+                         return true;
+                     });
                      console.log('[GameMap] Filtered to', validPts.length, 'valid GamePoints from', pts.length);
                      latLngs = validPts.map(p => [p.location.lat, p.location.lng]);
                 } else if (pts && pts.length > 0) {
-                     const validCoords = (pts as Coordinate[]).filter(c => isValidCoordinate(c));
+                     const validCoords = (pts as Coordinate[]).filter(c => {
+                         if (!c) return false;
+                         if (!Number.isFinite(c.lat) || !Number.isFinite(c.lng)) return false;
+                         if (Math.abs(c.lat) > 90 || Math.abs(c.lng) > 180) return false;
+                         return true;
+                     });
                      console.log('[GameMap] Filtered to', validCoords.length, 'valid Coordinates from', pts.length);
                      latLngs = validCoords.map(c => [c.lat, c.lng]);
                 }
 
-                console.log('[GameMap] latLngs to fit:', latLngs);
+                console.log('[GameMap] latLngs to fit:', latLngs.slice(0, 5), latLngs.length > 5 ? `... and ${latLngs.length - 5} more` : '');
 
                 if (latLngs.length === 0) {
                     console.warn('[GameMap] fitBounds: No valid coordinates to fit');
+                    return;
+                }
+
+                // For single point, just center on it with zoom 16
+                if (latLngs.length === 1) {
+                    console.log('[GameMap] Single point, centering with zoom 16');
+                    map.flyTo(latLngs[0], 16, { duration: 1 });
                     return;
                 }
 
@@ -215,9 +322,15 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
                 console.log('[GameMap] Calculated bounds:', bounds.toBBoxString());
 
                 if (bounds.isValid()) {
-                    console.log('[GameMap] Fitting bounds to', latLngs.length, 'points with maxZoom 17');
-                    // Use reasonable maxZoom to prevent over-zooming when points are close together
-                    map.fitBounds(bounds, { padding: [50, 50], animate: true, maxZoom: 17 });
+                    // Calculate optimal zoom - fit all points with minimal padding
+                    // Use maxZoom 18 to zoom in as much as possible while showing all points
+                    console.log('[GameMap] Fitting bounds to', latLngs.length, 'points');
+                    map.fitBounds(bounds, {
+                        padding: [40, 40],
+                        animate: true,
+                        maxZoom: 18, // Allow closer zoom
+                        duration: 1
+                    });
                 } else {
                     console.warn('[GameMap] Invalid bounds calculated');
                 }
@@ -326,6 +439,12 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
 
+    // Track position during drag for smooth circle updates
+    const [dragPosition, setDragPosition] = useState<[number, number] | null>(null);
+
+    // Use drag position during drag, otherwise use point.location
+    const circlePosition: [number, number] = dragPosition || [point.location?.lat || 0, point.location?.lng || 0];
+
     // Draggable in Edit & Instructor Mode (only when parent provides onMove handler)
     // CRITICAL: Disable dragging in relocate mode and snap mode, but ALLOW in measure mode
     const draggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !!onMove && !isRelocating && !snapToRoadMode;
@@ -377,11 +496,30 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                     console.error('[MapTaskMarker] Error handling dragstart:', error);
                 }
             },
+            drag(e: any) {
+                // Update circle position during drag for smooth visual feedback
+                try {
+                    if (e?.target?.getLatLng) {
+                        const latlng = e.target.getLatLng();
+                        if (latlng) {
+                            setDragPosition([latlng.lat, latlng.lng]);
+                        }
+                    }
+                } catch (error) {
+                    console.error('[MapTaskMarker] Error handling drag:', error);
+                }
+            },
             dragend(e: any) {
                 try {
+                    console.log('[MapTaskMarker] dragend fired for point:', point.id);
+                    // Reset drag position - will use props position again
+                    setDragPosition(null);
+
                     const shouldDelete = onDragEnd ? onDragEnd(point.id, e) : false;
+                    console.log('[MapTaskMarker] shouldDelete:', shouldDelete);
                     // If onDragEnd returns true, it means delete - don't move
                     if (shouldDelete === true) {
+                        console.log('[MapTaskMarker] Resetting position - delete detected');
                         // Reset marker position to original
                         if (e?.target?.setLatLng && point?.location) {
                             e.target.setLatLng([point.location.lat, point.location.lng]);
@@ -391,16 +529,19 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
                     // Otherwise move the marker
                     if (onMove && e?.target?.getLatLng) {
                         const latlng = e.target.getLatLng();
+                        console.log('[MapTaskMarker] Moving point to:', latlng);
                         if (latlng) {
                             onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
                         }
+                    } else {
+                        console.warn('[MapTaskMarker] No onMove handler or getLatLng failed', { onMove: !!onMove, hasGetLatLng: !!e?.target?.getLatLng });
                     }
                 } catch (error) {
                     console.error('[MapTaskMarker] Error handling dragend on iPad/mobile:', error);
                 }
             },
         }),
-        [point, onClick, onMove, onDragStart, onDragEnd, onHover, isMeasuring, isRelocating, mode]
+        [point, onClick, onMove, onDragStart, onDragEnd, onHover, isMeasuring, isRelocating, mode, setDragPosition]
     );
 
     // Determine if completion badge should be shown
@@ -444,8 +585,8 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
 
             {/* Relocate Selection Glow - Pulsing circle around selected tasks */}
             {isRelocateSelected && (
-                <Circle
-                    center={[point.location.lat, point.location.lng]}
+                <DynamicCircle
+                    center={circlePosition}
                     radius={30}
                     pathOptions={{
                         color: '#f97316',
@@ -460,8 +601,8 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
 
             {/* Snap to Road Selection Glow - Cyan pulsing circle around selected tasks */}
             {isSnapSelected && snapToRoadMode && (
-                <Circle
-                    center={[point.location.lat, point.location.lng]}
+                <DynamicCircle
+                    center={circlePosition}
                     radius={30}
                     pathOptions={{
                         color: '#06b6d4',
@@ -476,8 +617,8 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
 
             {/* Radius Circle - Enhanced when hovered from list */}
             {(mode === GameMode.EDIT || isUnlocked) && (
-                <Circle
-                    center={[point.location.lat, point.location.lng]}
+                <DynamicCircle
+                    center={circlePosition}
                     radius={point.radiusMeters}
                     pathOptions={{
                         color: isHovered ? '#f97316' : (isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6'))),
@@ -521,8 +662,8 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
 
             {/* Extra glow ring when hovered */}
             {isHovered && (
-                <Circle
-                    center={[point.location.lat, point.location.lng]}
+                <DynamicCircle
+                    center={circlePosition}
                     radius={point.radiusMeters * 1.5}
                     pathOptions={{
                         color: '#f97316',
@@ -595,7 +736,7 @@ const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }:
     return (
         <React.Fragment>
             {/* Danger Zone Circle with slow pulsating glow */}
-            <Circle
+            <DynamicCircle
                 center={[zone.location.lat, zone.location.lng]}
                 radius={zone.radius}
                 pathOptions={{
@@ -606,7 +747,6 @@ const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }:
                     dashArray: '10, 10'
                 }}
                 interactive={false}
-                className="danger-zone-glow"
             />
 
             {/* CSS for slow pulsating glow animation - visible in all modes */}
@@ -720,7 +860,10 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
     showZoneLayer = true, // Toggle danger zones visibility
     showTaskLayer = true, // Toggle task pins visibility
     showLiveLayer = true, // Toggle live team positions visibility
-    isDevicePreview = false // Hide certain UI elements in device preview mode
+    isDevicePreview = false, // Hide certain UI elements in device preview mode
+    playgrounds = [], // Playgrounds with locations to show on map
+    hoveredPlaygroundId = null, // Playground being hovered in drawer
+    onOpenPlayground // Callback when playground marker is clicked
 }, ref) => {
   // Get user location from context for proximity filtering
   const { userLocation: ctxLocation } = useLocation();
@@ -941,6 +1084,26 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                     mode={mode}
                     isHovered={hoveredDangerZoneId === zone.id}
                 />
+            ))}
+
+            {/* Playground Location Markers - Show playzones with locations on the map */}
+            {playgrounds.filter(pg => pg.location && isValidCoordinate(pg.location)).map(pg => (
+                <Marker
+                    key={`playground-${pg.id}`}
+                    position={[pg.location!.lat, pg.location!.lng]}
+                    icon={createPlaygroundIcon(pg, hoveredPlaygroundId === pg.id)}
+                    zIndexOffset={800}
+                    eventHandlers={{
+                        click: () => onOpenPlayground?.(pg.id)
+                    }}
+                >
+                    <Tooltip direction="top" offset={[0, -30]} opacity={1}>
+                        <div className="text-center">
+                            <div className="font-black text-xs uppercase">{pg.title}</div>
+                            <div className="text-[9px] text-gray-500">Click to open playzone</div>
+                        </div>
+                    </Tooltip>
+                </Marker>
             ))}
 
             {/* Relocate Scope Center */}

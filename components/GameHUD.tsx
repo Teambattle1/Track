@@ -259,11 +259,18 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     const [visibleToolbars, setVisibleToolbars] = useState<Record<string, boolean>>({
         mapmode: false,
         layers: false,
-        location: false,
+        location: mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT, // Show location toolbar by default in INSTRUCTOR/EDIT mode
         pins: false,
         show: false,
         tools: false,
     });
+
+    // Auto-show location toolbar when entering INSTRUCTOR or EDIT mode
+    useEffect(() => {
+        if (mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT) {
+            setVisibleToolbars(prev => ({ ...prev, location: true }));
+        }
+    }, [mode]);
 
     // Toolbar Position Persistence
     const saveDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);

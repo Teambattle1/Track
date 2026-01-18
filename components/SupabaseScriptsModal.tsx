@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Copy, Check, Database, ChevronRight, ChevronDown, AlertTriangle, CheckCircle, XCircle, RefreshCw, ExternalLink, Terminal, Settings } from 'lucide-react';
+import { X, Copy, Check, Database, ChevronRight, ChevronDown, AlertTriangle, CheckCircle, XCircle, RefreshCw, ExternalLink, Terminal, Settings, Trash2 } from 'lucide-react';
 import { testDatabaseConnection } from '../services/db';
+import { Game } from '../types';
 
 interface SupabaseScriptsModalProps {
   onClose: () => void;
+  games?: Game[];
+  onUpdateGames?: (games: Game[]) => void;
 }
 
 interface SQLScript {
@@ -344,8 +347,9 @@ COMMENT ON COLUMN game_location_history.timestamp IS 'Unix timestamp of when thi
 
 type ViewMode = 'scripts' | 'diagnostics' | 'config';
 
-const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) => {
+const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose, games = [], onUpdateGames }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('diagnostics');
+  const [removingOrphans, setRemovingOrphans] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedScript, setSelectedScript] = useState<SQLScript | null>(SQL_SCRIPTS[0]);
   const codeRef = React.useRef<HTMLElement>(null);
@@ -381,6 +385,73 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
     runTest();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Extract project ref from Supabase URL for dashboard links
+  const projectRef = useMemo(() => {
+    try {
+      const match = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/);
+      return match ? match[1] : 'yktaxljydisfjyqhbnja';
+    } catch {
+      return 'yktaxljydisfjyqhbnja';
+    }
+  }, [supabaseUrl]);
+
+  // Build dynamic dashboard URLs
+  const dashboardUrl = `https://supabase.com/dashboard/project/${projectRef}`;
+  const sqlEditorUrl = `https://supabase.com/dashboard/project/${projectRef}/sql/new`;
+
+  // Calculate orphaned points info (points with playgroundId that doesn't exist)
+  const orphanedPointsInfo = useMemo(() => {
+    const orphanedByGame: { gameId: string; gameName: string; count: number; pointIds: string[] }[] = [];
+    let totalOrphaned = 0;
+
+    games.forEach(game => {
+      const playgroundIds = new Set((game.playgrounds || []).map(pg => pg.id));
+      const orphanedPoints = game.points.filter(point =>
+        point.playgroundId && !playgroundIds.has(point.playgroundId)
+      );
+
+      if (orphanedPoints.length > 0) {
+        orphanedByGame.push({
+          gameId: game.id,
+          gameName: game.name,
+          count: orphanedPoints.length,
+          pointIds: orphanedPoints.map(p => p.id)
+        });
+        totalOrphaned += orphanedPoints.length;
+      }
+    });
+
+    return { orphanedByGame, totalOrphaned };
+  }, [games]);
+
+  // Remove orphaned points from all games
+  const handleRemoveOrphanedPoints = async () => {
+    if (!onUpdateGames) return;
+
+    setRemovingOrphans(true);
+    try {
+      const updatedGames = games.map(game => {
+        const playgroundIds = new Set((game.playgrounds || []).map(pg => pg.id));
+        const filteredPoints = game.points.filter(point =>
+          !point.playgroundId || playgroundIds.has(point.playgroundId)
+        );
+
+        if (filteredPoints.length !== game.points.length) {
+          return { ...game, points: filteredPoints };
+        }
+        return game;
+      });
+
+      onUpdateGames(updatedGames);
+      alert(`Successfully removed ${orphanedPointsInfo.totalOrphaned} orphaned points!`);
+    } catch (error) {
+      console.error('Error removing orphaned points:', error);
+      alert('Failed to remove orphaned points');
+    } finally {
+      setRemovingOrphans(false);
+    }
+  };
 
   const runTest = async () => {
     setTesting(true);
@@ -628,7 +699,7 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                 <h3 className="text-sm font-black text-slate-400 uppercase mb-3">Quick Actions</h3>
                 <div className="space-y-3">
                   <button
-                    onClick={() => window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja', '_blank')}
+                    onClick={() => window.open(dashboardUrl, '_blank')}
                     className="w-full py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-bold uppercase text-xs flex items-center justify-center gap-2 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -636,7 +707,7 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                   </button>
 
                   <button
-                    onClick={() => window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/5f49e3d9-339b-4fd1-ac3b-8f368f6d6eb9', '_blank')}
+                    onClick={() => window.open(sqlEditorUrl, '_blank')}
                     className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-bold uppercase text-xs flex items-center justify-center gap-2 transition-colors"
                   >
                     <Terminal className="w-4 h-4" />
@@ -650,17 +721,59 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                     View SQL Scripts & Migrations
                   </button>
 
-                  <button
-                    onClick={() => {
-                      if (confirm('This will clear all local data and use demo mode. Continue?')) {
-                        localStorage.clear();
-                        window.location.reload();
-                      }
-                    }}
-                    className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-bold uppercase text-xs transition-colors"
-                  >
-                    Reset to Demo Mode
-                  </button>
+                </div>
+              </div>
+
+              {/* Database Tools */}
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <h3 className="text-sm font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+                  <Database className="w-4 h-4" />
+                  Database Tools
+                </h3>
+
+                {/* Orphaned Points */}
+                <div className="space-y-3">
+                  <div className={`p-4 rounded-lg ${orphanedPointsInfo.totalOrphaned > 0 ? 'bg-orange-900/30 border border-orange-600' : 'bg-green-900/30 border border-green-600'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      {orphanedPointsInfo.totalOrphaned > 0 ? (
+                        <>
+                          <AlertTriangle className="w-5 h-5 text-orange-400" />
+                          <span className="text-sm font-bold text-orange-400">
+                            {orphanedPointsInfo.totalOrphaned} ORPHANED POINTS FOUND
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 text-green-400" />
+                          <span className="text-sm font-bold text-green-400">NO ORPHANED POINTS</span>
+                        </>
+                      )}
+                    </div>
+
+                    {orphanedPointsInfo.totalOrphaned > 0 && (
+                      <>
+                        <p className="text-xs text-slate-400 mb-3">
+                          Points with deleted playzone references:
+                        </p>
+                        <div className="space-y-1 mb-3 max-h-32 overflow-y-auto">
+                          {orphanedPointsInfo.orphanedByGame.map(info => (
+                            <div key={info.gameId} className="text-xs text-slate-300 flex justify-between">
+                              <span className="truncate">{info.gameName}</span>
+                              <span className="text-orange-400 font-bold">{info.count} points</span>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          onClick={handleRemoveOrphanedPoints}
+                          disabled={removingOrphans || !onUpdateGames}
+                          className="w-full py-2 bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-white rounded-lg font-bold uppercase text-xs flex items-center justify-center gap-2 transition-colors"
+                        >
+                          <Trash2 className={`w-4 h-4 ${removingOrphans ? 'animate-pulse' : ''}`} />
+                          {removingOrphans ? 'REMOVING...' : 'REMOVE ORPHANED POINTS'}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -774,7 +887,7 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                             )}
                           </button>
                           <button
-                            onClick={() => window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/5f49e3d9-339b-4fd1-ac3b-8f368f6d6eb9', '_blank')}
+                            onClick={() => window.open(sqlEditorUrl, '_blank')}
                             className="px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white flex items-center gap-2"
                             title="Open Supabase SQL Editor"
                           >
@@ -866,7 +979,7 @@ const SupabaseScriptsModal: React.FC<SupabaseScriptsModalProps> = ({ onClose }) 
                           onClick={() => {
                             handleCopy(selectedScript);
                             setTimeout(() => {
-                              window.open('https://supabase.com/dashboard/project/yktaxljydisfjyqhbnja/sql/5f49e3d9-339b-4fd1-ac3b-8f368f6d6eb9', '_blank');
+                              window.open(sqlEditorUrl, '_blank');
                             }, 100);
                           }}
                           className="w-full mb-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-black uppercase text-xs flex items-center justify-center gap-2 transition-colors"

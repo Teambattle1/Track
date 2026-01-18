@@ -2925,6 +2925,7 @@ const GameApp: React.FC = () => {
                     });
                 }}
                 onOpenWizard={() => setShowGameWizard(true)}
+                onUpdateGames={setGames}
             />
             {showDatabaseTools && (
                 <Suspense fallback={<LoadingFallback />}>
@@ -2987,6 +2988,14 @@ const GameApp: React.FC = () => {
                 <Suspense fallback={<LoadingFallback />}>
                 <SupabaseToolsModal
                     onClose={() => setShowSupabaseDiagnostic(false)}
+                    games={games}
+                    onUpdateGames={async (updatedGames) => {
+                        // Update each game in the database
+                        for (const game of updatedGames) {
+                            await db.saveGame(game);
+                        }
+                        setGames(updatedGames);
+                    }}
                 />
                 </Suspense>
             )}
@@ -3283,6 +3292,11 @@ const GameApp: React.FC = () => {
                 showTaskLayer={showTaskLayer}
                             showLiveLayer={showLiveLayer}
                             isDevicePreview={true}
+                            playgrounds={activeGame?.playgrounds || []}
+                            hoveredPlaygroundId={hoveredPlaygroundId}
+                            onOpenPlayground={(id) => {
+                                setViewingPlaygroundId(id);
+                            }}
                         />
                     </MapDeviceFrame>
                 </div>
@@ -3375,6 +3389,11 @@ const GameApp: React.FC = () => {
                     showZoneLayer={showZoneLayer}
                     showTaskLayer={showTaskLayer}
                     showLiveLayer={showLiveLayer}
+                    playgrounds={activeGame?.playgrounds || []}
+                    hoveredPlaygroundId={hoveredPlaygroundId}
+                    onOpenPlayground={(id) => {
+                        setViewingPlaygroundId(id);
+                    }}
                 />
             );
         })()}
@@ -3547,6 +3566,11 @@ const GameApp: React.FC = () => {
                             showTaskLayer={showTaskLayer}
                             showLiveLayer={showLiveLayer}
                             isDevicePreview={true}
+                            playgrounds={activeGame?.playgrounds || []}
+                            hoveredPlaygroundId={hoveredPlaygroundId}
+                            onOpenPlayground={(id) => {
+                                setViewingPlaygroundId(id);
+                            }}
                             />
 
                             {/* Playground Buttons */}

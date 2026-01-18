@@ -71,7 +71,7 @@ const isValidUUID = (str: string): boolean => {
 
 // Configuration for large table fetches
 const CHUNK_SIZE = 25; // Fetch 25 rows at a time (reduced from 50 to prevent timeouts on cold starts)
-const LIBRARY_CHUNK_SIZE = 3; // Very small chunks for library - large data objects cause timeouts
+const LIBRARY_CHUNK_SIZE = 50; // Larger chunks for library to reduce request spam
 const TAGS_CHUNK_SIZE = 15; // Smaller chunks for tag fetching (large data objects)
 const FETCH_TIMEOUT_MS = 40000; // 40 second timeout per chunk (increased from 20s for cold starts/slow servers)
 const TAGS_FETCH_TIMEOUT_MS = 8000; // 8 second timeout for tag fetches (increased from 5s)
@@ -184,9 +184,6 @@ const fetchInChunks = async <T>(
                 hasMore = false;
             } else {
                 results.push(...data);
-                if (context.includes('fetchLibrary')) {
-                    console.debug(`[DB Service] Fetched ${data.length} items for ${context} at offset ${offset}`);
-                }
                 if (data.length < chunkSize) {
                     hasMore = false;
                 } else {

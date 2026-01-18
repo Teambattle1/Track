@@ -91,9 +91,10 @@ export const getLeafletIcon = (
       html += svgContent;
   }
 
-  // Score Badge - Below the icon with proper spacing
+  // Score Badge - stored for later, will be combined with task ID
+  let scoreBadgeHtml = '';
   if (score !== undefined) {
-      html += `<div style="position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background-color: #3b82f6; color: white; font-size: 10px; font-weight: 900; padding: 3px 7px; border-radius: 6px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 21; white-space: nowrap;">${score}</div>`;
+      scoreBadgeHtml = `<div style="background-color: #3b82f6; color: white; font-size: 10px; font-weight: 900; padding: 3px 7px; border-radius: 6px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">${score}</div>`;
   }
 
   // Hidden Badge - Top Left (Purple Eye)
@@ -122,19 +123,31 @@ export const getLeafletIcon = (
       const taskId = parts[0]; // e.g., "001"
       const taskTitle = parts.slice(1).join(' - '); // e.g., "Sillebroen Shopping"
 
-      // Task ID - Green circular badge positioned below score badge with proper spacing
-      html += `<div style="position: absolute; bottom: -46px; left: 50%; transform: translateX(-50%); background-color: #16a34a; color: white; font-size: 11px; font-weight: 900; width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; z-index: 998; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none; flex-shrink: 0;">${taskId}</div>`;
+      // Task ID badge HTML
+      const taskIdBadgeHtml = `<div style="background-color: #16a34a; color: white; font-size: 11px; font-weight: 900; width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); flex-shrink: 0;">${taskId}</div>`;
+
+      // Combined badges container - side by side with score on left, ID on right
+      if (scoreBadgeHtml) {
+          html += `<div style="position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; z-index: 998; pointer-events: none;">${scoreBadgeHtml}${taskIdBadgeHtml}</div>`;
+      } else {
+          // No score, just show task ID centered
+          html += `<div style="position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); z-index: 998; pointer-events: none;">${taskIdBadgeHtml}</div>`;
+      }
 
       // Task Title - If present, display above the icon with good spacing
       if (taskTitle) {
-          const maxWidth = taskTitle.length > 15 ? '90px' : 'auto';
+          const maxWidth = taskTitle.length > 15 ? '110px' : 'auto';
           const lineHeight = taskTitle.length > 15 ? '1.2' : '1';
-          const topOffset = taskTitle.length > 15 ? '-44px' : '-32px';
-          const paddingVertical = taskTitle.length > 15 ? '3px' : '2px';
+          const topOffset = taskTitle.length > 15 ? '-48px' : '-36px';
+          const paddingVertical = taskTitle.length > 15 ? '4px' : '3px';
           const whiteSpace = taskTitle.length > 15 ? 'white-space: normal;' : 'white-space: nowrap;';
+          const fontSize = '10px'; // Slightly larger font
 
-          html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: rgba(15, 23, 42, 0.95); color: white; font-size: 9px; font-weight: 900; padding: ${paddingVertical} 6px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${whiteSpace} pointer-events: none; overflow-wrap: break-word; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">${taskTitle}</div>`;
+          html += `<div style="position: absolute; top: ${topOffset}; left: 50%; transform: translateX(-50%); background-color: rgba(15, 23, 42, 0.95); color: white; font-size: ${fontSize}; font-weight: 900; padding: ${paddingVertical} 8px; border-radius: 8px; border: 1px solid white; z-index: 999; max-width: ${maxWidth}; line-height: ${lineHeight}; text-align: center; ${whiteSpace} pointer-events: none; overflow-wrap: break-word; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">${taskTitle}</div>`;
       }
+  } else if (scoreBadgeHtml) {
+      // No label but has score - show score badge alone
+      html += `<div style="position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); z-index: 21;">${scoreBadgeHtml}</div>`;
   }
 
   // Center dot - Mark the exact anchor point (bottom center of pin)

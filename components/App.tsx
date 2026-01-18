@@ -1770,9 +1770,14 @@ const GameApp: React.FC = () => {
                     if (point) setActiveTask(point);
                 }}
                 onPointMove={async (id, loc) => {
-                    if (!currentGameObj) return;
+                    console.log('[App] onPointMove called:', { id, loc, hasCurrentGame: !!currentGameObj, mode });
+                    if (!currentGameObj) {
+                        console.warn('[App] onPointMove: No currentGameObj');
+                        return;
+                    }
 
                     if (mode === GameMode.SIMULATION) {
+                        console.log('[App] Simulation mode - updating local state');
                         const updatedPoints = currentGameObj.points.map(p => p.id === id ? { ...p, location: loc } : p);
                         const updatedPlaygrounds = (currentGameObj.playgrounds || []).map(pg => pg.id === id ? { ...pg, location: loc } : pg);
                         const updatedZones = (currentGameObj.dangerZones || []).map(z => z.id === id ? { ...z, location: loc } : z);
@@ -1780,15 +1785,21 @@ const GameApp: React.FC = () => {
                         return;
                     }
 
+                    console.log('[App] Saving to database...');
                     const plainLoc = { lat: loc.lat, lng: loc.lng };
                     const updated = await db.updateGameItemLocation(currentGameObj.id, id, plainLoc, {
                         user: authUser?.name,
                         action: 'Moved Item'
                     });
-                    if (!updated) return;
+                    console.log('[App] Database update result:', !!updated);
+                    if (!updated) {
+                        console.error('[App] Failed to save point location');
+                        return;
+                    }
 
                     setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
                     setActiveGame(updated);
+                    console.log('[App] State updated with new location');
                 }}
                 accuracy={gpsAccuracy}
                 isRelocating={isRelocating}
