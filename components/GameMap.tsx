@@ -132,7 +132,7 @@ const createPlaygroundIcon = (playground: Playground, isHovered: boolean = false
             </div>
             ${isHovered ? '<div style="position: absolute; inset: -4px; border-radius: 28px; border: 3px solid #f97316; pointer-events: none;"></div>' : ''}
         </div>
-        <div style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis; text-align: center;">
+        <div style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis; text-align: center; text-transform: uppercase;">
             ${playground.title}
         </div>
     `;
@@ -283,12 +283,14 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
 
                 let latLngs: L.LatLngExpression[] = [];
                 if (pts && pts.length > 0 && 'location' in pts[0]) {
-                     // Filter GamePoints: must have valid location (not playground-only, not NaN)
+                     // Filter GamePoints: must have valid location (not playground-only, not NaN, not (0,0))
                      const validPts = (pts as GamePoint[]).filter(p => {
                          if (!p.location) return false;
                          if (!Number.isFinite(p.location.lat) || !Number.isFinite(p.location.lng)) return false;
                          // Check for reasonable lat/lng ranges
                          if (Math.abs(p.location.lat) > 90 || Math.abs(p.location.lng) > 180) return false;
+                         // Filter out (0,0) which is default/invalid data
+                         if (p.location.lat === 0 && p.location.lng === 0) return false;
                          return true;
                      });
                      console.log('[GameMap] Filtered to', validPts.length, 'valid GamePoints from', pts.length);
@@ -298,6 +300,8 @@ const MapController = ({ handleRef }: { handleRef: React.RefObject<any> }) => {
                          if (!c) return false;
                          if (!Number.isFinite(c.lat) || !Number.isFinite(c.lng)) return false;
                          if (Math.abs(c.lat) > 90 || Math.abs(c.lng) > 180) return false;
+                         // Filter out (0,0) which is default/invalid data
+                         if (c.lat === 0 && c.lng === 0) return false;
                          return true;
                      });
                      console.log('[GameMap] Filtered to', validCoords.length, 'valid Coordinates from', pts.length);
@@ -434,122 +438,21 @@ const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.
   );
 });
 
-// Task Marker Component
-const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isSnapSelected, isHovered, isMeasuring, isRelocating, snapToRoadMode, onClick, onAreaColorClick, onMove, onDelete, onDragStart, onDragEnd, onHover }: any) => {
+// Task Marker Component - Using ref pattern for reliable dragging (react-leaflet recommended approach)
+const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSnapSelected, isHovered, isMeasuring, isRelocating, snapToRoadMode, onClick, onAreaColorClick, onMove, onDelete, onDragStart, onDragEnd, onHover }: any) => {
+    const markerRef = React.useRef<any>(null);
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
 
-    // Track position during drag for smooth circle updates
-    const [dragPosition, setDragPosition] = useState<[number, number] | null>(null);
+    // Position for marker and circles
+    const markerPosition: [number, number] = [point.location?.lat || 0, point.location?.lng || 0];
 
-    // Use drag position during drag, otherwise use point.location
-    const circlePosition: [number, number] = dragPosition || [point.location?.lat || 0, point.location?.lng || 0];
-
-    // Draggable in Edit & Instructor Mode (only when parent provides onMove handler)
-    // CRITICAL: Disable dragging in relocate mode and snap mode, but ALLOW in measure mode
+    // Draggable in Edit & Instructor Mode
     const draggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !!onMove && !isRelocating && !snapToRoadMode;
-
-    const eventHandlers = React.useMemo(
-        () => ({
-            click: (e: any) => {
-                try {
-                    // CRITICAL: When tools are active, always call onClick
-                    // The onClick handler (handlePointClick in App.tsx) will handle the tool logic
-                    console.log('[MapTaskMarker] Click event:', {
-                        pointId: point.id,
-                        isMeasuring,
-                        isRelocating,
-                        mode
-                    });
-                    if (onClick && point) {
-                        onClick(point);
-                    }
-                } catch (error) {
-                    console.error('[MapTaskMarker] Error handling click on iPad/mobile:', error, point);
-                }
-            },
-            mouseover: () => {
-                try {
-                    if (onHover && point) onHover(point);
-                } catch (error) {
-                    console.error('[MapTaskMarker] Error handling mouseover:', error);
-                }
-            },
-            mouseout: () => {
-                try {
-                    if (onHover) onHover(null);
-                } catch (error) {
-                    console.error('[MapTaskMarker] Error handling mouseout:', error);
-                }
-            },
-            dragstart(e: any) {
-                try {
-                    // Prevent drag when in relocate mode (measure mode is OK)
-                    if (isRelocating) {
-                        console.log('[MapTaskMarker] Drag prevented - relocate mode active');
-                        e.originalEvent?.preventDefault();
-                        e.originalEvent?.stopPropagation();
-                        return;
-                    }
-                    if (onDragStart) onDragStart(point.id);
-                } catch (error) {
-                    console.error('[MapTaskMarker] Error handling dragstart:', error);
-                }
-            },
-            drag(e: any) {
-                // Update circle position during drag for smooth visual feedback
-                try {
-                    if (e?.target?.getLatLng) {
-                        const latlng = e.target.getLatLng();
-                        if (latlng) {
-                            setDragPosition([latlng.lat, latlng.lng]);
-                        }
-                    }
-                } catch (error) {
-                    console.error('[MapTaskMarker] Error handling drag:', error);
-                }
-            },
-            dragend(e: any) {
-                try {
-                    console.log('[MapTaskMarker] dragend fired for point:', point.id);
-                    // Reset drag position - will use props position again
-                    setDragPosition(null);
-
-                    const shouldDelete = onDragEnd ? onDragEnd(point.id, e) : false;
-                    console.log('[MapTaskMarker] shouldDelete:', shouldDelete);
-                    // If onDragEnd returns true, it means delete - don't move
-                    if (shouldDelete === true) {
-                        console.log('[MapTaskMarker] Resetting position - delete detected');
-                        // Reset marker position to original
-                        if (e?.target?.setLatLng && point?.location) {
-                            e.target.setLatLng([point.location.lat, point.location.lng]);
-                        }
-                        return;
-                    }
-                    // Otherwise move the marker
-                    if (onMove && e?.target?.getLatLng) {
-                        const latlng = e.target.getLatLng();
-                        console.log('[MapTaskMarker] Moving point to:', latlng);
-                        if (latlng) {
-                            onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
-                        }
-                    } else {
-                        console.warn('[MapTaskMarker] No onMove handler or getLatLng failed', { onMove: !!onMove, hasGetLatLng: !!e?.target?.getLatLng });
-                    }
-                } catch (error) {
-                    console.error('[MapTaskMarker] Error handling dragend on iPad/mobile:', error);
-                }
-            },
-        }),
-        [point, onClick, onMove, onDragStart, onDragEnd, onHover, isMeasuring, isRelocating, mode, setDragPosition]
-    );
 
     // Determine if completion badge should be shown
     const shouldShowBadge = point.showBadgeOnGrayedTask && isCompleted &&
                             (point.keepOnScreenOnCorrect || point.keepOnScreenOnIncorrect);
-
-    // Assume correct answer if keepOnScreenOnCorrect is enabled, incorrect if keepOnScreenOnIncorrect
-    // In real gameplay, this would be determined by team-specific completion data
     const wasCorrect = point.keepOnScreenOnCorrect ? true : false;
 
     const icon = getLeafletIcon(
@@ -558,27 +461,61 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
         isCompleted,
         label,
         (point.logic?.onOpen?.length || point.logic?.onCorrect?.length || point.logic?.onIncorrect?.length) && mode === GameMode.EDIT,
-        point.areaColor, // New: Override color if zone color set
+        point.areaColor,
         mode === GameMode.EDIT && point.isHiddenBeforeScan,
         showScore ? point.points : undefined,
         point.iconUrl,
-        false, // isPlaygroundActivator
+        false,
         shouldShowBadge,
         wasCorrect
     );
 
-    // Only render markers for points with valid map locations (not playground-only points)
+    // Only render markers for points with valid map locations
     if (!point.location || !Number.isFinite(point.location.lat) || !Number.isFinite(point.location.lng)) {
         return null;
     }
 
+    // Event handlers using the ref pattern
+    const handleDragEnd = React.useCallback(() => {
+        const marker = markerRef.current;
+        if (!marker) return;
+
+        const latlng = marker.getLatLng();
+        if (!latlng) return;
+
+        // Check trash first
+        const shouldDelete = onDragEnd ? onDragEnd(point.id, { target: marker }) : false;
+        if (shouldDelete === true) {
+            // Reset to original position if deleted
+            marker.setLatLng(markerPosition);
+            return;
+        }
+
+        // Update state with new position
+        if (onMove) {
+            onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
+        }
+    }, [point.id, onMove, onDragEnd, markerPosition]);
+
+    const handleDragStart = React.useCallback(() => {
+        if (isRelocating) return;
+        if (onDragStart) onDragStart(point.id);
+    }, [point.id, onDragStart, isRelocating]);
+
     return (
         <React.Fragment>
             <Marker
-                position={[point.location.lat, point.location.lng]}
+                ref={markerRef}
+                position={markerPosition}
                 icon={icon}
-                eventHandlers={eventHandlers}
                 draggable={draggable}
+                eventHandlers={{
+                    click: () => onClick && onClick(point),
+                    mouseover: () => onHover && onHover(point),
+                    mouseout: () => onHover && onHover(null),
+                    dragstart: handleDragStart,
+                    dragend: handleDragEnd
+                }}
                 zIndexOffset={isCompleted ? 0 : 100}
             >
             </Marker>
@@ -586,7 +523,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
             {/* Relocate Selection Glow - Pulsing circle around selected tasks */}
             {isRelocateSelected && (
                 <DynamicCircle
-                    center={circlePosition}
+                    center={markerPosition}
                     radius={30}
                     pathOptions={{
                         color: '#f97316',
@@ -602,7 +539,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
             {/* Snap to Road Selection Glow - Cyan pulsing circle around selected tasks */}
             {isSnapSelected && snapToRoadMode && (
                 <DynamicCircle
-                    center={circlePosition}
+                    center={markerPosition}
                     radius={30}
                     pathOptions={{
                         color: '#06b6d4',
@@ -618,7 +555,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
             {/* Radius Circle - Enhanced when hovered from list */}
             {(mode === GameMode.EDIT || isUnlocked) && (
                 <DynamicCircle
-                    center={circlePosition}
+                    center={markerPosition}
                     radius={point.radiusMeters}
                     pathOptions={{
                         color: isHovered ? '#f97316' : (isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6'))),
@@ -663,7 +600,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
             {/* Extra glow ring when hovered */}
             {isHovered && (
                 <DynamicCircle
-                    center={circlePosition}
+                    center={markerPosition}
                     radius={point.radiusMeters * 1.5}
                     pathOptions={{
                         color: '#f97316',
@@ -690,34 +627,7 @@ const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSel
             )}
         </React.Fragment>
     );
-}, (prev, next) => {
-    // Both points have no location (playground-only)
-    if (!prev.point.location && !next.point.location) {
-        return true; // Considered "equal" for memo purposes
-    }
-    // One has location, other doesn't
-    if (!prev.point.location || !next.point.location) {
-        return false; // Need to re-render if location status changed
-    }
-    // Both have locations, compare them
-    return prev.point.id === next.point.id &&
-           prev.point.location.lat === next.point.location.lat &&
-           prev.point.location.lng === next.point.location.lng &&
-           prev.point.isUnlocked === next.point.isUnlocked &&
-           prev.point.isCompleted === next.point.isCompleted &&
-           prev.mode === next.mode &&
-           prev.label === next.label && // CRITICAL: Include label to detect reorder changes
-           prev.showScore === next.showScore &&
-           prev.point.isHiddenBeforeScan === next.point.isHiddenBeforeScan &&
-           prev.point.iconId === next.point.iconId &&
-           prev.point.iconUrl === next.point.iconUrl &&
-           prev.point.radiusMeters === next.point.radiusMeters &&
-           prev.point.areaColor === next.point.areaColor &&
-           prev.isRelocateSelected === next.isRelocateSelected &&
-           prev.isHovered === next.isHovered && // CRITICAL: Re-render when hover state changes
-           prev.isMeasuring === next.isMeasuring && // CRITICAL: Re-render when measure mode changes
-           prev.isRelocating === next.isRelocating; // CRITICAL: Re-render when relocate mode changes
-});
+};
 
 const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }: any) => {
     // Allow dragging in both EDIT and INSTRUCTOR modes
@@ -1099,7 +1009,7 @@ const GameMap = React.memo(forwardRef<GameMapHandle, GameMapProps>(({
                 >
                     <Tooltip direction="top" offset={[0, -30]} opacity={1}>
                         <div className="text-center">
-                            <div className="font-black text-xs uppercase">{pg.title}</div>
+                            <div className="font-black text-xs uppercase">{pg.title.toUpperCase()}</div>
                             <div className="text-[9px] text-gray-500">Click to open playzone</div>
                         </div>
                     </Tooltip>

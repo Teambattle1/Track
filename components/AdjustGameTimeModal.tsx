@@ -31,13 +31,29 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
     return endTime;
   }, [timerConfig]);
 
+  // Check if timer has expired (game ended)
+  const isExpired = useMemo(() => {
+    if (!originalEndTime) return false;
+    return Date.now() > originalEndTime.getTime();
+  }, [originalEndTime]);
+
   // Calculate adjusted end time
+  // If timer is expired (00:00:00), adjust from NOW instead of original end time
   const adjustedEndTime = useMemo(() => {
     if (!originalEndTime) return null;
+
+    // If expired, base new time on NOW + adjustment
+    if (isExpired) {
+      const adjusted = new Date();
+      adjusted.setMinutes(adjusted.getMinutes() + adjustmentMinutes);
+      return adjusted;
+    }
+
+    // Otherwise adjust from original end time
     const adjusted = new Date(originalEndTime);
     adjusted.setMinutes(adjusted.getMinutes() + adjustmentMinutes);
     return adjusted;
-  }, [originalEndTime, adjustmentMinutes]);
+  }, [originalEndTime, adjustmentMinutes, isExpired]);
 
   // Calculate current playtime
   const currentPlaytime = useMemo(() => {
@@ -147,37 +163,48 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
 
         {/* Content */}
         <div className="p-3 space-y-3">
-          
+
+          {/* Expired Warning */}
+          {isExpired && (
+            <div className="bg-red-900/50 rounded-lg p-2 border border-red-600 text-center">
+              <p className="text-[10px] font-black text-red-300 uppercase">Timer Expired</p>
+              <p className="text-[8px] text-red-400">Adding time from NOW</p>
+            </div>
+          )}
+
           {/* Current Playtime */}
           <div className="bg-cyan-950/50 rounded-lg p-2 border border-cyan-700">
             <p className="text-[8px] text-cyan-300 font-bold uppercase mb-1">Current Playtime</p>
             <p className="text-lg font-black text-cyan-400">{currentPlaytime}</p>
           </div>
 
-          {/* Original End Time */}
-          <div className="bg-cyan-950/50 rounded-lg p-2 border border-cyan-700">
-            <p className="text-[8px] text-cyan-300 font-bold uppercase mb-1">Original End</p>
-            <p className="text-sm font-black text-white">
-              {originalEndTime?.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
-              })}
-            </p>
-          </div>
+          {/* Original End Time - only show if not expired */}
+          {!isExpired && (
+            <div className="bg-cyan-950/50 rounded-lg p-2 border border-cyan-700">
+              <p className="text-[8px] text-cyan-300 font-bold uppercase mb-1">Original End</p>
+              <p className="text-sm font-black text-white">
+                {originalEndTime?.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                })}
+              </p>
+            </div>
+          )}
 
           {/* Time Adjustment */}
           <div className="space-y-2">
-            <p className="text-[8px] text-cyan-300 font-bold uppercase">Adjust (minutes)</p>
+            <p className="text-[8px] text-cyan-300 font-bold uppercase">{isExpired ? 'Add time (minutes)' : 'Adjust (minutes)'}</p>
             <div className="flex items-center justify-center gap-2 bg-cyan-950/50 rounded-lg p-2 border border-cyan-700">
               <button
                 onClick={handleRemoveMinute}
-                disabled={isUpdating}
+                disabled={isUpdating || (isExpired && adjustmentMinutes <= 1)}
                 className="p-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded-lg transition-colors pointer-events-auto"
+                title={isExpired && adjustmentMinutes <= 1 ? 'Must add at least 1 minute to restart' : ''}
               >
                 <Minus className="w-4 h-4" />
               </button>
-              
+
               <div className="text-center min-w-[60px]">
                 <p className="text-3xl font-black text-orange-400">{adjustmentMinutes > 0 ? '+' : ''}{adjustmentMinutes}</p>
                 <p className="text-[8px] text-cyan-300 font-bold">MIN</p>
@@ -227,7 +254,7 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
           </button>
           <button
             onClick={handleUpdate}
-            disabled={isUpdating || adjustmentMinutes === 0}
+            disabled={isUpdating || adjustmentMinutes === 0 || (isExpired && adjustmentMinutes < 1)}
             className="flex-1 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold rounded-lg transition-colors uppercase tracking-wider text-[10px] flex items-center justify-center gap-1 pointer-events-auto"
           >
             {isUpdating ? (
@@ -235,6 +262,8 @@ const AdjustGameTimeModal: React.FC<AdjustGameTimeModalProps> = ({ onClose, time
                 <Loader2 className="w-3 h-3 animate-spin" />
                 ...
               </>
+            ) : isExpired ? (
+              'RESTART TIMER'
             ) : (
               'UPDATE'
             )}

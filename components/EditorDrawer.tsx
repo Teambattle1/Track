@@ -223,7 +223,8 @@ const ZoneSection = ({
     activeMenu,
     onSetActiveMenu,
     isHovered,
-    onHover
+    onHover,
+    iconColor = 'orange'
 }: {
     id: string,
     title: string,
@@ -237,9 +238,11 @@ const ZoneSection = ({
     activeMenu: boolean,
     onSetActiveMenu: (open: boolean) => void,
     isHovered?: boolean,
-    onHover?: (id: string | null) => void
+    onHover?: (id: string | null) => void,
+    iconColor?: 'orange' | 'purple'
 }) => {
     const { setNodeRef, isOver } = useDroppable({ id });
+    const iconColorClass = iconColor === 'purple' ? 'text-purple-500' : 'text-orange-500';
 
     return (
         <div
@@ -254,7 +257,7 @@ const ZoneSection = ({
                 title={tooltip}
             >
                 <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-orange-500" />
+                    <Icon className={`w-4 h-4 ${iconColorClass}`} />
                     <span className="text-xs font-black uppercase text-gray-700 dark:text-gray-200 tracking-wide">{title}</span>
                     <span className="text-[10px] font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded text-gray-500">{count}</span>
                 </div>
@@ -385,8 +388,8 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
   const [isDangerZonesCollapsed, setIsDangerZonesCollapsed] = useState(true);
 
   // Main drawer section collapse state
-  const [playzonesCollapsed, setPlayzonesCollapsed] = useState(false);
-  const [tasksCollapsed, setTasksCollapsed] = useState(false);
+  const [playzonesCollapsed, setPlayzonesCollapsed] = useState(true);
+  const [tasksCollapsed, setTasksCollapsed] = useState(true);
   const [saveCollapsed, setSaveCollapsed] = useState(true);
 
   const [collapsedZonesLocal, setCollapsedZonesLocal] = useState<Record<string, boolean>>({ 'map': true });
@@ -644,10 +647,10 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                         }`}
                                     >
                                         <div className="flex items-start justify-between mb-2">
-                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors overflow-hidden ${
+                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors overflow-hidden ${
                                                 isHovered
-                                                    ? 'bg-orange-500 text-white'
-                                                    : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                                                    ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white'
+                                                    : 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white'
                                             } group-hover:scale-110 transition-transform`}>
                                                 {playground.iconUrl ? (
                                                     <img
@@ -661,16 +664,9 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className={`w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-                                                isHovered ? 'bg-orange-600' : 'bg-orange-500'
-                                            }`}>
-                                                <MapPin className="w-2.5 h-2.5 text-white" />
-                                            </div>
-                                            <h3 className={`text-xs font-bold truncate transition-colors ${
-                                                isHovered ? 'text-orange-700 dark:text-orange-400' : 'text-gray-800 dark:text-gray-100'
-                                            }`}>{playground.title}</h3>
-                                        </div>
+                                        <h3 className={`text-xs font-bold truncate transition-colors uppercase mb-1 ${
+                                            isHovered ? 'text-orange-700 dark:text-orange-400' : 'text-gray-800 dark:text-gray-100'
+                                        }`}>{playground.title}</h3>
                                         <p className={`text-[10px] transition-colors ${
                                             isHovered ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'
                                         }`}>{playgroundPoints.length} task{playgroundPoints.length !== 1 ? 's' : ''}</p>
@@ -711,13 +707,10 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                 isCollapsed={tasksCollapsed}
                 onToggle={() => setTasksCollapsed(!tasksCollapsed)}
                 color="blue"
-                badge={orphanedPoints.length > 0 ? (
-                    <span className="text-[9px] font-bold text-red-500 ml-1">⚠️ {orphanedPoints.length}</span>
-                ) : undefined}
             >
                 <div className="p-3">
                     {/* Task stats */}
-                    <div className="mb-3 text-[9px] text-gray-500">
+                    <div className="mb-3 text-xs text-gray-500 font-medium">
                         {mapPoints.length} on map • {playgroundGroups.reduce((sum, pg) => sum + pg.points.length, 0)} in zones • {activeGame?.dangerZones?.length || 0} danger zones
                     </div>
 
@@ -874,7 +867,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                         <SortableContext key={pg.id} items={pg.points.map(p => p.id)} strategy={verticalListSortingStrategy}>
                             <ZoneSection
                                 id={`zone-pg-${pg.id}`}
-                                title={pg.title}
+                                title={pg.title.toUpperCase()}
                                 tooltip={`Playzone: ${pg.title}. Tasks in this zone are unlocked when players enter the playzone area. Ideal for indoor or bounded areas.`}
                                 icon={Gamepad2}
                                 count={pg.points.length}
@@ -885,6 +878,7 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                                 onAdd={(type) => onAddTask && onAddTask(type, pg.id)}
                                 isHovered={hoveredPlaygroundId === pg.id}
                                 onHover={onHoverPlayground}
+                                iconColor="purple"
                             >
                                 <div className="space-y-1">
                                     {pg.points.map((point, index) => (

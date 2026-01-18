@@ -1078,16 +1078,14 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                     {timeLeft && (mode === GameMode.EDIT || activeGame?.designConfig?.enableGameTime !== false) && (
                         <div className="flex flex-col gap-2">
                             <button
-                                onClick={mode === GameMode.INSTRUCTOR ? () => setShowAdjustGameTime(true) : undefined}
-                                disabled={mode !== GameMode.INSTRUCTOR}
+                                onClick={(mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT) ? () => setShowAdjustGameTime(true) : undefined}
+                                disabled={mode !== GameMode.INSTRUCTOR && mode !== GameMode.EDIT}
                                 className={`px-4 py-2 rounded-xl font-bold text-lg shadow-lg flex flex-col items-center gap-1 border transition-all ${
                                     timerAlert
-                                        ? 'bg-red-600 border-red-500 animate-pulse text-white hover:bg-red-700'
-                                        : mode === GameMode.INSTRUCTOR
-                                            ? 'bg-orange-600 border-orange-500 text-white hover:bg-orange-700 cursor-pointer'
-                                            : mode === GameMode.EDIT
-                                                ? 'bg-red-600 border-red-500 text-white cursor-default'
-                                                : 'bg-orange-600 border-orange-500 text-white cursor-default'
+                                        ? 'bg-red-600 border-red-500 animate-pulse text-white hover:bg-red-700 cursor-pointer'
+                                        : (mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT)
+                                            ? 'bg-red-600/80 border-red-500 text-white hover:bg-red-700 cursor-pointer'
+                                            : 'bg-orange-600 border-orange-500 text-white cursor-default'
                                 }`}
                             >
                                 <span className="text-[9px] font-black uppercase tracking-widest opacity-90">GAME TIME</span>

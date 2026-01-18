@@ -3241,17 +3241,12 @@ const GameApp: React.FC = () => {
                         }
                     }
 
-                    // Location updates are the most common multi-user edit. We re-fetch latest game
-                    // before saving to reduce the chance of overwriting another editor's recent change.
+                    // Update local state immediately (like onZoneMove does)
                     const plainLoc = { lat: loc.lat, lng: loc.lng };
-                    const updated = await db.updateGameItemLocation(activeGame.id, id, plainLoc, {
-                        user: authUser?.name,
-                        action: 'Moved Item'
-                    });
-                    if (!updated) return;
-
-                    setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
-                    setActiveGame(updated);
+                    const updatedPoints = activeGame.points.map(p =>
+                        p.id === id ? { ...p, location: plainLoc } : p
+                    );
+                    await updateActiveGame({ ...activeGame, points: updatedPoints });
                 }}
                 onDragStart={isRelocating ? undefined : (pointId) => {
                     // Don't open task editor when dragging in measure mode
@@ -3343,14 +3338,12 @@ const GameApp: React.FC = () => {
                                 );
                             }
                         }
+                        // Update local state immediately (like onZoneMove does)
                         const plainLoc = { lat: loc.lat, lng: loc.lng };
-                        const updated = await db.updateGameItemLocation(activeGame.id, id, plainLoc, {
-                            user: authUser?.name,
-                            action: 'Moved Item'
-                        });
-                        if (!updated) return;
-                        setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
-                        setActiveGame(updated);
+                        const updatedPoints = activeGame.points.map(p =>
+                            p.id === id ? { ...p, location: plainLoc } : p
+                        );
+                        await updateActiveGame({ ...activeGame, points: updatedPoints });
                     }}
                     onDragStart={isRelocating ? undefined : (pointId) => {
                         if (!isMeasuring) {
@@ -3519,14 +3512,12 @@ const GameApp: React.FC = () => {
                                         ));
                                     }
                                 }
+                                // Update local state immediately (like onZoneMove does)
                                 const plainLoc = { lat: loc.lat, lng: loc.lng };
-                                const updated = await db.updateGameItemLocation(activeGame.id, id, plainLoc, {
-                                    user: authUser?.name,
-                                    action: 'Moved Item'
-                                });
-                                if (!updated) return;
-                                setGames(prev => prev.map(g => g.id === updated.id ? updated : g));
-                                setActiveGame(updated);
+                                const updatedPoints = activeGame.points.map(p =>
+                                    p.id === id ? { ...p, location: plainLoc } : p
+                                );
+                                await updateActiveGame({ ...activeGame, points: updatedPoints });
                             }}
                             onDragStart={isRelocating ? undefined : (pointId) => {
                                 if (!isMeasuring) {
