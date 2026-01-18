@@ -438,16 +438,12 @@ const MapLayers: React.FC<{ mapStyle: string; showMapLayer?: boolean }> = React.
   );
 });
 
-// Task Marker Component - Using ref pattern for reliable dragging (react-leaflet recommended approach)
-const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSnapSelected, isHovered, isMeasuring, isRelocating, snapToRoadMode, onClick, onAreaColorClick, onMove, onDelete, onDragStart, onDragEnd, onHover }: any) => {
-    const markerRef = React.useRef<any>(null);
+// Task Marker Component - EXACT SAME PATTERN AS DANGERZONEMARKER (which works!)
+const MapTaskMarker = React.memo(({ point, mode, label, showScore, isRelocateSelected, isSnapSelected, isHovered, isMeasuring, isRelocating, snapToRoadMode, onClick, onAreaColorClick, onMove, onDelete, onDragStart, onDragEnd, onHover }: any) => {
     const isUnlocked = point.isUnlocked || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR;
     const isCompleted = point.isCompleted;
 
-    // Position for marker and circles
-    const markerPosition: [number, number] = [point.location?.lat || 0, point.location?.lng || 0];
-
-    // Draggable in Edit & Instructor Mode
+    // Draggable in Edit & Instructor Mode (same logic as DangerZoneMarker)
     const draggable = (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR) && !!onMove && !isRelocating && !snapToRoadMode;
 
     // Determine if completion badge should be shown
@@ -475,46 +471,39 @@ const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSn
         return null;
     }
 
-    // Event handlers using the ref pattern
-    const handleDragEnd = React.useCallback(() => {
-        const marker = markerRef.current;
-        if (!marker) return;
-
-        const latlng = marker.getLatLng();
-        if (!latlng) return;
-
-        // Check trash first
-        const shouldDelete = onDragEnd ? onDragEnd(point.id, { target: marker }) : false;
-        if (shouldDelete === true) {
-            // Reset to original position if deleted
-            marker.setLatLng(markerPosition);
-            return;
-        }
-
-        // Update state with new position
-        if (onMove) {
-            onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
-        }
-    }, [point.id, onMove, onDragEnd, markerPosition]);
-
-    const handleDragStart = React.useCallback(() => {
-        if (isRelocating) return;
-        if (onDragStart) onDragStart(point.id);
-    }, [point.id, onDragStart, isRelocating]);
-
     return (
         <React.Fragment>
             <Marker
-                ref={markerRef}
-                position={markerPosition}
+                position={[point.location.lat, point.location.lng]}
                 icon={icon}
                 draggable={draggable}
                 eventHandlers={{
-                    click: () => onClick && onClick(point),
-                    mouseover: () => onHover && onHover(point),
-                    mouseout: () => onHover && onHover(null),
-                    dragstart: handleDragStart,
-                    dragend: handleDragEnd
+                    click: () => {
+                        if (onClick && point) onClick(point);
+                    },
+                    mouseover: () => {
+                        if (onHover && point) onHover(point);
+                    },
+                    mouseout: () => {
+                        if (onHover) onHover(null);
+                    },
+                    dragstart() {
+                        if (onDragStart && point?.id) onDragStart(point.id);
+                    },
+                    dragend(e: any) {
+                        // EXACT SAME PATTERN AS DANGERZONEMARKER
+                        if (onMove && e?.target?.getLatLng) {
+                            const latlng = e.target.getLatLng();
+                            if (latlng && point?.id) {
+                                // Check trash detection
+                                const shouldDelete = onDragEnd ? onDragEnd(point.id, e) : false;
+                                if (shouldDelete === true) {
+                                    return; // Deletion handled
+                                }
+                                onMove(point.id, { lat: latlng.lat, lng: latlng.lng });
+                            }
+                        }
+                    }
                 }}
                 zIndexOffset={isCompleted ? 0 : 100}
             >
@@ -523,7 +512,7 @@ const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSn
             {/* Relocate Selection Glow - Pulsing circle around selected tasks */}
             {isRelocateSelected && (
                 <DynamicCircle
-                    center={markerPosition}
+                    center={[point.location.lat, point.location.lng]}
                     radius={30}
                     pathOptions={{
                         color: '#f97316',
@@ -539,7 +528,7 @@ const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSn
             {/* Snap to Road Selection Glow - Cyan pulsing circle around selected tasks */}
             {isSnapSelected && snapToRoadMode && (
                 <DynamicCircle
-                    center={markerPosition}
+                    center={[point.location.lat, point.location.lng]}
                     radius={30}
                     pathOptions={{
                         color: '#06b6d4',
@@ -555,7 +544,7 @@ const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSn
             {/* Radius Circle - Enhanced when hovered from list */}
             {(mode === GameMode.EDIT || isUnlocked) && (
                 <DynamicCircle
-                    center={markerPosition}
+                    center={[point.location.lat, point.location.lng]}
                     radius={point.radiusMeters}
                     pathOptions={{
                         color: isHovered ? '#f97316' : (isCompleted ? '#22c55e' : (point.areaColor || (isUnlocked ? '#eab308' : '#3b82f6'))),
@@ -600,7 +589,7 @@ const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSn
             {/* Extra glow ring when hovered */}
             {isHovered && (
                 <DynamicCircle
-                    center={markerPosition}
+                    center={[point.location.lat, point.location.lng]}
                     radius={point.radiusMeters * 1.5}
                     pathOptions={{
                         color: '#f97316',
@@ -627,7 +616,7 @@ const MapTaskMarker = ({ point, mode, label, showScore, isRelocateSelected, isSn
             )}
         </React.Fragment>
     );
-};
+});
 
 const DangerZoneMarker = React.memo(({ zone, onClick, onMove, mode, isHovered }: any) => {
     // Allow dragging in both EDIT and INSTRUCTOR modes

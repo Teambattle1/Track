@@ -750,62 +750,41 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                         </ZoneSection>
                     </SortableContext>
 
-                    {/* --- GPX ROUTES & OVERLAYS --- */}
+                    {/* --- ADD TASKS SECTION --- */}
                     <div className="mb-2 rounded-xl">
-                        <div
-                            onClick={() => setIsRoutesCollapsed(!isRoutesCollapsed)}
-                            className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
-                            title="Upload GPX files to display walking/biking routes on the map. Helps players navigate between tasks."
-                        >
-                            <div className="flex items-center gap-2">
-                                <Route className="w-4 h-4 text-orange-500" />
-                                <span className="text-xs font-black uppercase text-gray-700 dark:text-gray-200 tracking-wide">ROUTES & TRAILS</span>
-                                <span className="text-[10px] font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded text-gray-500">{routes.length}</span>
-                            </div>
-                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isRoutesCollapsed ? '-rotate-90' : ''}`} />
+                        <div className="flex items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <Plus className="w-4 h-4 text-green-500" />
+                            <span className="text-xs font-black uppercase text-gray-700 dark:text-gray-200 tracking-wide">ADD TASKS</span>
                         </div>
-                        
-                        {!isRoutesCollapsed && (
-                            <div className="mt-2 pl-2 border-l-2 border-gray-200 dark:border-gray-800 ml-3 space-y-2">
-                                <button 
-                                    onClick={() => gpxInputRef.current?.click()}
-                                    className="w-full py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-bold uppercase tracking-wide flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
-                                >
-                                    <Upload className="w-3 h-3" /> UPLOAD GPX
-                                </button>
-                                <input ref={gpxInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGPXUpload} />
-
-                                {routes.map(route => (
-                                    <div key={route.id} className="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center justify-between group">
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                            <input 
-                                                type="color" 
-                                                value={route.color}
-                                                onChange={(e) => onUpdateRoute && onUpdateRoute(route.id, { color: e.target.value })}
-                                                className="w-4 h-4 rounded-full border-none p-0 bg-transparent cursor-pointer overflow-hidden flex-shrink-0"
-                                                title="Change Route Color"
-                                            />
-                                            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 truncate cursor-default" title={route.name}>{route.name}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <button 
-                                                onClick={() => onToggleRoute && onToggleRoute(route.id)}
-                                                className={`p-1.5 rounded-lg ${route.isVisible ? 'text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'text-gray-400 hover:text-gray-600'}`}
-                                            >
-                                                {route.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                                            </button>
-                                            <button 
-                                                onClick={() => onDeleteRoute && onDeleteRoute(route.id)}
-                                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <div className="grid grid-cols-3 gap-2 mt-2 pl-2 ml-3">
+                            <button
+                                onClick={() => onAddTask && onAddTask('TASKLIST')}
+                                className="py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[9px] uppercase tracking-wide border border-blue-200 dark:border-blue-800"
+                                title="Add tasks from a saved tasklist to your game"
+                            >
+                                <LayoutList className="w-3.5 h-3.5" /> TASKLIST
+                            </button>
+                            <button
+                                onClick={() => onAddTask && onAddTask('AI')}
+                                className="py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-bold rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[9px] uppercase tracking-wide border border-purple-200 dark:border-purple-800"
+                                title="Use AI to automatically generate tasks based on your game location and theme"
+                            >
+                                <Wand2 className="w-3.5 h-3.5" /> AI GEN
+                            </button>
+                            <button
+                                onClick={() => onAddTask && onAddTask('LIBRARY')}
+                                className="py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[9px] uppercase tracking-wide border border-indigo-200 dark:border-indigo-800"
+                                title="Add tasks from the global library"
+                            >
+                                <Library className="w-3.5 h-3.5" /> LIBRARY
+                            </button>
+                        </div>
                     </div>
+
+                    {/* --- DIVIDER BEFORE PLAYZONES --- */}
+                    {playgroundGroups.length > 0 && (
+                        <div className="my-3 border-t-2 border-dashed border-purple-300 dark:border-purple-700" />
+                    )}
 
                     {/* --- DANGER ZONES --- */}
                     <div className="mb-2 rounded-xl">
@@ -902,29 +881,61 @@ const EditorDrawer: React.FC<EditorDrawerProps> = ({
                     ))}
                 </DndContext>
 
-                    {/* Add Tasks buttons */}
-                    <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                        <button
-                            onClick={() => onAddTask && onAddTask('TASKLIST')}
-                            className="py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[9px] uppercase tracking-wide border border-blue-200 dark:border-blue-800"
-                            title="Add tasks from a saved tasklist to your game"
+                    {/* --- GPX ROUTES & TRAILS (at bottom) --- */}
+                    <div className="mb-2 rounded-xl mt-3">
+                        <div
+                            onClick={() => setIsRoutesCollapsed(!isRoutesCollapsed)}
+                            className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+                            title="Upload GPX files to display walking/biking routes on the map. Helps players navigate between tasks."
                         >
-                            <LayoutList className="w-3.5 h-3.5" /> TASKLIST
-                        </button>
-                        <button
-                            onClick={() => onAddTask && onAddTask('AI')}
-                            className="py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-bold rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[9px] uppercase tracking-wide border border-purple-200 dark:border-purple-800"
-                            title="Use AI to automatically generate tasks based on your game location and theme"
-                        >
-                            <Wand2 className="w-3.5 h-3.5" /> AI GEN
-                        </button>
-                        <button
-                            onClick={() => onAddTask && onAddTask('LIBRARY')}
-                            className="py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors flex flex-col items-center justify-center gap-1 text-[9px] uppercase tracking-wide border border-indigo-200 dark:border-indigo-800"
-                            title="Add tasks from the global library"
-                        >
-                            <Library className="w-3.5 h-3.5" /> LIBRARY
-                        </button>
+                            <div className="flex items-center gap-2">
+                                <Route className="w-4 h-4 text-orange-500" />
+                                <span className="text-xs font-black uppercase text-gray-700 dark:text-gray-200 tracking-wide">ROUTES & TRAILS</span>
+                                <span className="text-[10px] font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded text-gray-500">{routes.length}</span>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isRoutesCollapsed ? '-rotate-90' : ''}`} />
+                        </div>
+
+                        {!isRoutesCollapsed && (
+                            <div className="mt-2 pl-2 border-l-2 border-gray-200 dark:border-gray-800 ml-3 space-y-2">
+                                <button
+                                    onClick={() => gpxInputRef.current?.click()}
+                                    className="w-full py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-bold uppercase tracking-wide flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                                >
+                                    <Upload className="w-3 h-3" /> UPLOAD GPX
+                                </button>
+                                <input ref={gpxInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGPXUpload} />
+
+                                {routes.map(route => (
+                                    <div key={route.id} className="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700 flex items-center justify-between group">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <input
+                                                type="color"
+                                                value={route.color}
+                                                onChange={(e) => onUpdateRoute && onUpdateRoute(route.id, { color: e.target.value })}
+                                                className="w-4 h-4 rounded-full border-none p-0 bg-transparent cursor-pointer overflow-hidden flex-shrink-0"
+                                                title="Change Route Color"
+                                            />
+                                            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 truncate cursor-default" title={route.name}>{route.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => onToggleRoute && onToggleRoute(route.id)}
+                                                className={`p-1.5 rounded-lg ${route.isVisible ? 'text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                {route.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                            </button>
+                                            <button
+                                                onClick={() => onDeleteRoute && onDeleteRoute(route.id)}
+                                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </MainSection>

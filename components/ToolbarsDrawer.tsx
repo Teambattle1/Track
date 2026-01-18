@@ -330,15 +330,6 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-[10px] opacity-80 uppercase tracking-wide flex-1">Edit Mode Controls</p>
-                    {activeGame && (
-                        <button
-                            onClick={onOpenGameChooser}
-                            className="text-[10px] font-black uppercase tracking-widest px-2 py-1 bg-orange-700 hover:bg-orange-600 rounded-lg flex-shrink-0 whitespace-nowrap transition-colors cursor-pointer"
-                            title="Click to switch games"
-                        >
-                            {activeGame.name}
-                        </button>
-                    )}
                 </div>
             </div>
 
