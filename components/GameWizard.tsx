@@ -1166,10 +1166,12 @@ const GameWizard: React.FC<GameWizardProps> = ({
               handleAiTasksAdded(tasks);
               // Also create the new task list
               if (onUpdateTaskLists) {
-                const newList = {
+                const newList: TaskList = {
                   id: `list-${Date.now()}`,
                   name,
+                  description: '',
                   tasks,
+                  color: '#3b82f6',
                   createdAt: Date.now(),
                 };
                 const updatedLists = [...internalTaskLists, newList];

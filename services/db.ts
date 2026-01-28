@@ -213,9 +213,14 @@ export const fetchGames = async (): Promise<Game[]> => {
             FETCH_TIMEOUT_MS
         );
         return rows.map((row: any) => {
-            const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-            return { ...rowData, id: row.id, dbUpdatedAt: row.updated_at };
-        });
+            try {
+                const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+                return { ...rowData, id: row.id, dbUpdatedAt: row.updated_at };
+            } catch (parseError) {
+                console.error('[DB Service] Failed to parse game data for row:', row.id, parseError);
+                return null;
+            }
+        }).filter(Boolean) as Game[];
     } catch (e) {
         logError('fetchGames', e);
         // Try fallback: fetch a smaller batch without chunking as last resort
@@ -231,9 +236,14 @@ export const fetchGames = async (): Promise<Game[]> => {
             if (error) throw error;
             if (!data) return [];
             return data.map((row: any) => {
-                const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-                return { ...rowData, id: row.id, dbUpdatedAt: row.updated_at };
-            });
+                try {
+                    const rowData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+                    return { ...rowData, id: row.id, dbUpdatedAt: row.updated_at };
+                } catch (parseError) {
+                    console.error('[DB Service] Failed to parse game data for row:', row.id, parseError);
+                    return null;
+                }
+            }).filter(Boolean) as Game[];
         } catch (fallbackError) {
             logError('fetchGames[fallback]', fallbackError);
             return [];

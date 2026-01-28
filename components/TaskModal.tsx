@@ -41,12 +41,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
     game,
     isCaptain = false
 }) => {
-  // CRITICAL: Check for null point BEFORE any hooks to prevent crashes
-  if (!point) return null;
-
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   const [answer, setAnswer] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [sliderValue, setSliderValue] = useState<number>(point?.task.range?.min || 0);
+  const [sliderValue, setSliderValue] = useState<number>(point?.task?.range?.min || 0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [hintRevealed, setHintRevealed] = useState(false);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
@@ -55,7 +53,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   // Voting State
   const [isVoting, setIsVoting] = useState(false);
   const [teamVotes, setTeamVotes] = useState<TaskVote[]>([]);
-  const [teamMembers, setTeamMembers] = useState<any[]>([]); // Track all team members with retirement status
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
 
   // Manual Unlock State
   const [unlockCode, setUnlockCode] = useState('');
@@ -80,8 +78,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
   // Countdown Timer State
   const [showTimesUpPopup, setShowTimesUpPopup] = useState(false);
   const [taskStartTime] = useState(Date.now());
-  const hasTimeLimit = !!point.settings?.timeLimitSeconds;
 
+  // Derived values (safe with null point)
+  const hasTimeLimit = !!point?.settings?.timeLimitSeconds;
   const isEditMode = mode === GameMode.EDIT;
   const isInstructor = isInstructorMode || mode === GameMode.INSTRUCTOR;
   const isSimulation = mode === GameMode.SIMULATION;
@@ -97,18 +96,18 @@ const TaskModal: React.FC<TaskModalProps> = ({
     let finalScore = baseScore;
 
     // Apply time-based score reduction if enabled
-    if (hasTimeLimit && point.settings?.scoreDependsOnSpeed && point.settings.timeLimitSeconds) {
+    if (hasTimeLimit && point?.settings?.scoreDependsOnSpeed && point?.settings.timeLimitSeconds) {
       const timeSpent = (Date.now() - taskStartTime) / 1000;
       const timeLimit = point.settings.timeLimitSeconds;
-      const mode = point.settings.scoreReductionMode || 'linear';
+      const reductionMode = point.settings.scoreReductionMode || 'linear';
 
       if (timeSpent < timeLimit) {
         const timeRatio = timeSpent / timeLimit;
 
-        if (mode === 'linear') {
+        if (reductionMode === 'linear') {
           // Linear reduction: 100% → 0% evenly
           finalScore = Math.round(baseScore * (1 - timeRatio));
-        } else if (mode === 'exponential') {
+        } else if (reductionMode === 'exponential') {
           // Exponential reduction: Faster drop near end
           finalScore = Math.round(baseScore * Math.pow(1 - timeRatio, 2));
         }
@@ -124,7 +123,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
     }
 
     return Math.max(0, finalScore); // Ensure non-negative
-  }, [hasTimeLimit, point.settings, taskStartTime, isDoubleTrouble]);
+  }, [hasTimeLimit, point?.settings, taskStartTime, isDoubleTrouble]);
 
   // Logic Trigger: ON OPEN & Status Update
   useEffect(() => {
@@ -136,7 +135,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
       // Initialize Timeline Game if applicable
       if (point?.task.type === 'timeline' && point.task.timelineItems) {
           const items = [...point.task.timelineItems];
-          // We can shuffle queue or use order. Let's assume order for now, 
+          // We can shuffle queue or use order. Let's assume order for now,
           // or pick the first one as "Anchor".
           if (items.length > 0) {
               const first = items.shift(); // First item is anchor
@@ -150,12 +149,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
               teamSync.updateStatus(false);
           }
       };
-  }, [point?.id, isEditMode, isInstructor, isSimulation]);
+  }, [point?.id, isEditMode, isInstructor, isSimulation, onTaskOpen]);
 
   // Subscribe to Realtime Updates
   useEffect(() => {
       if (!point || isEditMode || isInstructor || isSimulation) return;
-      
+
       const unsubscribeVotes = teamSync.subscribeToVotesForTask(point.id, (votes) => {
           setTeamVotes(votes);
       });
@@ -178,6 +177,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
           unsubscribeMembers();
       };
   }, [point, isEditMode, isInstructor, isSimulation]);
+
+  // CRITICAL: Check for null point AFTER all hooks
+  if (!point) return null;
 
   // UNLOCK LOGIC: Allow open if Unlocked OR Instructor OR Editor OR Playground OR Simulation
   const isLocked = !point.isUnlocked && !isInstructor && !isEditMode && !isPlayground && !isSimulation;

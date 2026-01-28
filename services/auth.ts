@@ -6,7 +6,8 @@ const STORAGE_KEY_USER = 'geohunt_auth_user';
 const getThomasPassword = (): string => {
     const local = typeof window !== 'undefined' ? localStorage.getItem('THOMAS_ADMIN_PASSWORD') : null;
     const env = (import.meta as any).env?.VITE_THOMAS_ADMIN_PASSWORD;
-    return local || env || 'Sommer22?';
+    // Password must be configured via localStorage or environment variable - no fallback
+    return local || env || '';
 };
 
 export const authService = {

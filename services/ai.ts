@@ -396,12 +396,12 @@ export const generateAiImage = async (prompt: string, style: string = 'cartoon')
             }
 
             const data = await response.json();
-            if (data.artifacts && data.artifacts[0]?.base64) {
+            if (data?.artifacts && Array.isArray(data.artifacts) && data.artifacts[0]?.base64) {
                 console.log('[AI Image] Stability AI success!');
                 return `data:image/png;base64,${data.artifacts[0].base64}`;
             }
 
-            console.warn('[AI Image] No image in Stability response');
+            console.warn('[AI Image] No image in Stability response, data:', JSON.stringify(data).slice(0, 200));
         } catch (e: any) {
             console.error('[AI Image] Stability AI failed:', e.message);
             // Fall through to Unsplash fallback

@@ -51,6 +51,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [tagInput, setTagInput] = useState('');
   const [existingTags, setExistingTags] = useState<string[]>([]);
   const [showAutoTagSuggestions, setShowAutoTagSuggestions] = useState(false);
+  const [autoTag, setAutoTag] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTaskCount, setCurrentTaskCount] = useState(0);
@@ -106,7 +107,11 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
       return filtered;
     });
 
-    fetchUniqueTags().then(tags => setExistingTags(tags)).catch(() => setExistingTags([]));
+    let isMounted = true;
+    fetchUniqueTags()
+      .then(tags => { if (isMounted) setExistingTags(tags); })
+      .catch(() => { if (isMounted) setExistingTags([]); });
+    return () => { isMounted = false; };
   }, []);
 
   const autoTagSuggestions = useMemo(() => {
@@ -286,8 +291,12 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
               audioRef.current.pause();
               setIsPlayingSound(false);
           } else {
-              audioRef.current.play();
-              setIsPlayingSound(true);
+              audioRef.current.play().then(() => {
+                  setIsPlayingSound(true);
+              }).catch((err) => {
+                  console.warn('[AI Generator] Audio playback failed:', err.message);
+                  setIsPlayingSound(false);
+              });
           }
       }
   };

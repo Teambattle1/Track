@@ -9,6 +9,8 @@ interface GameLogViewerProps {
 }
 
 const GameLogViewer: React.FC<GameLogViewerProps> = ({ game }) => {
+  const [showExport, setShowExport] = useState(false);
+
   // Defensive input validation
   if (!game) {
     return (
@@ -24,7 +26,6 @@ const GameLogViewer: React.FC<GameLogViewerProps> = ({ game }) => {
   // Safely get formatted logs
   const logs = getFormattedLogs(game);
   const stats = getGameLogStats(game);
-  const [showExport, setShowExport] = useState(false);
 
   // Handle export
   const handleExport = () => {

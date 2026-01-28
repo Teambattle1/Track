@@ -1503,11 +1503,11 @@ const GameApp: React.FC = () => {
                   } as Game : (currentGameObj || { id: 'temp', name: 'Temp', points: [], createdAt: 0 } as any)}
                   initialPlaygroundId={viewingPlaygroundId || undefined}
                   onUpdateGame={(updatedGame) => {
-                      if (playgroundTemplateToEdit) {
+                      if (playgroundTemplateToEdit && updatedGame.playgrounds?.[0]) {
                           setPlaygroundTemplateToEdit({
                               ...playgroundTemplateToEdit,
                               title: updatedGame.name,
-                              playgroundData: updatedGame.playgrounds?.[0]!,
+                              playgroundData: updatedGame.playgrounds[0],
                               tasks: updatedGame.points
                           });
                       } else if (currentGameObj) {

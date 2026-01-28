@@ -405,10 +405,10 @@ const TeamsModal: React.FC<TeamsModalProps> = ({ gameId, games, targetTeamId, on
                                           {stats.playgroundStats.length === 0 && <div className="flex-1"></div>}
 
                                           {/* Action */}
-                                          <button 
+                                          <button
                                               onClick={(e) => {
                                                   e.stopPropagation(); // Don't open lobby when clicking chat
-                                                  onChatWithTeam && onChatWithTeam(team.id);
+                                                  onChatWithTeam?.(team.id);
                                               }}
                                               className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-2 transition-all shadow-lg hover:scale-[1.02]"
                                           >
