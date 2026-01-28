@@ -147,6 +147,8 @@ interface GameHUDProps {
     onTeamEditOrientationChange?: (orientation: 'portrait' | 'landscape') => void;
     teamEditOrientationLocked?: boolean;
     onTeamEditOrientationLockToggle?: (locked: boolean) => void;
+    // Phone Preview Props
+    onOpenPhonePreview?: () => void;
 }
 
 const MAP_STYLES_LIST: { id: MapStyleId; label: string; icon: any; preview?: string; className?: string }[] = [
@@ -183,7 +185,8 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
     teamEditOrientation = 'landscape',
     onTeamEditOrientationChange,
     teamEditOrientationLocked = false,
-    onTeamEditOrientationLockToggle
+    onTeamEditOrientationLockToggle,
+    onOpenPhonePreview
 }, ref) => {
     // Device detection for multi-device layout support
     const [detectedDevice, setDetectedDevice] = useState<DeviceType>('desktop');
@@ -1052,6 +1055,7 @@ const GameHUD = forwardRef<GameHUDHandle, GameHUDProps>(({    accuracy, mode, to
                 onTeamEditOrientationChange={onTeamEditOrientationChange}
                 teamEditOrientationLocked={teamEditOrientationLocked}
                 onTeamEditOrientationLockToggle={onTeamEditOrientationLockToggle}
+                onOpenPhonePreview={onOpenPhonePreview}
             />
             <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-[1000]">
             {/* COUNTDOWN OVERLAY */}

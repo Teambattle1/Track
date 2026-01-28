@@ -20,6 +20,7 @@ import GameManager from './components/GameManager';
 import TeamsModal from './components/TeamsModal';
 import TeamDashboard from './components/TeamDashboard';
 import TabletFrame from './components/TabletFrame';
+import PhoneFrame from './components/PhoneFrame';
 import WelcomeScreen from './components/WelcomeScreen';
 import InitialLanding from './components/InitialLanding';
 import LoginPage from './components/LoginPage';
@@ -126,6 +127,7 @@ const GameApp: React.FC = () => {
   const [showInstructorDashboard, setShowInstructorDashboard] = useState(false);
   const [showRankingModal, setShowRankingModal] = useState(false);
   const [showTeamDashboard, setShowTeamDashboard] = useState(false);
+  const [showPhonePreview, setShowPhonePreview] = useState(false);
   const [showDeleteGames, setShowDeleteGames] = useState(false);
   const [showPlaygroundManager, setShowPlaygroundManager] = useState(false);
   const [showDatabaseTools, setShowDatabaseTools] = useState(false);
@@ -2420,6 +2422,26 @@ const GameApp: React.FC = () => {
                   />
               </TabletFrame>
           )}
+          {/* Phone Preview - Editor only preview of TeamDashboard */}
+          {showPhonePreview && activeGameId && (
+              <PhoneFrame
+                  onClose={() => setShowPhonePreview(false)}
+                  onBackToEditor={() => {
+                      setShowPhonePreview(false);
+                      setMode(GameMode.EDIT);
+                  }}
+                  showEditorControls={true}
+              >
+                  <TeamDashboard
+                      gameId={activeGameId}
+                      game={activeGame || undefined}
+                      totalMapPoints={activeGame?.points.length || 0}
+                      onOpenAgents={() => {}}
+                      onClose={() => setShowPhonePreview(false)}
+                      chatHistory={chatHistory}
+                  />
+              </PhoneFrame>
+          )}
           {showDeleteGames && (
               <DeleteGamesModal 
                   games={games}
@@ -3827,6 +3849,7 @@ const GameApp: React.FC = () => {
             onTeamEditOrientationChange={setTeamEditOrientation}
             teamEditOrientationLocked={teamEditOrientationLocked}
             onTeamEditOrientationLockToggle={setTeamEditOrientationLocked}
+            onOpenPhonePreview={() => setShowPhonePreview(true)}
         />
         )}
 

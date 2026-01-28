@@ -39,6 +39,7 @@ interface ToolbarsDrawerProps {
     
     // MAPMODE
     onSetMode: (mode: GameMode) => void;
+    onOpenPhonePreview?: () => void;
     
     // LAYERS
     showMapLayer?: boolean;
@@ -128,6 +129,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
     collapsedSections: collapsedSectionsProp,
     onCollapsedSectionsChange,
     onSetMode,
+    onOpenPhonePreview,
     showMapLayer,
     showZoneLayer,
     showTaskLayer,
@@ -343,7 +345,7 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                         >
                             <span className="flex items-center gap-2">
                                 <MapIcon className="w-4 h-4" />
-                                MAPMODE
+                                VIEWMODE
                             </span>
                             <ChevronDown className={`w-4 h-4 transition-transform ${isVisible('mapmode') ? '' : '-rotate-90'}`} />
                         </button>
@@ -372,11 +374,17 @@ const ToolbarsDrawer: React.FC<ToolbarsDrawerProps> = ({
                                         INSTRUCTOR
                                     </button>
                                 )}
-                                {/* TEAM button - Show for all access modes */}
+                                {/* TEAM button - In EDIT mode opens phone preview, otherwise switches mode */}
                                 <button
-                                    onClick={() => onSetMode(GameMode.PLAY)}
+                                    onClick={() => {
+                                        if (mode === GameMode.EDIT && onOpenPhonePreview) {
+                                            onOpenPhonePreview();
+                                        } else {
+                                            onSetMode(GameMode.PLAY);
+                                        }
+                                    }}
                                     className={`py-2 px-2 rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${mode === GameMode.PLAY ? 'bg-black text-white' : 'bg-red-700 text-red-100 hover:bg-red-800'}`}
-                                    title="Team View"
+                                    title={mode === GameMode.EDIT ? "Preview Team View on Phone" : "Team View"}
                                 >
                                     <Users className="w-4 h-4" />
                                     TEAM
