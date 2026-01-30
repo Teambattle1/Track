@@ -38,7 +38,7 @@ import TeamLobbyPanel from './TeamLobbyPanel';
 import PlayzoneGameEntry from './PlayzoneGameEntry';
 import AroundTheWorldGameView from './AroundTheWorldGameView';
 import { AroundTheWorldDashboard } from './aroundtheworld';
-import { getAllARWTasks, getTaskById } from '../utils/aroundtheworld/defaultTasks';
+import { getTaskById } from '../utils/aroundtheworld/defaultTasks';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineIndicator from './OfflineIndicator';
 import ConnectionStatus from './ConnectionStatus';

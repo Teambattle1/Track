@@ -61,14 +61,22 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
   // Connect to real-time sync when game is active
   useEffect(() => {
     if (game?.id) {
-      atwSync.connect(game.id);
-      const unsubscribe = atwSync.onTeamsUpdate((updatedTeams) => {
-        setRealtimeTeams(updatedTeams);
-      });
-      return () => {
-        unsubscribe();
-        atwSync.disconnect();
-      };
+      try {
+        atwSync.connect(game.id).catch(err => {
+          console.error('[ATW Dashboard] Failed to connect to sync:', err);
+        });
+        const unsubscribe = atwSync.onTeamsUpdate((updatedTeams) => {
+          setRealtimeTeams(updatedTeams);
+        });
+        return () => {
+          unsubscribe();
+          atwSync.disconnect().catch(err => {
+            console.error('[ATW Dashboard] Failed to disconnect:', err);
+          });
+        };
+      } catch (err) {
+        console.error('[ATW Dashboard] Error setting up sync:', err);
+      }
     }
   }, [game?.id]);
 
