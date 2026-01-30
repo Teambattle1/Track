@@ -1684,7 +1684,6 @@ const GameApp: React.FC = () => {
                     }
                     // Around The World opens directly without login requirement
                     if (action === 'CREATE_AROUNDTHEWORLD_GAME') {
-                        console.log('[ATW] Opening Around The World Dashboard');
                         setShowAroundTheWorldDashboard(true);
                         return;
                     }

@@ -3,17 +3,18 @@
  * Victorian 1880 themed interface for managing sessions, teams, and gameplay
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { Game, Team, ChatMessage, Destination, GamePoint, TaskTemplate } from '../../types';
 import { VICTORIAN_TEAM_NAMES, VictorianTeamName, getAvailableTeamNames } from '../../utils/aroundtheworld/teamNames';
 import { JORDEN80_CITIES } from '../../utils/jorden80/europeData';
 import { ARW_DEFAULT_TASKS, getTasksForCity, getAllARWTasks, CityTaskSet } from '../../utils/aroundtheworld/defaultTasks';
 import { atwSync } from '../../services/aroundTheWorldSync';
-import EuropeMapCanvas from '../jorden80/EuropeMapCanvas';
+// Lazy load the map to prevent crashes
+const EuropeMapCanvas = React.lazy(() => import('../jorden80/EuropeMapCanvas'));
 import './styles/victorian-theme.css';
 import {
   X, Play, Pause, Users, MessageSquare, Map, List, Settings,
-  Plus, Trash2, ChevronDown, ChevronRight, Send, Clock, Check, Search, Library
+  Plus, Trash2, ChevronDown, ChevronRight, Send, Clock, Check, Search, Library, Loader2
 } from 'lucide-react';
 
 interface AroundTheWorldDashboardProps {
@@ -306,14 +307,16 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
   const renderMapView = () => (
     <div className="p-6">
       <div className="atw-card overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
-        <EuropeMapCanvas
-          teams={teams}
-          currentTeamId={undefined}
-          teamProgress={game?.jorden80TeamProgress || {}}
-          showAllTeams={true}
-          width={1200}
-          height={700}
-        />
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--atw-gold)' }} /></div>}>
+          <EuropeMapCanvas
+            teams={realtimeTeams}
+            currentTeamId={undefined}
+            teamProgress={game?.jorden80TeamProgress || {}}
+            showAllTeams={true}
+            width={1200}
+            height={700}
+          />
+        </Suspense>
       </div>
     </div>
   );
@@ -386,14 +389,16 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
       {/* Map Preview */}
       <div className="flex-1 p-6">
         <div className="atw-card overflow-hidden h-full">
-          <EuropeMapCanvas
-            teams={teams}
-            currentTeamId={undefined}
-            teamProgress={game?.jorden80TeamProgress || {}}
-            showAllTeams={true}
-            width={800}
-            height={500}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--atw-gold)' }} /></div>}>
+            <EuropeMapCanvas
+              teams={realtimeTeams}
+              currentTeamId={undefined}
+              teamProgress={game?.jorden80TeamProgress || {}}
+              showAllTeams={true}
+              width={800}
+              height={500}
+            />
+          </Suspense>
         </div>
       </div>
     </div>

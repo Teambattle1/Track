@@ -616,11 +616,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="AROUND THE WORLD"
                   icon={Globe}
                   gradient="bg-gradient-to-br from-cyan-500 to-blue-500"
-                  onClick={() => {
-                      console.log('[ATW] Button clicked!');
-                      alert('ATW Button Clicked!');
-                      onAction('CREATE_AROUNDTHEWORLD_GAME');
-                  }}
+                  onClick={() => onAction('CREATE_AROUNDTHEWORLD_GAME')}
                   delay={200}
                   scale={0.75}
               />
