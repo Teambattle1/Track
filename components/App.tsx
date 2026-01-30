@@ -1682,6 +1682,11 @@ const GameApp: React.FC = () => {
                         setMode(GameMode.PLAY);
                         return;
                     }
+                    // Around The World opens directly without login requirement
+                    if (action === 'CREATE_AROUNDTHEWORLD_GAME') {
+                        setShowAroundTheWorldDashboard(true);
+                        return;
+                    }
                     ensureSession(() => {
                         switch (action) {
                             case 'GAMES': setShowGameChooser(true); break;
@@ -1699,9 +1704,6 @@ const GameApp: React.FC = () => {
                                 setGameToEdit(null);
                                 setInitialGameMode('elimination');
                                 setShowGameCreator(true);
-                                break;
-                            case 'CREATE_AROUNDTHEWORLD_GAME':
-                                setShowAroundTheWorldDashboard(true);
                                 break;
                             case 'EDIT_GAME': 
                                 if (activeGameId && activeGame) {
