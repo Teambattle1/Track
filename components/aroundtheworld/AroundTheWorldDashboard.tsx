@@ -4,14 +4,16 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Game, Team, ChatMessage, Destination, GamePoint } from '../../types';
+import { Game, Team, ChatMessage, Destination, GamePoint, TaskTemplate } from '../../types';
 import { VICTORIAN_TEAM_NAMES, VictorianTeamName, getAvailableTeamNames } from '../../utils/aroundtheworld/teamNames';
 import { JORDEN80_CITIES } from '../../utils/jorden80/europeData';
+import { ARW_DEFAULT_TASKS, getTasksForCity, getAllARWTasks, CityTaskSet } from '../../utils/aroundtheworld/defaultTasks';
+import { atwSync } from '../../services/aroundTheWorldSync';
 import EuropeMapCanvas from '../jorden80/EuropeMapCanvas';
 import './styles/victorian-theme.css';
 import {
   X, Play, Pause, Users, MessageSquare, Map, List, Settings,
-  Plus, Trash2, ChevronDown, ChevronRight, Send, Clock
+  Plus, Trash2, ChevronDown, ChevronRight, Send, Clock, Check, Search, Library
 } from 'lucide-react';
 
 interface AroundTheWorldDashboardProps {
@@ -51,11 +53,34 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
   const [selectedChatTeam, setSelectedChatTeam] = useState<string | null>(null);
   const [expandedCities, setExpandedCities] = useState<Set<string>>(new Set(['london']));
   const [isGameRunning, setIsGameRunning] = useState(game?.state === 'active');
+  const [showTaskSelector, setShowTaskSelector] = useState(false);
+  const [selectedCityForTask, setSelectedCityForTask] = useState<string | null>(null);
+  const [taskSearchQuery, setTaskSearchQuery] = useState('');
+  const [realtimeTeams, setRealtimeTeams] = useState<Team[]>(teams);
 
-  // Get taken team names from current teams
-  const takenTeamNames = useMemo(() => {
-    return teams.map(t => t.name);
+  // Connect to real-time sync when game is active
+  useEffect(() => {
+    if (game?.id) {
+      atwSync.connect(game.id);
+      const unsubscribe = atwSync.onTeamsUpdate((updatedTeams) => {
+        setRealtimeTeams(updatedTeams);
+      });
+      return () => {
+        unsubscribe();
+        atwSync.disconnect();
+      };
+    }
+  }, [game?.id]);
+
+  // Keep realtimeTeams in sync with props when props change
+  useEffect(() => {
+    setRealtimeTeams(teams);
   }, [teams]);
+
+  // Get taken team names from current teams (use real-time data)
+  const takenTeamNames = useMemo(() => {
+    return realtimeTeams.map(t => t.name);
+  }, [realtimeTeams]);
 
   // Get tasks grouped by city
   const tasksByCity = useMemo(() => {
@@ -168,7 +193,7 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
           </div>
           <div className="flex justify-between items-center">
             <span className="atw-font-body">Teams</span>
-            <span className="atw-font-heading">{teams.length}</span>
+            <span className="atw-font-heading">{realtimeTeams.length}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="atw-font-body">Cities</span>
@@ -205,13 +230,13 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
           <Users className="w-5 h-5 inline mr-2" />
           Participating Teams
         </h3>
-        {teams.length === 0 ? (
+        {realtimeTeams.length === 0 ? (
           <p className="atw-font-elegant text-center py-8" style={{ color: 'var(--atw-sepia)' }}>
             No teams have joined yet...
           </p>
         ) : (
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {teams.map(team => {
+            {realtimeTeams.map(team => {
               const victorianName = VICTORIAN_TEAM_NAMES.find(t => t.name === team.name);
               return (
                 <div
@@ -336,7 +361,7 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
                     ))
                   )}
                   <button
-                    onClick={() => {/* Open task selector */}}
+                    onClick={() => openTaskSelectorForCity(city.id)}
                     className="w-full mt-2 p-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 hover:bg-white/50 transition-colors"
                     style={{ borderColor: 'var(--atw-sepia-light)', color: 'var(--atw-sepia)' }}
                   >
@@ -374,7 +399,7 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
           Team Management
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teams.map(team => {
+          {realtimeTeams.map(team => {
             const victorianName = VICTORIAN_TEAM_NAMES.find(t => t.name === team.name);
             const progress = game?.jorden80TeamProgress?.[team.id];
 
@@ -416,6 +441,141 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
     </div>
   );
 
+  // Get all default tasks as a flat list for the task selector
+  const allDefaultTasks = useMemo(() => getAllARWTasks(), []);
+
+  // Filter tasks for the selector
+  const filteredTasks = useMemo(() => {
+    const currentCityTasks = tasksByCity[selectedCityForTask || ''] || [];
+    const currentTaskIds = new Set(currentCityTasks.map(t => t.id));
+
+    return allDefaultTasks.filter(task => {
+      // Don't show tasks already assigned to this city
+      if (currentTaskIds.has(task.id)) return false;
+      // Filter by search query
+      if (taskSearchQuery) {
+        const query = taskSearchQuery.toLowerCase();
+        return (
+          task.title.toLowerCase().includes(query) ||
+          task.task.question.toLowerCase().includes(query) ||
+          task.tags?.some(tag => tag.toLowerCase().includes(query))
+        );
+      }
+      return true;
+    });
+  }, [allDefaultTasks, selectedCityForTask, tasksByCity, taskSearchQuery]);
+
+  // Open task selector for a city
+  const openTaskSelectorForCity = (cityId: string) => {
+    setSelectedCityForTask(cityId);
+    setTaskSearchQuery('');
+    setShowTaskSelector(true);
+  };
+
+  // Handle adding a task from the selector
+  const handleAddTaskFromSelector = (task: TaskTemplate) => {
+    if (selectedCityForTask) {
+      onAddTaskToCity(selectedCityForTask, task.id);
+    }
+    setShowTaskSelector(false);
+    setSelectedCityForTask(null);
+  };
+
+  // Render task selector modal
+  const renderTaskSelector = () => {
+    const cityName = JORDEN80_CITIES.find(c => c.id === selectedCityForTask)?.name || 'City';
+
+    return (
+      <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+        <div className="atw-card max-w-2xl w-full max-h-[80vh] flex flex-col atw-animate-in">
+          {/* Header */}
+          <div className="p-4 border-b-2" style={{ borderColor: 'var(--atw-sepia)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="atw-font-heading-sc text-xl" style={{ color: 'var(--atw-ink-brown)' }}>
+                <Library className="w-5 h-5 inline mr-2" />
+                Add Task to {cityName}
+              </h3>
+              <button
+                onClick={() => setShowTaskSelector(false)}
+                className="p-1 rounded hover:bg-black/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--atw-sepia)' }} />
+              <input
+                type="text"
+                value={taskSearchQuery}
+                onChange={(e) => setTaskSearchQuery(e.target.value)}
+                placeholder="Search tasks..."
+                className="atw-input w-full pl-10"
+              />
+            </div>
+          </div>
+
+          {/* Task List */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {filteredTasks.length === 0 ? (
+              <p className="atw-font-elegant text-center py-8" style={{ color: 'var(--atw-sepia)' }}>
+                No tasks available. All tasks may already be assigned to this city.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {filteredTasks.map(task => (
+                  <div
+                    key={task.id}
+                    onClick={() => handleAddTaskFromSelector(task)}
+                    className="p-3 rounded-lg cursor-pointer transition-all hover:shadow-md"
+                    style={{
+                      backgroundColor: 'var(--atw-parchment-light)',
+                      border: '1px solid var(--atw-sepia-light)'
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">{task.iconId === 'camera' ? '📷' : task.iconId === 'world' ? '🌍' : '❓'}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs px-2 py-0.5 rounded atw-task-type ${task.tags?.includes('by') ? 'by' : task.tags?.includes('land') ? 'land' : 'creative'}`}>
+                            {task.tags?.includes('by') ? 'BY' : task.tags?.includes('land') ? 'LAND' : 'CREATIVE'}
+                          </span>
+                          <span className="atw-font-heading text-sm">{task.title}</span>
+                        </div>
+                        <p className="atw-font-body text-sm" style={{ color: 'var(--atw-sepia)' }}>
+                          {task.task.question.slice(0, 100)}{task.task.question.length > 100 ? '...' : ''}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs" style={{ color: 'var(--atw-gold)' }}>
+                            {task.points} pts
+                          </span>
+                          {task.tags?.map(tag => (
+                            <span key={tag} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--atw-sepia-light)', color: 'var(--atw-ink-brown)' }}>
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <Plus className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--atw-gold)' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 border-t-2" style={{ borderColor: 'var(--atw-sepia)', backgroundColor: 'var(--atw-parchment-dark)' }}>
+            <p className="atw-font-body text-sm text-center" style={{ color: 'var(--atw-sepia)' }}>
+              {filteredTasks.length} tasks available • Click to add
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Render chat popup
   const renderChatPopup = () => (
     <div className="atw-chat-popup atw-animate-in">
@@ -437,7 +597,7 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
           className="atw-input w-full text-sm py-1"
         >
           <option value="">All Teams (Broadcast)</option>
-          {teams.map(team => (
+          {realtimeTeams.map(team => (
             <option key={team.id} value={team.id}>{team.name}</option>
           ))}
         </select>
@@ -497,7 +657,7 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
             <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
               <Clock className="w-4 h-4" />
               <span className="atw-font-heading text-sm">
-                {teams.length} Teams
+                {realtimeTeams.length} Teams
               </span>
             </div>
           )}
@@ -555,6 +715,9 @@ const AroundTheWorldDashboard: React.FC<AroundTheWorldDashboardProps> = ({
 
       {/* Chat Popup */}
       {showChat && renderChatPopup()}
+
+      {/* Task Selector Modal */}
+      {showTaskSelector && renderTaskSelector()}
 
       {/* Chat Toggle Button (when closed) */}
       {!showChat && game && (

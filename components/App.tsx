@@ -38,6 +38,7 @@ import TeamLobbyPanel from './TeamLobbyPanel';
 import PlayzoneGameEntry from './PlayzoneGameEntry';
 import AroundTheWorldGameView from './AroundTheWorldGameView';
 import { AroundTheWorldDashboard } from './aroundtheworld';
+import { getAllARWTasks, getTaskById } from '../utils/aroundtheworld/defaultTasks';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineIndicator from './OfflineIndicator';
 import ConnectionStatus from './ConnectionStatus';
@@ -1783,12 +1784,43 @@ const GameApp: React.FC = () => {
                     chatMessages={[]}
                     taskLibrary={activeGame?.points || []}
                     onAddTaskToCity={(cityId, taskId) => {
-                        // TODO: Implement add task to city
-                        console.log('Add task to city:', cityId, taskId);
+                        if (!activeGame) return;
+                        const taskTemplate = getTaskById(taskId);
+                        if (!taskTemplate) {
+                            console.warn('Task not found:', taskId);
+                            return;
+                        }
+                        // Create a GamePoint from the TaskTemplate
+                        const newPoint: GamePoint = {
+                            id: `${cityId}-${taskId}-${Date.now()}`,
+                            title: taskTemplate.title,
+                            destinationId: cityId,
+                            task: taskTemplate.task,
+                            points: taskTemplate.points,
+                            tags: taskTemplate.tags,
+                            iconId: taskTemplate.iconId || 'question',
+                            jorden80TaskType: taskTemplate.tags?.includes('by') ? 'by' : taskTemplate.tags?.includes('land') ? 'land' : 'creative',
+                            // Required GamePoint fields
+                            location: null, // No physical location for ATW tasks
+                            radiusMeters: 50,
+                            activationTypes: ['click'],
+                            isUnlocked: true,
+                            isCompleted: false,
+                            order: (activeGame.points || []).length
+                        };
+                        const updatedGame = {
+                            ...activeGame,
+                            points: [...(activeGame.points || []), newPoint]
+                        };
+                        updateActiveGame(updatedGame, `Add task ${taskTemplate.title} to ${cityId}`);
                     }}
                     onRemoveTaskFromCity={(cityId, taskId) => {
-                        // TODO: Implement remove task from city
-                        console.log('Remove task from city:', cityId, taskId);
+                        if (!activeGame) return;
+                        const updatedGame = {
+                            ...activeGame,
+                            points: (activeGame.points || []).filter(p => p.id !== taskId)
+                        };
+                        updateActiveGame(updatedGame, `Remove task from ${cityId}`);
                     }}
                 />
             )}
