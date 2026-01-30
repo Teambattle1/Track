@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import { Game, TimerConfig, TimerMode, MapStyleId, Language, DesignConfig, GameTaskConfiguration, MapConfiguration, TaskColorScheme, ZoneChangeEvent, GameMessage } from '../types';
+import { Game, TimerConfig, TimerMode, MapStyleId, Language, DesignConfig, GameTaskConfiguration, MapConfiguration, TaskColorScheme, ZoneChangeEvent, GameMessage, AroundTheWorldConfig, Destination, WorldMapStyle } from '../types';
 import GameMessageEditor from './GameMessageEditor';
 import {
     X, Gamepad2, Calendar, Building2, Upload, Search, Loader2, Clock, Hourglass,
@@ -34,7 +34,7 @@ interface GameCreatorProps {
   baseGame?: Game;
   onDelete?: (id: string) => void;
   onOpenPlaygroundEditor?: (playgroundId?: string) => void;
-  initialGameMode?: 'standard' | 'playzone' | 'elimination' | null;
+  initialGameMode?: 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80' | null;
 }
 
 // Map Styles with working preview logic
@@ -122,6 +122,7 @@ const TABS = [
     { id: 'VOTE', label: 'Vote', icon: Users },
     { id: 'MAP', label: 'Mapstyle', icon: MapIcon },
     { id: 'ZONECHANGE', label: 'Zone Change', icon: MapPin }, // NEW: Zone Change Tab
+    { id: 'AROUNDTHEWORLD', label: 'Destinations', icon: Globe }, // Around the World destinations
     { id: 'PLAY', label: 'Play', icon: PlayCircle },
     { id: 'DESIGN', label: 'Game Setup', icon: PenTool },
     { id: 'TASKS', label: 'Tasks', icon: List },
@@ -241,7 +242,7 @@ const MapStyleCard: React.FC<MapStyleCardProps> = ({
 
 const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, onDelete, onOpenPlaygroundEditor, initialGameMode = null }) => {
   const [activeTab, setActiveTab] = useState('GAME');
-  const [gameMode, setGameMode] = useState<'standard' | 'playzone' | 'elimination'>(baseGame?.gameMode || initialGameMode || 'standard');
+  const [gameMode, setGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80'>(baseGame?.gameMode || initialGameMode || 'standard');
 
   // Core Info
   const [name, setName] = useState(baseGame?.name || '');
@@ -391,6 +392,22 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [timerTitle, setTimerTitle] = useState(baseGame?.timerConfig?.title || 'TIME TO END');
   const [startTime, setStartTime] = useState(baseGame?.timerConfig?.startTime || '');
   const [lobbyOpenTime, setLobbyOpenTime] = useState(baseGame?.timerConfig?.lobbyOpenTime || '');
+
+  // Around the World Configuration
+  const [aroundTheWorldConfig, setAroundTheWorldConfig] = useState<AroundTheWorldConfig>(
+    baseGame?.aroundTheWorldConfig || {
+      mapStyle: 'world',
+      tasksRequiredToUnlock: 3,
+      initialUnlockedCount: 1,
+      firstArrivalBonus: 100,
+      showTeamPositions: true,
+      fieldMissionsEnabled: true,
+      defaultFieldRadius: 50
+    }
+  );
+  const [destinations, setDestinations] = useState<Destination[]>(baseGame?.destinations || []);
+  const [editingDestination, setEditingDestination] = useState<Destination | null>(null);
+
   const [selectedMapStyle, setSelectedMapStyle] = useState<MapStyleId>(baseGame?.defaultMapStyle || 'osm');
   const [customMapJson, setCustomMapJson] = useState(baseGame?.googleMapStyleJson || '');
   const [showJsonHelp, setShowJsonHelp] = useState(false);
@@ -966,6 +983,21 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           soundSettings,
           accessCode: accessCode.toUpperCase().trim() || undefined,
           zoneChanges: zoneChanges.length > 0 ? zoneChanges : undefined, // NEW: Save zone changes
+          // Around the World config (only for aroundtheworld mode)
+          aroundTheWorldConfig: gameMode === 'aroundtheworld' ? aroundTheWorldConfig : undefined,
+          destinations: gameMode === 'aroundtheworld' && destinations.length > 0 ? destinations : undefined,
+          // Jorden 80 config (only for jorden80 mode)
+          jorden80Config: gameMode === 'jorden80' ? {
+              startCity: 'london',
+              goalCity: 'istanbul',
+              daysLimit: 80,
+              tasksPerCity: 3,
+              dayPenaltyOnWrong: 1,
+              firstArrivalBonus: 200,
+              perfectCityBonus: 50,
+              timeBonusThreshold: 20,
+              timeBonusPoints: 100
+          } : undefined,
           client: {
               name: clientName,
               logoUrl: clientLogo,
@@ -1103,7 +1135,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       name="gameMode"
                                       value="standard"
                                       checked={gameMode === 'standard'}
-                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination')}
+                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
                                       className="w-4 h-4"
                                   />
                                   <div>
@@ -1117,7 +1149,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       name="gameMode"
                                       value="playzone"
                                       checked={gameMode === 'playzone'}
-                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination')}
+                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
                                       className="w-4 h-4"
                                   />
                                   <div>
@@ -1132,7 +1164,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           name="gameMode"
                                           value="elimination"
                                           checked={gameMode === 'elimination'}
-                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination')}
+                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
                                           className="w-4 h-4"
                                       />
                                       <div>
@@ -1143,6 +1175,46 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   {/* Beta Badge */}
                                   <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-amber-400">
                                       BETA
+                                  </div>
+                              </div>
+                              <div className="relative">
+                                  <label className="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all" style={{ borderColor: gameMode === 'aroundtheworld' ? '#06b6d4' : '#475569', backgroundColor: gameMode === 'aroundtheworld' ? '#164e63' : '#1e293b' }}>
+                                      <input
+                                          type="radio"
+                                          name="gameMode"
+                                          value="aroundtheworld"
+                                          checked={gameMode === 'aroundtheworld'}
+                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
+                                          className="w-4 h-4"
+                                      />
+                                      <div>
+                                          <span className="font-bold text-white block">AROUND THE WORLD</span>
+                                          <span className="text-[10px] text-slate-400">Global trivia & exploration game</span>
+                                      </div>
+                                  </label>
+                                  {/* New Badge */}
+                                  <div className="absolute -top-2 -right-2 bg-cyan-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-cyan-400">
+                                      NEW
+                                  </div>
+                              </div>
+                              <div className="relative">
+                                  <label className="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all" style={{ borderColor: gameMode === 'jorden80' ? '#c9a227' : '#475569', backgroundColor: gameMode === 'jorden80' ? '#3d2914' : '#1e293b' }}>
+                                      <input
+                                          type="radio"
+                                          name="gameMode"
+                                          value="jorden80"
+                                          checked={gameMode === 'jorden80'}
+                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
+                                          className="w-4 h-4"
+                                      />
+                                      <div>
+                                          <span className="font-bold text-white block">80 DAGE</span>
+                                          <span className="text-[10px] text-slate-400">Jules Verne Europe journey</span>
+                                      </div>
+                                  </label>
+                                  {/* New Badge */}
+                                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-amber-400">
+                                      NEW
                                   </div>
                               </div>
                           </div>
@@ -2570,6 +2642,430 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                       )}
                   </div>
               );
+          case 'AROUNDTHEWORLD':
+              return (
+                  <div className="space-y-6 max-w-3xl animate-in fade-in slide-in-from-bottom-2">
+                      {/* Header Info */}
+                      <div className="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 border border-cyan-600/40 p-4 rounded-2xl flex items-center gap-4">
+                          <Globe className="w-10 h-10 text-cyan-400" />
+                          <div>
+                              <h3 className="text-lg font-black text-white uppercase tracking-wider">Around the World Setup</h3>
+                              <p className="text-[11px] text-cyan-300/80">Configure destinations, unlock progression, and field missions</p>
+                          </div>
+                      </div>
+
+                      {/* Global Settings */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-4">Game Settings</label>
+
+                          <div className="grid grid-cols-2 gap-4">
+                              {/* Map Style */}
+                              <div>
+                                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">World Map Style</label>
+                                  <select
+                                      value={aroundTheWorldConfig.mapStyle}
+                                      onChange={(e) => setAroundTheWorldConfig({
+                                          ...aroundTheWorldConfig,
+                                          mapStyle: e.target.value as WorldMapStyle
+                                      })}
+                                      className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                  >
+                                      <option value="world">World Map</option>
+                                      <option value="europe">Europe</option>
+                                      <option value="asia">Asia</option>
+                                      <option value="americas">Americas</option>
+                                      <option value="africa">Africa</option>
+                                      <option value="custom">Custom</option>
+                                  </select>
+                              </div>
+
+                              {/* Initial Unlocked */}
+                              <div>
+                                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Initially Unlocked Destinations</label>
+                                  <input
+                                      type="number"
+                                      min={1}
+                                      max={5}
+                                      value={aroundTheWorldConfig.initialUnlockedCount}
+                                      onChange={(e) => setAroundTheWorldConfig({
+                                          ...aroundTheWorldConfig,
+                                          initialUnlockedCount: Math.max(1, Math.min(5, parseInt(e.target.value) || 1))
+                                      })}
+                                      className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                  />
+                              </div>
+
+                              {/* Tasks Required */}
+                              <div>
+                                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Tasks to Unlock Next</label>
+                                  <input
+                                      type="number"
+                                      min={1}
+                                      max={10}
+                                      value={aroundTheWorldConfig.tasksRequiredToUnlock}
+                                      onChange={(e) => setAroundTheWorldConfig({
+                                          ...aroundTheWorldConfig,
+                                          tasksRequiredToUnlock: Math.max(1, parseInt(e.target.value) || 1)
+                                      })}
+                                      className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                  />
+                              </div>
+
+                              {/* First Arrival Bonus */}
+                              <div>
+                                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">First Arrival Bonus</label>
+                                  <input
+                                      type="number"
+                                      min={0}
+                                      max={500}
+                                      value={aroundTheWorldConfig.firstArrivalBonus}
+                                      onChange={(e) => setAroundTheWorldConfig({
+                                          ...aroundTheWorldConfig,
+                                          firstArrivalBonus: Math.max(0, parseInt(e.target.value) || 0)
+                                      })}
+                                      className="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                  />
+                              </div>
+                          </div>
+
+                          {/* Toggle Options */}
+                          <div className="flex gap-6 mt-4 pt-4 border-t border-slate-700">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                      type="checkbox"
+                                      checked={aroundTheWorldConfig.showTeamPositions}
+                                      onChange={(e) => setAroundTheWorldConfig({
+                                          ...aroundTheWorldConfig,
+                                          showTeamPositions: e.target.checked
+                                      })}
+                                      className="w-4 h-4 rounded border-slate-600 bg-slate-800"
+                                  />
+                                  <span className="text-sm text-slate-300">Show Team Positions on Map</span>
+                              </label>
+
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                      type="checkbox"
+                                      checked={aroundTheWorldConfig.fieldMissionsEnabled}
+                                      onChange={(e) => setAroundTheWorldConfig({
+                                          ...aroundTheWorldConfig,
+                                          fieldMissionsEnabled: e.target.checked
+                                      })}
+                                      className="w-4 h-4 rounded border-slate-600 bg-slate-800"
+                                  />
+                                  <span className="text-sm text-slate-300">Enable GPS Field Missions</span>
+                              </label>
+                          </div>
+
+                          {/* Field Mission Radius */}
+                          {aroundTheWorldConfig.fieldMissionsEnabled && (
+                              <div className="mt-4 pt-4 border-t border-slate-700">
+                                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Default Field Mission Radius (meters)</label>
+                                  <input
+                                      type="number"
+                                      min={10}
+                                      max={500}
+                                      value={aroundTheWorldConfig.defaultFieldRadius}
+                                      onChange={(e) => setAroundTheWorldConfig({
+                                          ...aroundTheWorldConfig,
+                                          defaultFieldRadius: Math.max(10, parseInt(e.target.value) || 50)
+                                      })}
+                                      className="w-48 px-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                  />
+                              </div>
+                          )}
+                      </div>
+
+                      {/* Destinations Manager */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <div className="flex items-center justify-between mb-4">
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase">Destinations ({destinations.length})</label>
+                              <button
+                                  onClick={() => {
+                                      const newDest: Destination = {
+                                          id: `dest-${Date.now()}`,
+                                          name: `Destination ${destinations.length + 1}`,
+                                          position: { x: 50, y: 50 },
+                                          unlockOrder: destinations.length,
+                                          requiredTasks: aroundTheWorldConfig.tasksRequiredToUnlock,
+                                          flagEmoji: '🏳️'
+                                      };
+                                      setDestinations([...destinations, newDest]);
+                                      setEditingDestination(newDest);
+                                  }}
+                                  className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold uppercase rounded-lg flex items-center gap-2 transition-colors"
+                              >
+                                  <Flag className="w-4 h-4" />
+                                  Add Destination
+                              </button>
+                          </div>
+
+                          {/* Destinations List */}
+                          {destinations.length === 0 ? (
+                              <div className="text-center py-8 text-slate-500">
+                                  <Globe className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                                  <p className="text-sm">No destinations added yet</p>
+                                  <p className="text-xs mt-1">Click "Add Destination" to create your first stop</p>
+                              </div>
+                          ) : (
+                              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                                  {destinations.sort((a, b) => a.unlockOrder - b.unlockOrder).map((dest, index) => (
+                                      <div
+                                          key={dest.id}
+                                          className={`p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                                              editingDestination?.id === dest.id
+                                                  ? 'border-cyan-500 bg-cyan-900/20'
+                                                  : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                                          }`}
+                                          onClick={() => setEditingDestination(dest)}
+                                      >
+                                          <div className="flex items-center gap-3">
+                                              <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center text-2xl">
+                                                  {dest.flagEmoji || '🏳️'}
+                                              </div>
+                                              <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-2">
+                                                      <span className="text-xs font-bold text-slate-400">#{index + 1}</span>
+                                                      <span className="font-bold text-white truncate">{dest.name}</span>
+                                                      {dest.countryCode && (
+                                                          <span className="text-[10px] text-slate-500 uppercase">{dest.countryCode}</span>
+                                                      )}
+                                                  </div>
+                                                  <div className="text-[10px] text-slate-500 mt-0.5">
+                                                      Position: {dest.position.x}%, {dest.position.y}% • Tasks: {dest.requiredTasks}
+                                                  </div>
+                                              </div>
+                                              <button
+                                                  onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setDestinations(destinations.filter(d => d.id !== dest.id));
+                                                      if (editingDestination?.id === dest.id) {
+                                                          setEditingDestination(null);
+                                                      }
+                                                  }}
+                                                  className="p-2 hover:bg-red-900/30 rounded-lg text-slate-400 hover:text-red-400 transition-colors"
+                                              >
+                                                  <Trash2 className="w-4 h-4" />
+                                              </button>
+                                          </div>
+                                      </div>
+                                  ))}
+                              </div>
+                          )}
+                      </div>
+
+                      {/* Edit Destination Panel */}
+                      {editingDestination && (
+                          <div className="bg-slate-900 border-2 border-cyan-600/50 p-6 rounded-2xl">
+                              <div className="flex items-center justify-between mb-4">
+                                  <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">Edit Destination</h4>
+                                  <button
+                                      onClick={() => setEditingDestination(null)}
+                                      className="p-1 hover:bg-slate-700 rounded"
+                                  >
+                                      <X className="w-4 h-4 text-slate-400" />
+                                  </button>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                  {/* Name */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Name</label>
+                                      <input
+                                          type="text"
+                                          value={editingDestination.name}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, name: e.target.value };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                      />
+                                  </div>
+
+                                  {/* Flag Emoji */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Flag Emoji</label>
+                                      <input
+                                          type="text"
+                                          value={editingDestination.flagEmoji || ''}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, flagEmoji: e.target.value };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          placeholder="🇩🇰"
+                                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                      />
+                                  </div>
+
+                                  {/* Country Code */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Country Code (ISO)</label>
+                                      <input
+                                          type="text"
+                                          value={editingDestination.countryCode || ''}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, countryCode: e.target.value.toUpperCase() };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          placeholder="DK"
+                                          maxLength={3}
+                                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm uppercase"
+                                      />
+                                  </div>
+
+                                  {/* Unlock Order */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Unlock Order</label>
+                                      <input
+                                          type="number"
+                                          min={0}
+                                          value={editingDestination.unlockOrder}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, unlockOrder: parseInt(e.target.value) || 0 };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                      />
+                                  </div>
+
+                                  {/* Position X */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Position X (%)</label>
+                                      <input
+                                          type="number"
+                                          min={0}
+                                          max={100}
+                                          value={editingDestination.position.x}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, position: { ...editingDestination.position, x: parseInt(e.target.value) || 0 } };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                      />
+                                  </div>
+
+                                  {/* Position Y */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Position Y (%)</label>
+                                      <input
+                                          type="number"
+                                          min={0}
+                                          max={100}
+                                          value={editingDestination.position.y}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, position: { ...editingDestination.position, y: parseInt(e.target.value) || 0 } };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                      />
+                                  </div>
+
+                                  {/* Tasks Required */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Tasks Required</label>
+                                      <input
+                                          type="number"
+                                          min={1}
+                                          value={editingDestination.requiredTasks}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, requiredTasks: parseInt(e.target.value) || 1 };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm"
+                                      />
+                                  </div>
+
+                                  {/* Color */}
+                                  <div>
+                                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Accent Color</label>
+                                      <input
+                                          type="color"
+                                          value={editingDestination.color || '#06b6d4'}
+                                          onChange={(e) => {
+                                              const updated = { ...editingDestination, color: e.target.value };
+                                              setEditingDestination(updated);
+                                              setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                          }}
+                                          className="w-full h-10 rounded-lg bg-slate-800 border border-slate-600 cursor-pointer"
+                                      />
+                                  </div>
+                              </div>
+
+                              {/* Description */}
+                              <div className="mt-4">
+                                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Description</label>
+                                  <textarea
+                                      value={editingDestination.description || ''}
+                                      onChange={(e) => {
+                                          const updated = { ...editingDestination, description: e.target.value };
+                                          setEditingDestination(updated);
+                                          setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+                                      }}
+                                      placeholder="Brief description of this destination..."
+                                      rows={2}
+                                      className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm resize-none"
+                                  />
+                              </div>
+                          </div>
+                      )}
+
+                      {/* Quick Preset Destinations */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-4">Quick Add Presets</label>
+                          <div className="flex flex-wrap gap-2">
+                              {[
+                                  { name: 'Denmark', emoji: '🇩🇰', code: 'DK', x: 52, y: 28 },
+                                  { name: 'Japan', emoji: '🇯🇵', code: 'JP', x: 83, y: 36 },
+                                  { name: 'USA', emoji: '🇺🇸', code: 'US', x: 20, y: 38 },
+                                  { name: 'Brazil', emoji: '🇧🇷', code: 'BR', x: 30, y: 65 },
+                                  { name: 'Australia', emoji: '🇦🇺', code: 'AU', x: 85, y: 72 },
+                                  { name: 'Egypt', emoji: '🇪🇬', code: 'EG', x: 55, y: 45 },
+                                  { name: 'France', emoji: '🇫🇷', code: 'FR', x: 48, y: 32 },
+                                  { name: 'India', emoji: '🇮🇳', code: 'IN', x: 70, y: 45 },
+                                  { name: 'China', emoji: '🇨🇳', code: 'CN', x: 75, y: 38 },
+                                  { name: 'South Africa', emoji: '🇿🇦', code: 'ZA', x: 55, y: 75 },
+                              ].map(preset => (
+                                  <button
+                                      key={preset.code}
+                                      onClick={() => {
+                                          const exists = destinations.some(d => d.countryCode === preset.code);
+                                          if (exists) {
+                                              alert(`${preset.name} is already added!`);
+                                              return;
+                                          }
+                                          const newDest: Destination = {
+                                              id: `dest-${Date.now()}-${preset.code}`,
+                                              name: preset.name,
+                                              position: { x: preset.x, y: preset.y },
+                                              countryCode: preset.code,
+                                              flagEmoji: preset.emoji,
+                                              unlockOrder: destinations.length,
+                                              requiredTasks: aroundTheWorldConfig.tasksRequiredToUnlock
+                                          };
+                                          setDestinations([...destinations, newDest]);
+                                      }}
+                                      disabled={destinations.some(d => d.countryCode === preset.code)}
+                                      className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${
+                                          destinations.some(d => d.countryCode === preset.code)
+                                              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                              : 'bg-slate-700 hover:bg-slate-600 text-white'
+                                      }`}
+                                  >
+                                      <span className="text-lg">{preset.emoji}</span>
+                                      {preset.name}
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+                  </div>
+              );
           case 'SETTINGS':
               return (
                   <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
@@ -2924,6 +3420,30 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                     {TABS.filter(tab => {
                         // Hide MAP tab for playzone mode only (elimination is GPS-based and needs map style selection)
                         if (gameMode === 'playzone' && tab.id === 'MAP') {
+                            return false;
+                        }
+                        // Hide AROUNDTHEWORLD tab when not in aroundtheworld mode
+                        if (tab.id === 'AROUNDTHEWORLD' && gameMode !== 'aroundtheworld') {
+                            return false;
+                        }
+                        // Hide PLAYGROUNDS tab for aroundtheworld mode (uses destinations instead)
+                        if (gameMode === 'aroundtheworld' && tab.id === 'PLAYGROUNDS') {
+                            return false;
+                        }
+                        // Hide MAP tab for aroundtheworld mode (has its own map config)
+                        if (gameMode === 'aroundtheworld' && tab.id === 'MAP') {
+                            return false;
+                        }
+                        // Hide PLAYGROUNDS tab for jorden80 mode (uses cities instead)
+                        if (gameMode === 'jorden80' && tab.id === 'PLAYGROUNDS') {
+                            return false;
+                        }
+                        // Hide MAP tab for jorden80 mode (has its own Europe map)
+                        if (gameMode === 'jorden80' && tab.id === 'MAP') {
+                            return false;
+                        }
+                        // Hide AROUNDTHEWORLD tab for jorden80 mode
+                        if (gameMode === 'jorden80' && tab.id === 'AROUNDTHEWORLD') {
                             return false;
                         }
                         return true;

@@ -49,6 +49,9 @@ export interface TeamMember {
   deviceType?: DeviceType; // Device type used for playing (mobile, tablet, desktop)
 }
 
+// Jorden 80 vehicle type - defined early for Team interface use
+export type Jorden80Vehicle = 'balloon' | 'train' | 'carriage' | 'ship' | 'bicycle' | 'elephant';
+
 export interface Team {
   id: string;
   gameId: string;
@@ -64,6 +67,8 @@ export interface Team {
   startedAt?: number;
   createdAt?: number; // Timestamp when team was created
   color?: string; // Team color (hex)
+  // Jorden 80 specific fields
+  vehicle?: Jorden80Vehicle; // Transport type chosen by team
 }
 
 export interface TeamMemberData {
@@ -511,6 +516,17 @@ export interface GamePoint {
   // Info Task Settings (for task.type === 'info')
   infoSettings?: InfoTaskSettings;
   activatedByTeams?: string[]; // Track which teams have activated this info task (for one-time display)
+
+  // Around the World - Destination & Field Mission Fields
+  destinationId?: string;           // Link to destination for Around the World mode
+  isFieldMission?: boolean;         // GPS-activated field mission
+  fieldMissionLocation?: Coordinate; // Where player must go (can differ from task location)
+  fieldMissionRadius?: number;      // Radius for activation (default: config.defaultFieldRadius)
+  fieldMissionHint?: string;        // Hint to help find the location ("By the large oak tree")
+
+  // Jorden 80 specific fields
+  jorden80TaskType?: Jorden80TaskType; // 'by' | 'land' | 'creative' for 80 Days mode
+  jorden80CityId?: string;            // City this task belongs to
 }
 
 export interface TaskTemplate {
@@ -670,6 +686,55 @@ export interface ToolbarPositions {
 
 // ------------------------
 
+// === AROUND THE WORLD GAME MODE ===
+
+export type WorldMapStyle = 'world' | 'europe' | 'asia' | 'americas' | 'africa' | 'custom';
+
+export interface AroundTheWorldConfig {
+  // Map settings
+  mapImageUrl?: string;           // Custom world map background image
+  mapStyle: WorldMapStyle;
+
+  // Unlock progression
+  tasksRequiredToUnlock: number;  // Number of tasks required to unlock next destination
+  initialUnlockedCount: number;   // Number of destinations unlocked from start (1-3)
+
+  // Competition settings
+  firstArrivalBonus: number;      // Bonus points for first team to reach destination
+  showTeamPositions: boolean;     // Show where other teams are on the map
+
+  // Field missions (GPS-activated)
+  fieldMissionsEnabled: boolean;
+  defaultFieldRadius: number;     // Default GPS radius in meters
+}
+
+export interface Destination {
+  id: string;
+  name: string;                   // "Denmark", "Japan", etc.
+  position: { x: number; y: number }; // Position on world map (percentage 0-100)
+  countryCode?: string;           // ISO code for flag (DK, JP, etc.)
+  flagEmoji?: string;             // 🇩🇰, 🇯🇵, etc.
+
+  // Unlock settings
+  unlockOrder: number;            // Order for unlocking (0 = available from start)
+  requiredTasks: number;          // Tasks required to "complete" this destination
+
+  // Visuals
+  color?: string;                 // Destination accent color
+  iconUrl?: string;               // Custom icon
+  description?: string;           // Description of the destination
+}
+
+export interface TeamDestinationProgress {
+  teamId: string;
+  destinationId: string;
+  completedTasks: string[];       // Task IDs completed at this destination
+  isUnlocked: boolean;
+  isCompleted: boolean;
+  completedAt?: number;           // Timestamp for "first arrival" bonus calculation
+  arrivedAt?: number;             // When team first arrived/unlocked
+}
+
 export interface Game {
   id: string;
   name: string;
@@ -698,7 +763,7 @@ export interface Game {
   accessCode?: string; // Uppercase alphanumeric code for game access (case-insensitive)
 
   // Game Mode Configuration
-  gameMode?: 'standard' | 'playzone' | 'elimination'; // 'standard' = GPS-based, 'playzone' = playground-only indoor, 'elimination' = GPS-based CTF
+  gameMode?: 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80'; // 'standard' = GPS-based, 'playzone' = playground-only indoor, 'elimination' = GPS-based CTF, 'aroundtheworld' = global trivia/exploration, 'jorden80' = Jules Verne 80 days theme
 
   // Elimination Mode Specific Fields
   teamColors?: Record<string, string>; // Team ID -> Hex color code mapping (e.g., '#FF0000' for red)
@@ -718,6 +783,16 @@ export interface Game {
     detonatesAt: number; // createdAt + duration
   }>;
   teamCaptureCount?: Record<string, number>; // Team ID -> Number of captured tasks
+
+  // Around the World Mode Specific Fields
+  aroundTheWorldConfig?: AroundTheWorldConfig;
+  destinations?: Destination[];
+  teamDestinationProgress?: TeamDestinationProgress[];
+
+  // Jorden 80 Mode Specific Fields
+  jorden80Config?: Jorden80Config;
+  jorden80Cities?: Jorden80City[];
+  jorden80TeamProgress?: Record<string, Jorden80TeamProgress>; // teamId -> progress
 
   // Team & Permission Settings
   showOtherTeams?: boolean;
@@ -842,4 +917,52 @@ export interface GameLocationHistory {
   teamPaths: Record<string, LocationHistoryItem[]>; // teamId -> array of locations
   createdAt: number;
   updatedAt: number;
+}
+
+// === JORDEN 80 DAGE (80 Days) GAME MODE ===
+// Jules Verne inspired game where teams travel through Europe solving tasks
+
+// Jorden80Vehicle is defined earlier (before Team interface) for proper TypeScript ordering
+export type Jorden80TaskType = 'by' | 'land' | 'creative';
+
+export interface Jorden80Config {
+  startCity: string;           // Default: 'london'
+  goalCity: string;            // Default: 'istanbul'
+  daysLimit: number;           // Default: 80
+  tasksPerCity: number;        // Default: 3
+  dayPenaltyOnWrong: number;   // Default: 1 (extra days added for wrong answer)
+  firstArrivalBonus: number;   // Default: 200 (points for first team to reach Istanbul)
+  perfectCityBonus: number;    // Default: 50 (bonus for 3/3 correct in a city)
+  timeBonusThreshold: number;  // Default: 20 (days under which bonus applies)
+  timeBonusPoints: number;     // Default: 100 (points for finishing under threshold)
+}
+
+export interface Jorden80City {
+  id: string;                  // 'london', 'paris', etc.
+  name: string;
+  country: string;
+  tier: number;                // 0=start, 1-4=normal, 5=goal
+  position: { x: number; y: number };  // SVG coordinates
+  flagEmoji?: string;
+  // Connections: number of correct answers -> available destinations
+  connections: Record<number, string[]>;
+}
+
+export interface Jorden80CityProgress {
+  byTask: { completed: boolean; correct: boolean; points: number };
+  landTask: { completed: boolean; correct: boolean; points: number };
+  creativeTask: { completed: boolean; score: number; approved: boolean };
+}
+
+export interface Jorden80TeamProgress {
+  teamId: string;
+  currentCity: string;
+  visitedCities: string[];
+  route: string[];             // Full route taken: ['london', 'paris', 'lyon', ...]
+  daysUsed: number;
+  correctAnswers: number;      // Total correct answers in current city
+  totalCorrectAnswers: number; // Overall correct answers
+  cityProgress: Record<string, Jorden80CityProgress>;
+  hasFinished: boolean;
+  finishedAt?: number;         // Timestamp when team reached Istanbul
 }

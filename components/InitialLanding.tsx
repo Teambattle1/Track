@@ -17,7 +17,7 @@ import WalkingExplorer from './WalkingExplorer';
 import './InitialLandingStyles.css';
 
 interface InitialLandingProps {
-  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS' | 'TRANSLATIONS' | 'CLIENT') => void;
+  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'CREATE_AROUNDTHEWORLD_GAME' | 'CREATE_JORDEN80_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS' | 'TRANSLATIONS' | 'CLIENT') => void;
   version: string;
   games: Game[];
   activeGameId: string | null;
@@ -611,6 +611,24 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   delay={150}
                   scale={0.75}
                   badge="BETA"
+              />
+              <MapPinButton
+                  title="AROUND THE WORLD"
+                  icon={Globe}
+                  gradient="bg-gradient-to-br from-cyan-500 to-blue-500"
+                  onClick={() => onAction('CREATE_AROUNDTHEWORLD_GAME')}
+                  delay={200}
+                  scale={0.75}
+                  badge="NEW"
+              />
+              <MapPinButton
+                  title="80 DAGE"
+                  icon={Globe}
+                  gradient="bg-gradient-to-br from-amber-600 to-yellow-700"
+                  onClick={() => onAction('CREATE_JORDEN80_GAME')}
+                  delay={250}
+                  scale={0.75}
+                  badge="NEW"
               />
           </div>
       </div>
