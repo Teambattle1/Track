@@ -37,7 +37,6 @@ import DangerZoneModal from './DangerZoneModal';
 import TeamLobbyPanel from './TeamLobbyPanel';
 import PlayzoneGameEntry from './PlayzoneGameEntry';
 import AroundTheWorldGameView from './AroundTheWorldGameView';
-import Jorden80GameView from './jorden80/Jorden80GameView';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineIndicator from './OfflineIndicator';
 import ConnectionStatus from './ConnectionStatus';
@@ -81,7 +80,7 @@ const GameApp: React.FC = () => {
   const [showGameCreator, setShowGameCreator] = useState(false);
   const [showTeamLobby, setShowTeamLobby] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
-  const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80' | null>(null);
+  const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | null>(null);
 
   // --- DASHBOARD STATE ---
   const [showDashboard, setShowDashboard] = useState(false);
@@ -1703,11 +1702,6 @@ const GameApp: React.FC = () => {
                                 setInitialGameMode('aroundtheworld');
                                 setShowGameCreator(true);
                                 break;
-                            case 'CREATE_JORDEN80_GAME':
-                                setGameToEdit(null);
-                                setInitialGameMode('jorden80');
-                                setShowGameCreator(true);
-                                break;
                             case 'EDIT_GAME': 
                                 if (activeGameId && activeGame) {
                                     setGameToEdit(activeGame);
@@ -1789,36 +1783,8 @@ const GameApp: React.FC = () => {
             />
         )}
 
-        {/* JORDEN 80 DAGE GAME VIEW */}
-        {activeGame?.gameMode === 'jorden80' && (mode === GameMode.PLAY || mode === GameMode.SIMULATION) && (
-            <Jorden80GameView
-                game={currentGameObj!}
-                teams={mapTeams.map(t => t.team)}
-                currentTeam={currentTeam || undefined}
-                isInstructor={false}
-                userLocation={userLocation}
-                onTaskComplete={(taskId, isCorrect, points) => {
-                    if (isCorrect) {
-                        handleTaskComplete(taskId, points);
-                    } else {
-                        handleTaskIncorrect();
-                    }
-                }}
-                onUpdateGame={(updatedGame) => updateActiveGame(updatedGame, "Jorden 80 Progress")}
-                onUpdateTeam={async (updatedTeam) => {
-                    await db.updateTeam(updatedTeam.id, updatedTeam);
-                    setCurrentTeam(updatedTeam);
-                }}
-                onClose={() => setShowLanding(true)}
-                onOpenChat={() => setShowChatDrawer(true)}
-                onOpenTeamLobby={() => setShowTeamLobby(true)}
-                showScores={showScores}
-                currentScore={score}
-            />
-        )}
-
-        {/* GAME MAP - Hidden for Playzone, Around the World, and Jorden80 Games */}
-        {activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && activeGame?.gameMode !== 'jorden80' && (
+        {/* GAME MAP - Hidden for Playzone and Around the World Games */}
+        {activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (
         <div className="absolute inset-0 z-0">
             <GameMap
                 ref={mapRef}

@@ -34,7 +34,7 @@ interface GameCreatorProps {
   baseGame?: Game;
   onDelete?: (id: string) => void;
   onOpenPlaygroundEditor?: (playgroundId?: string) => void;
-  initialGameMode?: 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80' | null;
+  initialGameMode?: 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | null;
 }
 
 // Map Styles with working preview logic
@@ -242,7 +242,13 @@ const MapStyleCard: React.FC<MapStyleCardProps> = ({
 
 const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, onDelete, onOpenPlaygroundEditor, initialGameMode = null }) => {
   const [activeTab, setActiveTab] = useState('GAME');
-  const [gameMode, setGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80'>(baseGame?.gameMode || initialGameMode || 'standard');
+  const [gameMode, setGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld'>(() => {
+    // Migrate legacy jorden80 games to aroundtheworld
+    const mode = baseGame?.gameMode || initialGameMode || 'standard';
+    // Handle legacy jorden80 mode by converting to aroundtheworld
+    if ((mode as string) === 'jorden80') return 'aroundtheworld';
+    return mode as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld';
+  });
 
   // Core Info
   const [name, setName] = useState(baseGame?.name || '');
@@ -986,18 +992,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           // Around the World config (only for aroundtheworld mode)
           aroundTheWorldConfig: gameMode === 'aroundtheworld' ? aroundTheWorldConfig : undefined,
           destinations: gameMode === 'aroundtheworld' && destinations.length > 0 ? destinations : undefined,
-          // Jorden 80 config (only for jorden80 mode)
-          jorden80Config: gameMode === 'jorden80' ? {
-              startCity: 'london',
-              goalCity: 'istanbul',
-              daysLimit: 80,
-              tasksPerCity: 3,
-              dayPenaltyOnWrong: 1,
-              firstArrivalBonus: 200,
-              perfectCityBonus: 50,
-              timeBonusThreshold: 20,
-              timeBonusPoints: 100
-          } : undefined,
           client: {
               name: clientName,
               logoUrl: clientLogo,
@@ -1135,7 +1129,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       name="gameMode"
                                       value="standard"
                                       checked={gameMode === 'standard'}
-                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
+                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld')}
                                       className="w-4 h-4"
                                   />
                                   <div>
@@ -1149,7 +1143,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                       name="gameMode"
                                       value="playzone"
                                       checked={gameMode === 'playzone'}
-                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
+                                      onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld')}
                                       className="w-4 h-4"
                                   />
                                   <div>
@@ -1164,7 +1158,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           name="gameMode"
                                           value="elimination"
                                           checked={gameMode === 'elimination'}
-                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
+                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld')}
                                           className="w-4 h-4"
                                       />
                                       <div>
@@ -1184,7 +1178,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                           name="gameMode"
                                           value="aroundtheworld"
                                           checked={gameMode === 'aroundtheworld'}
-                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
+                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld')}
                                           className="w-4 h-4"
                                       />
                                       <div>
@@ -1194,26 +1188,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                                   </label>
                                   {/* New Badge */}
                                   <div className="absolute -top-2 -right-2 bg-cyan-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-cyan-400">
-                                      NEW
-                                  </div>
-                              </div>
-                              <div className="relative">
-                                  <label className="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all" style={{ borderColor: gameMode === 'jorden80' ? '#c9a227' : '#475569', backgroundColor: gameMode === 'jorden80' ? '#3d2914' : '#1e293b' }}>
-                                      <input
-                                          type="radio"
-                                          name="gameMode"
-                                          value="jorden80"
-                                          checked={gameMode === 'jorden80'}
-                                          onChange={(e) => setGameMode(e.target.value as 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80')}
-                                          className="w-4 h-4"
-                                      />
-                                      <div>
-                                          <span className="font-bold text-white block">80 DAGE</span>
-                                          <span className="text-[10px] text-slate-400">Jules Verne Europe journey</span>
-                                      </div>
-                                  </label>
-                                  {/* New Badge */}
-                                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg border border-amber-400">
                                       NEW
                                   </div>
                               </div>
@@ -3432,18 +3406,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                         }
                         // Hide MAP tab for aroundtheworld mode (has its own map config)
                         if (gameMode === 'aroundtheworld' && tab.id === 'MAP') {
-                            return false;
-                        }
-                        // Hide PLAYGROUNDS tab for jorden80 mode (uses cities instead)
-                        if (gameMode === 'jorden80' && tab.id === 'PLAYGROUNDS') {
-                            return false;
-                        }
-                        // Hide MAP tab for jorden80 mode (has its own Europe map)
-                        if (gameMode === 'jorden80' && tab.id === 'MAP') {
-                            return false;
-                        }
-                        // Hide AROUNDTHEWORLD tab for jorden80 mode
-                        if (gameMode === 'jorden80' && tab.id === 'AROUNDTHEWORLD') {
                             return false;
                         }
                         return true;

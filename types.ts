@@ -706,6 +706,25 @@ export interface AroundTheWorldConfig {
   // Field missions (GPS-activated)
   fieldMissionsEnabled: boolean;
   defaultFieldRadius: number;     // Default GPS radius in meters
+
+  // === MERGED FROM JORDEN80 - OPTIONAL FEATURES ===
+
+  // Theme selection
+  theme?: 'modern' | 'victorian'; // Visual theme (default: modern)
+
+  // Days tracking system (Jules Verne style)
+  enableDaysTracking?: boolean;   // Enable day counter mechanic
+  daysLimit?: number;             // Max days allowed (default: 80)
+  dayPenaltyOnWrong?: number;     // Extra days added for wrong answer (default: 1)
+  timeBonusThreshold?: number;    // Days under which time bonus applies
+  timeBonusPoints?: number;       // Points for finishing under threshold
+
+  // Branching routes (based on correct answers)
+  enableBranchingRoutes?: boolean; // If true, correct answers determine available next destinations
+  perfectDestinationBonus?: number; // Bonus for completing all tasks correctly at a destination
+
+  // Vehicle selection
+  enableVehicleSelection?: boolean; // Allow teams to choose a vehicle/avatar
 }
 
 export interface Destination {
@@ -723,6 +742,11 @@ export interface Destination {
   color?: string;                 // Destination accent color
   iconUrl?: string;               // Custom icon
   description?: string;           // Description of the destination
+
+  // === BRANCHING ROUTES (optional, for Jules Verne style) ===
+  tier?: number;                  // Destination tier: 0=start, 1-4=mid, 5=goal
+  connections?: Record<number, string[]>; // correctAnswers -> available next destinations
+  country?: string;               // Country name for display
 }
 
 export interface TeamDestinationProgress {
@@ -733,6 +757,11 @@ export interface TeamDestinationProgress {
   isCompleted: boolean;
   completedAt?: number;           // Timestamp for "first arrival" bonus calculation
   arrivedAt?: number;             // When team first arrived/unlocked
+
+  // === DAYS TRACKING (for Jules Verne style) ===
+  daysUsed?: number;              // Days used at this destination
+  correctAnswers?: number;        // Number of correct answers at this destination
+  route?: string[];               // Full route taken to this point
 }
 
 export interface Game {
@@ -763,7 +792,7 @@ export interface Game {
   accessCode?: string; // Uppercase alphanumeric code for game access (case-insensitive)
 
   // Game Mode Configuration
-  gameMode?: 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80'; // 'standard' = GPS-based, 'playzone' = playground-only indoor, 'elimination' = GPS-based CTF, 'aroundtheworld' = global trivia/exploration, 'jorden80' = Jules Verne 80 days theme
+  gameMode?: 'standard' | 'playzone' | 'elimination' | 'aroundtheworld'; // 'standard' = GPS-based, 'playzone' = playground-only indoor, 'elimination' = GPS-based CTF, 'aroundtheworld' = global trivia/exploration (includes Jules Verne 80 days mode)
 
   // Elimination Mode Specific Fields
   teamColors?: Record<string, string>; // Team ID -> Hex color code mapping (e.g., '#FF0000' for red)
@@ -784,15 +813,18 @@ export interface Game {
   }>;
   teamCaptureCount?: Record<string, number>; // Team ID -> Number of captured tasks
 
-  // Around the World Mode Specific Fields
+  // Around the World Mode Specific Fields (includes Jules Verne 80 Days features)
   aroundTheWorldConfig?: AroundTheWorldConfig;
   destinations?: Destination[];
   teamDestinationProgress?: TeamDestinationProgress[];
 
-  // Jorden 80 Mode Specific Fields
+  // Legacy Jorden80 fields (deprecated - use aroundTheWorldConfig instead)
+  /** @deprecated Use aroundTheWorldConfig with enableDaysTracking instead */
   jorden80Config?: Jorden80Config;
+  /** @deprecated Use destinations instead */
   jorden80Cities?: Jorden80City[];
-  jorden80TeamProgress?: Record<string, Jorden80TeamProgress>; // teamId -> progress
+  /** @deprecated Use teamDestinationProgress instead */
+  jorden80TeamProgress?: Record<string, Jorden80TeamProgress>;
 
   // Team & Permission Settings
   showOtherTeams?: boolean;

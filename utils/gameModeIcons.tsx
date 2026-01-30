@@ -89,7 +89,7 @@ export const Jorden80ModeIcon: React.FC<{ className?: string }> = ({ className =
 );
 
 // Get icon and color based on game mode
-export const getGameModeIcon = (gameMode?: 'standard' | 'map' | 'playzone' | 'elimination' | 'aroundtheworld' | 'jorden80') => {
+export const getGameModeIcon = (gameMode?: 'standard' | 'map' | 'playzone' | 'elimination' | 'aroundtheworld') => {
   switch (gameMode) {
     case 'playzone':
       return {
@@ -114,14 +114,6 @@ export const getGameModeIcon = (gameMode?: 'standard' | 'map' | 'playzone' | 'el
         color: 'text-cyan-600 dark:text-cyan-400',
         bgColor: 'bg-cyan-100 dark:bg-cyan-900/30',
         borderColor: 'border-cyan-300 dark:border-cyan-700'
-      };
-    case 'jorden80':
-      return {
-        Icon: Jorden80ModeIcon,
-        label: '80 DAGE',
-        color: 'text-amber-600 dark:text-amber-400',
-        bgColor: 'bg-amber-100 dark:bg-amber-900/30',
-        borderColor: 'border-amber-300 dark:border-amber-700'
       };
     case 'standard':
     case 'map':
