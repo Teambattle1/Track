@@ -37,7 +37,7 @@ import DangerZoneModal from './DangerZoneModal';
 import TeamLobbyPanel from './TeamLobbyPanel';
 import PlayzoneGameEntry from './PlayzoneGameEntry';
 import AroundTheWorldGameView from './AroundTheWorldGameView';
-import { Jorden80GameView } from './jorden80';
+import Jorden80GameView from './jorden80/Jorden80GameView';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineIndicator from './OfflineIndicator';
 import ConnectionStatus from './ConnectionStatus';
