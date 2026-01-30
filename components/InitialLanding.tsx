@@ -272,6 +272,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const [showGeminiWarning, setShowGeminiWarning] = useState(false);
   const [hasCheckedGeminiKey, setHasCheckedGeminiKey] = useState(false);
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
+  const [showAroundTheWorldChoiceModal, setShowAroundTheWorldChoiceModal] = useState(false);
   const [activitySummary, setActivitySummary] = useState<ActivitySummary | null>(null);
   const [showActivityNotification, setShowActivityNotification] = useState(false);
   const [showSupabaseScripts, setShowSupabaseScripts] = useState(false);
@@ -616,17 +617,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="AROUND THE WORLD"
                   icon={Globe}
                   gradient="bg-gradient-to-br from-cyan-500 to-blue-500"
-                  onClick={() => onAction('CREATE_AROUNDTHEWORLD_GAME')}
+                  onClick={() => setShowAroundTheWorldChoiceModal(true)}
                   delay={200}
-                  scale={0.75}
-                  badge="NEW"
-              />
-              <MapPinButton
-                  title="80 DAGE"
-                  icon={Compass}
-                  gradient="bg-gradient-to-br from-amber-600 to-yellow-700"
-                  onClick={() => onAction('CREATE_JORDEN80_GAME')}
-                  delay={250}
                   scale={0.75}
                   badge="NEW"
               />
@@ -1294,6 +1286,53 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
 
               <button
                 onClick={() => setShowPlayzoneChoiceModal(false)}
+                className="w-full mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold uppercase tracking-widest rounded-lg transition-all duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Around The World Choice Modal */}
+        {showAroundTheWorldChoiceModal && (
+          <div className="fixed inset-0 z-[5000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-cyan-600 rounded-2xl shadow-2xl p-8 max-w-md w-full animate-in zoom-in-95">
+              <h2 className="text-2xl font-black text-white mb-2">AROUND THE WORLD</h2>
+              <p className="text-sm text-slate-400 mb-6">Choose your adventure style</p>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setShowAroundTheWorldChoiceModal(false);
+                    onAction('CREATE_AROUNDTHEWORLD_GAME');
+                  }}
+                  className="w-full px-4 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black uppercase tracking-widest rounded-lg transition-all duration-200 flex items-center gap-4 group"
+                >
+                  <Globe className="w-8 h-8" />
+                  <div className="text-left">
+                    <div className="text-lg">AROUND THE WORLD</div>
+                    <div className="text-xs font-normal text-cyan-200 normal-case tracking-normal">Race through destinations worldwide</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowAroundTheWorldChoiceModal(false);
+                    onAction('CREATE_JORDEN80_GAME');
+                  }}
+                  className="w-full px-4 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-black uppercase tracking-widest rounded-lg transition-all duration-200 flex items-center gap-4 group"
+                >
+                  <Compass className="w-8 h-8" />
+                  <div className="text-left">
+                    <div className="text-lg">80 DAGE</div>
+                    <div className="text-xs font-normal text-amber-200 normal-case tracking-normal">Jules Verne journey through Europe</div>
+                  </div>
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowAroundTheWorldChoiceModal(false)}
                 className="w-full mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold uppercase tracking-widest rounded-lg transition-all duration-200"
               >
                 Cancel
