@@ -71,7 +71,7 @@ export const AroundTheWorldModeIcon: React.FC<{ className?: string }> = ({ class
   </svg>
 );
 
-// Jorden 80 icon - Victorian-style compass/balloon
+// Jorden 80 icon - Compass for Victorian journey theme
 export const Jorden80ModeIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -83,11 +83,8 @@ export const Jorden80ModeIcon: React.FC<{ className?: string }> = ({ className =
     strokeLinejoin="round"
     className={className}
   >
-    <circle cx="12" cy="8" r="6" />
-    <path d="M12 14v4" />
-    <path d="M8 22h8" />
-    <path d="M10 18h4" />
-    <path d="M12 2v2" />
+    <circle cx="12" cy="12" r="10" />
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" />
   </svg>
 );
 

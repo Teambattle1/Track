@@ -4,7 +4,7 @@ import {
   UserCircle, Settings, Play,
   LayoutDashboard, LayoutGrid, UserPlus,
   Plus, Database, ArrowLeft, Code,
-  Globe, ChevronDown, QrCode, MessageSquare, Anchor, Home, Trash2, Smartphone, FilePlus, Check, ChevronRight, LogOut, BarChart3, Bomb, MapPin, Gauge, Map, KeyRound, Search, X as XIcon, ExternalLink, Volume2, Eye, Wand2
+  Globe, ChevronDown, QrCode, MessageSquare, Anchor, Home, Trash2, Smartphone, FilePlus, Check, ChevronRight, LogOut, BarChart3, Bomb, MapPin, Gauge, Map, KeyRound, Search, X as XIcon, ExternalLink, Volume2, Eye, Wand2, Compass
 } from 'lucide-react';
 import { Game, AuthUser } from '../types';
 import { getGameDisplayId, matchesGameSearch, formatGameNameWithId } from '../utils/gameIdUtils';
@@ -623,7 +623,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
               />
               <MapPinButton
                   title="80 DAGE"
-                  icon={Globe}
+                  icon={Compass}
                   gradient="bg-gradient-to-br from-amber-600 to-yellow-700"
                   onClick={() => onAction('CREATE_JORDEN80_GAME')}
                   delay={250}
