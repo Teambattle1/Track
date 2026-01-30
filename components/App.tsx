@@ -1739,11 +1739,6 @@ const GameApp: React.FC = () => {
 
             {/* Around The World Dashboard */}
             {showAroundTheWorldDashboard && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'red', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <h1 style={{ color: 'white', fontSize: '48px' }}>ATW DASHBOARD LOADING...</h1>
-                </div>
-            )}
-            {showAroundTheWorldDashboard && false && (
                 <AroundTheWorldDashboard
                     game={activeGame?.gameMode === 'aroundtheworld' ? activeGame : undefined}
                     teams={mapTeams.map(t => t.team)}
