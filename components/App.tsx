@@ -1682,11 +1682,6 @@ const GameApp: React.FC = () => {
                         setMode(GameMode.PLAY);
                         return;
                     }
-                    // Around The World opens directly without login requirement
-                    if (action === 'CREATE_AROUNDTHEWORLD_GAME') {
-                        setShowAroundTheWorldDashboard(true);
-                        return;
-                    }
                     ensureSession(() => {
                         switch (action) {
                             case 'GAMES': setShowGameChooser(true); break;
@@ -1703,6 +1698,11 @@ const GameApp: React.FC = () => {
                             case 'CREATE_ELIMINATION_GAME':
                                 setGameToEdit(null);
                                 setInitialGameMode('elimination');
+                                setShowGameCreator(true);
+                                break;
+                            case 'CREATE_AROUNDTHEWORLD_GAME':
+                                setGameToEdit(null);
+                                setInitialGameMode('aroundtheworld');
                                 setShowGameCreator(true);
                                 break;
                             case 'EDIT_GAME': 
@@ -1736,7 +1736,7 @@ const GameApp: React.FC = () => {
             )}
             {renderModals()}
 
-            {/* Around The World Dashboard */}
+            {/* Around The World Dashboard - Currently using GameCreator instead */}
             {showAroundTheWorldDashboard && (
                 <AroundTheWorldDashboard
                     game={activeGame?.gameMode === 'aroundtheworld' ? activeGame : undefined}
