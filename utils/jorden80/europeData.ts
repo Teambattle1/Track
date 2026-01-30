@@ -6,13 +6,14 @@
 import { Jorden80City } from '../../types';
 
 // All 12 European cities for the 80 Days route
+// Positions calibrated for vintage 1898 Europe map background
 export const JORDEN80_CITIES: Jorden80City[] = [
   {
     id: 'london',
     name: 'London',
     country: 'England',
     tier: 0, // Start
-    position: { x: 220, y: 220 },
+    position: { x: 175, y: 185 },
     flagEmoji: '🇬🇧',
     connections: {
       3: ['amsterdam', 'paris', 'bruxelles'],
@@ -26,7 +27,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Amsterdam',
     country: 'Holland',
     tier: 1,
-    position: { x: 310, y: 215 },
+    position: { x: 265, y: 175 },
     flagEmoji: '🇳🇱',
     connections: {
       3: ['berlin', 'prag', 'wien'],
@@ -40,7 +41,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Paris',
     country: 'Frankrig',
     tier: 1,
-    position: { x: 290, y: 290 },
+    position: { x: 220, y: 255 },
     flagEmoji: '🇫🇷',
     connections: {
       3: ['lyon', 'milano', 'berlin'],
@@ -54,7 +55,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Bruxelles',
     country: 'Belgien',
     tier: 1,
-    position: { x: 305, y: 250 },
+    position: { x: 250, y: 210 },
     flagEmoji: '🇧🇪',
     connections: {
       3: ['amsterdam', 'paris', 'koln'],
@@ -68,7 +69,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Berlin',
     country: 'Tyskland',
     tier: 2,
-    position: { x: 400, y: 225 },
+    position: { x: 370, y: 175 },
     flagEmoji: '🇩🇪',
     connections: {
       3: ['prag', 'wien', 'budapest'],
@@ -82,7 +83,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Lyon',
     country: 'Frankrig',
     tier: 2,
-    position: { x: 315, y: 340 },
+    position: { x: 245, y: 315 },
     flagEmoji: '🇫🇷',
     connections: {
       3: ['milano', 'wien', 'budapest'],
@@ -96,7 +97,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Köln',
     country: 'Tyskland',
     tier: 2,
-    position: { x: 340, y: 255 },
+    position: { x: 295, y: 210 },
     flagEmoji: '🇩🇪',
     connections: {
       3: ['berlin', 'prag', 'wien'],
@@ -110,7 +111,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Milano',
     country: 'Italien',
     tier: 3,
-    position: { x: 370, y: 335 },
+    position: { x: 310, y: 330 },
     flagEmoji: '🇮🇹',
     connections: {
       3: ['wien', 'budapest', 'istanbul'],
@@ -124,7 +125,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Wien',
     country: 'Østrig',
     tier: 3,
-    position: { x: 445, y: 290 },
+    position: { x: 405, y: 265 },
     flagEmoji: '🇦🇹',
     connections: {
       3: ['budapest', 'istanbul'],
@@ -138,7 +139,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Prag',
     country: 'Bøhmen',
     tier: 3,
-    position: { x: 420, y: 260 },
+    position: { x: 380, y: 225 },
     flagEmoji: '🇨🇿',
     connections: {
       3: ['wien', 'budapest', 'istanbul'],
@@ -152,7 +153,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Budapest',
     country: 'Ungarn',
     tier: 4,
-    position: { x: 480, y: 310 },
+    position: { x: 455, y: 290 },
     flagEmoji: '🇭🇺',
     connections: {
       3: ['istanbul'],
@@ -166,7 +167,7 @@ export const JORDEN80_CITIES: Jorden80City[] = [
     name: 'Istanbul',
     country: 'Osmanniske Rige',
     tier: 5, // Goal
-    position: { x: 590, y: 420 },
+    position: { x: 560, y: 385 },
     flagEmoji: '🇹🇷',
     connections: {} // End destination - no connections
   }

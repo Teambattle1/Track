@@ -229,70 +229,58 @@ const EuropeMapCanvas: React.FC<EuropeMapCanvasProps> = ({
     });
   };
 
+  // Vintage map image URL (1898 Europe map - public domain)
+  const vintageMapUrl = 'https://www.pillarboxblue.com/wp-content/uploads/2018/02/Europe-map-1898-s.jpg';
+
   return (
-    <div className="j80-map-container" style={{ width, height }}>
+    <div className="j80-map-container" style={{ width, height, position: 'relative' }}>
+      {/* Vintage map background */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: `url(${vintageMapUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderRadius: '8px',
+          filter: 'sepia(20%) contrast(1.1)',
+          opacity: 0.95
+        }}
+      />
+
+      {/* Parchment overlay for vintage effect */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(135deg, rgba(244,228,193,0.15) 0%, rgba(139,115,85,0.1) 100%)',
+          borderRadius: '8px',
+          pointerEvents: 'none'
+        }}
+      />
+
       <svg
         width="100%"
         height="100%"
         viewBox="0 0 700 500"
         preserveAspectRatio="xMidYMid meet"
-        style={{ background: 'var(--j80-ocean-blue)' }}
+        style={{ position: 'relative', zIndex: 1 }}
       >
-        {/* Map background - simplified Europe shape */}
+        {/* Defs for effects */}
         <defs>
-          <linearGradient id="landGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--j80-land-green)" />
-            <stop offset="100%" stopColor="var(--j80-land-dark)" />
-          </linearGradient>
-
-          <filter id="mapShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.3" />
+          <filter id="cityGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="var(--j80-gold)" floodOpacity="0.6" />
+          </filter>
+          <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="1" dy="1" stdDeviation="1" floodColor="var(--j80-parchment)" floodOpacity="0.9" />
           </filter>
         </defs>
-
-        {/* Simplified Europe landmass */}
-        <path
-          d="M 150,120
-             Q 200,80 300,100
-             Q 400,80 500,120
-             Q 600,100 650,180
-             Q 680,280 620,380
-             Q 580,450 520,470
-             Q 400,460 300,450
-             Q 200,440 150,380
-             Q 120,300 150,200
-             Q 140,150 150,120 Z"
-          fill="url(#landGradient)"
-          filter="url(#mapShadow)"
-          opacity="0.9"
-        />
-
-        {/* British Isles */}
-        <ellipse cx="200" cy="200" rx="60" ry="80" fill="url(#landGradient)" filter="url(#mapShadow)" opacity="0.9" />
-
-        {/* Scandinavia hint */}
-        <path
-          d="M 350,50 Q 400,60 420,120 Q 440,80 480,60 Q 500,100 470,150 Q 400,140 350,50 Z"
-          fill="url(#landGradient)"
-          filter="url(#mapShadow)"
-          opacity="0.7"
-        />
-
-        {/* Italy hint */}
-        <path
-          d="M 380,340 Q 400,400 420,450 Q 380,460 360,420 Q 350,380 380,340 Z"
-          fill="url(#landGradient)"
-          filter="url(#mapShadow)"
-          opacity="0.9"
-        />
-
-        {/* Turkey/Asia Minor */}
-        <path
-          d="M 580,380 Q 640,360 680,400 Q 700,450 650,470 Q 600,460 580,420 Q 570,400 580,380 Z"
-          fill="url(#landGradient)"
-          filter="url(#mapShadow)"
-          opacity="0.9"
-        />
 
         {/* Route lines */}
         <g>{renderRouteLines()}</g>
@@ -300,25 +288,33 @@ const EuropeMapCanvas: React.FC<EuropeMapCanvasProps> = ({
         {/* City markers */}
         <g transform="translate(0, 0)">{renderCities()}</g>
 
-        {/* Compass rose */}
-        <g transform="translate(630, 80)">
-          <circle r="30" fill="var(--j80-parchment)" stroke="var(--j80-gold)" strokeWidth="2" />
-          <text y="5" textAnchor="middle" fontSize="20" fill="var(--j80-ink-brown)">☼</text>
-          <text y="-15" textAnchor="middle" fontSize="10" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">N</text>
+        {/* Compass rose - positioned in top right */}
+        <g transform="translate(640, 60)">
+          <circle r="28" fill="var(--j80-parchment)" stroke="var(--j80-gold)" strokeWidth="2" opacity="0.95" />
+          <circle r="20" fill="none" stroke="var(--j80-ink-brown)" strokeWidth="1" opacity="0.5" />
+          <text y="5" textAnchor="middle" fontSize="18" fill="var(--j80-gold)">✦</text>
+          <text y="-12" textAnchor="middle" fontSize="10" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif" fontWeight="bold">N</text>
+          <text y="20" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">S</text>
+          <text x="-14" y="4" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">W</text>
+          <text x="14" y="4" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">E</text>
         </g>
 
-        {/* Map title */}
-        <text
-          x="350"
-          y="35"
-          textAnchor="middle"
-          fontFamily="'Playfair Display SC', serif"
-          fontSize="20"
-          fill="var(--j80-ink-brown)"
-          letterSpacing="0.15em"
-        >
-          EUROPA 1872
-        </text>
+        {/* Map title banner */}
+        <g transform="translate(350, 25)">
+          <rect x="-100" y="-18" width="200" height="30" rx="4" fill="var(--j80-parchment)" stroke="var(--j80-gold)" strokeWidth="2" opacity="0.95" />
+          <text
+            x="0"
+            y="5"
+            textAnchor="middle"
+            fontFamily="'Playfair Display SC', serif"
+            fontSize="16"
+            fill="var(--j80-ink-brown)"
+            letterSpacing="0.15em"
+            fontWeight="600"
+          >
+            EUROPA 1872
+          </text>
+        </g>
       </svg>
     </div>
   );
