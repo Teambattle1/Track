@@ -37,6 +37,7 @@ import DangerZoneModal from './DangerZoneModal';
 import TeamLobbyPanel from './TeamLobbyPanel';
 import PlayzoneGameEntry from './PlayzoneGameEntry';
 import AroundTheWorldGameView from './AroundTheWorldGameView';
+import { AroundTheWorldDashboard } from './aroundtheworld';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineIndicator from './OfflineIndicator';
 import ConnectionStatus from './ConnectionStatus';
@@ -79,6 +80,7 @@ const GameApp: React.FC = () => {
   const [showTeamsHub, setShowTeamsHub] = useState(false);
   const [showGameCreator, setShowGameCreator] = useState(false);
   const [showTeamLobby, setShowTeamLobby] = useState(false);
+  const [showAroundTheWorldDashboard, setShowAroundTheWorldDashboard] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
   const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | null>(null);
 
@@ -1698,9 +1700,7 @@ const GameApp: React.FC = () => {
                                 setShowGameCreator(true);
                                 break;
                             case 'CREATE_AROUNDTHEWORLD_GAME':
-                                setGameToEdit(null);
-                                setInitialGameMode('aroundtheworld');
-                                setShowGameCreator(true);
+                                setShowAroundTheWorldDashboard(true);
                                 break;
                             case 'EDIT_GAME': 
                                 if (activeGameId && activeGame) {
@@ -1732,6 +1732,66 @@ const GameApp: React.FC = () => {
                 />
             )}
             {renderModals()}
+
+            {/* Around The World Dashboard */}
+            {showAroundTheWorldDashboard && (
+                <AroundTheWorldDashboard
+                    game={activeGame?.gameMode === 'aroundtheworld' ? activeGame : undefined}
+                    teams={mapTeams.map(t => t.team)}
+                    onCreateSession={async (name, config) => {
+                        const newGame: Game = {
+                            id: `atw-${Date.now()}`,
+                            name: name.toUpperCase(),
+                            description: 'Around The World - Victorian Expedition',
+                            createdAt: Date.now(),
+                            points: [],
+                            gameMode: 'aroundtheworld',
+                            aroundTheWorldConfig: {
+                                mapStyle: 'europe',
+                                tasksRequiredToUnlock: 3,
+                                initialUnlockedCount: 1,
+                                firstArrivalBonus: 200,
+                                showTeamPositions: true,
+                                fieldMissionsEnabled: false,
+                                defaultFieldRadius: 50,
+                                theme: 'victorian',
+                                enableDaysTracking: true,
+                                daysLimit: 80,
+                                enableBranchingRoutes: true
+                            }
+                        };
+                        await db.saveGame(newGame);
+                        setGames([...games, newGame]);
+                        setActiveGameId(newGame.id);
+                    }}
+                    onStartGame={() => {
+                        if (activeGame) {
+                            updateActiveGame({ ...activeGame, state: 'active' }, 'Start game');
+                        }
+                    }}
+                    onPauseGame={() => {
+                        if (activeGame) {
+                            updateActiveGame({ ...activeGame, state: 'draft' }, 'Pause game');
+                        }
+                    }}
+                    onSendChat={(message, teamId) => {
+                        // TODO: Implement chat send
+                        console.log('Send chat:', message, teamId);
+                    }}
+                    onUpdateGame={(game) => updateActiveGame(game, 'ATW Update')}
+                    onClose={() => setShowAroundTheWorldDashboard(false)}
+                    chatMessages={[]}
+                    taskLibrary={activeGame?.points || []}
+                    onAddTaskToCity={(cityId, taskId) => {
+                        // TODO: Implement add task to city
+                        console.log('Add task to city:', cityId, taskId);
+                    }}
+                    onRemoveTaskFromCity={(cityId, taskId) => {
+                        // TODO: Implement remove task from city
+                        console.log('Remove task from city:', cityId, taskId);
+                    }}
+                />
+            )}
           </>
       );
   }

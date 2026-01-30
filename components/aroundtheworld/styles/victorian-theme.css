@@ -1,0 +1,599 @@
+/**
+ * Victorian 1880 Theme Stylesheet
+ * For Around The World game mode
+ * Inspired by Jules Verne's "Around the World in 80 Days" (1872)
+ */
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  /* Parchment & Paper */
+  --atw-parchment: #f4e4c1;
+  --atw-parchment-light: #faf6ed;
+  --atw-parchment-dark: #e8d4a8;
+  --atw-paper-aged: #f0e6d2;
+
+  /* Ink & Text */
+  --atw-ink-black: #1a1410;
+  --atw-ink-brown: #3d2914;
+  --atw-ink-faded: #5c4a3a;
+  --atw-sepia: #8b7355;
+  --atw-sepia-light: #a89070;
+
+  /* Gold & Brass */
+  --atw-gold: #c9a227;
+  --atw-gold-light: #e8c547;
+  --atw-gold-dark: #8b6914;
+  --atw-brass: #b5a642;
+
+  /* Map Colors */
+  --atw-ocean: #7a9bb5;
+  --atw-ocean-dark: #5a7a94;
+  --atw-land: #b8c4a0;
+  --atw-land-dark: #8a9970;
+
+  /* Team Colors (Victorian palette) */
+  --atw-team-crimson: #c73e3e;
+  --atw-team-royal: #3e6bc7;
+  --atw-team-forest: #3e8b5a;
+  --atw-team-purple: #7b3ec7;
+  --atw-team-amber: #c77a3e;
+  --atw-team-teal: #3e9b9b;
+
+  /* Status Colors */
+  --atw-success: #4a7c4e;
+  --atw-warning: #b8860b;
+  --atw-danger: #8b2500;
+
+  /* Shadows */
+  --atw-shadow-sm: 0 2px 4px rgba(61, 41, 20, 0.2);
+  --atw-shadow-md: 0 4px 12px rgba(61, 41, 20, 0.25);
+  --atw-shadow-lg: 0 8px 24px rgba(61, 41, 20, 0.3);
+  --atw-shadow-inset: inset 0 2px 4px rgba(61, 41, 20, 0.15);
+
+  /* Borders */
+  --atw-border-ornate: 3px double var(--atw-sepia);
+  --atw-border-simple: 2px solid var(--atw-sepia);
+}
+
+/* ===== FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Playfair+Display+SC:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=IM+Fell+DW+Pica:ital@0;1&display=swap');
+
+.atw-font-heading {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.atw-font-heading-sc {
+  font-family: 'Playfair Display SC', 'Georgia', serif;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.atw-font-body {
+  font-family: 'IM Fell English', 'Georgia', serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.atw-font-elegant {
+  font-family: 'IM Fell DW Pica', 'Georgia', serif;
+  font-style: italic;
+}
+
+/* ===== BASE CONTAINER ===== */
+.atw-container {
+  background: linear-gradient(135deg, var(--atw-parchment) 0%, var(--atw-parchment-dark) 100%);
+  color: var(--atw-ink-brown);
+  min-height: 100vh;
+  font-family: 'IM Fell English', 'Georgia', serif;
+}
+
+/* ===== CARDS & PANELS ===== */
+.atw-card {
+  background: var(--atw-parchment-light);
+  border: var(--atw-border-ornate);
+  border-radius: 8px;
+  box-shadow: var(--atw-shadow-md);
+  position: relative;
+}
+
+.atw-card::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid var(--atw-sepia-light);
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.atw-panel {
+  background: linear-gradient(180deg, var(--atw-parchment-light) 0%, var(--atw-parchment) 100%);
+  border: var(--atw-border-simple);
+  border-radius: 4px;
+  box-shadow: var(--atw-shadow-sm);
+}
+
+/* ===== HEADERS ===== */
+.atw-header {
+  background: linear-gradient(180deg, var(--atw-ink-brown) 0%, var(--atw-ink-black) 100%);
+  color: var(--atw-gold);
+  padding: 1rem 1.5rem;
+  border-bottom: 4px solid var(--atw-gold);
+  position: relative;
+}
+
+.atw-header::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--atw-gold-dark), transparent);
+}
+
+.atw-title {
+  font-family: 'Playfair Display SC', serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.atw-subtitle {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: var(--atw-gold-light);
+  font-size: 0.9rem;
+}
+
+/* ===== BUTTONS ===== */
+.atw-btn {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.atw-btn-primary {
+  background: linear-gradient(180deg, var(--atw-gold) 0%, var(--atw-gold-dark) 100%);
+  color: var(--atw-ink-black);
+  border: 2px solid var(--atw-gold-dark);
+  box-shadow: var(--atw-shadow-sm), inset 0 1px 0 var(--atw-gold-light);
+}
+
+.atw-btn-primary:hover {
+  background: linear-gradient(180deg, var(--atw-gold-light) 0%, var(--atw-gold) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--atw-shadow-md);
+}
+
+.atw-btn-secondary {
+  background: linear-gradient(180deg, var(--atw-parchment) 0%, var(--atw-parchment-dark) 100%);
+  color: var(--atw-ink-brown);
+  border: 2px solid var(--atw-sepia);
+  box-shadow: var(--atw-shadow-sm);
+}
+
+.atw-btn-secondary:hover {
+  background: linear-gradient(180deg, var(--atw-parchment-light) 0%, var(--atw-parchment) 100%);
+  border-color: var(--atw-gold);
+}
+
+.atw-btn-danger {
+  background: linear-gradient(180deg, var(--atw-danger) 0%, #6b1c00 100%);
+  color: var(--atw-parchment);
+  border: 2px solid #4a1300;
+}
+
+/* ===== INPUTS ===== */
+.atw-input {
+  font-family: 'IM Fell English', serif;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--atw-parchment-light);
+  border: 2px solid var(--atw-sepia-light);
+  border-radius: 4px;
+  color: var(--atw-ink-brown);
+  box-shadow: var(--atw-shadow-inset);
+  transition: border-color 0.2s ease;
+}
+
+.atw-input:focus {
+  outline: none;
+  border-color: var(--atw-gold);
+  box-shadow: var(--atw-shadow-inset), 0 0 0 3px rgba(201, 162, 39, 0.2);
+}
+
+.atw-input::placeholder {
+  color: var(--atw-sepia-light);
+  font-style: italic;
+}
+
+/* ===== TEAM NAME SELECTOR ===== */
+.atw-team-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.atw-team-name-card {
+  background: var(--atw-parchment);
+  border: 2px solid var(--atw-sepia);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.atw-team-name-card:hover:not(.taken):not(.selected) {
+  border-color: var(--atw-gold);
+  transform: translateY(-4px);
+  box-shadow: var(--atw-shadow-md);
+}
+
+.atw-team-name-card.selected {
+  background: linear-gradient(135deg, var(--atw-gold) 0%, var(--atw-gold-dark) 100%);
+  color: var(--atw-ink-black);
+  border-color: var(--atw-gold-dark);
+  box-shadow: var(--atw-shadow-lg);
+}
+
+.atw-team-name-card.taken {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--atw-parchment-dark);
+}
+
+.atw-team-name-card.taken::after {
+  content: 'TAKEN';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  font-family: 'Playfair Display SC', serif;
+  font-size: 0.75rem;
+  color: var(--atw-danger);
+  letter-spacing: 0.2em;
+}
+
+.atw-team-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.atw-team-motto {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--atw-sepia);
+}
+
+/* ===== CHAT POPUP ===== */
+.atw-chat-popup {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 380px;
+  max-height: 500px;
+  background: var(--atw-parchment);
+  border: var(--atw-border-ornate);
+  border-radius: 12px;
+  box-shadow: var(--atw-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.atw-chat-header {
+  background: linear-gradient(180deg, var(--atw-ink-brown) 0%, var(--atw-ink-black) 100%);
+  color: var(--atw-gold);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--atw-gold);
+}
+
+.atw-chat-title {
+  font-family: 'Playfair Display SC', serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+}
+
+.atw-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b7355' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.atw-chat-message {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  max-width: 85%;
+}
+
+.atw-chat-message.instructor {
+  background: linear-gradient(135deg, var(--atw-gold) 0%, var(--atw-gold-dark) 100%);
+  color: var(--atw-ink-black);
+  margin-left: auto;
+  border: 1px solid var(--atw-gold-dark);
+}
+
+.atw-chat-message.team {
+  background: var(--atw-parchment-light);
+  border: 1px solid var(--atw-sepia-light);
+}
+
+.atw-chat-sender {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.atw-chat-text {
+  font-family: 'IM Fell English', serif;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.atw-chat-time {
+  font-size: 0.65rem;
+  color: var(--atw-sepia);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.atw-chat-input-area {
+  padding: 0.75rem;
+  border-top: 2px solid var(--atw-sepia-light);
+  background: var(--atw-parchment-dark);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.atw-chat-input {
+  flex: 1;
+  font-family: 'IM Fell English', serif;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--atw-sepia);
+  border-radius: 4px;
+  background: var(--atw-parchment-light);
+}
+
+.atw-chat-send {
+  background: var(--atw-gold);
+  color: var(--atw-ink-black);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ===== MAP STYLES ===== */
+.atw-map-container {
+  position: relative;
+  border: var(--atw-border-ornate);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--atw-ocean);
+}
+
+.atw-map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(244,228,193,0.1) 0%, transparent 50%),
+    linear-gradient(225deg, rgba(139,115,85,0.1) 0%, transparent 50%);
+}
+
+.atw-city-marker {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.atw-city-marker:hover {
+  transform: scale(1.1);
+}
+
+.atw-city-label {
+  font-family: 'Playfair Display', serif;
+  fill: var(--atw-ink-brown);
+  text-shadow: 1px 1px 2px var(--atw-parchment);
+}
+
+.atw-route-line {
+  stroke: var(--atw-sepia);
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  opacity: 0.6;
+}
+
+.atw-route-line.traveled {
+  stroke: var(--atw-gold);
+  stroke-width: 3;
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* ===== EDITOR PANEL ===== */
+.atw-editor-panel {
+  background: var(--atw-parchment);
+  border-left: var(--atw-border-ornate);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.atw-city-list {
+  padding: 1rem;
+}
+
+.atw-city-item {
+  background: var(--atw-parchment-light);
+  border: 2px solid var(--atw-sepia-light);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.atw-city-header {
+  background: linear-gradient(90deg, var(--atw-sepia) 0%, var(--atw-sepia-light) 100%);
+  color: var(--atw-parchment);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.atw-city-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.atw-city-flag {
+  font-size: 1.25rem;
+}
+
+.atw-city-tasks {
+  padding: 0.75rem;
+}
+
+.atw-task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--atw-parchment);
+  border: 1px solid var(--atw-sepia-light);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  font-family: 'IM Fell English', serif;
+  font-size: 0.9rem;
+}
+
+.atw-task-type {
+  font-family: 'Playfair Display SC', serif;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.atw-task-type.by {
+  background: var(--atw-team-royal);
+  color: white;
+}
+
+.atw-task-type.land {
+  background: var(--atw-team-forest);
+  color: white;
+}
+
+.atw-task-type.creative {
+  background: var(--atw-team-purple);
+  color: white;
+}
+
+/* ===== DECORATIVE ELEMENTS ===== */
+.atw-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--atw-sepia), transparent);
+  margin: 1.5rem 0;
+}
+
+.atw-ornament {
+  text-align: center;
+  color: var(--atw-gold);
+  font-size: 1.5rem;
+  margin: 1rem 0;
+}
+
+.atw-ornament::before,
+.atw-ornament::after {
+  content: '—';
+  margin: 0 0.5rem;
+  color: var(--atw-sepia);
+}
+
+/* ===== SCROLLBAR ===== */
+.atw-container ::-webkit-scrollbar {
+  width: 10px;
+}
+
+.atw-container ::-webkit-scrollbar-track {
+  background: var(--atw-parchment-dark);
+  border-radius: 4px;
+}
+
+.atw-container ::-webkit-scrollbar-thumb {
+  background: var(--atw-sepia);
+  border-radius: 4px;
+  border: 2px solid var(--atw-parchment-dark);
+}
+
+.atw-container ::-webkit-scrollbar-thumb:hover {
+  background: var(--atw-gold);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes atw-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes atw-pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(201, 162, 39, 0); }
+}
+
+.atw-animate-in {
+  animation: atw-fade-in 0.3s ease-out;
+}
+
+.atw-pulse {
+  animation: atw-pulse-gold 2s infinite;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .atw-chat-popup {
+    width: calc(100% - 2rem);
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .atw-team-selector {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
