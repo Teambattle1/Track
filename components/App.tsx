@@ -19,7 +19,7 @@ import InstructorDashboard from './InstructorDashboard';
 import TeamDashboard from './TeamDashboard';
 import WelcomeScreen from './WelcomeScreen';
 import InitialLanding from './InitialLanding';
-import LoginPage from './LoginPage';
+// LoginPage removed - no login required for gamemaster access
 import EditorDrawer from './EditorDrawer';
 import TaskModal from './TaskModal';
 import DeleteGamesModal from './DeleteGamesModal';
@@ -48,8 +48,8 @@ import { setGlobalVolume } from '../utils/sounds';
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
   // --- AUTH & USER STATE ---
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [showLogin, setShowLogin] = useState(false);
+  // Default to always logged in as Gamemaster - no login required
+  const [authUser, setAuthUser] = useState<AuthUser | null>({ id: 'gamemaster', name: 'Gamemaster', email: '', role: 'Editor' });
 
   // --- DATA STATE ---
   const [games, setGames] = useState<Game[]>([]);
@@ -439,12 +439,9 @@ const GameApp: React.FC = () => {
       return currentGameObj.points.find(p => p.id === activeTaskModalId) || null;
   }, [activeTaskModalId, currentGameObj]);
 
+  // No login required - always execute actions directly
   const ensureSession = (callback: () => void) => {
-      if (!authUser) {
-          setShowLogin(true);
-      } else {
-          callback();
-      }
+      callback();
   };
 
   const updateActiveGame = async (updatedGame: Game, changeDescription: string = "Modified Game") => {
@@ -1116,15 +1113,6 @@ const GameApp: React.FC = () => {
       return <ClientSubmissionView token={submissionToken} />;
   }
 
-  if (showLogin) {
-      return (
-          <LoginPage 
-              onLoginSuccess={(user) => { setAuthUser(user); setShowLogin(false); }}
-              onPlayAsGuest={() => { setAuthUser({ id: 'guest', name: 'Guest', email: '', role: 'Editor' }); setShowLogin(false); }}
-              onBack={() => setShowLogin(false)}
-          />
-      );
-  }
 
   const renderModals = () => (
       <>

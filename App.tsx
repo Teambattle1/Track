@@ -23,7 +23,7 @@ import TabletFrame from './components/TabletFrame';
 import PhoneFrame from './components/PhoneFrame';
 import WelcomeScreen from './components/WelcomeScreen';
 import InitialLanding from './components/InitialLanding';
-import LoginPage from './components/LoginPage';
+// LoginPage removed - no login required for gamemaster access
 import EditorDrawer from './components/EditorDrawer';
 import TaskModal from './components/TaskModal';
 import DeleteGamesModal from './components/DeleteGamesModal';
@@ -95,19 +95,13 @@ import { setupFullscreenOnInteraction } from './utils/fullscreen';
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
   // --- AUTH & USER STATE ---
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  // Default to always logged in as Gamemaster - no login required
+  const [authUser, setAuthUser] = useState<AuthUser | null>({ id: 'gamemaster', name: 'Gamemaster', email: '', role: 'Editor' });
   const [userAccessMode, setUserAccessMode] = useState<'EDITOR' | 'INSTRUCTOR' | 'TEAM' | null>(null);
 
   // --- SUPABASE DIAGNOSTIC ---
   const [showSupabaseDiagnostic, setShowSupabaseDiagnostic] = useState(false);
   const [showTranslationsManager, setShowTranslationsManager] = useState(false);
-
-  // CRITICAL NULL CHECK: Validate props before rendering
-  // This prevents crashes from undefined game/playground states
-  // Check if URL path is /login to show login page
-  const [showLogin, setShowLogin] = useState(() => {
-    return window.location.pathname === '/login';
-  });
 
   // --- DATA STATE ---
   const [games, setGames] = useState<Game[]>([]);
@@ -342,13 +336,9 @@ const GameApp: React.FC = () => {
   // --- INITIALIZATION ---
   useEffect(() => {
     const init = async () => {
-      // Only hide login if we're NOT at the /login route
-      if (window.location.pathname !== '/login') {
-        setShowLogin(false);
-      }
-      const user = authService.getCurrentUser();
-      if (user) {
-        setAuthUser(user);
+      // Redirect /login URL to home - no login required
+      if (window.location.pathname === '/login') {
+        window.history.pushState({}, '', '/');
       }
 
       try {
@@ -927,12 +917,9 @@ const GameApp: React.FC = () => {
   }, [activeGame, mode, currentTeam?.startedAt, selectedTeamForFogOfWar, teamsForFogOfWar.length]);
 
 
+  // No login required - always execute actions directly
   const ensureSession = (callback: () => void) => {
-      if (!authUser) {
-          setShowLogin(true);
-      } else {
-          callback();
-      }
+      callback();
   };
 
   const updateActiveGame = async (updatedGame: Game) => {
@@ -1802,44 +1789,10 @@ const GameApp: React.FC = () => {
       return <ClientSubmissionView token={submissionToken} />;
   }
 
-  if (showLogin) {
-      return (
-          <LoginPage
-              onLoginSuccess={(user, mode) => {
-                  setAuthUser(user);
-                  setUserAccessMode(mode);
-                  setShowLogin(false);
-
-                  // For INSTRUCTOR mode, go directly to game chooser in instructor mode
-                  if (mode === 'INSTRUCTOR') {
-                      setShowLanding(false);
-                      setShowGameChooser(true);
-                      setMode(GameMode.INSTRUCTOR);
-                  }
-
-                  // Navigate to home if we came from /login URL
-                  if (window.location.pathname === '/login') {
-                      window.history.pushState({}, '', '/');
-                  }
-              }}
-              onPlayAsGuest={() => {
-                  setAuthUser({ id: 'guest', name: 'Guest', email: '', role: 'Editor' });
-                  setUserAccessMode('TEAM');
-                  setShowLogin(false);
-                  // Navigate to home if we came from /login URL
-                  if (window.location.pathname === '/login') {
-                      window.history.pushState({}, '', '/');
-                  }
-              }}
-              onBack={() => {
-                  setShowLogin(false);
-                  // Navigate to home if we came from /login URL
-                  if (window.location.pathname === '/login') {
-                      window.history.pushState({}, '', '/');
-                  }
-              }}
-          />
-      );
+  // Login page removed - no login required for gamemaster access
+  // Redirect /login URL to home if someone navigates there directly
+  if (window.location.pathname === '/login') {
+      window.history.pushState({}, '', '/');
   }
 
   // Render fullscreen overlay on all screens
@@ -2864,7 +2817,7 @@ const GameApp: React.FC = () => {
                 activeGameId={activeGameId}
                 onSelectGame={setActiveGameId}
                 authUser={authUser}
-                onLogout={() => { authService.logout(); setAuthUser(null); }}
+                onLogout={() => { /* No logout needed - always logged in as Gamemaster */ }}
                 onAction={(action) => {
                     if (action === 'PLAY') {
                         if (activeGameId) {
