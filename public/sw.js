@@ -7,9 +7,9 @@
  * - Background sync for failed requests
  */
 
-const CACHE_NAME = 'teamtrack-v1';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
+const CACHE_NAME = 'teamtrack-v2';
+const STATIC_CACHE = 'static-v2';
+const DYNAMIC_CACHE = 'dynamic-v2';
 
 // Assets to cache immediately
 const STATIC_ASSETS = [
@@ -63,7 +63,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for static assets
+  // Network-first for navigation requests (HTML pages)
+  // This ensures new deployments always work by fetching fresh HTML
+  if (request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(networkFirstStrategy(request));
+    return;
+  }
+
+  // Cache-first for static assets (JS, CSS, images with hashed names)
   event.respondWith(cacheFirstStrategy(request));
 });
 
