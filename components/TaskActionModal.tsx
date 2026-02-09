@@ -33,6 +33,7 @@ const ACTION_TYPES: { id: ActionType; label: string; icon: any; description: str
 const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, playgrounds, onSave, onClose, onStartDrawMode }) => {
   const [activeTrigger, setActiveTrigger] = useState<TriggerType>('onCorrect');
   const [logic, setLogic] = useState<TaskLogic>(point.logic || {});
+  const [expandedLineEditors, setExpandedLineEditors] = useState<Set<string>>(new Set());
 
   const handleAddAction = (type: ActionType) => {
       const newAction: GameAction = {
@@ -134,6 +135,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
               {/* Action specific inputs */}
               <div className="flex flex-col gap-2">
                   {(action.type === 'unlock' || action.type === 'lock' || action.type === 'reveal') && (
+                      <>
                       <select
                           className="w-full p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-sm focus:border-indigo-500 outline-none"
                           value={action.targetId || ''}
@@ -147,6 +149,66 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ point, allPoints, pla
                               <option key={p.id} value={p.id}>#{String(p.order).padStart(2, '0')} {p.title}</option>
                           ))}
                       </select>
+
+                      {/* Line Style Editor - shown when a target is selected */}
+                      {action.targetId && (
+                        <div className="mt-1">
+                          <button
+                            onClick={() => {
+                              setExpandedLineEditors(prev => {
+                                const next = new Set(prev);
+                                if (next.has(action.id)) next.delete(action.id);
+                                else next.add(action.id);
+                                return next;
+                              });
+                            }}
+                            className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 font-bold uppercase flex items-center gap-1 transition-colors"
+                          >
+                            {expandedLineEditors.has(action.id) ? '▾' : '▸'} Connection Line Style
+                          </button>
+
+                          {expandedLineEditors.has(action.id) && (
+                            <div className="mt-2 p-2.5 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center gap-4 flex-wrap">
+                              <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase">
+                                Color
+                                <input
+                                  type="color"
+                                  value={action.lineColor || '#92400e'}
+                                  onChange={(e) => handleUpdateAction(action.id, { lineColor: e.target.value })}
+                                  className="w-6 h-6 rounded cursor-pointer border border-gray-300 dark:border-gray-500"
+                                />
+                              </label>
+
+                              <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase">
+                                Width
+                                <input
+                                  type="range"
+                                  min="1"
+                                  max="6"
+                                  value={action.lineWidth || 2}
+                                  onChange={(e) => handleUpdateAction(action.id, { lineWidth: parseInt(e.target.value) })}
+                                  className="w-16 accent-indigo-500"
+                                />
+                                <span className="text-[10px] w-3 text-gray-500">{action.lineWidth || 2}</span>
+                              </label>
+
+                              <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase">
+                                Style
+                                <select
+                                  value={action.lineStyle || 'dashed'}
+                                  onChange={(e) => handleUpdateAction(action.id, { lineStyle: e.target.value as 'dashed' | 'dotted' | 'solid' })}
+                                  className="text-xs p-1 rounded bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600"
+                                >
+                                  <option value="dashed">━ ━ ━ Dashed</option>
+                                  <option value="dotted">··· Dotted</option>
+                                  <option value="solid">━━━ Solid</option>
+                                </select>
+                              </label>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      </>
                   )}
 
                   {action.type === 'open_playground' && (

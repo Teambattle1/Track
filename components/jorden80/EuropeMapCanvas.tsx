@@ -269,57 +269,60 @@ const EuropeMapCanvas: React.FC<EuropeMapCanvasProps> = ({
         }}
       />
 
-      <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 700 500"
-        preserveAspectRatio="xMidYMid meet"
-        style={{ position: 'relative', zIndex: 1 }}
-      >
-        {/* Defs for effects */}
-        <defs>
-          <filter id="cityGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="var(--j80-gold)" floodOpacity="0.6" />
-          </filter>
-          <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="1" dy="1" stdDeviation="1" floodColor="var(--j80-parchment)" floodOpacity="0.9" />
-          </filter>
-        </defs>
+      {/* SVG overlay with cities, routes, compass — hidden when used as playzone background */}
+      {!fullSize && (
+        <svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 700 500"
+          preserveAspectRatio="xMidYMid meet"
+          style={{ position: 'relative', zIndex: 1 }}
+        >
+          {/* Defs for effects */}
+          <defs>
+            <filter id="cityGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="var(--j80-gold)" floodOpacity="0.6" />
+            </filter>
+            <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="1" dy="1" stdDeviation="1" floodColor="var(--j80-parchment)" floodOpacity="0.9" />
+            </filter>
+          </defs>
 
-        {/* Route lines */}
-        <g>{renderRouteLines()}</g>
+          {/* Route lines */}
+          <g>{renderRouteLines()}</g>
 
-        {/* City markers */}
-        <g transform="translate(0, 0)">{renderCities()}</g>
+          {/* City markers */}
+          <g transform="translate(0, 0)">{renderCities()}</g>
 
-        {/* Compass rose - positioned in top right */}
-        <g transform="translate(640, 60)">
-          <circle r="28" fill="var(--j80-parchment)" stroke="var(--j80-gold)" strokeWidth="2" opacity="0.95" />
-          <circle r="20" fill="none" stroke="var(--j80-ink-brown)" strokeWidth="1" opacity="0.5" />
-          <text y="5" textAnchor="middle" fontSize="18" fill="var(--j80-gold)">✦</text>
-          <text y="-12" textAnchor="middle" fontSize="10" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif" fontWeight="bold">N</text>
-          <text y="20" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">S</text>
-          <text x="-14" y="4" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">W</text>
-          <text x="14" y="4" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">E</text>
-        </g>
+          {/* Compass rose - positioned in top right */}
+          <g transform="translate(640, 60)">
+            <circle r="28" fill="var(--j80-parchment)" stroke="var(--j80-gold)" strokeWidth="2" opacity="0.95" />
+            <circle r="20" fill="none" stroke="var(--j80-ink-brown)" strokeWidth="1" opacity="0.5" />
+            <text y="5" textAnchor="middle" fontSize="18" fill="var(--j80-gold)">✦</text>
+            <text y="-12" textAnchor="middle" fontSize="10" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif" fontWeight="bold">N</text>
+            <text y="20" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">S</text>
+            <text x="-14" y="4" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">W</text>
+            <text x="14" y="4" textAnchor="middle" fontSize="8" fill="var(--j80-ink-brown)" fontFamily="'Playfair Display', serif">E</text>
+          </g>
 
-        {/* Map title banner */}
-        <g transform="translate(350, 25)">
-          <rect x="-100" y="-18" width="200" height="30" rx="4" fill="var(--j80-parchment)" stroke="var(--j80-gold)" strokeWidth="2" opacity="0.95" />
-          <text
-            x="0"
-            y="5"
-            textAnchor="middle"
-            fontFamily="'Playfair Display SC', serif"
-            fontSize="16"
-            fill="var(--j80-ink-brown)"
-            letterSpacing="0.15em"
-            fontWeight="600"
-          >
-            EUROPA 1872
-          </text>
-        </g>
-      </svg>
+          {/* Map title banner */}
+          <g transform="translate(350, 25)">
+            <rect x="-100" y="-18" width="200" height="30" rx="4" fill="var(--j80-parchment)" stroke="var(--j80-gold)" strokeWidth="2" opacity="0.95" />
+            <text
+              x="0"
+              y="5"
+              textAnchor="middle"
+              fontFamily="'Playfair Display SC', serif"
+              fontSize="16"
+              fill="var(--j80-ink-brown)"
+              letterSpacing="0.15em"
+              fontWeight="600"
+            >
+              EUROPA 1872
+            </text>
+          </g>
+        </svg>
+      )}
     </div>
   );
 };

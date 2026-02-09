@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { Game, Playground, GamePoint, IconId, TaskTemplate, TaskList, DeviceType, PlaygroundTemplate, GameMode, DeviceLayout } from '../types';
+import { Game, Playground, GamePoint, GameAction, IconId, TaskTemplate, TaskList, DeviceType, PlaygroundTemplate, GameMode, DeviceLayout } from '../types';
 import { DEVICE_SPECS, getDeviceLayout, ensureDeviceLayouts, DEVICE_SPECS as SPECS } from '../utils/deviceUtils';
 import {
     X, Plus, LayoutGrid, Globe, Map as MapIcon, ArrowLeft, Trash2, Edit2,
@@ -3950,89 +3950,79 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 preserveAspectRatio="none"
                                 xmlns="http://www.w3.org/2000/svg"
                             >
-                                <defs>
-                                    <pattern id="correct-dots" width="8" height="2" patternUnits="userSpaceOnUse">
-                                        <circle cx="1" cy="1" r="0.5" fill="#10b981" opacity="0.8"/>
-                                    </pattern>
-                                    <pattern id="incorrect-dots" width="8" height="2" patternUnits="userSpaceOnUse">
-                                        <circle cx="1" cy="1" r="0.5" fill="#ef4444" opacity="0.8"/>
-                                    </pattern>
-                                    <pattern id="action-dots" width="8" height="2" patternUnits="userSpaceOnUse">
-                                        <circle cx="1" cy="1" r="0.5" fill="#eab308" opacity="0.8"/>
-                                    </pattern>
-                                </defs>
                                 {uniquePlaygroundPoints.flatMap((source) => {
                                     const sourcePos = getDevicePosition(source);
                                     const sourceX = sourcePos.x;
                                     const sourceY = sourcePos.y;
 
-                                    // Extract target IDs from GameAction objects
-                                    const getTargetIds = (actions: any[] | undefined) => {
+                                    // Get actions with targets (returns full GameAction objects for line styling)
+                                    const getActionsWithTargets = (actions: GameAction[] | undefined) => {
                                         if (!actions) return [];
-                                        return actions
-                                            .map(action => action.targetId || action)
-                                            .filter(id => typeof id === 'string' && id.length > 0);
+                                        return actions.filter(action =>
+                                            typeof action.targetId === 'string' && action.targetId.length > 0
+                                        );
+                                    };
+
+                                    // Convert lineStyle to SVG strokeDasharray
+                                    const getDashArray = (style?: string) => {
+                                        if (style === 'dotted') return '2,4';
+                                        if (style === 'solid') return 'none';
+                                        return '4,3'; // dashed default
                                     };
 
                                     return [
-                                        ...getTargetIds(source.logic?.onCorrect).map((targetId, idx) => {
-                                            const target = game.points?.find(p => p.id === targetId);
+                                        ...getActionsWithTargets(source.logic?.onCorrect).map((action, idx) => {
+                                            const target = game.points?.find(p => p.id === action.targetId);
                                             if (!target) return null;
                                             const targetPos = getDevicePosition(target);
-                                            const targetX = targetPos.x;
-                                            const targetY = targetPos.y;
                                             return (
                                                 <line
-                                                    key={`correct-${source.id}-${targetId}-${idx}`}
+                                                    key={`correct-${source.id}-${action.targetId}-${idx}`}
                                                     x1={sourceX}
                                                     y1={sourceY}
-                                                    x2={targetX}
-                                                    y2={targetY}
-                                                    stroke="#10b981"
-                                                    strokeWidth="1.2"
-                                                    strokeDasharray="4,3"
+                                                    x2={targetPos.x}
+                                                    y2={targetPos.y}
+                                                    stroke={action.lineColor || '#10b981'}
+                                                    strokeWidth={action.lineWidth ? String(action.lineWidth * 0.3) : '1.2'}
+                                                    strokeDasharray={getDashArray(action.lineStyle)}
                                                     opacity="0.9"
                                                     className="animate-pulse"
                                                 />
                                             );
                                         }),
-                                        ...getTargetIds(source.logic?.onIncorrect).map((targetId, idx) => {
-                                            const target = game.points?.find(p => p.id === targetId);
+                                        ...getActionsWithTargets(source.logic?.onIncorrect).map((action, idx) => {
+                                            const target = game.points?.find(p => p.id === action.targetId);
                                             if (!target) return null;
                                             const targetPos = getDevicePosition(target);
-                                            const targetX = targetPos.x;
-                                            const targetY = targetPos.y;
                                             return (
                                                 <line
-                                                    key={`incorrect-${source.id}-${targetId}-${idx}`}
+                                                    key={`incorrect-${source.id}-${action.targetId}-${idx}`}
                                                     x1={sourceX}
                                                     y1={sourceY}
-                                                    x2={targetX}
-                                                    y2={targetY}
-                                                    stroke="#ef4444"
-                                                    strokeWidth="1.2"
-                                                    strokeDasharray="4,3"
+                                                    x2={targetPos.x}
+                                                    y2={targetPos.y}
+                                                    stroke={action.lineColor || '#ef4444'}
+                                                    strokeWidth={action.lineWidth ? String(action.lineWidth * 0.3) : '1.2'}
+                                                    strokeDasharray={getDashArray(action.lineStyle)}
                                                     opacity="0.9"
                                                     className="animate-pulse"
                                                 />
                                             );
                                         }),
-                                        ...getTargetIds(source.logic?.onOpen).map((targetId, idx) => {
-                                            const target = game.points?.find(p => p.id === targetId);
+                                        ...getActionsWithTargets(source.logic?.onOpen).map((action, idx) => {
+                                            const target = game.points?.find(p => p.id === action.targetId);
                                             if (!target) return null;
                                             const targetPos = getDevicePosition(target);
-                                            const targetX = targetPos.x;
-                                            const targetY = targetPos.y;
                                             return (
                                                 <line
-                                                    key={`open-${source.id}-${targetId}-${idx}`}
+                                                    key={`open-${source.id}-${action.targetId}-${idx}`}
                                                     x1={sourceX}
                                                     y1={sourceY}
-                                                    x2={targetX}
-                                                    y2={targetY}
-                                                    stroke="#eab308"
-                                                    strokeWidth="1.2"
-                                                    strokeDasharray="4,3"
+                                                    x2={targetPos.x}
+                                                    y2={targetPos.y}
+                                                    stroke={action.lineColor || '#eab308'}
+                                                    strokeWidth={action.lineWidth ? String(action.lineWidth * 0.3) : '1.2'}
+                                                    strokeDasharray={getDashArray(action.lineStyle)}
                                                     opacity="0.9"
                                                     className="animate-pulse"
                                                 />
@@ -5428,11 +5418,18 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                     ? `${point.id}-nested-${sourceTask?.id}-${actionType}`
                                                     : point.id;
 
+                                                // Trigger-based color for nested items
+                                                const nestedBorderClass = isNested
+                                                    ? actionType === 'onCorrect' ? 'ml-6 border-l-2 border-l-green-500'
+                                                    : actionType === 'onIncorrect' ? 'ml-6 border-l-2 border-l-red-500'
+                                                    : 'ml-6 border-l-2 border-l-yellow-500'
+                                                    : '';
+
                                                 return (
                                                     <div
                                                         key={uniqueKey}
                                                         className={`px-3 py-2 border rounded transition-colors group flex items-center gap-2 ${
-                                                            isNested ? 'ml-6 border-l-2 border-l-orange-500' : ''
+                                                            nestedBorderClass
                                                         } ${
                                                             bulkIconMode
                                                                 ? bulkIconSourceId === point.id
@@ -5546,7 +5543,18 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                                                 />
                                                             ) : (
                                                                 <div className="flex items-center gap-2 min-w-0">
-                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase flex-shrink-0">TASK {taskNumber}</p>
+                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase flex-shrink-0">
+                                                                        {isNested && actionType ? (
+                                                                            <span className={`${
+                                                                                actionType === 'onCorrect' ? 'text-green-400'
+                                                                                : actionType === 'onIncorrect' ? 'text-red-400'
+                                                                                : 'text-yellow-400'
+                                                                            }`}>
+                                                                                {actionType === 'onCorrect' ? '✓' : actionType === 'onIncorrect' ? '✗' : '⚡'}{' '}
+                                                                            </span>
+                                                                        ) : null}
+                                                                        TASK {taskNumber}
+                                                                    </p>
                                                                     <p
                                                                         className="text-[11px] font-bold text-white truncate group-hover:text-orange-300 transition-colors cursor-text flex-1"
                                                                         onClick={(e) => {

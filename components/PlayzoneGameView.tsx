@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { Game, Playground, GamePoint, DeviceType } from '../types';
+import { Game, Playground, GamePoint, DeviceType, GameAction } from '../types';
 import IntroMessageModal from './IntroMessageModal';
 import FinishMessageModal from './FinishMessageModal';
 import { DEVICE_SPECS, getDeviceLayout } from '../utils/deviceUtils';
@@ -560,6 +560,55 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
                   </p>
                 </div>
               ) : null}
+
+              {/* Connection Lines Between Action-Linked Points */}
+              {(() => {
+                const connections: { id: string; source: GamePoint; target: GamePoint; action: GameAction; trigger: string }[] = [];
+                playgroundTasks.forEach(source => {
+                  if (!source.logic) return;
+                  const processActions = (trigger: string, actions: GameAction[] | undefined, show: boolean) => {
+                    if (!actions || !show) return;
+                    actions.forEach(action => {
+                      if (!action.targetId) return;
+                      const target = playgroundTasks.find(t => t.id === action.targetId);
+                      if (!target) return;
+                      connections.push({ id: `${trigger}-${source.id}-${action.targetId}`, source, target, action, trigger });
+                    });
+                  };
+                  processActions('onOpen', source.logic.onOpen, true);
+                  processActions('onCorrect', source.logic.onCorrect, !!source.isCompleted);
+                  processActions('onIncorrect', source.logic.onIncorrect, false);
+                });
+                if (connections.length === 0) return null;
+                return (
+                  <svg
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    style={{ zIndex: 1 }}
+                  >
+                    {connections.map(conn => {
+                      const sPos = getTaskPosition(conn.source);
+                      const tPos = getTaskPosition(conn.target);
+                      const defaultColor = conn.trigger === 'onCorrect' ? '#10b981'
+                        : conn.trigger === 'onIncorrect' ? '#ef4444' : '#eab308';
+                      const dashArray = conn.action.lineStyle === 'dotted' ? '2,4'
+                        : conn.action.lineStyle === 'solid' ? 'none' : '8,4';
+                      return (
+                        <line
+                          key={conn.id}
+                          x1={sPos.x} y1={sPos.y}
+                          x2={tPos.x} y2={tPos.y}
+                          stroke={conn.action.lineColor || defaultColor}
+                          strokeWidth={conn.action.lineWidth ? String(conn.action.lineWidth * 0.3) : '0.6'}
+                          strokeDasharray={dashArray}
+                          opacity="0.8"
+                        />
+                      );
+                    })}
+                  </svg>
+                );
+              })()}
 
               {/* Tasks on Canvas */}
               {playgroundTasks.map((task, taskIndex) => {

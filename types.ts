@@ -286,6 +286,10 @@ export interface GameAction {
   value?: string | number;
   // Cooldown-specific settings
   cooldownSeconds?: number; // Duration in seconds for cooldown action
+  // Line style for visual connections between points
+  lineColor?: string;      // Color of connecting line (default: trigger-based color)
+  lineWidth?: number;       // Width/thickness 1-6 (default: 2)
+  lineStyle?: 'dashed' | 'dotted' | 'solid';  // Line dash pattern (default: 'dashed')
 }
 
 export interface TaskLogic {
