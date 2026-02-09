@@ -117,7 +117,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
     useEffect(() => {
         if (endingAt && !gameEnded) {
             const interval = setInterval(() => {
-                const now = Date.now();
+                const now = timeService.now();
                 const diff = Math.ceil((endingAt - now) / 1000);
                 if (diff <= 0) {
                     setCountdownSeconds(0);

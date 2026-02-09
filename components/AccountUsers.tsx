@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import * as db from '../services/db';
-import { authService } from '../services/auth'; // Import authService to check current user
+import { authService, hashPassword } from '../services/auth';
 import AdminModal from './AdminModal';
 import { 
   X, Users, Mail, ChevronDown, UserPlus, Shield, Search, Check, Trash2, 
@@ -114,10 +114,8 @@ const AccountUsers: React.FC = () => {
 
   const generatePassword = () => {
       const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
-      let pass = "";
-      for (let i = 0; i < 10; i++) {
-          pass += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
+      const randomValues = crypto.getRandomValues(new Uint8Array(12));
+      const pass = Array.from(randomValues).map(v => chars[v % chars.length]).join('');
       setUserForm({ ...userForm, password: pass });
   };
 
@@ -125,6 +123,7 @@ const AccountUsers: React.FC = () => {
       e.preventDefault();
       if (!userForm.email || !userForm.password) return;
 
+      const hashedPw = await hashPassword(userForm.password);
       const newUser: AccountUser = {
           id: `user-${Date.now()}`,
           name: userForm.name || 'New Agent',
@@ -132,28 +131,34 @@ const AccountUsers: React.FC = () => {
           role: userForm.role,
           updatedAt: new Date().toLocaleDateString(),
           updatedBy: 'ADMIN',
-          password: userForm.password,
+          password: hashedPw,
           lastSeen: 0,
           usageHistory: []
       };
 
       await db.saveAccountUser(newUser);
       setUsers([...users, newUser]);
-      setUserCreatedSuccess(newUser);
+      setUserCreatedSuccess({ ...newUser, password: userForm.password }); // Show plaintext in success modal
       setIsAddUserModalOpen(false);
       setUserForm({ name: '', email: '', password: '', role: 'Instructor' });
   };
 
   const handleUpdateUser = async () => {
       if (!editingUser) return;
+      // Hash new password if changed, otherwise keep existing hash
+      const passwordChanged = userForm.password && userForm.password !== editingUser.password;
+      const finalPassword = passwordChanged
+          ? await hashPassword(userForm.password)
+          : (editingUser.password || '');
+
       const updatedUser: AccountUser = {
           ...editingUser,
           name: userForm.name,
           role: userForm.role,
-          password: userForm.password || editingUser.password, 
+          password: finalPassword,
           updatedAt: new Date().toLocaleDateString()
       };
-      
+
       await db.saveAccountUser(updatedUser);
       setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u));
       setEditingUser(null);

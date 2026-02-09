@@ -11,9 +11,8 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onPlayAsGuest, onBack }) => {
-    // Default credentials pre-filled for Thomas
-    const [email, setEmail] = useState('thomas@teambattle.dk');
-    const [password, setPassword] = useState('Sommer22?');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

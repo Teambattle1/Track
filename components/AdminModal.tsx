@@ -63,6 +63,18 @@ BEGIN
 END;
 $$;
 
+-- 4b. ATOMIC TASK COMPLETION (Prevents Double-Scoring)
+CREATE OR REPLACE FUNCTION complete_task(p_team_id TEXT, p_point_id TEXT, p_score_delta INTEGER)
+RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  UPDATE public.teams
+  SET score = score + p_score_delta,
+      completed_point_ids = array_append(completed_point_ids, p_point_id)
+  WHERE id = p_team_id
+    AND NOT (completed_point_ids @> ARRAY[p_point_id]);
+END;
+$$;
+
 -- 5. SERVER TIME (Prevents Cheating)
 CREATE OR REPLACE FUNCTION get_server_time()
 RETURNS TIMESTAMP WITH TIME ZONE LANGUAGE plpgsql AS $$

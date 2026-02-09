@@ -79,7 +79,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
           color: '#ef4444', 
           createdAt: Date.now(),
           isClientList: true,
-          shareToken: Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10)
+          shareToken: Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(36).padStart(2, '0')).join('').substring(0, 16)
       };
       await db.saveTaskList(newList);
       setNewClientListName('');
