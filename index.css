@@ -9,3 +9,14 @@
   --color-orange-550: #ea580c;
   --animate-spin-slow: spin 10s linear infinite;
 }
+
+/* Ensure Leaflet map markers remain draggable with Tailwind v4 preflight */
+.leaflet-marker-icon,
+.leaflet-marker-draggable {
+  touch-action: none;
+}
+
+/* Leaflet pane needs auto touch-action for map panning */
+.leaflet-container {
+  touch-action: auto;
+}
