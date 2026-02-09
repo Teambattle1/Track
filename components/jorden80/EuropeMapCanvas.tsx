@@ -7,27 +7,31 @@ import React, { useMemo } from 'react';
 import { Jorden80City, Jorden80TeamProgress, Team } from '../../types';
 import { JORDEN80_CITIES, getCity, TEAM_COLORS } from '../../utils/jorden80/europeData';
 import { getAllReachableCities } from '../../utils/jorden80/routeNetwork';
+import './styles/victorian.css';
 
 interface EuropeMapCanvasProps {
-  teams: Team[];
+  teams?: Team[];
   currentTeamId?: string;
-  teamProgress: Record<string, Jorden80TeamProgress>;
+  teamProgress?: Record<string, Jorden80TeamProgress>;
   onCityClick?: (city: Jorden80City) => void;
   showAllTeams?: boolean;
   highlightedCities?: string[];
   width?: number;
   height?: number;
+  /** When true, fills parent container (100% width/height) instead of fixed dimensions */
+  fullSize?: boolean;
 }
 
 const EuropeMapCanvas: React.FC<EuropeMapCanvasProps> = ({
-  teams,
+  teams = [],
   currentTeamId,
-  teamProgress,
+  teamProgress = {},
   onCityClick,
   showAllTeams = false,
   highlightedCities = [],
   width = 700,
-  height = 500
+  height = 500,
+  fullSize = false
 }) => {
   // Calculate team positions
   const teamPositions = useMemo(() => {
@@ -233,7 +237,7 @@ const EuropeMapCanvas: React.FC<EuropeMapCanvasProps> = ({
   const vintageMapUrl = 'https://www.pillarboxblue.com/wp-content/uploads/2018/02/Europe-map-1898-s.jpg';
 
   return (
-    <div className="j80-map-container" style={{ width, height, position: 'relative' }}>
+    <div className="j80-map-container" style={{ width: fullSize ? '100%' : width, height: fullSize ? '100%' : height, position: fullSize ? 'absolute' : 'relative', top: 0, left: 0 }}>
       {/* Vintage map background */}
       <div
         style={{

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Game, Playground, GamePoint, DeviceType } from '../types';
 import IntroMessageModal from './IntroMessageModal';
 import FinishMessageModal from './FinishMessageModal';
@@ -9,6 +9,9 @@ import { getUniqueTaskKey } from '../utils/taskKeyUtils';
 import TaskModal from './TaskModal';
 import QRScannerModal from './QRScannerModal';
 import { teamSync } from '../services/teamSync';
+
+// Lazy load EuropeMapCanvas for ATW games
+const EuropeMapCanvas = lazy(() => import('./jorden80/EuropeMapCanvas'));
 
 interface PlayzoneGameViewProps {
   game: Game;
@@ -545,14 +548,18 @@ const PlayzoneGameView: React.FC<PlayzoneGameViewProps> = ({
               style={bgStyle}
               className="relative w-full h-full"
             >
-              {/* No background placeholder for gameplay */}
-              {!activePlayground.imageUrl && (
+              {/* Background: ATW Europe map or "No Background" placeholder */}
+              {!activePlayground.imageUrl && game.gameMode === 'aroundtheworld' ? (
+                <Suspense fallback={<div className="absolute inset-0 bg-amber-900/20" />}>
+                  <EuropeMapCanvas fullSize />
+                </Suspense>
+              ) : !activePlayground.imageUrl ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <p className="text-2xl font-black text-slate-700 uppercase tracking-widest">
                     No Background
                   </p>
                 </div>
-              )}
+              ) : null}
 
               {/* Tasks on Canvas */}
               {playgroundTasks.map((task, taskIndex) => {

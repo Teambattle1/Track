@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Game, Playground, GamePoint, IconId, TaskTemplate, TaskList, DeviceType, PlaygroundTemplate, GameMode, DeviceLayout } from '../types';
 import { DEVICE_SPECS, getDeviceLayout, ensureDeviceLayouts, DEVICE_SPECS as SPECS } from '../utils/deviceUtils';
 import {
@@ -24,6 +24,9 @@ import ApiKeyModal from './ApiKeyModal';
 import TaskModal from './TaskModal';
 import ConfirmationModal from './ConfirmationModal';
 import PlaygroundLibraryModal from './PlaygroundLibraryModal';
+
+// Lazy load EuropeMapCanvas for ATW games
+const EuropeMapCanvas = lazy(() => import('./jorden80/EuropeMapCanvas'));
 
 interface PlaygroundEditorProps {
   game: Game;
@@ -3911,14 +3914,18 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                         }}
                         className="relative"
                     >
-                        {!activePlayground?.imageUrl && (
+                        {!activePlayground?.imageUrl && game.gameMode === 'aroundtheworld' ? (
+                            <Suspense fallback={<div className="absolute inset-0 bg-amber-900/20" />}>
+                                <EuropeMapCanvas fullSize />
+                            </Suspense>
+                        ) : !activePlayground?.imageUrl ? (
                             <div className="absolute inset-0 flex items-center justify-center border-4 border-dashed border-slate-700/50 m-20 rounded-3xl">
                                 <div className="text-center opacity-30">
                                     <ImageIcon className="w-24 h-24 mx-auto mb-4" />
                                     <p className="text-2xl font-black uppercase tracking-widest">UPLOAD BACKGROUND</p>
                                 </div>
                             </div>
-                        )}
+                        ) : null}
 
                         {/* Grid Overlay */}
                         {showGrid && (
