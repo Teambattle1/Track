@@ -1689,9 +1689,7 @@ const GameApp: React.FC = () => {
                                 setShowGameCreator(true);
                                 break;
                             case 'CREATE_AROUNDTHEWORLD_GAME':
-                                setGameToEdit(null);
-                                setInitialGameMode('aroundtheworld');
-                                setShowGameCreator(true);
+                                setShowAroundTheWorldDashboard(true);
                                 break;
                             case 'EDIT_GAME': 
                                 if (activeGameId && activeGame) {
