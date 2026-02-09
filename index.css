@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Custom theme extensions */
+@theme {
+  --color-gray-750: #2d3748;
+  --color-gray-850: #1a202c;
+  --color-gray-950: #0d1117;
+  --color-orange-450: #f97316;
+  --color-orange-550: #ea580c;
+  --animate-spin-slow: spin 10s linear infinite;
+}

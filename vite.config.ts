@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig, loadEnv, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import packageJson from './package.json';
 
 // Plugin to remove importmap from production builds
@@ -25,7 +26,7 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
       },
-      plugins: [react(), removeImportmapPlugin()],
+      plugins: [tailwindcss(), react(), removeImportmapPlugin()],
       define: {
         '__APP_VERSION__': JSON.stringify(packageJson.version)
       },

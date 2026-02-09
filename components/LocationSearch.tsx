@@ -81,8 +81,10 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
           .order('created_at', { ascending: false });
 
         if (error) {
-          // Silently ignore if table doesn't exist (PGRST205)
-          if (error.code !== 'PGRST205') {
+          // Silently ignore if table doesn't exist (PGRST205, 404, 42P01)
+          const ignoreCodes = ['PGRST205', 'PGRST204', '42P01'];
+          const is404 = error.message?.includes('404') || error.code === '404';
+          if (!ignoreCodes.includes(error.code) && !is404) {
             console.error('[LocationSearch] Error loading saved locations:', error);
           }
           return;

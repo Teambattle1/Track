@@ -1433,8 +1433,14 @@ export const fetchUserSettings = async (userId: string): Promise<any | null> => 
             .single();
 
         if (error) {
+            // No row found - return null (not an error)
             if (error.code === 'PGRST116') {
-                // No row found, return null (not an error)
+                return null;
+            }
+
+            // 406 Not Acceptable - PostgREST content-type negotiation issue, treat as no data
+            if (error.code === 'PGRST106' || `${error.message || ''}`.includes('406')) {
+                console.debug(`[DB Service] fetchUserSettings: 406 response (user_id: ${userId}), treating as no data`);
                 return null;
             }
 

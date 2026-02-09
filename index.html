@@ -16,41 +16,12 @@
     <meta name="theme-color" content="#667eea" />
 
     <!-- Preconnect to external domains -->
-    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
     <link rel="preconnect" href="https://unpkg.com" />
     <link rel="preconnect" href="https://esm.sh" />
 
-    <!-- Tailwind Configuration -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Shim for process.env used by libraries in browser native environment
       window.process = { env: { API_KEY: "" } };
-      
-      // Tailwind Config
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              gray: {
-                750: '#2d3748',
-                850: '#1a202c',
-                950: '#0d1117',
-              },
-              orange: {
-                450: '#f97316',
-                550: '#ea580c',
-              }
-            },
-            animation: {
-              'spin-slow': 'spin 10s linear infinite',
-            },
-            screens: {
-                'print': {'raw': 'print'},
-            }
-          }
-        }
-      }
     </script>
 
     <!-- Leaflet CSS -->

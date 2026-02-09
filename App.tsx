@@ -2405,6 +2405,7 @@ const GameApp: React.FC = () => {
                       onOpenAgents={() => {}}
                       onClose={() => setShowTeamDashboard(false)}
                       chatHistory={chatHistory}
+                      demoTeams={demoTeamsForLobby}
                   />
               </TabletFrame>
           )}
@@ -2425,6 +2426,7 @@ const GameApp: React.FC = () => {
                       onOpenAgents={() => {}}
                       onClose={() => setShowPhonePreview(false)}
                       chatHistory={chatHistory}
+                      demoTeams={demoTeamsForLobby}
                   />
               </PhoneFrame>
           )}

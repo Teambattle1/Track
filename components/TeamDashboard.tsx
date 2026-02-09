@@ -13,9 +13,10 @@ interface TeamDashboardProps {
   onOpenAgents: () => void;
   onClose: () => void;
   chatHistory?: ChatMessage[];
+  demoTeams?: Team[]; // Demo teams fallback for preview/edit mode
 }
 
-const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, totalMapPoints, onOpenAgents, onClose, chatHistory = [] }) => {
+const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, totalMapPoints, onOpenAgents, onClose, chatHistory = [], demoTeams = [] }) => {
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [leaderboard, setLeaderboard] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,16 +30,22 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, tot
   useEffect(() => {
     const fetchData = async () => {
         try {
-            const teams = await db.fetchTeams(gameId);
+            let teams = await db.fetchTeams(gameId);
+
+            // Fall back to demo teams if no real teams exist
+            if ((!teams || teams.length === 0) && demoTeams.length > 0) {
+                teams = demoTeams;
+            }
+
             const sorted = teams.sort((a, b) => b.score - a.score);
             setLeaderboard(sorted);
-            
-            // If teamId is provided, find that team. 
-            // Otherwise (testing mode), default to the first team (leader).
-            const myTeam = teamId 
-                ? sorted.find(t => t.id === teamId) 
+
+            // If teamId is provided, find that team.
+            // Otherwise (testing/demo mode), default to the first team (leader).
+            const myTeam = teamId
+                ? sorted.find(t => t.id === teamId)
                 : sorted[0];
-                
+
             setCurrentTeam(myTeam || null);
         } catch (e) {
             console.error(e);
@@ -50,7 +57,7 @@ const TeamDashboard: React.FC<TeamDashboardProps> = ({ teamId, gameId, game, tot
     // PERFORMANCE: Increased from 10s to 15s to reduce main thread blocking
     const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);
-  }, [teamId, gameId]);
+  }, [teamId, gameId, demoTeams]);
 
   if (loading && !currentTeam) {
       return (
