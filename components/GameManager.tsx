@@ -13,7 +13,11 @@ import {
   Settings,
   Plus,
   LayoutTemplate,
-  Wand2
+  Wand2,
+  QrCode,
+  Copy,
+  Check,
+  Download
 } from 'lucide-react';
 import { getGameModeIcon } from '../utils/gameModeIcons';
 import { getGameDisplayId, formatGameNameWithId } from '../utils/gameIdUtils';
@@ -103,13 +107,167 @@ const getGameStatusTab = (game: Game, now: Date): GameStatusTab => {
   return 'TODAY';
 };
 
+// Access Code / QR Popup for sharing game access with players
+const AccessCodePopup: React.FC<{
+  game: Game;
+  onClose: () => void;
+}> = ({ game, onClose }) => {
+  const [qrDataUrl, setQrDataUrl] = React.useState<string | null>(null);
+  const [copied, setCopied] = React.useState(false);
+  const code = game.accessCode || '';
+  const accessUrl = `${window.location.origin}/access?code=${code}`;
+
+  React.useEffect(() => {
+    if (!code) return;
+    (async () => {
+      try {
+        const QRCode = (await import('qrcode')).default;
+        const url = await QRCode.toDataURL(accessUrl, {
+          width: 280,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' }
+        });
+        setQrDataUrl(url);
+      } catch (err) {
+        console.error('[AccessCodePopup] QR generation error:', err);
+      }
+    })();
+  }, [code, accessUrl]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+      const el = document.createElement('textarea');
+      el.value = code;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(accessUrl);
+    } catch { /* ignore */ }
+  };
+
+  const handleDownloadQR = () => {
+    if (!qrDataUrl) return;
+    const link = document.createElement('a');
+    link.download = `${game.name || 'game'}-qr-code.png`;
+    link.href = qrDataUrl;
+    link.click();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[6000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-orange-500 to-orange-600 flex justify-between items-center">
+          <div className="flex items-center gap-2 text-white">
+            <QrCode className="w-5 h-5" />
+            <h3 className="font-black uppercase tracking-wide text-sm">Player Access</h3>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-full text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Game Name */}
+          <div className="text-center">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Game Session</p>
+            <h4 className="text-lg font-black text-gray-900 dark:text-white uppercase">{game.name}</h4>
+          </div>
+
+          {code ? (
+            <>
+              {/* QR Code */}
+              <div className="flex flex-col items-center">
+                {qrDataUrl ? (
+                  <div className="bg-white p-4 rounded-xl shadow-inner border-2 border-gray-200">
+                    <img src={qrDataUrl} alt="Game QR Code" className="w-56 h-56" />
+                  </div>
+                ) : (
+                  <div className="w-56 h-56 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center animate-pulse">
+                    <QrCode className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">Scan to join game</p>
+              </div>
+
+              {/* Access Code Display */}
+              <div className="bg-gray-900 dark:bg-gray-800 p-4 rounded-xl text-center">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Access Code</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-4xl font-black text-white tracking-[0.3em]">{code}</span>
+                  <button
+                    onClick={handleCopy}
+                    className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                    title="Copy Code"
+                  >
+                    {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5 text-white/70" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* URL */}
+              <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Direct Link</p>
+                <div className="flex items-center gap-2">
+                  <code className="text-xs text-blue-600 dark:text-blue-400 font-mono truncate flex-1">{accessUrl}</code>
+                  <button
+                    onClick={handleCopyUrl}
+                    className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors shrink-0"
+                    title="Copy URL"
+                  >
+                    <Copy className="w-3.5 h-3.5 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Download Button */}
+              {qrDataUrl && (
+                <button
+                  onClick={handleDownloadQR}
+                  className="w-full py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs uppercase tracking-wide transition-colors flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700"
+                >
+                  <Download className="w-4 h-4" />
+                  Download QR Code
+                </button>
+              )}
+            </>
+          ) : (
+            /* No access code set */
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                <QrCode className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-sm font-bold text-gray-600 dark:text-gray-400 uppercase">No Access Code Set</p>
+              <p className="text-xs text-gray-500 mt-1">Set an access code in Game Settings → Access tab</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const GameSummaryCard: React.FC<{
   game?: Game | null;
   isActive: boolean;
   onPrimaryAction: () => void;
   onDelete: () => void;
   onSettings?: () => void;
-}> = ({ game, isActive, onPrimaryAction, onDelete, onSettings }) => {
+  onShowAccessCode?: () => void;
+}> = ({ game, isActive, onPrimaryAction, onDelete, onSettings, onShowAccessCode }) => {
   // CRITICAL: Guard against undefined/null game data - must be first check
   if (!game || typeof game !== 'object') {
     console.error('[GameSummaryCard] Invalid game data:', game);
@@ -190,6 +348,19 @@ const GameSummaryCard: React.FC<{
         >
           <Play className="w-4 h-4" />
         </button>
+        {onShowAccessCode && (
+          <button
+            onClick={onShowAccessCode}
+            className={`p-2 rounded-lg transition-colors ${
+              game?.accessCode
+                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+            title={game?.accessCode ? `Access Code: ${game.accessCode}` : 'No Access Code Set'}
+          >
+            <QrCode className="w-4 h-4" />
+          </button>
+        )}
         {onSettings && (
           <button
             onClick={onSettings}
@@ -230,6 +401,7 @@ const GameManager: React.FC<GameManagerProps> = ({
   const [statusTab, setStatusTab] = useState<GameStatusTab>('TODAY');
   const [newName, setNewName] = useState('');
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; gameId?: string; isTemplate?: boolean }>({ isOpen: false });
+  const [accessCodeGame, setAccessCodeGame] = useState<Game | null>(null);
   const [gameIdSearch, setGameIdSearch] = useState('');
   const [searchResults, setSearchResults] = useState<Game[]>([]);
 
@@ -517,6 +689,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                     game={game}
                     isActive={game.id === activeGameId}
                     onPrimaryAction={() => primaryActionForGame(game.id)}
+                    onShowAccessCode={() => setAccessCodeGame(game)}
                     onSettings={() => {
                       onSelectGame(game.id);
                       if (onEditGameSetup) {
@@ -611,6 +784,14 @@ const GameManager: React.FC<GameManagerProps> = ({
           )}
         </div>
       </div>
+
+      {/* Access Code / QR Popup */}
+      {accessCodeGame && (
+        <AccessCodePopup
+          game={accessCodeGame}
+          onClose={() => setAccessCodeGame(null)}
+        />
+      )}
 
       {/* Confirmation Modal */}
       <ConfirmationModal

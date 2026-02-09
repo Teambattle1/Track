@@ -58,6 +58,8 @@ import RankingModal from './components/RankingModal';
 import InstructorNotificationPopup from './components/InstructorNotificationPopup';
 import IntroMessageModal from './components/IntroMessageModal';
 import FinishMessageModal from './components/FinishMessageModal';
+import { AroundTheWorldDashboard } from './components/aroundtheworld';
+import { getTaskById } from './utils/aroundtheworld/defaultTasks';
 
 // Lazy-loaded heavy components for code splitting
 const TaskMaster = lazy(() => import('./components/TaskMaster'));
@@ -145,6 +147,7 @@ const GameApp: React.FC = () => {
   const [showAccess, setShowAccess] = useState(false);
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
   const [showPlayzoneSelector, setShowPlayzoneSelector] = useState(false);
+  const [showAroundTheWorldDashboard, setShowAroundTheWorldDashboard] = useState(false);
   const [showSystemSounds, setShowSystemSounds] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [introModalShown, setIntroModalShown] = useState(false);
@@ -161,7 +164,33 @@ const GameApp: React.FC = () => {
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
   const gameTemplates = useMemo(() => games.filter(g => g.isGameTemplate), [games]);
-  
+
+  // Demo team for preview (hidden in actual game, used in TEAM viewmode from editor)
+  const demoTeam: Team = useMemo(() => ({
+      id: '__demo-team__',
+      gameId: activeGameId || '',
+      name: 'Demo Team',
+      joinCode: 'DEMO',
+      members: [{ name: 'Player 1', deviceId: 'demo-device', role: 'captain' as const }],
+      score: 250,
+      completedPointIds: [],
+      updatedAt: new Date().toISOString(),
+      captainDeviceId: 'demo-device',
+      isStarted: true,
+      color: '#f97316'
+  }), [activeGameId]);
+
+  // Handle mode switching — intercept PLAY to show demo team preview from editor
+  const handleSetMode = useCallback((newMode: GameMode) => {
+      if (newMode === GameMode.PLAY && (mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR)) {
+          // From editor/instructor → show demo team preview in PhoneFrame
+          setPreviousModeBeforeTeamPreview(mode);
+          setShowDemoTeamPreview(true);
+          return;
+      }
+      setMode(newMode);
+  }, [mode]);
+
   // --- DASHBOARD STATE ---
   const [showDashboard, setShowDashboard] = useState(false);
   const [dashboardTab, setDashboardTab] = useState<'dashboard' | 'games' | 'templates' | 'tasks' | 'users' | 'tags' | 'client'>('dashboard');
@@ -174,6 +203,10 @@ const GameApp: React.FC = () => {
   const [playgroundTemplateToEdit, setPlaygroundTemplateToEdit] = useState<any>(null);
   const [activeTaskActionPoint, setActiveTaskActionPoint] = useState<GamePoint | null>(null);
   const [pendingDrawRequest, setPendingDrawRequest] = useState<'onOpen' | 'onCorrect' | 'onIncorrect' | null>(null);
+
+  // --- DEMO TEAM PREVIEW (Team viewmode from editor without login) ---
+  const [showDemoTeamPreview, setShowDemoTeamPreview] = useState(false);
+  const [previousModeBeforeTeamPreview, setPreviousModeBeforeTeamPreview] = useState<GameMode>(GameMode.EDIT);
 
   // --- DEVICE PREVIEW FOR EDIT MODE (viewing TEAM mode with device frames) ---
   const [teamEditDevice, setTeamEditDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
@@ -499,8 +532,8 @@ const GameApp: React.FC = () => {
               setActiveGame(game);
               if (game.defaultMapStyle) setLocalMapStyle(game.defaultMapStyle);
 
-              // For PLAYZONE games, go directly to playground editor, skip map view
-              if (game.gameMode === 'playzone') {
+              // For PLAYZONE and AROUNDTHEWORLD games, go directly to playground editor, skip map view
+              if (game.gameMode === 'playzone' || game.gameMode === 'aroundtheworld') {
                   setMode(GameMode.EDIT);
                   // Open the first playground if available
                   if (game.playgrounds && game.playgrounds.length > 0) {
@@ -2629,8 +2662,8 @@ const GameApp: React.FC = () => {
                           onToggleScores={() => setShowScores(!showScores)}
                           onHome={() => {
                               setViewingPlaygroundId(null);
-                              // For PLAYZONE games, return to landing page instead of map view
-                              if (activeGame?.gameMode === 'playzone') {
+                              // For PLAYZONE and ATW games, return to landing page instead of map view
+                              if (activeGame?.gameMode === 'playzone' || activeGame?.gameMode === 'aroundtheworld') {
                                   setShowLanding(true);
                                   setActiveGameId(null);
                               }
@@ -2679,8 +2712,8 @@ const GameApp: React.FC = () => {
                           }}
                           onClose={() => {
                               setViewingPlaygroundId(null);
-                              // For PLAYZONE games, return to appropriate view
-                              if (activeGame?.gameMode === 'playzone') {
+                              // For PLAYZONE and ATW games, return to appropriate view
+                              if (activeGame?.gameMode === 'playzone' || activeGame?.gameMode === 'aroundtheworld') {
                                   if (mode === GameMode.INSTRUCTOR) {
                                       setShowInstructorDashboard(true);
                                   } else if (mode === GameMode.PLAY) {
@@ -2805,6 +2838,134 @@ const GameApp: React.FC = () => {
                   onClose={() => setActiveDangerZone(null)}
               />
           )}
+
+          {/* DEMO TEAM PREVIEW - iPhone frame showing team view without login */}
+          {showDemoTeamPreview && activeGame && (
+              <div className="fixed inset-0 z-[5000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                  <div className="relative">
+                      {/* Close / Back button */}
+                      <button
+                          onClick={() => {
+                              setShowDemoTeamPreview(false);
+                              setMode(previousModeBeforeTeamPreview);
+                          }}
+                          className="absolute -top-3 -right-3 z-10 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                      >
+                          <X className="w-4 h-4" />
+                      </button>
+
+                      {/* Demo badge */}
+                      <div className="absolute -top-3 left-4 z-10 px-3 py-1 bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg">
+                          DEMO TEAM PREVIEW
+                      </div>
+
+                      {/* iPhone frame */}
+                      <PhoneFrame
+                          onClose={() => {
+                              setShowDemoTeamPreview(false);
+                              setMode(previousModeBeforeTeamPreview);
+                          }}
+                          showEditorControls={false}
+                      >
+                          <div className="flex flex-col h-full bg-slate-900">
+                              {/* Team HUD Header */}
+                              <div className="bg-orange-600 border-b border-orange-700 flex items-center justify-between px-3 py-2 shadow-lg flex-shrink-0">
+                                  <div className="flex items-center gap-2 flex-1">
+                                      <div className="flex flex-col items-center">
+                                          <span className="text-[7px] font-bold text-white/70 uppercase">Team</span>
+                                          <span className="text-xs font-black text-white">{demoTeam.name}</span>
+                                      </div>
+                                      <div className="text-orange-700 font-bold">|</div>
+                                      <div className="flex flex-col items-center flex-1">
+                                          <span className="text-[7px] font-bold text-white/70 uppercase">Time</span>
+                                          <span className="text-sm font-black text-white font-mono">45:00</span>
+                                      </div>
+                                      <div className="text-orange-700 font-bold">|</div>
+                                      <div className="flex items-center gap-1">
+                                          <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-green-600/40 rounded">
+                                              <CheckCircle className="w-2.5 h-2.5 text-green-400" />
+                                              <span className="text-[10px] font-bold text-green-300">
+                                                  {activeGame.points?.filter(p => p.isCompleted).length || 0}
+                                              </span>
+                                          </div>
+                                          <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-700/50 rounded">
+                                              <Trophy className="w-2.5 h-2.5 text-yellow-300" />
+                                              <span className="text-[10px] font-black text-white">{demoTeam.score}</span>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              {/* Task list preview */}
+                              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                                  {(activeGame.points || []).filter(p => !p.isSectionHeader).slice(0, 10).map((point, i) => {
+                                      return (
+                                          <div
+                                              key={point.id}
+                                              className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                                                  point.isCompleted
+                                                      ? 'bg-green-900/30 border-green-700/50'
+                                                      : 'bg-slate-800 border-slate-700 hover:border-orange-500/50'
+                                              }`}
+                                          >
+                                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                                  point.isCompleted ? 'bg-green-600' : 'bg-orange-600'
+                                              }`}>
+                                                  {point.isCompleted ? (
+                                                      <CheckCircle className="w-4 h-4 text-white" />
+                                                  ) : (
+                                                      <span className="text-xs font-black text-white">{i + 1}</span>
+                                                  )}
+                                              </div>
+                                              <div className="flex-1 min-w-0">
+                                                  <div className="text-sm font-bold text-white truncate">
+                                                      {point.title || `Task ${i + 1}`}
+                                                  </div>
+                                                  <div className="text-[10px] text-slate-400">
+                                                      {point.points} pts
+                                                      {point.task?.type === 'multiple_choice' && ' • Multiple choice'}
+                                                      {point.task?.type === 'photo' && ' • Photo'}
+                                                      {point.task?.type === 'text' && ' • Text answer'}
+                                                  </div>
+                                              </div>
+                                              {point.isCompleted && (
+                                                  <span className="text-[9px] font-bold text-green-400 uppercase">Done</span>
+                                              )}
+                                          </div>
+                                      );
+                                  })}
+                                  {(activeGame.points || []).length === 0 && (
+                                      <div className="text-center py-12">
+                                          <p className="text-slate-500 text-sm">No tasks yet</p>
+                                          <p className="text-slate-600 text-xs mt-1">Add tasks in editor to preview here</p>
+                                      </div>
+                                  )}
+                              </div>
+
+                              {/* Bottom toolbar */}
+                              <div className="bg-slate-800 border-t border-slate-700 flex items-center justify-around px-3 py-2 flex-shrink-0">
+                                  <button className="flex flex-col items-center gap-0.5 p-1.5 text-orange-400">
+                                      <QrCode className="w-4 h-4" />
+                                      <span className="text-[7px] font-bold uppercase">Scan</span>
+                                  </button>
+                                  <button className="flex flex-col items-center gap-0.5 p-1.5 text-slate-400">
+                                      <Users className="w-4 h-4" />
+                                      <span className="text-[7px] font-bold uppercase">Team</span>
+                                  </button>
+                                  <button className="flex flex-col items-center gap-0.5 p-1.5 text-slate-400">
+                                      <MessageSquare className="w-4 h-4" />
+                                      <span className="text-[7px] font-bold uppercase">Chat</span>
+                                  </button>
+                                  <button className="flex flex-col items-center gap-0.5 p-1.5 text-slate-400">
+                                      <Trophy className="w-4 h-4" />
+                                      <span className="text-[7px] font-bold uppercase">Score</span>
+                                  </button>
+                              </div>
+                          </div>
+                      </PhoneFrame>
+                  </div>
+              </div>
+          )}
       </>
   );
 
@@ -2861,6 +3022,9 @@ const GameApp: React.FC = () => {
                                 setGameToEdit(null);
                                 setInitialGameMode('elimination');
                                 setShowGameCreator(true);
+                                break;
+                            case 'CREATE_AROUNDTHEWORLD_GAME':
+                                setShowAroundTheWorldDashboard(true);
                                 break;
                             case 'EDIT_GAME': 
                                 if (activeGameId) {
@@ -3160,6 +3324,95 @@ const GameApp: React.FC = () => {
                 />
             )}
 
+            {/* AROUND THE WORLD DASHBOARD */}
+            {showAroundTheWorldDashboard && (
+                <AroundTheWorldDashboard
+                    game={activeGame?.gameMode === 'aroundtheworld' ? activeGame : undefined}
+                    teams={[]}
+                    onCreateSession={async (name, config) => {
+                        const pgId = `pg-atw-${Date.now()}`;
+                        const newGame: Game = {
+                            id: `atw-${Date.now()}`,
+                            name: name.toUpperCase(),
+                            description: 'Around The World - Victorian Expedition',
+                            createdAt: Date.now(),
+                            points: [],
+                            gameMode: 'aroundtheworld',
+                            defaultMapStyle: 'none',
+                            aroundTheWorldConfig: {
+                                mapStyle: 'europe',
+                                tasksRequiredToUnlock: 3,
+                                initialUnlockedCount: 1,
+                                firstArrivalBonus: 200,
+                                showTeamPositions: true,
+                                fieldMissionsEnabled: false,
+                                defaultFieldRadius: 50,
+                            },
+                            playgrounds: [{
+                                id: pgId,
+                                title: 'Around The World',
+                                buttonVisible: true,
+                                iconId: 'default',
+                                location: { lat: 0, lng: 0 }
+                            }],
+                            dbUpdatedAt: new Date().toISOString(),
+                            isGameTemplate: false
+                        };
+                        await db.saveGame(newGame);
+                        setGames([...games, newGame]);
+                        setActiveGameId(newGame.id);
+                    }}
+                    onStartGame={() => {
+                        if (activeGame) {
+                            updateActiveGame({ ...activeGame, state: 'active' });
+                        }
+                    }}
+                    onPauseGame={() => {
+                        if (activeGame) {
+                            updateActiveGame({ ...activeGame, state: 'draft' });
+                        }
+                    }}
+                    onSendChat={(message, teamId) => {
+                        console.log('ATW Send chat:', message, teamId);
+                    }}
+                    onUpdateGame={(game) => updateActiveGame(game)}
+                    onClose={() => setShowAroundTheWorldDashboard(false)}
+                    chatMessages={[]}
+                    taskLibrary={activeGame?.points || []}
+                    onAddTaskToCity={(cityId, taskId) => {
+                        if (!activeGame) return;
+                        const taskTemplate = getTaskById(taskId);
+                        if (!taskTemplate) return;
+                        const newPoint: GamePoint = {
+                            id: `${cityId}-${taskId}-${Date.now()}`,
+                            title: taskTemplate.title,
+                            destinationId: cityId,
+                            task: taskTemplate.task,
+                            points: taskTemplate.points,
+                            tags: taskTemplate.tags,
+                            iconId: taskTemplate.iconId || 'question',
+                            location: null,
+                            radiusMeters: 50,
+                            activationTypes: ['click'],
+                            isUnlocked: true,
+                            isCompleted: false,
+                            order: (activeGame.points || []).length
+                        };
+                        updateActiveGame({
+                            ...activeGame,
+                            points: [...(activeGame.points || []), newPoint]
+                        });
+                    }}
+                    onRemoveTaskFromCity={(cityId, taskId) => {
+                        if (!activeGame) return;
+                        updateActiveGame({
+                            ...activeGame,
+                            points: (activeGame.points || []).filter(p => p.id !== taskId)
+                        });
+                    }}
+                />
+            )}
+
             {renderModals()}
           </>
       );
@@ -3170,7 +3423,7 @@ const GameApp: React.FC = () => {
   const mainContent = (
     <div className="fixed inset-0 overflow-hidden bg-slate-900 text-white flex flex-col">
         {/* Map for EDIT/INSTRUCTOR modes - desktop: full screen, mobile/tablet: with device frame */}
-        {activeGame?.gameMode !== 'playzone' && mode !== GameMode.PLAY && (() => {
+        {activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && mode !== GameMode.PLAY && (() => {
             // Show device frame only if teamEditDevice is mobile or tablet (not desktop)
             const useDeviceFrame = teamEditDevice === 'mobile' || teamEditDevice === 'tablet';
 
@@ -3374,7 +3627,7 @@ const GameApp: React.FC = () => {
         })()}
 
         {/* PLAY MODE: Team HUD with device frame centered */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && (() => {
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (() => {
             const teamState = teamSync.getState();
             const teamMembers = teamSync.getAllMembers();
             const allTasks = activeGame?.points || [];
@@ -3700,7 +3953,7 @@ const GameApp: React.FC = () => {
             accuracy={gpsAccuracy}
             mode={mode}
             toggleMode={() => {}}
-            onSetMode={setMode}
+            onSetMode={handleSetMode}
             onOpenGameManager={() => setShowGameChooser(true)}
             onOpenTaskMaster={() => setShowTaskMaster(true)}
             mapStyle={localMapStyle || 'osm'}
