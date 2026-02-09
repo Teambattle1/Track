@@ -1395,8 +1395,30 @@ const SYSTEM_SETTINGS_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 type TagColorsMap = Record<string, string>;
 
+// Cache system settings in localStorage to avoid 406 network errors on every page load
+const SYSTEM_SETTINGS_CACHE_KEY = 'system_settings_cache';
+const SYSTEM_SETTINGS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const fetchSystemSettings = async (): Promise<any | null> => {
-    return fetchUserSettings(SYSTEM_SETTINGS_USER_ID);
+    // Try cache first to avoid network 406 errors showing in console
+    try {
+        const cached = localStorage.getItem(SYSTEM_SETTINGS_CACHE_KEY);
+        if (cached) {
+            const { data, ts } = JSON.parse(cached);
+            if (Date.now() - ts < SYSTEM_SETTINGS_CACHE_TTL) {
+                return data;
+            }
+        }
+    } catch { /* ignore cache errors */ }
+
+    const result = await fetchUserSettings(SYSTEM_SETTINGS_USER_ID);
+
+    // Cache the result (even null) to prevent repeated failing requests
+    try {
+        localStorage.setItem(SYSTEM_SETTINGS_CACHE_KEY, JSON.stringify({ data: result, ts: Date.now() }));
+    } catch { /* ignore cache write errors */ }
+
+    return result;
 };
 
 export const saveSystemSettings = async (patch: any): Promise<boolean> => {
@@ -1426,11 +1448,13 @@ export const saveTagColors = async (tagColors: TagColorsMap): Promise<boolean> =
 };
 export const fetchUserSettings = async (userId: string): Promise<any | null> => {
     try {
+        // Use maybeSingle() instead of single() to avoid 406 network errors
+        // when no row exists (single() throws 406, maybeSingle() returns null)
         const { data, error } = await supabase
             .from('user_settings')
             .select('data')
             .eq('user_id', userId)
-            .single();
+            .maybeSingle();
 
         if (error) {
             // No row found - return null (not an error)
