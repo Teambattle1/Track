@@ -456,13 +456,13 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
               setEditedPoint(prev => ({ ...prev, iconUrl: url || img }));
           } else {
               console.warn('[TaskEditor] AI returned null');
-              alert('⚠️ Icon generation failed\n\nPlease check your Gemini API key or try again.');
+              alert('⚠️ Icon generation failed\n\nPlease check your API key or try again.');
           }
       } catch (error: any) {
           console.error('[TaskEditor] Error generating icon:', error);
           const errorMessage = error?.message || '';
           if (errorMessage.includes('AI API Key missing')) {
-              alert('Gemini API Key is missing. Please set your API key in Local Storage.\n\nGet a free API key at https://aistudio.google.com/app/apikey');
+              alert('API Key is missing. Please set your Claude API key in Settings.\n\nGet an API key at https://console.anthropic.com/settings/keys');
           } else {
               alert('Error generating icon. Please try again.\n\n' + errorMessage);
           }
@@ -599,7 +599,7 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ point, onSave, onDelete, onClos
       console.error('[TaskEditor] Translation error:', error);
       const errorMessage = error?.message || '';
       if (errorMessage.includes('AI API Key missing')) {
-        alert('Gemini API Key is missing. Please set your API key in Settings.\n\nGet a free API key at https://aistudio.google.com/app/apikey');
+        alert('API Key is missing. Please set your Claude API key in Settings.\n\nGet an API key at https://console.anthropic.com/settings/keys');
       } else {
         alert('Translation failed. Please try again.\n\n' + errorMessage);
       }

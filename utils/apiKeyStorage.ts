@@ -7,7 +7,6 @@
 
 export interface ApiKeyConfig {
   anthropic?: string;      // Claude API - text generation
-  gemini?: string;         // Gemini API - fallback text/image
   stability?: string;      // Stability AI - image generation
   supabaseUrl?: string;    // Supabase project URL
   supabaseKey?: string;    // Supabase anon key
@@ -15,7 +14,6 @@ export interface ApiKeyConfig {
 
 const STORAGE_KEYS = {
   anthropic: 'ANTHROPIC_API_KEY',
-  gemini: 'GEMINI_API_KEY',
   stability: 'STABILITY_API_KEY',
   supabaseUrl: 'SUPABASE_URL',
   supabaseKey: 'SUPABASE_ANON_KEY',
@@ -29,7 +27,6 @@ export const getStoredApiKeys = (): ApiKeyConfig => {
 
   return {
     anthropic: localStorage.getItem(STORAGE_KEYS.anthropic) || undefined,
-    gemini: localStorage.getItem(STORAGE_KEYS.gemini) || undefined,
     stability: localStorage.getItem(STORAGE_KEYS.stability) || undefined,
     supabaseUrl: localStorage.getItem(STORAGE_KEYS.supabaseUrl) || undefined,
     supabaseKey: localStorage.getItem(STORAGE_KEYS.supabaseKey) || undefined,
@@ -47,14 +44,6 @@ export const saveApiKeys = (config: Partial<ApiKeyConfig>): void => {
       localStorage.setItem(STORAGE_KEYS.anthropic, config.anthropic);
     } else {
       localStorage.removeItem(STORAGE_KEYS.anthropic);
-    }
-  }
-
-  if (config.gemini !== undefined) {
-    if (config.gemini) {
-      localStorage.setItem(STORAGE_KEYS.gemini, config.gemini);
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.gemini);
     }
   }
 
@@ -104,9 +93,6 @@ export const validateApiKeyFormat = (key: string, type: keyof typeof STORAGE_KEY
     case 'anthropic':
       // Anthropic keys start with 'sk-ant-'
       return key.startsWith('sk-ant-') && key.length > 20;
-    case 'gemini':
-      // Gemini keys are typically 39 characters
-      return key.length >= 30;
     case 'stability':
       // Stability keys start with 'sk-'
       return key.startsWith('sk-') && key.length > 20;
@@ -132,10 +118,6 @@ export const getApiKeyStatus = (): Record<keyof typeof STORAGE_KEYS, { configure
       configured: !!keys.anthropic,
       valid: keys.anthropic ? validateApiKeyFormat(keys.anthropic, 'anthropic') : false,
     },
-    gemini: {
-      configured: !!keys.gemini,
-      valid: keys.gemini ? validateApiKeyFormat(keys.gemini, 'gemini') : false,
-    },
     stability: {
       configured: !!keys.stability,
       valid: keys.stability ? validateApiKeyFormat(keys.stability, 'stability') : false,
@@ -152,17 +134,17 @@ export const getApiKeyStatus = (): Record<keyof typeof STORAGE_KEYS, { configure
 };
 
 /**
- * Check if core AI functionality is available (Claude or Gemini)
+ * Check if core AI functionality is available (Claude)
  */
 export const hasTextGenerationCapability = (): boolean => {
   const keys = getStoredApiKeys();
-  return !!(keys.anthropic || keys.gemini);
+  return !!keys.anthropic;
 };
 
 /**
- * Check if image generation is available (Stability or Gemini)
+ * Check if image generation is available (Stability)
  */
 export const hasImageGenerationCapability = (): boolean => {
   const keys = getStoredApiKeys();
-  return !!(keys.stability || keys.gemini);
+  return !!keys.stability;
 };

@@ -269,8 +269,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const [fieldsPosition, setFieldsPosition] = useState({ top: 16, right: 16 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [showGeminiWarning, setShowGeminiWarning] = useState(false);
-  const [hasCheckedGeminiKey, setHasCheckedGeminiKey] = useState(false);
+  const [showApiKeyWarning, setShowApiKeyWarning] = useState(false);
+  const [hasCheckedApiKey, setHasCheckedApiKey] = useState(false);
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
   const [activitySummary, setActivitySummary] = useState<ActivitySummary | null>(null);
   const [showActivityNotification, setShowActivityNotification] = useState(false);
@@ -295,35 +295,35 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
     }
   }, []);
 
-  // Check Gemini API key on mount and periodically
+  // Check API key on mount and periodically
   React.useEffect(() => {
-    const checkGeminiKey = () => {
+    const checkApiKey = () => {
       try {
         // Check localStorage first (user-configured)
-        const localKey = localStorage.getItem('GEMINI_API_KEY');
+        const localKey = localStorage.getItem('ANTHROPIC_API_KEY');
         if (localKey && localKey.trim().length > 0) {
-          setShowGeminiWarning(false);
-          setHasCheckedGeminiKey(true);
+          setShowApiKeyWarning(false);
+          setHasCheckedApiKey(true);
           return;
         }
 
         // Check environment variables (configured at build time on deployment)
-        const envKey = process.env.VITE_API_KEY || process.env.VITE_GEMINI_API_KEY;
+        const envKey = process.env.VITE_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
         const hasKey = !!envKey && envKey.trim().length > 0;
-        setShowGeminiWarning(!hasKey);
-        setHasCheckedGeminiKey(true);
+        setShowApiKeyWarning(!hasKey);
+        setHasCheckedApiKey(true);
       } catch (e) {
-        console.error('Failed to check Gemini API key:', e);
-        setShowGeminiWarning(true);
-        setHasCheckedGeminiKey(true);
+        console.error('Failed to check API key:', e);
+        setShowApiKeyWarning(true);
+        setHasCheckedApiKey(true);
       }
     };
 
     // Check immediately
-    checkGeminiKey();
+    checkApiKey();
 
     // Check every 30 seconds
-    const interval = setInterval(checkGeminiKey, 30000);
+    const interval = setInterval(checkApiKey, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -814,7 +814,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                               CODE & AI SETTINGS
                           </h3>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                              <NavCard title="AI SETTINGS" subtitle="CLAUDE & GEMINI API" icon={KeyRound} color="bg-blue-600" onClick={() => onAction('DATABASE')} />
+                              <NavCard title="AI SETTINGS" subtitle="CLAUDE & STABILITY API" icon={KeyRound} color="bg-blue-600" onClick={() => onAction('DATABASE')} />
                               <NavCard title="SUPABASE" subtitle="SQL SCRIPTS & MIGRATIONS" icon={Database} color="bg-green-600" onClick={() => setShowSupabaseScripts(true)} />
                           </div>
                       </div>
@@ -1129,8 +1129,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                 </div>
             )}
 
-            {/* Gemini API Key Warning Banner - Only show in EDIT menu when game is loaded */}
-            {view === 'EDIT_MENU' && showGeminiWarning && hasCheckedGeminiKey && (
+            {/* API Key Warning Banner - Only show in EDIT menu when game is loaded */}
+            {view === 'EDIT_MENU' && showApiKeyWarning && hasCheckedApiKey && (
                 <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 w-full max-w-2xl px-4 animate-in slide-in-from-top-4 fade-in duration-500">
                     <div className="bg-gradient-to-r from-yellow-900/90 to-orange-900/90 backdrop-blur-md border-2 border-yellow-500/60 rounded-xl p-4 shadow-2xl shadow-yellow-500/20">
                         <div className="flex items-start gap-3">
@@ -1142,7 +1142,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                     ⚠️ AI Features Unavailable
                                 </h3>
                                 <p className="text-xs text-yellow-200/90 font-bold leading-relaxed mb-3">
-                                    Gemini API key not configured. AI background generation, icon creation, and task generation will not work.
+                                    Claude API key not configured. AI task generation and translations will not work.
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <button
@@ -1153,13 +1153,13 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                         CONFIGURE NOW
                                     </button>
                                     <button
-                                        onClick={() => setShowGeminiWarning(false)}
+                                        onClick={() => setShowApiKeyWarning(false)}
                                         className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg font-bold uppercase text-[10px] tracking-widest transition-colors"
                                     >
                                         DISMISS
                                     </button>
                                     <a
-                                        href="https://aistudio.google.com/app/apikey"
+                                        href="https://console.anthropic.com/settings/keys"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="px-3 py-2 text-yellow-300 hover:text-yellow-100 text-[9px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1"
@@ -1170,7 +1170,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                                 </div>
                             </div>
                             <button
-                                onClick={() => setShowGeminiWarning(false)}
+                                onClick={() => setShowApiKeyWarning(false)}
                                 className="p-1.5 hover:bg-yellow-500/20 rounded-lg text-yellow-200/60 hover:text-yellow-100 transition-colors shrink-0"
                                 title="Close"
                             >

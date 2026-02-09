@@ -18,7 +18,7 @@ import { useTagColors } from '../contexts/TagColorsContext';
 import { resizeImage } from '../utils/image';
 import GameLogViewer from './GameLogViewer';
 import MeetingPointMapPicker from './MeetingPointMapPicker';
-import GeminiApiKeyModal from './GeminiApiKeyModal';
+import ApiKeyModal from './ApiKeyModal';
 import ColorSchemeEditor from './ColorSchemeEditor';
 import ZoneChangeCard from './ZoneChangeCard';
 import GameAccessPrintable from './GameAccessPrintable';
@@ -297,7 +297,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [clientLogo, setClientLogo] = useState(baseGame?.client?.logoUrl || '');
   const [isSearchingLogo, setIsSearchingLogo] = useState(false);
   const [isGeneratingAiLogo, setIsGeneratingAiLogo] = useState(false);
-  const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   
   // Teams Config
   const [showOtherTeams, setShowOtherTeams] = useState(baseGame?.showOtherTeams || false);
@@ -607,7 +607,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       } catch (error: any) {
           // Check if it's an API key error
           if (error?.message?.includes('API Key missing')) {
-              setShowGeminiKeyModal(true);
+              setShowApiKeyModal(true);
           } else {
               console.error('Error generating logo:', error);
               alert("Failed to generate logo. Please try again or upload one manually.");
@@ -3806,10 +3806,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
             </div>
         )}
 
-        {/* Gemini API Key Modal */}
-        <GeminiApiKeyModal
-            isOpen={showGeminiKeyModal}
-            onClose={() => setShowGeminiKeyModal(false)}
+        {/* API Key Modal */}
+        <ApiKeyModal
+            isOpen={showApiKeyModal}
+            onClose={() => setShowApiKeyModal(false)}
             onSave={() => {
                 // Retry logo generation after API key is saved
                 handleGenerateAiLogo();

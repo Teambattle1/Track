@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Game } from '../types';
-import { X, KeyRound, Eye, EyeOff, Trash2, Check, Sparkles, Image, Play, Loader2, CheckCircle, XCircle, Palette } from 'lucide-react';
+import { X, KeyRound, Eye, EyeOff, Trash2, Check, Sparkles, Play, Loader2, CheckCircle, XCircle, Palette } from 'lucide-react';
 import Anthropic from '@anthropic-ai/sdk';
-import { GoogleGenAI } from '@google/genai';
 
 interface AdminModalProps {
   games: Game[];
@@ -23,14 +22,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
   const [claudeTestStatus, setClaudeTestStatus] = useState<TestStatus>('idle');
   const [claudeTestResult, setClaudeTestResult] = useState<string>('');
 
-  // Gemini key state
-  const [geminiKey, setGeminiKey] = useState('');
-  const [showGeminiKey, setShowGeminiKey] = useState(false);
-  const [geminiSaved, setGeminiSaved] = useState(false);
-  const [hasStoredGeminiKey, setHasStoredGeminiKey] = useState(false);
-  const [geminiTestStatus, setGeminiTestStatus] = useState<TestStatus>('idle');
-  const [geminiTestResult, setGeminiTestResult] = useState<string>('');
-
   // Stability AI key state
   const [stabilityKey, setStabilityKey] = useState('');
   const [showStabilityKey, setShowStabilityKey] = useState(false);
@@ -44,14 +35,10 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
           const existingAnthropic = localStorage.getItem('ANTHROPIC_API_KEY');
           setHasStoredAnthropicKey(!!existingAnthropic);
 
-          const existingGemini = localStorage.getItem('GEMINI_API_KEY');
-          setHasStoredGeminiKey(!!existingGemini);
-
           const existingStability = localStorage.getItem('STABILITY_API_KEY');
           setHasStoredStabilityKey(!!existingStability);
       } catch {
           setHasStoredAnthropicKey(false);
-          setHasStoredGeminiKey(false);
           setHasStoredStabilityKey(false);
       }
   }, []);
@@ -60,11 +47,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
       if (anthropicSaved) return 'SAVED';
       return hasStoredAnthropicKey ? 'KEY SET' : 'NOT SET';
   }, [anthropicSaved, hasStoredAnthropicKey]);
-
-  const geminiStatus = useMemo(() => {
-      if (geminiSaved) return 'SAVED';
-      return hasStoredGeminiKey ? 'KEY SET' : 'NOT SET';
-  }, [geminiSaved, hasStoredGeminiKey]);
 
   const stabilityStatus = useMemo(() => {
       if (stabilitySaved) return 'SAVED';
@@ -111,46 +93,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
     } catch (error: any) {
       setClaudeTestStatus('error');
       setClaudeTestResult(error.message?.substring(0, 50) || 'API error');
-    }
-  };
-
-  // Test Gemini API
-  const testGeminiApi = async () => {
-    const key = localStorage.getItem('GEMINI_API_KEY');
-    if (!key) {
-      setGeminiTestStatus('error');
-      setGeminiTestResult('No API key stored');
-      return;
-    }
-
-    setGeminiTestStatus('testing');
-    setGeminiTestResult('');
-
-    try {
-      const ai = new GoogleGenAI({ apiKey: key });
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: 'Create one simple scavenger hunt task about finding something red. Reply with just the task title and question in JSON format: {"title": "...", "question": "..."}',
-        config: {
-          responseMimeType: "application/json",
-        }
-      });
-
-      const responseText = response.text || '';
-
-      // Try to parse the JSON response
-      try {
-        const task = JSON.parse(responseText);
-        setGeminiTestStatus('success');
-        setGeminiTestResult(`Task: "${task.title || 'Generated'}"`);
-      } catch {
-        setGeminiTestStatus('success');
-        setGeminiTestResult('Response received');
-      }
-    } catch (error: any) {
-      setGeminiTestStatus('error');
-      setGeminiTestResult(error.message?.substring(0, 50) || 'API error');
     }
   };
 
@@ -334,117 +276,6 @@ const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                   className="mt-3 inline-block text-[10px] text-purple-400 hover:text-purple-300 font-bold transition-colors"
               >
                   → Get API key from console.anthropic.com
-              </a>
-          </div>
-
-          {/* Gemini API Key */}
-          <div className="bg-slate-950 border border-blue-500/30 rounded-2xl p-4">
-              <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                          <Image className="w-5 h-5 text-blue-400" />
-                      </div>
-                      <div>
-                          <p className="text-xs font-black uppercase tracking-widest text-white">GEMINI (GOOGLE) API KEY</p>
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">
-                              Status: <span className={geminiStatus === 'NOT SET' ? 'text-red-400' : 'text-green-400'}>{geminiStatus}</span>
-                          </p>
-                          <p className="text-[10px] text-slate-600 font-bold mt-2 leading-snug">
-                              Used for <span className="text-blue-400">image generation</span> (backgrounds, icons, logos).
-                          </p>
-                      </div>
-                  </div>
-              </div>
-
-              <div className="mt-4 flex gap-2">
-                  <div className="flex-1 relative">
-                      <input
-                          type={showGeminiKey ? 'text' : 'password'}
-                          value={geminiKey}
-                          onChange={(e) => {
-                              setGeminiKey(e.target.value);
-                              setGeminiSaved(false);
-                          }}
-                          placeholder="AIza..."
-                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pr-12 text-xs text-white font-mono outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                      />
-                      <button
-                          type="button"
-                          onClick={() => setShowGeminiKey(v => !v)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                          title={showGeminiKey ? 'Hide key' : 'Show key'}
-                      >
-                          {showGeminiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                  </div>
-
-                  <button
-                      type="button"
-                      onClick={() => {
-                          const next = geminiKey.trim();
-                          if (!next) return;
-                          try {
-                              localStorage.setItem('GEMINI_API_KEY', next);
-                              setHasStoredGeminiKey(true);
-                              setGeminiSaved(true);
-                              setGeminiKey('');
-                              setGeminiTestStatus('idle');
-                              setTimeout(() => setGeminiSaved(false), 2000);
-                          } catch {
-                              // ignore
-                          }
-                      }}
-                      className="px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors"
-                  >
-                      <Check className="w-4 h-4 inline-block mr-1" /> SAVE
-                  </button>
-
-                  <button
-                      type="button"
-                      onClick={() => {
-                          try {
-                              localStorage.removeItem('GEMINI_API_KEY');
-                          } catch {
-                              // ignore
-                          }
-                          setHasStoredGeminiKey(false);
-                          setGeminiSaved(false);
-                          setGeminiKey('');
-                          setGeminiTestStatus('idle');
-                      }}
-                      className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors border border-slate-700"
-                      title="Clear stored key"
-                  >
-                      <Trash2 className="w-4 h-4" />
-                  </button>
-              </div>
-
-              {/* Test Button for Gemini */}
-              {hasStoredGeminiKey && (
-                <button
-                    type="button"
-                    onClick={testGeminiApi}
-                    disabled={geminiTestStatus === 'testing'}
-                    className="mt-3 w-full px-4 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 disabled:opacity-50 text-blue-300 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2 border border-blue-500/30"
-                >
-                    {geminiTestStatus === 'testing' ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                    TEST GEMINI API
-                </button>
-              )}
-
-              <TestStatusIndicator status={geminiTestStatus} result={geminiTestResult} />
-
-              <a
-                  href="https://aistudio.google.com/app/apikey"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-block text-[10px] text-blue-400 hover:text-blue-300 font-bold transition-colors"
-              >
-                  → Get free API key from aistudio.google.com
               </a>
           </div>
 

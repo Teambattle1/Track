@@ -4,7 +4,7 @@ import { TaskTemplate, Playground, TaskList, IconId } from '../types';
 import { generateAiTasks, generateAiImage, searchLogoUrl, generateMoodAudio, hasApiKey } from '../services/ai';
 import { ICON_COMPONENTS } from '../utils/icons';
 import { getUniqueTaskKey } from '../utils/taskKeyUtils';
-import GeminiApiKeyModal from './GeminiApiKeyModal';
+import ApiKeyModal from './ApiKeyModal';
 import { fetchUniqueTags } from '../services/db';
 
 interface AiTaskGeneratorProps {
@@ -68,7 +68,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [batchFinished, setBatchFinished] = useState(false);
-  const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [pendingGenerationParams, setPendingGenerationParams] = useState<{topic: string; taskCount: number; language: string; autoTag: string} | null>(null);
 
   // Clear old cached tasks on mount to prevent duplicate key errors from stale IDs
@@ -207,7 +207,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
               setLogoUrl(url);
               setUseLogoForTasks(true);
           } else {
-              setError("Could not generate AI image. Check Gemini API key.");
+              setError("Could not generate AI image. Check Stability AI API key.");
           }
       } catch (e) {
           setError("Error generating AI image. Check API key.");
@@ -324,7 +324,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
     // Check if API key is configured first
     if (!hasApiKey()) {
         setPendingGenerationParams({topic, taskCount, language, autoTag: tagsToUse[0]});
-        setShowGeminiKeyModal(true);
+        setShowApiKeyModal(true);
         return;
     }
 
@@ -406,7 +406,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
             const errorMessage = err.message || "Failed to generate tasks.";
             if (errorMessage.includes('AI API Key missing')) {
                 setPendingGenerationParams({topic, taskCount, language, autoTag});
-                setShowGeminiKeyModal(true);
+                setShowApiKeyModal(true);
                 setProgress(0);
             } else {
                 setError(errorMessage);
@@ -1418,10 +1418,10 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
 
             </div>
 
-            {/* Gemini API Key Modal */}
-            <GeminiApiKeyModal
-                isOpen={showGeminiKeyModal}
-                onClose={() => setShowGeminiKeyModal(false)}
+            {/* API Key Modal */}
+            <ApiKeyModal
+                isOpen={showApiKeyModal}
+                onClose={() => setShowApiKeyModal(false)}
                 onSave={handleApiKeySaved}
             />
         </div>

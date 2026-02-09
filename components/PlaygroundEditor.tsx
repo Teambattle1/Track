@@ -20,7 +20,7 @@ import TaskActionModal from './TaskActionModal';
 import AiTaskGenerator from './AiTaskGenerator';
 import TaskMaster from './TaskMaster';
 import TaskEditor from './TaskEditor';
-import GeminiApiKeyModal from './GeminiApiKeyModal';
+import ApiKeyModal from './ApiKeyModal';
 import TaskModal from './TaskModal';
 import ConfirmationModal from './ConfirmationModal';
 import PlaygroundLibraryModal from './PlaygroundLibraryModal';
@@ -263,7 +263,7 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
     const [showAiBackgroundPrompt, setShowAiBackgroundPrompt] = useState(false);
     const [aiBackgroundPromptValue, setAiBackgroundPromptValue] = useState('');
     const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
-    const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
+    const [showApiKeyModal, setShowApiKeyModal] = useState(false);
     const [pendingBackgroundKeywords, setPendingBackgroundKeywords] = useState<string | null>(null);
 
     // Delete Zone State
@@ -1369,14 +1369,14 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 setAiBackgroundPromptValue('');
             } else {
                 console.warn('[PlaygroundEditor] AI returned null - check console for details');
-                alert('⚠️ Image generation failed\n\nGemini 2.5 Flash Image did not return image data. This could mean:\n\n1. The prompt may have been filtered by safety settings\n2. Your API key may have reached its quota\n3. The content may be too complex or ambiguous\n\nCheck the browser console (F12) for detailed error logs.\n\nTry:\n• Using simpler, descriptive keywords (e.g., "forest sunset", "medieval castle", "ocean waves")\n• Avoiding potentially sensitive content\n• Being more specific in your description\n• Uploading an image instead');
+                alert('⚠️ Image generation failed\n\nStability AI did not return image data. This could mean:\n\n1. The prompt may have been filtered by safety settings\n2. Your API key may have reached its quota\n3. The content may be too complex or ambiguous\n\nCheck the browser console (F12) for detailed error logs.\n\nTry:\n• Using simpler, descriptive keywords (e.g., "forest sunset", "medieval castle", "ocean waves")\n• Avoiding potentially sensitive content\n• Being more specific in your description\n• Uploading an image instead');
             }
         } catch (error: any) {
             console.error('[PlaygroundEditor] Error generating background:', error);
             const errorMessage = error?.message || '';
             if (errorMessage.includes('AI API Key missing')) {
                 setPendingBackgroundKeywords(keywords);
-                setShowGeminiKeyModal(true);
+                setShowApiKeyModal(true);
             } else {
                 alert('Error generating background. Please check your API key and try again.');
             }
@@ -1514,13 +1514,13 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                 }
             } else {
                 console.warn('[PlaygroundEditor] AI returned null - check console for details');
-                alert('⚠️ Image generation failed\n\nGemini 2.5 Flash Image did not return image data. This could mean:\n\n1. The prompt may have been filtered by safety settings\n2. Your API key may have reached its quota\n3. The content may be too complex or ambiguous\n\nCheck the browser console (F12) for detailed error logs.\n\nTry:\n• Using simpler, descriptive keywords\n• Avoiding potentially sensitive content\n• Being more specific in your description');
+                alert('⚠️ Image generation failed\n\nStability AI did not return image data. This could mean:\n\n1. The prompt may have been filtered by safety settings\n2. Your API key may have reached its quota\n3. The content may be too complex or ambiguous\n\nCheck the browser console (F12) for detailed error logs.\n\nTry:\n• Using simpler, descriptive keywords\n• Avoiding potentially sensitive content\n• Being more specific in your description');
             }
         } catch (error: any) {
             console.error('[PlaygroundEditor] Icon generation error:', error);
             const errorMessage = error?.message || '';
             if (errorMessage.includes('AI API Key missing')) {
-                setShowGeminiKeyModal(true);
+                setShowApiKeyModal(true);
             } else {
                 alert('Error generating icon. Please check your API key and try again.\n\n' + errorMessage);
             }
@@ -2840,16 +2840,16 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                         <div className="space-y-2">
                                             {/* API Key Status Indicator */}
                                             <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-lg p-2">
-                                                <div className={`w-2 h-2 rounded-full ${typeof window !== 'undefined' && localStorage.getItem('GEMINI_API_KEY') ? 'bg-green-500' : 'bg-red-500'}`} />
+                                                <div className={`w-2 h-2 rounded-full ${typeof window !== 'undefined' && localStorage.getItem('ANTHROPIC_API_KEY') || localStorage.getItem('STABILITY_API_KEY') ? 'bg-green-500' : 'bg-red-500'}`} />
                                                 <span className="text-[9px] font-bold uppercase text-slate-400 flex-1">
-                                                    {typeof window !== 'undefined' && localStorage.getItem('GEMINI_API_KEY') ? 'API Key Configured' : 'No API Key'}
+                                                    {typeof window !== 'undefined' && localStorage.getItem('ANTHROPIC_API_KEY') || localStorage.getItem('STABILITY_API_KEY') ? 'API Key Configured' : 'No API Key'}
                                                 </span>
                                                 <button
-                                                    onClick={() => setShowGeminiKeyModal(true)}
+                                                    onClick={() => setShowApiKeyModal(true)}
                                                     className="px-2 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[8px] font-bold uppercase tracking-wider transition-colors"
-                                                    title="Configure Gemini API Key"
+                                                    title="Configure API Keys"
                                                 >
-                                                    {typeof window !== 'undefined' && localStorage.getItem('GEMINI_API_KEY') ? 'Update' : 'Set Key'}
+                                                    {typeof window !== 'undefined' && localStorage.getItem('ANTHROPIC_API_KEY') || localStorage.getItem('STABILITY_API_KEY') ? 'Update' : 'Set Key'}
                                                 </button>
                                             </div>
 
@@ -5922,9 +5922,9 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
                                 </p>
                                 <div className="bg-blue-900/20 border border-blue-600/30 rounded-lg p-2">
                                     <p className="text-[9px] text-blue-200 uppercase font-bold flex items-center gap-1">
-                                        <Wand2 className="w-3 h-3" /> Powered by Gemini 2.5 Flash
+                                        <Wand2 className="w-3 h-3" /> Powered by Stability AI
                                     </p>
-                                    <p className="text-[8px] text-blue-300/80 mt-1">Uses Gemini's built-in image generation. Note: Imagen 3 (higher quality) requires Vertex AI and is not available with API keys.</p>
+                                    <p className="text-[8px] text-blue-300/80 mt-1">Uses Stability AI for image generation.</p>
                                 </div>
                             </div>
                             <div>
@@ -6637,10 +6637,10 @@ const PlaygroundEditor: React.FC<PlaygroundEditorProps> = ({
             )}
 
 
-            {/* Gemini API Key Modal */}
-            <GeminiApiKeyModal
-                isOpen={showGeminiKeyModal}
-                onClose={() => setShowGeminiKeyModal(false)}
+            {/* API Key Modal */}
+            <ApiKeyModal
+                isOpen={showApiKeyModal}
+                onClose={() => setShowApiKeyModal(false)}
                 onSave={handleApiKeySaved}
             />
 

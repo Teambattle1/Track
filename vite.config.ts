@@ -19,9 +19,6 @@ function removeImportmapPlugin(): Plugin {
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', 'VITE_');
-    // Support multiple environment variable naming conventions for Gemini API key
-    // Priority: VITE_GEMINI_API_KEY (Vite convention) > GEMINI_API_KEY (from process.env)
-    const geminiKey = env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
 
     return {
       server: {
@@ -30,8 +27,6 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react(), removeImportmapPlugin()],
       define: {
-        'process.env.API_KEY': JSON.stringify(geminiKey),
-        'process.env.GEMINI_API_KEY': JSON.stringify(geminiKey),
         '__APP_VERSION__': JSON.stringify(packageJson.version)
       },
       resolve: {
@@ -58,10 +53,6 @@ export default defineConfig(({ mode }) => {
               // Supabase
               if (id.includes('node_modules/@supabase')) {
                 return 'vendor-supabase';
-              }
-              // Google GenAI
-              if (id.includes('node_modules/@google/genai')) {
-                return 'vendor-google';
               }
               // PDF generation
               if (id.includes('node_modules/jspdf')) {

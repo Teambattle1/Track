@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GamePoint, TaskTemplate } from '../types';
 import { X, Wand2, Loader, Plus, CheckCircle } from 'lucide-react';
 import { generateAiTasks, hasApiKey } from '../services/ai';
-import GeminiApiKeyModal from './GeminiApiKeyModal';
+import ApiKeyModal from './ApiKeyModal';
 
 interface AiTaskGeneratorModalProps {
     onClose: () => void;
@@ -22,7 +22,7 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
     const [generatedTasks, setGeneratedTasks] = useState<TaskTemplate[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-    const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false);
+    const [showApiKeyModal, setShowApiKeyModal] = useState(false);
     const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
     const handleGenerate = async () => {
@@ -34,7 +34,7 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
         // Check if API key is configured first
         if (!hasApiKey()) {
             setPendingPrompt(prompt);
-            setShowGeminiKeyModal(true);
+            setShowApiKeyModal(true);
             return;
         }
 
@@ -57,7 +57,7 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
             const errorMessage = err?.message || 'Failed to generate tasks.';
             if (errorMessage.includes('AI API Key missing')) {
                 setPendingPrompt(prompt);
-                setShowGeminiKeyModal(true);
+                setShowApiKeyModal(true);
             } else {
                 setError('Failed to generate tasks. Please check your API key and try again.');
                 console.error('AI generation error:', err);
@@ -234,10 +234,10 @@ const AiTaskGeneratorModal: React.FC<AiTaskGeneratorModalProps> = ({
                     )}
                 </div>
 
-                {/* Gemini API Key Modal */}
-                <GeminiApiKeyModal
-                    isOpen={showGeminiKeyModal}
-                    onClose={() => setShowGeminiKeyModal(false)}
+                {/* API Key Modal */}
+                <ApiKeyModal
+                    isOpen={showApiKeyModal}
+                    onClose={() => setShowApiKeyModal(false)}
                     onSave={handleApiKeySaved}
                 />
             </div>

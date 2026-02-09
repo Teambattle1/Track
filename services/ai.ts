@@ -1,4 +1,3 @@
-import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import Anthropic from "@anthropic-ai/sdk";
 import { TaskTemplate, IconId, TaskType } from "../types";
 import { normalizeLanguage } from "../utils/i18n";
@@ -7,39 +6,12 @@ import { normalizeLanguage } from "../utils/i18n";
 // API KEY MANAGEMENT
 // ============================================================================
 
-// Get Anthropic API key (for Claude - used for text generation)
+// Get Anthropic API key (for Claude - text generation)
 const getAnthropicApiKey = (): string => {
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('ANTHROPIC_API_KEY') : null;
     if (localKey) return localKey;
     const envKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
     return envKey || '';
-};
-
-// Get Gemini API key (for image generation only)
-const getGeminiApiKey = (): string => {
-    const localKey = typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null;
-    if (localKey) return localKey;
-    const envKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-    return envKey || '';
-};
-
-// Legacy: getApiKey returns Anthropic key first, then Gemini as fallback
-const getApiKey = (): string => {
-    return getAnthropicApiKey() || getGeminiApiKey();
-};
-
-// Check if API key is available (for text generation - prefers Claude)
-export const hasApiKey = (): boolean => {
-    const claudeKey = getAnthropicApiKey();
-    if (claudeKey && claudeKey.trim().length > 0) return true;
-    const geminiKey = getGeminiApiKey();
-    return !!geminiKey && geminiKey.trim().length > 0;
-};
-
-// Check if Gemini key is available (for image generation)
-export const hasGeminiKey = (): boolean => {
-    const key = getGeminiApiKey();
-    return !!key && key.trim().length > 0;
 };
 
 // Get Stability AI API key (for image generation)
@@ -50,7 +22,13 @@ const getStabilityApiKey = (): string => {
     return envKey || '';
 };
 
-// Check if Stability AI key is available
+// Check if Claude API key is available (for text generation)
+export const hasApiKey = (): boolean => {
+    const claudeKey = getAnthropicApiKey();
+    return !!claudeKey && claudeKey.trim().length > 0;
+};
+
+// Check if Stability AI key is available (for image generation)
 export const hasStabilityKey = (): boolean => {
     const key = getStabilityApiKey();
     return !!key && key.trim().length > 0;
@@ -63,44 +41,6 @@ const ensureAnthropicApiKey = () => {
         throw new Error("Claude API Key missing. Please set ANTHROPIC_API_KEY in Settings. Get your API key at https://console.anthropic.com/");
     }
     return key;
-};
-
-// Ensure Gemini API key exists (for images)
-const ensureGeminiApiKey = () => {
-    const key = getGeminiApiKey();
-    if (!key) {
-        throw new Error("Gemini API Key missing for image generation. Please set GEMINI_API_KEY in Settings.");
-    }
-    return key;
-};
-
-// Legacy ensureApiKey - tries Claude first, then Gemini
-const ensureApiKey = () => {
-    const claudeKey = getAnthropicApiKey();
-    if (claudeKey) return claudeKey;
-    const geminiKey = getGeminiApiKey();
-    if (geminiKey) return geminiKey;
-    throw new Error("AI API Key missing. Please set ANTHROPIC_API_KEY (for Claude) or GEMINI_API_KEY in Settings.");
-};
-
-// ... Schema definitions ...
-const responseSchema = {
-  type: Type.ARRAY,
-  items: {
-    type: Type.OBJECT,
-    properties: {
-      title: { type: Type.STRING },
-      question: { type: Type.STRING },
-      type: { type: Type.STRING, enum: ["text", "multiple_choice", "boolean", "slider", "checkbox", "dropdown"] },
-      answer: { type: Type.STRING, nullable: true },
-      options: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
-      correctAnswers: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
-      numericRange: { type: Type.OBJECT, properties: { min: { type: Type.NUMBER }, max: { type: Type.NUMBER }, correctValue: { type: Type.NUMBER } }, nullable: true },
-      iconId: { type: Type.STRING, enum: ['default', 'star', 'flag', 'trophy', 'camera', 'question', 'skull', 'treasure'] },
-      hint: { type: Type.STRING, nullable: true }
-    },
-    required: ["title", "question", "type", "iconId"]
-  }
 };
 
 async function makeRequestWithRetry<T>(requestFn: () => Promise<T>, maxRetries = 2): Promise<T> {
@@ -179,51 +119,14 @@ Return ONLY a JSON array with objects containing these fields:
         rawData = JSON.parse(jsonMatch[0]);
       }
     } catch (error) {
-      console.error('[AI Tasks] Claude error, falling back to Gemini:', error);
+      console.error('[AI Tasks] Claude error:', error);
+      throw error;
     }
   }
 
-  // Fallback to Gemini if Claude didn't work or no key
+  // No Claude key available
   if (rawData.length === 0) {
-    const geminiKey = getGeminiApiKey();
-    if (!geminiKey) {
-      throw new Error("No AI API key available. Please set ANTHROPIC_API_KEY or GEMINI_API_KEY in Settings.");
-    }
-
-    console.log('[AI Tasks] Using Gemini for task generation');
-    const ai = new GoogleGenAI({ apiKey: geminiKey });
-
-    try {
-      const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: `Create exactly ${count} diverse scavenger hunt tasks. Topic: "${topic}". Language: ${normalizedLanguage}.
-
-CRITICAL REQUIREMENTS:
-1. For "multiple_choice" tasks: ALWAYS create 3-4 answer options in the "options" array
-2. For "multiple_choice" tasks: ALWAYS mark the correct answer(s) in the "correctAnswers" array
-3. For "checkbox" tasks: ALWAYS create 4-6 options and mark 2-3 correct answers in "correctAnswers" array
-4. For "dropdown" tasks: ALWAYS create 4-5 options and mark the correct answer in "correctAnswers" array
-5. For "boolean" tasks: The answer MUST be either "YES" or "NO" (uppercase)
-6. For "text" tasks: Provide the correct answer in the "answer" field
-7. If the topic/context clearly indicates a correct answer, ensure it's properly marked
-
-Return JSON array with all fields properly filled.`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: responseSchema,
-          thinkingConfig: { thinkingBudget: 0 }
-        },
-      }));
-
-      try {
-        rawData = JSON.parse(response.text || "[]");
-      } catch {
-        rawData = [];
-      }
-    } catch (error) {
-      console.error('[AI Tasks] Gemini error:', error);
-      throw error;
-    }
+    throw new Error("Claude API Key missing. Please set ANTHROPIC_API_KEY in Settings. Get your API key at https://console.anthropic.com/");
   }
 
     if (!Array.isArray(rawData)) rawData = [];
@@ -574,45 +477,47 @@ export const generateAiLogo = async (companyName: string, style: string = 'profe
         console.log('[AI Logo] 🎨 Generating AI logo for:', companyName);
         console.log('[AI Logo] Style:', style);
 
-        // Try to use Gemini AI to generate actual logo image
-        const key = getApiKey();
-
-        if (key) {
+        // Try Stability AI for logo generation
+        const stabilityKey = getStabilityApiKey();
+        if (stabilityKey) {
             try {
-                const ai = new GoogleGenAI({ apiKey: key });
+                const prompt = `Professional modern company logo for "${companyName}", ${style}, clean minimalist design, bold colors, square format, white background, vector art style`;
+                console.log('[AI Logo] Generating with Stability AI...');
 
-                const prompt = `Create a professional, modern company logo for "${companyName}".
-                    Design requirements:
-                    - Clean, minimalist design
-                    - Professional corporate look
-                    - Use company name or relevant symbolism
-                    - Bold colors and clear shapes
-                    - Square format, white or transparent background
-                    - High contrast, suitable for web use
-                    Style: ${style}, vector art style`;
-
-                console.log('[AI Logo] Calling Gemini AI to generate logo image...');
-
-                const response = await makeRequestWithRetry<GenerateContentResponse>(() =>
-                    ai.models.generateContent({
-                        model: 'gemini-2.5-flash-image',
-                        contents: prompt,
+                const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${stabilityKey}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text_prompts: [
+                            { text: prompt, weight: 1 },
+                            { text: 'blurry, bad quality, text, watermark, complex, cluttered, photograph', weight: -1 }
+                        ],
+                        cfg_scale: 7,
+                        height: 1024,
+                        width: 1024,
+                        steps: 30,
+                        samples: 1
                     })
-                );
+                });
 
-                // Extract image from response
-                if (response.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-                    const inlineData = response.candidates[0].content.parts[0].inlineData;
-                    console.log('[AI Logo] ✅ Generated AI logo image successfully');
-                    return `data:${inlineData.mimeType};base64,${inlineData.data}`;
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data?.artifacts?.[0]?.base64) {
+                        console.log('[AI Logo] ✅ Stability AI logo generated successfully');
+                        return `data:image/png;base64,${data.artifacts[0].base64}`;
+                    }
                 } else {
-                    console.warn('[AI Logo] No image in AI response, falling back to SVG');
+                    console.warn('[AI Logo] Stability AI error:', response.status);
                 }
             } catch (aiError) {
-                console.warn('[AI Logo] Gemini AI failed, falling back to SVG:', aiError);
+                console.warn('[AI Logo] Stability AI failed, falling back to SVG:', aiError);
             }
         } else {
-            console.log('[AI Logo] No API key found, using SVG fallback');
+            console.log('[AI Logo] No Stability API key, using SVG fallback');
         }
 
         // Fallback: Generate a professional branded SVG logo
@@ -711,61 +616,23 @@ ${JSON.stringify(content, null, 2)}
 
 IMPORTANT: Return ONLY the translated JSON object. No additional text or explanations.`;
 
-    // Try Claude first
-    const claudeKey = getAnthropicApiKey();
-    if (claudeKey) {
-        try {
-            console.log('[AI Translation] Using Claude');
-            const anthropic = new Anthropic({ apiKey: claudeKey, dangerouslyAllowBrowser: true });
+    const claudeKey = ensureAnthropicApiKey();
+    console.log('[AI Translation] Using Claude');
+    const anthropic = new Anthropic({ apiKey: claudeKey, dangerouslyAllowBrowser: true });
 
-            const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 2048,
-                messages: [{ role: 'user', content: prompt }],
-            });
+    const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: prompt }],
+    });
 
-            const textContent = response.content.find(c => c.type === 'text');
-            const responseText = textContent?.type === 'text' ? textContent.text : '';
+    const textContent = response.content.find(c => c.type === 'text');
+    const responseText = textContent?.type === 'text' ? textContent.text : '';
 
-            // Extract JSON from response
-            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                const translatedContent = JSON.parse(jsonMatch[0]);
-                return {
-                    question: translatedContent.question || content.question,
-                    options: translatedContent.options || content.options,
-                    answer: translatedContent.answer || content.answer,
-                    correctAnswers: translatedContent.correctAnswers || content.correctAnswers,
-                    placeholder: translatedContent.placeholder || content.placeholder,
-                    feedback: translatedContent.feedback || content.feedback,
-                };
-            }
-        } catch (error) {
-            console.error('[AI Translation] Claude error, trying Gemini:', error);
-        }
-    }
-
-    // Fallback to Gemini
-    const geminiKey = getGeminiApiKey();
-    if (!geminiKey) {
-        throw new Error("No AI API key available for translation.");
-    }
-
-    console.log('[AI Translation] Using Gemini');
-    const ai = new GoogleGenAI({ apiKey: geminiKey });
-
-    try {
-        const response = await makeRequestWithRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                thinkingConfig: { thinkingBudget: 0 }
-            },
-        }));
-
-        const translatedContent = JSON.parse(response.text || "{}");
-
+    // Extract JSON from response
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+        const translatedContent = JSON.parse(jsonMatch[0]);
         return {
             question: translatedContent.question || content.question,
             options: translatedContent.options || content.options,
@@ -774,10 +641,9 @@ IMPORTANT: Return ONLY the translated JSON object. No additional text or explana
             placeholder: translatedContent.placeholder || content.placeholder,
             feedback: translatedContent.feedback || content.feedback,
         };
-    } catch (error) {
-        console.error("AI Translation Error", error);
-        throw error;
     }
+
+    throw new Error("Translation failed - no valid JSON response from Claude.");
 };
 
 // Generate a mood-based audio vignette using Web Audio API (BETA - no API required)
