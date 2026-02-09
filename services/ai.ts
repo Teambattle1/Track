@@ -10,16 +10,17 @@ import { normalizeLanguage } from "../utils/i18n";
 const getAnthropicApiKey = (): string => {
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('ANTHROPIC_API_KEY') : null;
     if (localKey) return localKey;
-    const envKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
-    return envKey || '';
+    // Vite bakes import.meta.env.VITE_* at build time from .env or Netlify env vars
+    const envKey = import.meta.env.VITE_ANTHROPIC_API_KEY || '';
+    return envKey;
 };
 
 // Get Stability AI API key (for image generation)
 const getStabilityApiKey = (): string => {
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('STABILITY_API_KEY') : null;
     if (localKey) return localKey;
-    const envKey = process.env.STABILITY_API_KEY || process.env.VITE_STABILITY_API_KEY;
-    return envKey || '';
+    const envKey = import.meta.env.VITE_STABILITY_API_KEY || '';
+    return envKey;
 };
 
 // Check if Claude API key is available (for text generation)
