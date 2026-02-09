@@ -60,6 +60,7 @@ import IntroMessageModal from './components/IntroMessageModal';
 import FinishMessageModal from './components/FinishMessageModal';
 import { AroundTheWorldDashboard } from './components/aroundtheworld';
 import { getTaskById } from './utils/aroundtheworld/defaultTasks';
+import { ensureATWTaskList } from './utils/aroundtheworld/initTaskList';
 
 // Lazy-loaded heavy components for code splitting
 const TaskMaster = lazy(() => import('./components/TaskMaster'));
@@ -379,6 +380,11 @@ const GameApp: React.FC = () => {
         const loadedGames = await db.fetchGames();
         setGames(loadedGames);
         const loadedLists = await db.fetchTaskLists();
+        // Ensure ATW task list exists (creates it once if missing)
+        const atwList = await ensureATWTaskList(loadedLists);
+        if (atwList && !loadedLists.find(l => l.id === atwList.id)) {
+            loadedLists.push(atwList);
+        }
         setTaskLists(loadedLists);
         const loadedLib = await db.fetchLibrary();
         setTaskLibrary(loadedLib);
