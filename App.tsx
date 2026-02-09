@@ -28,6 +28,7 @@ import TaskActionModal from './components/TaskActionModal';
 import PlaygroundEditor from './components/PlaygroundEditor';
 import MessagePopup from './components/MessagePopup';
 import Dashboard from './components/Dashboard';
+import PlayerHUD from './components/PlayerHUD';
 
 // Inner App Component that consumes LocationContext
 const GameApp: React.FC = () => {
@@ -79,7 +80,8 @@ const GameApp: React.FC = () => {
   const [activeDangerZone, setActiveDangerZone] = useState<DangerZone | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [latestMessage, setLatestMessage] = useState<ChatMessage | null>(null);
-  
+  const [playerTeamName, setPlayerTeamName] = useState<string>('');
+
   // --- MAP STATE ---
   const [localMapStyle, setLocalMapStyle] = useState<MapStyleId>('osm');
   const mapRef = useRef<GameMapHandle>(null);
@@ -242,6 +244,7 @@ const GameApp: React.FC = () => {
   const handleStartGame = (gameId: string, teamName: string, userName: string, teamPhoto: string | null, style: MapStyleId) => {
       setActiveGameId(gameId);
       setLocalMapStyle(style);
+      setPlayerTeamName(teamName);
       teamSync.connect(gameId, teamName, userName);
       setMode(GameMode.PLAY);
       setShowLanding(false);
@@ -704,57 +707,86 @@ const GameApp: React.FC = () => {
             />
         </div>
 
-        <GameHUD 
-            accuracy={gpsAccuracy}
-            mode={mode}
-            toggleMode={() => {}}
-            onSetMode={setMode}
-            onOpenGameManager={() => setShowGameChooser(true)}
-            onOpenTaskMaster={() => setShowTaskMaster(true)}
-            onOpenTeams={() => setShowTeamsHub(true)}
-            mapStyle={localMapStyle || 'osm'}
-            onSetMapStyle={(s) => setLocalMapStyle(s)}
-            language={activeGame?.language || 'English'}
-            onBackToHub={() => setShowLanding(true)}
-            activeGameName={activeGame?.name}
-            onOpenInstructorDashboard={() => setShowInstructorDashboard(true)}
-            isMeasuring={isMeasuring}
-            onToggleMeasure={handleToggleMeasure}
-            measuredDistance={measuredDistance}
-            measurePointsCount={measurePointsCount}
-            playgrounds={activeGame?.playgrounds}
-            onOpenPlayground={(id) => setViewingPlaygroundId(id)}
-            onOpenTeamDashboard={() => setShowTeamDashboard(true)}
-            onRelocateGame={handleRelocateGame}
-            isRelocating={isRelocating}
-            timerConfig={activeGame?.timerConfig}
-            onFitBounds={(coords) => {
-                if (coords && coords.length > 0) {
-                    mapRef.current?.fitBounds(coords);
-                } else {
-                    mapRef.current?.fitBounds(activeGame?.points || []);
-                }
-            }}
-            onLocateMe={handleLocateMe}
-            onSearchLocation={(c) => mapRef.current?.jumpTo(c)}
-            isDrawerExpanded={isEditorExpanded}
-            showScores={showScores}
-            onToggleScores={() => setShowScores(!showScores)}
-            hiddenPlaygroundIds={[]}
-            onToggleChat={() => setShowChatDrawer(!showChatDrawer)}
-            unreadMessagesCount={0}
-            onAddDangerZone={handleAddDangerZone}
-            activeDangerZone={mode === GameMode.PLAY ? currentDangerZone : null}
-            onEditGameSettings={() => { setGameToEdit(activeGame || null); setShowGameCreator(true); }}
-            onOpenGameChooser={() => setShowGameChooser(true)}
-            routes={activeGame?.routes}
-            onAddRoute={(route) => activeGame && updateActiveGame({ ...activeGame, routes: [...(activeGame.routes || []), route] })}
-            onToggleRoute={(id) => {
-                if (!activeGame) return;
-                const updated = (activeGame.routes || []).map(r => r.id === id ? { ...r, isVisible: !r.isVisible } : r);
-                updateActiveGame({ ...activeGame, routes: updated });
-            }}
-        />
+        {mode === GameMode.PLAY ? (
+            <PlayerHUD
+                accuracy={gpsAccuracy}
+                language={activeGame?.language || 'English'}
+                onBackToHub={() => setShowLanding(true)}
+                activeGameName={activeGame?.name}
+                mapStyle={localMapStyle || 'osm'}
+                onSetMapStyle={(s) => setLocalMapStyle(s)}
+                playgrounds={activeGame?.playgrounds}
+                onOpenPlayground={(id) => setViewingPlaygroundId(id)}
+                onOpenTeamDashboard={() => setShowTeamDashboard(true)}
+                timerConfig={activeGame?.timerConfig}
+                onFitBounds={() => mapRef.current?.fitBounds(activeGame?.points || [])}
+                onLocateMe={handleLocateMe}
+                showScores={showScores}
+                onToggleScores={() => setShowScores(!showScores)}
+                hiddenPlaygroundIds={[]}
+                onToggleChat={() => setShowChatDrawer(!showChatDrawer)}
+                unreadMessagesCount={0}
+                targetPlaygroundId={undefined}
+                allowChatting={activeGame?.allowChatting}
+                score={score}
+                tasksCompleted={activeGame?.points.filter(p => p.isCompleted && !p.isSectionHeader && !p.playgroundId).length || 0}
+                tasksTotal={activeGame?.points.filter(p => !p.isSectionHeader && !p.playgroundId && p.points > 0).length || 0}
+                teamName={playerTeamName}
+                onOpenGameChooser={() => setShowGameChooser(true)}
+            />
+        ) : (
+            <GameHUD
+                accuracy={gpsAccuracy}
+                mode={mode}
+                toggleMode={() => {}}
+                onSetMode={setMode}
+                onOpenGameManager={() => setShowGameChooser(true)}
+                onOpenTaskMaster={() => setShowTaskMaster(true)}
+                onOpenTeams={() => setShowTeamsHub(true)}
+                mapStyle={localMapStyle || 'osm'}
+                onSetMapStyle={(s) => setLocalMapStyle(s)}
+                language={activeGame?.language || 'English'}
+                onBackToHub={() => setShowLanding(true)}
+                activeGameName={activeGame?.name}
+                onOpenInstructorDashboard={() => setShowInstructorDashboard(true)}
+                isMeasuring={isMeasuring}
+                onToggleMeasure={handleToggleMeasure}
+                measuredDistance={measuredDistance}
+                measurePointsCount={measurePointsCount}
+                playgrounds={activeGame?.playgrounds}
+                onOpenPlayground={(id) => setViewingPlaygroundId(id)}
+                onOpenTeamDashboard={() => setShowTeamDashboard(true)}
+                onRelocateGame={handleRelocateGame}
+                isRelocating={isRelocating}
+                timerConfig={activeGame?.timerConfig}
+                onFitBounds={(coords) => {
+                    if (coords && coords.length > 0) {
+                        mapRef.current?.fitBounds(coords);
+                    } else {
+                        mapRef.current?.fitBounds(activeGame?.points || []);
+                    }
+                }}
+                onLocateMe={handleLocateMe}
+                onSearchLocation={(c) => mapRef.current?.jumpTo(c)}
+                isDrawerExpanded={isEditorExpanded}
+                showScores={showScores}
+                onToggleScores={() => setShowScores(!showScores)}
+                hiddenPlaygroundIds={[]}
+                onToggleChat={() => setShowChatDrawer(!showChatDrawer)}
+                unreadMessagesCount={0}
+                onAddDangerZone={handleAddDangerZone}
+                activeDangerZone={currentDangerZone}
+                onEditGameSettings={() => { setGameToEdit(activeGame || null); setShowGameCreator(true); }}
+                onOpenGameChooser={() => setShowGameChooser(true)}
+                routes={activeGame?.routes}
+                onAddRoute={(route) => activeGame && updateActiveGame({ ...activeGame, routes: [...(activeGame.routes || []), route] })}
+                onToggleRoute={(id) => {
+                    if (!activeGame) return;
+                    const updated = (activeGame.routes || []).map(r => r.id === id ? { ...r, isVisible: !r.isVisible } : r);
+                    updateActiveGame({ ...activeGame, routes: updated });
+                }}
+            />
+        )}
 
         {(mode === GameMode.EDIT || playgroundTemplateToEdit) && (
             <EditorDrawer 
