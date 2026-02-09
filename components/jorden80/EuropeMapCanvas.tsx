@@ -237,7 +237,7 @@ const EuropeMapCanvas: React.FC<EuropeMapCanvasProps> = ({
   const vintageMapUrl = 'https://www.pillarboxblue.com/wp-content/uploads/2018/02/Europe-map-1898-s.jpg';
 
   return (
-    <div className="j80-map-container" style={{ width: fullSize ? '100%' : width, height: fullSize ? '100%' : height, position: fullSize ? 'absolute' : 'relative', top: 0, left: 0 }}>
+    <div className="j80-map-container" style={{ width: fullSize ? '100%' : width, height: fullSize ? '100%' : height, position: fullSize ? 'absolute' : 'relative', top: 0, left: 0, pointerEvents: fullSize ? 'none' : 'auto' }}>
       {/* Vintage map background */}
       <div
         style={{
