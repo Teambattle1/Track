@@ -4,7 +4,7 @@ import {
   QrCode, Copy, Check, RefreshCw, Clock, Wifi, WifiOff,
   Smartphone, Tablet, Monitor, Trophy, ChevronDown, ChevronUp,
   Trash2, MessageSquare, BarChart3, Send, CheckCircle, Circle,
-  AlertCircle, Pencil
+  AlertCircle, Pencil, XCircle, Target
 } from 'lucide-react';
 import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage } from '../types';
 import { teamSync } from '../services/teamSync';
@@ -442,53 +442,41 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
 
   return (
     <div className="fixed inset-0 z-[5000] bg-[#0a0f1d] flex flex-col animate-in fade-in duration-200">
-      {/* Top Bar: Brand + Color */}
-      <div className="flex items-center justify-between px-4 py-2 bg-black/60 border-b-2 border-orange-500/40">
-        <span className="text-xs font-black text-orange-400 uppercase tracking-[0.3em]">
-          TEAMTRACK BY TEAMBATTLE
-        </span>
-        <div className="h-2 w-28 rounded-full" style={{ backgroundColor: teamColor }} />
-      </div>
-
-      {/* Header */}
-      <div className="bg-black/40 border-b-2 border-orange-500/20 px-4 py-3 shrink-0">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      {/* Header Bar */}
+      <div className="bg-black/60 border-b-2 border-orange-500/30 px-4 py-3 shrink-0">
+        <div className="max-w-5xl mx-auto flex items-center gap-3">
+          {/* LEFT: Team Name + Info */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            {/* Team Avatar */}
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center border-2 shrink-0"
+              className="w-12 h-12 rounded-xl flex items-center justify-center border-2 shrink-0"
               style={{ backgroundColor: teamColor + '20', borderColor: teamColor + '60' }}
             >
               {team?.photoUrl ? (
-                <img src={team.photoUrl} alt="" className="w-full h-full rounded-2xl object-cover" />
+                <img src={team.photoUrl} alt="" className="w-full h-full rounded-xl object-cover" />
               ) : (
-                <Users className="w-7 h-7" style={{ color: teamColor }} />
+                <Users className="w-6 h-6" style={{ color: teamColor }} />
               )}
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl font-black text-white uppercase tracking-wider truncate">
+              <h1 className="text-lg font-black text-white uppercase tracking-wider truncate">
                 {team?.name || 'LOADING...'}
               </h1>
-              <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-sm text-white font-black uppercase tracking-wider">
-                  <Trophy className="w-4 h-4 inline mr-1 text-orange-400" />
-                  {team?.score || 0} PTS
-                </span>
+              <div className="flex items-center gap-2 mt-0.5">
                 {teamRank && (
-                  <span className="text-sm text-orange-300 font-black uppercase tracking-wider">
-                    #{teamRank}/{totalTeams}
+                  <span className="text-xs text-orange-300 font-black uppercase tracking-wider">
+                    RANK #{teamRank}/{totalTeams}
                   </span>
                 )}
-                <span className="text-sm text-white font-bold uppercase">
+                <span className="text-xs text-slate-300 font-bold uppercase">
                   {onlineCount}/{mergedMembers.length} ONLINE
                 </span>
                 {shortCode && (
                   <button
                     onClick={handleCopyCode}
-                    className="flex items-center gap-1.5 text-sm font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border-2 transition-colors"
+                    className="flex items-center gap-1 text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border transition-colors"
                     style={{ color: '#fff', backgroundColor: teamColor + '25', borderColor: teamColor + '60' }}
                   >
-                    {codeCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {codeCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                     {shortCode}
                   </button>
                 )}
@@ -496,6 +484,31 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
             </div>
           </div>
 
+          {/* CENTER: BIG SCORE BOX */}
+          <div className="shrink-0 bg-black/60 border-2 border-orange-500/50 rounded-2xl px-6 py-2 flex flex-col items-center min-w-[180px]">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-7 h-7 text-orange-400" />
+              <span className="text-4xl font-black text-white tabular-nums tracking-tight">
+                {team?.score || 0}
+              </span>
+              <span className="text-sm font-black text-orange-400 uppercase tracking-wider self-end mb-1">PTS</span>
+            </div>
+            {/* Task stats row */}
+            {game?.points && (
+              <div className="flex items-center gap-3 mt-1">
+                <span className="flex items-center gap-1 text-xs font-black uppercase tracking-wider text-emerald-400">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  {team?.completedPointIds?.length || 0} CORRECT
+                </span>
+                <span className="flex items-center gap-1 text-xs font-black uppercase tracking-wider text-red-400">
+                  <XCircle className="w-3.5 h-3.5" />
+                  {Math.max(0, (game.points.length) - (team?.completedPointIds?.length || 0))} REMAINING
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT: Actions */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => loadTeam()}
