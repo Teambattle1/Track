@@ -17,7 +17,7 @@ import WalkingExplorer from './WalkingExplorer';
 import './InitialLandingStyles.css';
 
 interface InitialLandingProps {
-  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'CREATE_AROUNDTHEWORLD_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'EDIT_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS' | 'TRANSLATIONS' | 'CLIENT') => void;
+  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'CREATE_AROUNDTHEWORLD_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'EDIT_TEAMS' | 'CREATE_TEAM' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS' | 'TRANSLATIONS' | 'CLIENT') => void;
   version: string;
   games: Game[];
   activeGameId: string | null;
@@ -709,7 +709,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   title="NEW TEAM"
                   icon={UserPlus}
                   gradient="bg-gradient-to-br from-pink-500 to-rose-500"
-                  onClick={() => onAction('PLAY')}
+                  onClick={() => onAction('CREATE_TEAM')}
                   delay={100}
                   scale={0.85}
               />

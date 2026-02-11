@@ -55,6 +55,7 @@ import Access from './components/Access';
 import TeamEditorModal from './components/TeamEditorModal';
 import TeamLobbyChooser from './components/TeamLobbyChooser';
 import PlayerLogin from './components/PlayerLogin';
+import GameChooserView from './components/GameChooserView';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
 import RankingModal from './components/RankingModal';
@@ -96,6 +97,7 @@ const LoadingFallback = () => (
 import { approveMediaSubmission, rejectMediaSubmission, subscribeToMediaSubmissions} from './services/mediaUpload';
 import { getConfiguredLanguagesForGame, validateTaskTranslations } from './utils/translationValidation';
 import { createTaskIdMap, remapTaskLogicTargets, validateTaskReferences } from './utils/taskIdRemapping';
+import { generateTeamShortCode } from './utils/teamUtils';
 import { setupFullscreenOnInteraction } from './utils/fullscreen';
 
 // Inner App Component that consumes LocationContext
@@ -151,6 +153,8 @@ const GameApp: React.FC = () => {
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [showAccess, setShowAccess] = useState(false);
   const [showPlayerLogin, setShowPlayerLogin] = useState(() => window.location.pathname === '/login');
+  const [showCreateTeamGameChooser, setShowCreateTeamGameChooser] = useState(false);
+  const [createTeamPreSelectedGame, setCreateTeamPreSelectedGame] = useState<Game | null>(null);
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
   const [showPlayzoneSelector, setShowPlayzoneSelector] = useState(false);
   const [showAroundTheWorldDashboard, setShowAroundTheWorldDashboard] = useState(false);
@@ -159,6 +163,7 @@ const GameApp: React.FC = () => {
   const [introModalShown, setIntroModalShown] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishModalShown, setFinishModalShown] = useState(false);
+  const [showTeamLobbyAfterJoin, setShowTeamLobbyAfterJoin] = useState(false);
 
   // --- TEAM LOBBY ACCESS STATE ---
   const [gameForLobbyAccess, setGameForLobbyAccess] = useState<string | null>(null);
@@ -696,10 +701,15 @@ const GameApp: React.FC = () => {
       const teamState = teamSync.getState();
       if (!teamState.teamId) return;
 
-      // Load the team's data
+      // Load the team's data (try by ID first, then by name within the game)
       const loadTeam = async () => {
           try {
-              const team = await db.fetchTeam(teamState.teamId);
+              let team = await db.fetchTeam(teamState.teamId);
+              if (!team && teamState.teamName && activeGameId) {
+                  // teamSync.teamId is a sanitized key, not a DB id — look up by name
+                  const allTeams = await db.fetchTeams(activeGameId);
+                  team = allTeams.find(t => t.name.toLowerCase() === teamState.teamName.toLowerCase()) || null;
+              }
               setCurrentTeam(team);
           } catch (error) {
               console.error('[Schedule] Failed to load current team:', error);
@@ -1374,12 +1384,70 @@ const GameApp: React.FC = () => {
       }
   };
 
+  // Register a player-created team in the database so it appears in the admin teams list
+  const registerPlayerTeam = async (gameId: string, teamName: string, userName: string, teamPhoto: string | null) => {
+      try {
+          const deviceId = teamSync.getDeviceId();
+          const teamKey = teamName.replace(/[^a-zA-Z0-9]/g, '_');
+          const teamId = `team-${teamKey}-${Date.now()}`;
+
+          // Fetch existing teams to get short codes and avoid duplicates
+          const existingTeams = await db.fetchTeams(gameId);
+          const existingCodes = existingTeams.map(t => t.shortCode).filter(Boolean) as string[];
+
+          // Check if this team name already exists (player joining existing team)
+          const existingTeam = existingTeams.find(t => t.name.toLowerCase() === teamName.toLowerCase());
+          if (existingTeam) {
+              // Team already exists — add this player as a member instead
+              const alreadyMember = existingTeam.members?.some(m => m.deviceId === deviceId);
+              if (!alreadyMember) {
+                  await db.addTeamMember(existingTeam.id, {
+                      deviceId,
+                      name: userName,
+                      photo: localStorage.getItem('geohunt_temp_user_photo') || undefined
+                  });
+                  console.log(`[App] Added ${userName} to existing team "${teamName}"`);
+              }
+              return;
+          }
+
+          const shortCode = generateTeamShortCode(existingCodes);
+
+          const team: Team = {
+              id: teamId,
+              gameId,
+              name: teamName,
+              joinCode: String(100000 + Math.floor(Math.random() * 900000)),
+              photoUrl: teamPhoto || undefined,
+              members: [{
+                  name: userName,
+                  deviceId,
+                  photo: localStorage.getItem('geohunt_temp_user_photo') || undefined
+              }],
+              score: 0,
+              completedPointIds: [],
+              updatedAt: new Date().toISOString(),
+              captainDeviceId: deviceId,
+              isStarted: false,
+              shortCode,
+          };
+
+          await db.registerTeam(team);
+          console.log(`[App] Registered new team "${teamName}" (${teamId}) with player "${userName}"`);
+      } catch (error) {
+          console.error('[App] Failed to register team:', error);
+          // Don't block the game — team registration is best-effort
+      }
+  };
+
   const handleStartGame = (gameId: string, teamName: string, userName: string, teamPhoto: string | null, style: MapStyleId) => {
       setActiveGameId(gameId);
       setLocalMapStyle(style);
       teamSync.connect(gameId, teamName, userName);
       setMode(GameMode.PLAY);
       setShowLanding(false);
+      // Register team in database (async, non-blocking)
+      registerPlayerTeam(gameId, teamName, userName, teamPhoto);
   };
 
   const handleRelocateGame = () => {
@@ -1538,6 +1606,20 @@ const GameApp: React.FC = () => {
       mapRef.current.jumpTo(activeGame.endLocation);
       setLocateFeedback('Navigating to meeting point...');
       setTimeout(() => setLocateFeedback(null), 2000);
+  };
+
+  const handleStartGameFromLobby = () => {
+      // Request fullscreen for immersive gameplay
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+          elem.requestFullscreen({ navigationUI: 'hide' } as FullscreenOptions).catch(() => {});
+      } else if ((elem as any).webkitRequestFullscreen) {
+          (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).mozRequestFullScreen) {
+          (elem as any).mozRequestFullScreen();
+      }
+      // Close lobby overlay, reveal game map
+      setShowTeamLobbyAfterJoin(false);
   };
 
   const handleStartSimulation = () => {
@@ -1879,22 +1961,50 @@ const GameApp: React.FC = () => {
       return <ClientSubmissionView token={submissionToken} />;
   }
 
+  // Game chooser for "NEW TEAM" from admin landing — pick a game, then go to create team
+  if (showCreateTeamGameChooser) {
+      return (
+          <GameChooserView
+              games={games}
+              title="SELECT GAME"
+              subtitle="Choose a game session to create a new team for"
+              accentColor="orange"
+              onSelectGame={(gameId) => {
+                  const game = games.find(g => g.id === gameId);
+                  if (game) {
+                      setCreateTeamPreSelectedGame(game);
+                      setShowCreateTeamGameChooser(false);
+                      setShowPlayerLogin(true);
+                  }
+              }}
+              onClose={() => setShowCreateTeamGameChooser(false)}
+          />
+      );
+  }
+
   // Player Login page - accessible at /login for players to enter game
   if (showPlayerLogin) {
       return (
           <PlayerLogin
+              preSelectedGame={createTeamPreSelectedGame || undefined}
               onComplete={(gameId, teamName, userName, teamPhoto) => {
                   setShowPlayerLogin(false);
+                  setCreateTeamPreSelectedGame(null);
                   setActiveGameId(gameId);
                   teamSync.connect(gameId, teamName, userName);
                   setMode(GameMode.PLAY);
                   setShowLanding(false);
+                  // Show team lobby immediately after joining
+                  setShowTeamLobbyAfterJoin(true);
+                  // Register team in database (async, non-blocking)
+                  registerPlayerTeam(gameId, teamName, userName, teamPhoto);
                   if (window.location.pathname === '/login') {
                       window.history.pushState({}, '', '/');
                   }
               }}
               onBack={() => {
                   setShowPlayerLogin(false);
+                  setCreateTeamPreSelectedGame(null);
                   if (window.location.pathname === '/login') {
                       window.history.pushState({}, '', '/');
                   }
@@ -2836,6 +2946,17 @@ const GameApp: React.FC = () => {
               />
           )}
 
+          {/* Post-join Team Lobby (fullscreen lobby before game starts) */}
+          {showTeamLobbyAfterJoin && activeGame && (currentTeam || teamSync.getState().teamId) && (
+              <TeamLobbyView
+                  isOpen={showTeamLobbyAfterJoin}
+                  onClose={() => setShowTeamLobbyAfterJoin(false)}
+                  teamId={currentTeam?.id || teamSync.getState().teamId}
+                  game={activeGame}
+                  onStartGame={handleStartGameFromLobby}
+              />
+          )}
+
           {/* Team View - QR Scanner Modal */}
           {showTeamViewQRScanner && (
               <QRScannerModal
@@ -3076,6 +3197,10 @@ const GameApp: React.FC = () => {
                         } else {
                             setShowGameChooser(true);
                         }
+                        return;
+                    }
+                    if (action === 'CREATE_TEAM') {
+                        setShowCreateTeamGameChooser(true);
                         return;
                     }
                     if (action === 'PREVIEW_TEAM') {
