@@ -1983,7 +1983,6 @@ const GameApp: React.FC = () => {
                       const game = games.find(g => g.id === id);
                       if (game) {
                           setGameToEdit(game);
-                          setActiveGameId(id);
                           setInitialCreatorTab(undefined);
                           setShowGameCreator(true);
                           setShowGameChooser(false);
@@ -1993,7 +1992,6 @@ const GameApp: React.FC = () => {
                       const game = games.find(g => g.id === id);
                       if (game) {
                           setGameToEdit(game);
-                          setActiveGameId(id);
                           setInitialCreatorTab('ACCESS');
                           setShowGameCreator(true);
                           setShowGameChooser(false);
@@ -3338,7 +3336,6 @@ const GameApp: React.FC = () => {
                         const game = games.find(g => g.id === id);
                         if (game) {
                             setGameToEdit(game);
-                            setActiveGameId(id);
                             setInitialCreatorTab(undefined);
                             setShowGameCreator(true);
                             setShowGameManagerForLobby(false);
@@ -3348,7 +3345,6 @@ const GameApp: React.FC = () => {
                         const game = games.find(g => g.id === id);
                         if (game) {
                             setGameToEdit(game);
-                            setActiveGameId(id);
                             setInitialCreatorTab('ACCESS');
                             setShowGameCreator(true);
                             setShowGameManagerForLobby(false);
