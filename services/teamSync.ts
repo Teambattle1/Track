@@ -463,15 +463,6 @@ class TeamSyncService {
           !!this.userLocation &&
           (this.locationDirty || now - this.lastLocationSentAt > 20000);
 
-      // Only send if something changed or forced (initial connection)
-      const statusChanged = !this.lastPresenceSent ||
-          this.lastPresenceSent.isSolving !== this.isSolving ||
-          this.lastPresenceSent.isRetired !== this.isRetired;
-
-      if (!force && !shouldSendLocation && !statusChanged) {
-          return; // Skip sending if nothing changed
-      }
-
       const me: TeamMember = {
           deviceId: this.deviceId,
           userName: this.userName,

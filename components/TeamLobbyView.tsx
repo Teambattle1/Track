@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  X, Users, Shield, Crown, UserX, UserCheck, UserPlus,
+  X, Users, Shield, Crown, UserX, UserCheck,
   QrCode, Copy, Check, RefreshCw, Clock, Wifi, WifiOff,
   Smartphone, Tablet, Monitor, Trophy, ChevronDown, ChevronUp,
   Trash2, MessageSquare, BarChart3, Send, CheckCircle, Circle,
-  AlertCircle, Eye
+  AlertCircle
 } from 'lucide-react';
 import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage } from '../types';
 import { teamSync } from '../services/teamSync';
@@ -12,6 +12,34 @@ import * as db from '../services/db';
 import { getCountdownState, formatCountdown, CountdownInfo } from '../utils/teamUtils';
 import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
+import MessagePopup from './MessagePopup';
+
+// Notification sound using Web Audio API (no external files)
+const playNotificationSound = () => {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    // Play two quick tones for a pleasant notification
+    const playTone = (freq: number, startTime: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+    playTone(880, ctx.currentTime, 0.15);       // A5
+    playTone(1100, ctx.currentTime + 0.12, 0.2); // ~C#6
+    playTone(1320, ctx.currentTime + 0.25, 0.25); // E6
+    // Cleanup
+    setTimeout(() => ctx.close(), 1500);
+  } catch (e) {
+    // Audio not available
+  }
+};
 
 type LobbyTab = 'MEMBERS' | 'VOTES' | 'CHAT';
 
@@ -52,7 +80,11 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [unreadChat, setUnreadChat] = useState(0);
+  const [chatPopup, setChatPopup] = useState<ChatMessage | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatChannelRef = useRef<any>(null);
+  const chatChannelReadyRef = useRef(false);
+  const seenMsgIdsRef = useRef<Set<string>>(new Set());
 
   // Determine captain status
   const isCaptain = isCaptainProp ?? (team?.captainDeviceId === myDeviceId);
@@ -90,6 +122,14 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     return unsub;
   }, [isOpen]);
 
+  // Periodic tick to re-evaluate online/offline status (lastSeen check)
+  const [, setOnlineTick] = useState(0);
+  useEffect(() => {
+    if (!isOpen) return;
+    const interval = window.setInterval(() => setOnlineTick(t => t + 1), 15000);
+    return () => window.clearInterval(interval);
+  }, [isOpen]);
+
   // Subscribe to votes for all game tasks
   useEffect(() => {
     if (!isOpen || !game?.points) return;
@@ -103,17 +143,85 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     return () => unsubs.forEach(u => u());
   }, [isOpen, game?.points]);
 
-  // Subscribe to chat messages
+  // Subscribe to chat via own Supabase channel with self: true
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !game?.id) return;
+
+    const channelId = `lobby_chat_${game.id}_${teamId}`;
+    const channel = supabase.channel(channelId, {
+      config: { broadcast: { self: true } }
+    });
+
+    channel
+      .on('broadcast', { event: 'chat' }, (payload: any) => {
+        const msg = payload.payload as ChatMessage;
+        if (!msg) return;
+        // Deduplicate
+        if (seenMsgIdsRef.current.has(msg.id)) return;
+        seenMsgIdsRef.current.add(msg.id);
+
+        setChatMessages(prev => [...prev, msg]);
+
+        // Check if this is from someone else (not me)
+        const isFromMe = msg.id.includes(myDeviceId);
+        if (!isFromMe) {
+          // Play notification sound
+          playNotificationSound();
+          // Show popup if not on CHAT tab
+          setChatPopup(msg);
+          setUnreadChat(prev => prev + 1);
+        }
+      })
+      .subscribe((status: string) => {
+        if (status === 'SUBSCRIBED') {
+          chatChannelReadyRef.current = true;
+          console.log('[TeamLobbyView] Chat channel ready:', channelId);
+        }
+      });
+
+    chatChannelRef.current = channel;
+
+    // Also listen to the main global channel for gamemaster messages
+    const globalId = `lobby_global_${game.id}_${teamId}`;
+    const globalChannel = supabase.channel(globalId);
+    globalChannel
+      .on('broadcast', { event: 'chat' }, (payload: any) => {
+        const msg = payload.payload as ChatMessage;
+        if (!msg) return;
+        if (seenMsgIdsRef.current.has(msg.id)) return;
+        seenMsgIdsRef.current.add(msg.id);
+
+        setChatMessages(prev => [...prev, msg]);
+        const isFromMe = msg.id.includes(myDeviceId);
+        if (!isFromMe) {
+          playNotificationSound();
+          setChatPopup(msg);
+          setUnreadChat(prev => prev + 1);
+        }
+      })
+      .subscribe();
+
+    // Also subscribe to teamSync chat for gamemaster broadcasts
     const unsub = teamSync.subscribeToChat((msg: ChatMessage) => {
+      if (seenMsgIdsRef.current.has(msg.id)) return;
+      seenMsgIdsRef.current.add(msg.id);
       setChatMessages(prev => [...prev, msg]);
-      if (activeTab !== 'CHAT') {
+      const isFromMe = msg.id.includes(myDeviceId);
+      if (!isFromMe) {
+        playNotificationSound();
+        setChatPopup(msg);
         setUnreadChat(prev => prev + 1);
       }
     });
-    return unsub;
-  }, [isOpen, activeTab]);
+
+    return () => {
+      chatChannelReadyRef.current = false;
+      chatChannelRef.current = null;
+      supabase.removeChannel(channel);
+      supabase.removeChannel(globalChannel);
+      unsub();
+    };
+  }, [isOpen, game?.id, teamId]);
 
   // Scroll chat to bottom on new messages
   useEffect(() => {
@@ -237,21 +345,37 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     const msg = chatInput.trim();
     if (!msg || !game) return;
 
-    // Send via teamSync's global channel
-    teamSync.sendTeamChatMessage(game.id, msg, teamSync.getUserName(), team?.name || 'Team');
+    const senderName = teamSync.getUserName() || 'Player';
+    const teamName = team?.name || 'Team';
 
-    // Add locally for immediate feedback
     const chatPayload: ChatMessage = {
       id: `msg-${Date.now()}-${myDeviceId}`,
       gameId: game.id,
       targetTeamId: null,
       message: msg,
-      sender: `${team?.name || 'Team'}: ${teamSync.getUserName()}`,
+      sender: `${teamName}: ${senderName}`,
       timestamp: Date.now(),
       isUrgent: false
     };
+
+    // Mark as seen so we don't duplicate when self:true echoes it back
+    seenMsgIdsRef.current.add(chatPayload.id);
+
+    // Add locally for immediate feedback
     setChatMessages(prev => [...prev, chatPayload]);
     setChatInput('');
+
+    // Send via our lobby chat channel (self:true will echo back, but we dedup)
+    if (chatChannelRef.current && chatChannelReadyRef.current) {
+      chatChannelRef.current.send({
+        type: 'broadcast',
+        event: 'chat',
+        payload: chatPayload
+      });
+    }
+
+    // Also send via teamSync's global channel so gamemaster receives it
+    teamSync.sendTeamChatMessage(game.id, msg, senderName, teamName);
   };
 
   const handleChatKeyPress = (e: React.KeyboardEvent) => {
@@ -549,8 +673,9 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                 )}
               </div>
 
-              {/* RIGHT COLUMN: Member Roster */}
+              {/* RIGHT COLUMN: Member Roster + Captain Sections */}
               <div className="space-y-4">
+                {/* Member Roster */}
                 <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
                   <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <Users className="w-5 h-5 text-orange-400" />
@@ -564,122 +689,69 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                     {mergedMembers.map(member => {
                       const isMemberCaptain = member.deviceId === team?.captainDeviceId;
                       const isMe = member.deviceId === myDeviceId;
-                      const isExpanded = showMemberActions === member.deviceId;
-                      const canManage = isCaptain && !isMe;
 
                       return (
-                        <div key={member.deviceId}>
-                          <button
-                            onClick={() => {
-                              if (canManage) {
-                                setShowMemberActions(isExpanded ? null : member.deviceId);
+                        <div
+                          key={member.deviceId}
+                          className={`flex items-center gap-3 p-3 rounded-xl border-2 ${
+                            member.isRetired ? 'bg-slate-900/30 border-slate-700/20 opacity-60' :
+                            isMe ? 'bg-orange-500/5 border-orange-500/20' :
+                            'border-white/10'
+                          }`}
+                        >
+                          {/* Avatar */}
+                          {member.photo ? (
+                            <img src={member.photo} alt="" className="w-11 h-11 rounded-xl object-cover border-2 border-orange-500/30 shrink-0" />
+                          ) : (
+                            <div
+                              className="w-11 h-11 rounded-xl flex items-center justify-center border-2 shrink-0"
+                              style={isMemberCaptain
+                                ? { backgroundColor: teamColor + '20', borderColor: teamColor + '50' }
+                                : { backgroundColor: '#1e293b', borderColor: '#475569' }
                               }
-                            }}
-                            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left border-2 ${
-                              isExpanded ? 'bg-orange-500/10 border-orange-500/40' :
-                              member.isRetired ? 'bg-slate-900/30 border-slate-700/20 opacity-60' :
-                              isMe ? 'bg-orange-500/5 border-orange-500/20' :
-                              canManage ? 'border-white/10 hover:bg-orange-500/10 hover:border-orange-500/30' :
-                              'border-transparent'
-                            }`}
-                          >
-                            {/* Avatar */}
-                            {member.photo ? (
-                              <img src={member.photo} alt="" className="w-11 h-11 rounded-xl object-cover border-2 border-orange-500/30 shrink-0" />
-                            ) : (
-                              <div
-                                className="w-11 h-11 rounded-xl flex items-center justify-center border-2 shrink-0"
-                                style={isMemberCaptain
-                                  ? { backgroundColor: teamColor + '20', borderColor: teamColor + '50' }
-                                  : { backgroundColor: '#1e293b', borderColor: '#475569' }
-                                }
-                              >
-                                {isMemberCaptain
-                                  ? <Crown className="w-5 h-5" style={{ color: teamColor }} />
-                                  : <Users className="w-5 h-5 text-slate-300" />
-                                }
-                              </div>
-                            )}
-
-                            {/* Info */}
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-white uppercase tracking-wider truncate">
-                                  {member.name || 'UNKNOWN'}
-                                </span>
-                                {isMemberCaptain && (
-                                  <span className="text-xs font-black uppercase px-1.5 py-0.5 rounded border" style={{ color: teamColor, backgroundColor: teamColor + '20', borderColor: teamColor + '40' }}>
-                                    CPT
-                                  </span>
-                                )}
-                                {isMe && (
-                                  <span className="text-xs font-black text-orange-400 uppercase bg-orange-400/20 px-1.5 py-0.5 rounded border border-orange-500/30">
-                                    YOU
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${
-                                  member.isOnline ? 'text-orange-400' : 'text-slate-400'
-                                }`}>
-                                  {member.isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-                                  {member.isOnline ? 'ONLINE' : 'OFFLINE'}
-                                </span>
-                                {member.isSolving && (
-                                  <span className="text-xs font-black text-orange-300 uppercase">SOLVING</span>
-                                )}
-                                {member.isRetired && (
-                                  <span className="text-xs font-black text-red-400 uppercase">RETIRED</span>
-                                )}
-                                {member.deviceType && member.isOnline && (
-                                  <span className="text-slate-300"><DeviceIcon type={member.deviceType} /></span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Expand indicator for captain */}
-                            {canManage && (
-                              <div className="shrink-0">
-                                {isExpanded
-                                  ? <ChevronUp className="w-5 h-5 text-orange-400" />
-                                  : <ChevronDown className="w-5 h-5 text-slate-300" />
-                                }
-                              </div>
-                            )}
-                          </button>
-
-                          {/* Captain Actions (expanded) — LARGE buttons for tablet */}
-                          {isExpanded && isCaptain && !isMe && (
-                            <div className="flex flex-wrap gap-2 mt-2 px-2">
-                              {member.isRetired ? (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleUnretirePlayer(member.deviceId); }}
-                                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-orange-600/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-600/30 active:bg-orange-600/40 transition-colors"
-                                >
-                                  <UserCheck className="w-5 h-5" /> ACTIVATE
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleRetirePlayer(member.deviceId); }}
-                                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-orange-600/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-600/30 active:bg-orange-600/40 transition-colors"
-                                >
-                                  <UserX className="w-5 h-5" /> DISABLE
-                                </button>
-                              )}
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handlePromoteCaptain(member.deviceId, member.name); }}
-                                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-white/10 text-white border-2 border-white/30 hover:bg-white/15 active:bg-white/20 transition-colors"
-                              >
-                                <Crown className="w-5 h-5" /> PROMOTE
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleRemoveMember(member.deviceId, member.name); }}
-                                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-red-600/20 text-red-400 border-2 border-red-500/40 hover:bg-red-600/30 active:bg-red-600/40 transition-colors"
-                              >
-                                <Trash2 className="w-5 h-5" /> REMOVE
-                              </button>
+                            >
+                              {isMemberCaptain
+                                ? <Crown className="w-5 h-5" style={{ color: teamColor }} />
+                                : <Users className="w-5 h-5 text-slate-300" />
+                              }
                             </div>
                           )}
+
+                          {/* Info */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-black text-white uppercase tracking-wider truncate">
+                                {member.name || 'UNKNOWN'}
+                              </span>
+                              {isMemberCaptain && (
+                                <span className="text-xs font-black uppercase px-1.5 py-0.5 rounded border" style={{ color: teamColor, backgroundColor: teamColor + '20', borderColor: teamColor + '40' }}>
+                                  CPT
+                                </span>
+                              )}
+                              {isMe && (
+                                <span className="text-xs font-black text-orange-400 uppercase bg-orange-400/20 px-1.5 py-0.5 rounded border border-orange-500/30">
+                                  YOU
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${
+                                member.isOnline ? 'text-orange-400' : 'text-slate-400'
+                              }`}>
+                                {member.isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+                                {member.isOnline ? 'ONLINE' : 'OFFLINE'}
+                              </span>
+                              {member.isSolving && (
+                                <span className="text-xs font-black text-orange-300 uppercase">SOLVING</span>
+                              )}
+                              {member.isRetired && (
+                                <span className="text-xs font-black text-red-400 uppercase">DISABLED</span>
+                              )}
+                              {member.deviceType && member.isOnline && (
+                                <span className="text-slate-300"><DeviceIcon type={member.deviceType} /></span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
@@ -693,16 +765,114 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {isCaptain && mergedMembers.length > 0 && (
-                    <div className="mt-4 pt-3 border-t-2 border-orange-500/20">
-                      <div className="flex items-center gap-2 text-xs text-orange-300 font-black uppercase tracking-wider">
-                        <Shield className="w-4 h-4 text-orange-400" />
-                        TAP A MEMBER FOR CAPTAIN ACTIONS
+                {/* ========== CAPTAIN ACTIONS: PROMOTE CAPTAIN ========== */}
+                {isCaptain && mergedMembers.filter(m => m.deviceId !== myDeviceId && !m.isRetired).length > 0 && (
+                  <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
+                    <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-orange-400" />
+                      PROMOTE NEW CAPTAIN
+                    </h2>
+                    <p className="text-xs text-slate-300 font-bold uppercase tracking-wider mb-3">
+                      TRANSFER CAPTAIN ROLE TO ANOTHER MEMBER
+                    </p>
+                    <div className="space-y-2">
+                      {mergedMembers
+                        .filter(m => m.deviceId !== myDeviceId && m.deviceId !== team?.captainDeviceId && !m.isRetired)
+                        .map(member => (
+                          <button
+                            key={`promote-${member.deviceId}`}
+                            onClick={() => handlePromoteCaptain(member.deviceId, member.name)}
+                            className="w-full flex items-center gap-3 px-4 py-4 rounded-xl text-sm font-black uppercase tracking-wider bg-white/5 text-white border-2 border-white/20 hover:bg-orange-500/10 hover:border-orange-500/40 active:bg-orange-500/20 transition-colors text-left"
+                          >
+                            <Crown className="w-6 h-6 text-orange-400 shrink-0" />
+                            <span className="flex-1 truncate">{member.name || 'UNKNOWN'}</span>
+                            <span className={`text-xs font-bold ${member.isOnline ? 'text-orange-400' : 'text-slate-400'}`}>
+                              {member.isOnline ? 'ONLINE' : 'OFFLINE'}
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ========== CAPTAIN ACTIONS: DISABLE / ENABLE PLAYERS ========== */}
+                {isCaptain && mergedMembers.filter(m => m.deviceId !== myDeviceId).length > 0 && (
+                  <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
+                    <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <UserX className="w-5 h-5 text-orange-400" />
+                      DISABLE / ENABLE PLAYERS
+                    </h2>
+                    <p className="text-xs text-slate-300 font-bold uppercase tracking-wider mb-3">
+                      DISABLED PLAYERS CANNOT VOTE OR SCORE POINTS
+                    </p>
+                    <div className="space-y-2">
+                      {mergedMembers
+                        .filter(m => m.deviceId !== myDeviceId)
+                        .map(member => {
+                          const isDisabled = member.isRetired;
+                          return (
+                            <div
+                              key={`disable-${member.deviceId}`}
+                              className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 ${
+                                isDisabled
+                                  ? 'bg-red-900/10 border-red-500/20'
+                                  : 'bg-white/5 border-white/10'
+                              }`}
+                            >
+                              <span className={`text-sm font-black uppercase tracking-wider flex-1 truncate ${
+                                isDisabled ? 'text-slate-400 line-through' : 'text-white'
+                              }`}>
+                                {member.name || 'UNKNOWN'}
+                              </span>
+                              <span className={`text-xs font-bold uppercase ${
+                                isDisabled ? 'text-red-400' : member.isOnline ? 'text-orange-400' : 'text-slate-400'
+                              }`}>
+                                {isDisabled ? 'DISABLED' : member.isOnline ? 'ONLINE' : 'OFFLINE'}
+                              </span>
+                              {isDisabled ? (
+                                <button
+                                  onClick={() => handleUnretirePlayer(member.deviceId)}
+                                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-orange-600/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-600/30 active:bg-orange-600/40 transition-colors shrink-0"
+                                >
+                                  <UserCheck className="w-5 h-5" /> ENABLE
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleRetirePlayer(member.deviceId)}
+                                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-red-600/10 text-red-400 border-2 border-red-500/30 hover:bg-red-600/20 active:bg-red-600/30 transition-colors shrink-0"
+                                >
+                                  <UserX className="w-5 h-5" /> DISABLE
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+
+                    {/* Remove member (destructive, smaller) */}
+                    <div className="mt-4 pt-4 border-t-2 border-red-500/20">
+                      <h3 className="text-xs font-black text-red-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <Trash2 className="w-4 h-4" /> REMOVE FROM TEAM
+                      </h3>
+                      <div className="space-y-1.5">
+                        {mergedMembers
+                          .filter(m => m.deviceId !== myDeviceId)
+                          .map(member => (
+                            <button
+                              key={`remove-${member.deviceId}`}
+                              onClick={() => handleRemoveMember(member.deviceId, member.name)}
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider text-red-400/70 hover:bg-red-600/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-colors text-left"
+                            >
+                              <Trash2 className="w-4 h-4 shrink-0" />
+                              <span className="truncate">{member.name || 'UNKNOWN'}</span>
+                            </button>
+                          ))}
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -854,7 +1024,7 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                   </div>
                 ) : (
                   chatMessages.map(msg => {
-                    const isFromMe = msg.sender.includes(teamSync.getUserName());
+                    const isFromMe = msg.id.includes(myDeviceId);
                     const isFromInstructor = msg.sender === 'Instructor' || msg.sender === 'Gamemaster';
 
                     return (
@@ -920,6 +1090,16 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Chat notification popup */}
+      {chatPopup && (
+        <MessagePopup
+          message={chatPopup.message}
+          sender={chatPopup.sender}
+          onClose={() => setChatPopup(null)}
+          isUrgent={chatPopup.isUrgent}
+        />
+      )}
 
       {/* Loading overlay */}
       {loading && !team && (
