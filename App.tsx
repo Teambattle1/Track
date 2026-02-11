@@ -52,6 +52,8 @@ import ClientLobby from './components/ClientLobby';
 import FullscreenOverlay from './components/FullscreenOverlay';
 import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
+import TeamEditorModal from './components/TeamEditorModal';
+import TeamLobbyChooser from './components/TeamLobbyChooser';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
 import RankingModal from './components/RankingModal';
@@ -162,6 +164,8 @@ const GameApp: React.FC = () => {
   const [demoTeamsForLobby, setDemoTeamsForLobby] = useState<Team[]>([]);
   const [showTeamLobbySelectorModal, setShowTeamLobbySelectorModal] = useState(false);
   const [showDemoTeamSelectorModal, setShowDemoTeamSelectorModal] = useState(false);
+  const [showTeamEditor, setShowTeamEditor] = useState(false);
+  const [showTeamLobbyChooser, setShowTeamLobbyChooser] = useState(false);
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
   const gameTemplates = useMemo(() => games.filter(g => g.isGameTemplate), [games]);
@@ -3048,7 +3052,9 @@ const GameApp: React.FC = () => {
                                 break;
                             case 'TASKS': setTaskMasterInitialTab('LIBRARY'); setShowTaskMaster(true); break;
                             case 'TASKLIST': setTaskMasterInitialTab('LISTS'); setShowTaskMaster(true); break;
-                            case 'TEAM_LOBBY': setShowTeamsHub(true); break;
+                            case 'TEAM_LOBBY': setShowTeamLobbyChooser(true); break;
+                            case 'CHAT': setShowChatDrawer(true); break;
+                            case 'EDIT_TEAMS': setShowTeamEditor(true); break;
                             case 'DELETE_GAMES': setShowDeleteGames(true); break;
                             case 'PLAYGROUNDS': setShowPlaygroundManager(true); break;
                             case 'TEMPLATES': setShowPlaygroundManager(true); break;
@@ -3236,6 +3242,7 @@ const GameApp: React.FC = () => {
                     }}
                     onSelectGame={(id) => {
                         console.log('[App] GameManager lobby selection:', { id });
+                        localStorage.setItem('teamtrack_lastLobbyGameId', id);
                         setGameForLobbyAccess(id);
                         setShowGameManagerForLobby(false);
                         setShowTeamLobbySelectorModal(true);
@@ -3314,6 +3321,27 @@ const GameApp: React.FC = () => {
                     isDemoTeam={demoTeamsForLobby.some(t => t.id === selectedTeamIdForLobby)}
                     isInstructorMode={mode === GameMode.INSTRUCTOR}
                     isCaptain={false}
+                />
+            )}
+
+            {/* Team Lobby Chooser (has built-in game chooser) */}
+            {showTeamLobbyChooser && (
+                <TeamLobbyChooser
+                    games={games}
+                    onClose={() => setShowTeamLobbyChooser(false)}
+                    onSelectTeam={(teamId) => {
+                        setSelectedTeamIdForLobby(teamId);
+                        setShowTeamLobbyChooser(false);
+                    }}
+                />
+            )}
+
+            {/* Team Editor Modal (has built-in game chooser) */}
+            {showTeamEditor && (
+                <TeamEditorModal
+                    gameId={null}
+                    games={games}
+                    onClose={() => setShowTeamEditor(false)}
                 />
             )}
 

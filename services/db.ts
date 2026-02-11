@@ -561,8 +561,49 @@ export const fetchTeam = async (teamId: string): Promise<Team | null> => {
     }
 };
 
+export const isTeamNameTaken = async (gameId: string, teamName: string): Promise<boolean> => {
+    try {
+        const { data, error } = await supabase
+            .from('teams')
+            .select('id')
+            .eq('game_id', gameId)
+            .ilike('name', teamName);
+        if (error) return true; // Assume taken on error to be safe
+        return (data?.length || 0) > 0;
+    } catch {
+        return true;
+    }
+};
+
+export const isPlayerNameTaken = async (gameId: string, playerName: string): Promise<boolean> => {
+    try {
+        const allTeams = await fetchTeams(gameId);
+        return allTeams.some(t =>
+            t.members.some(m => (m.name || '').toLowerCase() === playerName.toLowerCase())
+        );
+    } catch {
+        return true; // Assume taken on error to be safe
+    }
+};
+
 export const registerTeam = async (team: Team) => {
     try {
+        // Check for duplicate team name in this game
+        const taken = await isTeamNameTaken(team.gameId, team.name);
+        if (taken) {
+            throw new Error(`Team name "${team.name}" is already taken in this game`);
+        }
+
+        // Check for duplicate player names across all teams in this game
+        const existingTeams = await fetchTeams(team.gameId);
+        const existingPlayerNames = new Set(
+            existingTeams.flatMap(t => t.members.map(m => (m.name || '').toLowerCase()))
+        );
+        const dupeNames = team.members.filter(m => existingPlayerNames.has((m.name || '').toLowerCase()));
+        if (dupeNames.length > 0) {
+            throw new Error(`Player name(s) already taken: ${dupeNames.map(m => m.name).join(', ')}`);
+        }
+
         const { error } = await supabase.from('teams').insert({
             id: team.id,
             game_id: team.gameId,
