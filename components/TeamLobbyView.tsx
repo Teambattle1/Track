@@ -4,7 +4,7 @@ import {
   QrCode, Copy, Check, RefreshCw, Clock, Wifi, WifiOff,
   Smartphone, Tablet, Monitor, Trophy, ChevronDown, ChevronUp,
   Trash2, MessageSquare, BarChart3, Send, CheckCircle, Circle,
-  AlertCircle
+  AlertCircle, Pencil
 } from 'lucide-react';
 import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage } from '../types';
 import { teamSync } from '../services/teamSync';
@@ -66,7 +66,7 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [codeCopied, setCodeCopied] = useState(false);
   const [countdown, setCountdown] = useState<CountdownInfo | null>(null);
-  // showMemberActions no longer used — captain actions in dedicated sections below roster
+  const [editingMember, setEditingMember] = useState<string | null>(null);
   const [showQrSection, setShowQrSection] = useState(true);
   const [activeTab, setActiveTab] = useState<LobbyTab>('MEMBERS');
   const countdownRef = useRef<number | null>(null);
@@ -678,85 +678,122 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                 )}
               </div>
 
-              {/* RIGHT COLUMN: Member Roster + Captain Sections */}
+              {/* RIGHT COLUMN: Member Roster */}
               <div className="space-y-4">
-                {/* Member Roster */}
+                {/* Active Members */}
                 <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
                   <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <Users className="w-5 h-5 text-orange-400" />
-                    MEMBERS ({mergedMembers.length})
+                    ACTIVE MEMBERS ({activeMembers.length})
                     <span className="text-xs text-orange-300 ml-auto font-black">
                       {onlineCount} ONLINE
                     </span>
                   </h2>
 
                   <div className="space-y-2">
-                    {mergedMembers.map(member => {
+                    {mergedMembers.filter(m => !m.isRetired).map(member => {
                       const isMemberCaptain = member.deviceId === team?.captainDeviceId;
                       const isMe = member.deviceId === myDeviceId;
+                      const isEditing = editingMember === member.deviceId;
 
                       return (
-                        <div
-                          key={member.deviceId}
-                          className={`flex items-center gap-3 p-3 rounded-xl border-2 ${
-                            member.isRetired ? 'bg-slate-900/30 border-slate-700/20 opacity-60' :
-                            isMe ? 'bg-orange-500/5 border-orange-500/20' :
-                            'border-white/10'
-                          }`}
-                        >
-                          {/* Avatar */}
-                          {member.photo ? (
-                            <img src={member.photo} alt="" className="w-11 h-11 rounded-xl object-cover border-2 border-orange-500/30 shrink-0" />
-                          ) : (
-                            <div
-                              className="w-11 h-11 rounded-xl flex items-center justify-center border-2 shrink-0"
-                              style={isMemberCaptain
-                                ? { backgroundColor: teamColor + '20', borderColor: teamColor + '50' }
-                                : { backgroundColor: '#1e293b', borderColor: '#475569' }
-                              }
+                        <div key={member.deviceId}>
+                          <div
+                            className={`flex items-center gap-3 p-3 rounded-xl border-2 ${
+                              isEditing ? 'bg-orange-500/10 border-orange-500/40' :
+                              isMe ? 'bg-orange-500/5 border-orange-500/20' :
+                              'border-white/10'
+                            }`}
+                          >
+                            {/* Avatar */}
+                            {member.photo ? (
+                              <img src={member.photo} alt="" className="w-11 h-11 rounded-xl object-cover border-2 border-orange-500/30 shrink-0" />
+                            ) : (
+                              <div
+                                className="w-11 h-11 rounded-xl flex items-center justify-center border-2 shrink-0"
+                                style={isMemberCaptain
+                                  ? { backgroundColor: teamColor + '20', borderColor: teamColor + '50' }
+                                  : { backgroundColor: '#1e293b', borderColor: '#475569' }
+                                }
+                              >
+                                {isMemberCaptain
+                                  ? <Crown className="w-5 h-5" style={{ color: teamColor }} />
+                                  : <Users className="w-5 h-5 text-slate-300" />
+                                }
+                              </div>
+                            )}
+
+                            {/* Info */}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-white uppercase tracking-wider truncate">
+                                  {member.name || 'UNKNOWN'}
+                                </span>
+                                {isMemberCaptain && (
+                                  <span className="text-xs font-black uppercase px-1.5 py-0.5 rounded border" style={{ color: teamColor, backgroundColor: teamColor + '20', borderColor: teamColor + '40' }}>
+                                    CPT
+                                  </span>
+                                )}
+                                {isMe && (
+                                  <span className="text-xs font-black text-orange-400 uppercase bg-orange-400/20 px-1.5 py-0.5 rounded border border-orange-500/30">
+                                    YOU
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${
+                                  member.isOnline ? 'text-orange-400' : 'text-slate-400'
+                                }`}>
+                                  {member.isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+                                  {member.isOnline ? 'ONLINE' : 'OFFLINE'}
+                                </span>
+                                {member.isSolving && (
+                                  <span className="text-xs font-black text-orange-300 uppercase">SOLVING</span>
+                                )}
+                                {member.deviceType && member.isOnline && (
+                                  <span className="text-slate-300"><DeviceIcon type={member.deviceType} /></span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* EDIT button */}
+                            <button
+                              onClick={() => setEditingMember(isEditing ? null : member.deviceId)}
+                              className={`p-3 rounded-xl shrink-0 transition-colors border-2 ${
+                                isEditing
+                                  ? 'bg-orange-500/20 border-orange-500/40 text-orange-400'
+                                  : 'border-white/10 text-slate-300 hover:bg-orange-500/10 hover:border-orange-500/30 hover:text-orange-400'
+                              }`}
                             >
-                              {isMemberCaptain
-                                ? <Crown className="w-5 h-5" style={{ color: teamColor }} />
-                                : <Users className="w-5 h-5 text-slate-300" />
-                              }
+                              <Pencil className="w-5 h-5" />
+                            </button>
+                          </div>
+
+                          {/* Inline actions when editing */}
+                          {isEditing && (
+                            <div className="flex flex-wrap gap-2 mt-2 ml-14 mb-1">
+                              {!isMemberCaptain && (
+                                <button
+                                  onClick={() => { handlePromoteCaptain(member.deviceId, member.name); setEditingMember(null); }}
+                                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-white/10 text-white border-2 border-white/30 hover:bg-orange-500/10 hover:border-orange-500/40 active:bg-orange-500/20 transition-colors"
+                                >
+                                  <Crown className="w-5 h-5 text-orange-400" /> PROMOTE
+                                </button>
+                              )}
+                              <button
+                                onClick={() => { handleDisablePlayer(member.deviceId); setEditingMember(null); }}
+                                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-red-600/10 text-red-400 border-2 border-red-500/30 hover:bg-red-600/20 active:bg-red-600/30 transition-colors"
+                              >
+                                <UserX className="w-5 h-5" /> DISABLE
+                              </button>
+                              <button
+                                onClick={() => { handleRemoveMember(member.deviceId, member.name); setEditingMember(null); }}
+                                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-red-600/10 text-red-400 border-2 border-red-500/30 hover:bg-red-600/20 active:bg-red-600/30 transition-colors"
+                              >
+                                <Trash2 className="w-5 h-5" /> REMOVE
+                              </button>
                             </div>
                           )}
-
-                          {/* Info */}
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-black text-white uppercase tracking-wider truncate">
-                                {member.name || 'UNKNOWN'}
-                              </span>
-                              {isMemberCaptain && (
-                                <span className="text-xs font-black uppercase px-1.5 py-0.5 rounded border" style={{ color: teamColor, backgroundColor: teamColor + '20', borderColor: teamColor + '40' }}>
-                                  CPT
-                                </span>
-                              )}
-                              {isMe && (
-                                <span className="text-xs font-black text-orange-400 uppercase bg-orange-400/20 px-1.5 py-0.5 rounded border border-orange-500/30">
-                                  YOU
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider ${
-                                member.isOnline ? 'text-orange-400' : 'text-slate-400'
-                              }`}>
-                                {member.isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-                                {member.isOnline ? 'ONLINE' : 'OFFLINE'}
-                              </span>
-                              {member.isSolving && (
-                                <span className="text-xs font-black text-orange-300 uppercase">SOLVING</span>
-                              )}
-                              {member.isRetired && (
-                                <span className="text-xs font-black text-red-400 uppercase">DISABLED</span>
-                              )}
-                              {member.deviceType && member.isOnline && (
-                                <span className="text-slate-300"><DeviceIcon type={member.deviceType} /></span>
-                              )}
-                            </div>
-                          </div>
                         </div>
                       );
                     })}
@@ -772,109 +809,43 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                   </div>
                 </div>
 
-                {/* ========== CAPTAIN ACTIONS: PROMOTE CAPTAIN ========== */}
-                {mergedMembers.filter(m => m.deviceId !== myDeviceId && !m.isRetired).length > 0 && (
-                  <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
-                    <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Crown className="w-5 h-5 text-orange-400" />
-                      PROMOTE NEW CAPTAIN
+                {/* Disabled Members Section */}
+                {mergedMembers.filter(m => m.isRetired).length > 0 && (
+                  <div className="bg-black/30 border-2 border-red-500/20 rounded-2xl p-5">
+                    <h2 className="text-sm font-black text-red-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <UserX className="w-5 h-5 text-red-400" />
+                      DISABLED ({mergedMembers.filter(m => m.isRetired).length})
                     </h2>
-                    <p className="text-xs text-slate-300 font-bold uppercase tracking-wider mb-3">
-                      TRANSFER CAPTAIN ROLE TO ANOTHER MEMBER
-                    </p>
+
                     <div className="space-y-2">
-                      {mergedMembers
-                        .filter(m => m.deviceId !== myDeviceId && m.deviceId !== team?.captainDeviceId && !m.isRetired)
-                        .map(member => (
-                          <button
-                            key={`promote-${member.deviceId}`}
-                            onClick={() => handlePromoteCaptain(member.deviceId, member.name)}
-                            className="w-full flex items-center gap-3 px-4 py-4 rounded-xl text-sm font-black uppercase tracking-wider bg-white/5 text-white border-2 border-white/20 hover:bg-orange-500/10 hover:border-orange-500/40 active:bg-orange-500/20 transition-colors text-left"
-                          >
-                            <Crown className="w-6 h-6 text-orange-400 shrink-0" />
-                            <span className="flex-1 truncate">{member.name || 'UNKNOWN'}</span>
-                            <span className={`text-xs font-bold ${member.isOnline ? 'text-orange-400' : 'text-slate-400'}`}>
-                              {member.isOnline ? 'ONLINE' : 'OFFLINE'}
+                      {mergedMembers.filter(m => m.isRetired).map(member => (
+                        <div
+                          key={`disabled-${member.deviceId}`}
+                          className="flex items-center gap-3 p-3 rounded-xl border-2 bg-red-900/10 border-red-500/20"
+                        >
+                          <div className="w-11 h-11 rounded-xl flex items-center justify-center border-2 shrink-0 bg-slate-900/50 border-slate-700/30">
+                            <UserX className="w-5 h-5 text-red-400/60" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm font-black text-slate-400 uppercase tracking-wider truncate line-through">
+                              {member.name || 'UNKNOWN'}
                             </span>
+                            <p className="text-xs font-bold text-red-400 uppercase mt-0.5">DISABLED</p>
+                          </div>
+                          <button
+                            onClick={() => handleEnablePlayer(member.deviceId)}
+                            className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-orange-600/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-600/30 active:bg-orange-600/40 transition-colors shrink-0"
+                          >
+                            <UserCheck className="w-5 h-5" /> ENABLE
                           </button>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* ========== CAPTAIN ACTIONS: DISABLE / ENABLE PLAYERS ========== */}
-                {mergedMembers.filter(m => m.deviceId !== myDeviceId).length > 0 && (
-                  <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
-                    <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <UserX className="w-5 h-5 text-orange-400" />
-                      DISABLE / ENABLE PLAYERS
-                    </h2>
-                    <p className="text-xs text-slate-300 font-bold uppercase tracking-wider mb-3">
-                      DISABLED PLAYERS CANNOT VOTE OR SCORE POINTS
-                    </p>
-                    <div className="space-y-2">
-                      {mergedMembers
-                        .filter(m => m.deviceId !== myDeviceId)
-                        .map(member => {
-                          const isDisabled = member.isRetired;
-                          return (
-                            <div
-                              key={`disable-${member.deviceId}`}
-                              className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 ${
-                                isDisabled
-                                  ? 'bg-red-900/10 border-red-500/20'
-                                  : 'bg-white/5 border-white/10'
-                              }`}
-                            >
-                              <span className={`text-sm font-black uppercase tracking-wider flex-1 truncate ${
-                                isDisabled ? 'text-slate-400 line-through' : 'text-white'
-                              }`}>
-                                {member.name || 'UNKNOWN'}
-                              </span>
-                              <span className={`text-xs font-bold uppercase ${
-                                isDisabled ? 'text-red-400' : member.isOnline ? 'text-orange-400' : 'text-slate-400'
-                              }`}>
-                                {isDisabled ? 'DISABLED' : member.isOnline ? 'ONLINE' : 'OFFLINE'}
-                              </span>
-                              {isDisabled ? (
-                                <button
-                                  onClick={() => handleEnablePlayer(member.deviceId)}
-                                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-orange-600/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-600/30 active:bg-orange-600/40 transition-colors shrink-0"
-                                >
-                                  <UserCheck className="w-5 h-5" /> ENABLE
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleDisablePlayer(member.deviceId)}
-                                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-red-600/10 text-red-400 border-2 border-red-500/30 hover:bg-red-600/20 active:bg-red-600/30 transition-colors shrink-0"
-                                >
-                                  <UserX className="w-5 h-5" /> DISABLE
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-                    </div>
-
-                    {/* Remove member (destructive, smaller) */}
-                    <div className="mt-4 pt-4 border-t-2 border-red-500/20">
-                      <h3 className="text-xs font-black text-red-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Trash2 className="w-4 h-4" /> REMOVE FROM TEAM
-                      </h3>
-                      <div className="space-y-1.5">
-                        {mergedMembers
-                          .filter(m => m.deviceId !== myDeviceId)
-                          .map(member => (
-                            <button
-                              key={`remove-${member.deviceId}`}
-                              onClick={() => handleRemoveMember(member.deviceId, member.name)}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider text-red-400/70 hover:bg-red-600/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-colors text-left"
-                            >
-                              <Trash2 className="w-4 h-4 shrink-0" />
-                              <span className="truncate">{member.name || 'UNKNOWN'}</span>
-                            </button>
-                          ))}
-                      </div>
+                          <button
+                            onClick={() => handleRemoveMember(member.deviceId, member.name)}
+                            className="p-3 rounded-xl text-red-400/60 hover:text-red-400 hover:bg-red-600/10 border-2 border-transparent hover:border-red-500/20 transition-colors shrink-0"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
