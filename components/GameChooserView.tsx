@@ -121,9 +121,9 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
 
   return (
     <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in">
-      <div className="bg-[#0f172a] border border-slate-800 w-full max-w-lg max-h-[80vh] rounded-[2rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,1)] flex flex-col">
+      <div className="bg-[#111111] border-2 border-orange-500/20 w-full max-w-lg max-h-[80vh] rounded-[2rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,1)] flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#0a0f1d]/80 shrink-0">
+        <div className="p-6 border-b border-orange-500/10 flex justify-between items-center bg-black/80 shrink-0">
           <div className="flex items-center gap-4">
             <div className={`w-12 h-12 ${accentBg} rounded-2xl flex items-center justify-center border ${accentBorderLight}`}>
               <Gamepad2 className={`w-6 h-6 ${accentText}`} />
@@ -139,7 +139,7 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-white/5 shrink-0">
+        <div className="flex border-b border-orange-500/10 shrink-0">
           {(['TODAY', 'PLANNED', 'COMPLETED'] as Tab[]).map(t => (
             <button
               key={t}
@@ -150,9 +150,9 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
                   : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}
             >
-              <span className="text-xs uppercase tracking-widest font-bold">{t}</span>
-              <span className={`ml-1.5 text-[10px] px-2 py-0.5 rounded-full font-black ${
-                tab === t ? 'bg-white/15 text-white' : 'bg-slate-800 text-slate-400'
+              <span className="text-sm uppercase tracking-widest font-black">{t}</span>
+              <span className={`ml-1.5 text-xs px-2 py-0.5 rounded-full font-black ${
+                tab === t ? 'bg-orange-500/20 text-orange-300' : 'bg-gray-800 text-gray-400'
               }`}>
                 {tabCounts[t]}
               </span>
@@ -178,8 +178,8 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {displayGames.length === 0 ? (
             <div className="text-center py-16">
-              <Gamepad2 className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-              <p className="text-base font-black text-slate-300 uppercase tracking-wider">
+              <Gamepad2 className="w-14 h-14 text-gray-500 mx-auto mb-4" />
+              <p className="text-lg font-black text-white uppercase tracking-wider">
                 {searchQuery ? 'NO MATCHES' : tab === 'TODAY' ? 'NO GAMES TODAY' : tab === 'PLANNED' ? 'NO PLANNED GAMES' : 'NO COMPLETED GAMES'}
               </p>
             </div>
@@ -190,31 +190,31 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
                 <button
                   key={g.id}
                   onClick={() => onSelectGame(g.id)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl bg-slate-900/50 border border-slate-800 ${accentHover} hover:bg-slate-800/60 transition-all text-left group`}
+                  className={`w-full flex items-center gap-4 p-5 rounded-2xl bg-black/60 border-2 border-gray-700/50 ${accentHover} hover:bg-gray-900/80 transition-all text-left group`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0">
-                    <Gamepad2 className="w-5 h-5 text-slate-500" />
+                  <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center border-2 border-gray-600 shrink-0">
+                    <Gamepad2 className="w-6 h-6 text-gray-400" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-black text-white uppercase tracking-wider truncate">{g.name}</h3>
+                    <h3 className="text-lg font-black text-white uppercase tracking-wider truncate">{g.name}</h3>
                     <div className="flex items-center gap-2 mt-0.5">
                       {pd && (
-                        <span className="flex items-center gap-1 text-xs text-slate-400 font-bold uppercase tracking-widest">
+                        <span className="flex items-center gap-1 text-sm text-slate-300 font-bold uppercase tracking-widest">
                           <Calendar className="w-3.5 h-3.5" />
                           {isToday(pd) ? 'I DAG' : formatDate(pd)}
                         </span>
                       )}
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                      <span className="text-sm text-slate-300 font-bold uppercase tracking-widest">
                         {g.points?.length || 0} TASKS
                       </span>
                       {g.gameMode && g.gameMode !== 'standard' && (
-                        <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                        <span className="text-sm text-slate-300 font-bold uppercase tracking-widest">
                           {g.gameMode.toUpperCase()}
                         </span>
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRight className="w-5 h-5 text-gray-500 shrink-0 group-hover:text-orange-400 group-hover:translate-x-1 transition-all" />
                 </button>
               );
             })
@@ -224,7 +224,7 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
           {hasMoreCompleted && (
             <button
               onClick={() => setCompletedLimit(prev => prev + 10)}
-              className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 text-sm font-black text-gray-400 uppercase tracking-widest hover:text-orange-400 transition-colors"
             >
               <ChevronDown className="w-4 h-4" />
               Load {Math.min(10, currentGames.length - completedLimit)} more

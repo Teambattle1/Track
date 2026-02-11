@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, Shield } from 'lucide-react';
+import { X, Users, Shield, Search, RefreshCw, ChevronRight } from 'lucide-react';
 import { Team } from '../types';
 import * as db from '../services/db';
 
@@ -48,48 +48,53 @@ const TeamsLobbySelector: React.FC<TeamsLobbySelectorProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-[2600] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        
+    <div className="fixed inset-0 z-[2600] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in">
+      <div className="bg-[#111111] border-2 border-orange-500/20 rounded-[2rem] shadow-[0_30px_100px_rgba(0,0,0,1)] w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+
         {/* Header */}
-        <div className="p-6 bg-blue-100 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-800">
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <div className="p-6 bg-black/80 border-b border-orange-500/20">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-orange-600/15 rounded-2xl flex items-center justify-center border-2 border-orange-500/30">
+                <Shield className="w-7 h-7 text-orange-500" />
+              </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Team Lobbies</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Select a team to view their lobby details
+                <h2 className="text-2xl font-black text-white uppercase tracking-wider">TEAM LOBBIES</h2>
+                <p className="text-sm text-slate-300 font-black uppercase tracking-[0.2em] mt-0.5">
+                  SELECT A TEAM TO VIEW LOBBY
                 </p>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
-              className="p-1 rounded-full hover:bg-black/10 transition-colors"
+            <button
+              onClick={onClose}
+              className="p-2.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
             >
-              <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
-          
+        <div className="p-5 overflow-y-auto flex-1 space-y-4">
+
           {/* Search Bar */}
-          <input
-            type="text"
-            placeholder="Search teams by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-          />
+          {teams.length > 5 && (
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="SEARCH TEAMS..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white text-black placeholder:text-slate-400 rounded-xl border-2 border-slate-300 focus:border-orange-500/50 focus:outline-none text-sm font-black uppercase tracking-wider shadow-sm"
+              />
+            </div>
+          )}
 
           {/* Loading State */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin">
-                <div className="w-8 h-8 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full" />
-              </div>
+            <div className="flex items-center justify-center py-16">
+              <RefreshCw className="w-8 h-8 text-orange-500 animate-spin" />
             </div>
           )}
 
@@ -97,10 +102,13 @@ const TeamsLobbySelector: React.FC<TeamsLobbySelectorProps> = ({
           {!loading && (
             <>
               {filteredTeams.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
-                  <p className="text-gray-500 dark:text-gray-400 font-medium">
-                    {teams.length === 0 ? 'No teams yet' : 'No teams match your search'}
+                <div className="text-center py-16">
+                  <Users className="w-14 h-14 text-gray-500 mx-auto mb-4" />
+                  <p className="text-lg font-black text-white uppercase tracking-wider">
+                    {teams.length === 0 ? 'NO TEAMS YET' : 'NO TEAMS MATCH'}
+                  </p>
+                  <p className="text-sm text-slate-300 font-bold uppercase tracking-wider mt-2">
+                    {teams.length === 0 ? 'NO TEAMS HAVE JOINED THIS GAME YET' : 'TRY A DIFFERENT SEARCH'}
                   </p>
                 </div>
               ) : (
@@ -112,27 +120,25 @@ const TeamsLobbySelector: React.FC<TeamsLobbySelectorProps> = ({
                         onSelectTeam(team.id);
                         onClose();
                       }}
-                      className="w-full text-left p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl hover:border-blue-400 dark:hover:border-blue-600 transition-all group"
+                      className="w-full flex items-center gap-4 p-5 rounded-2xl bg-black/60 border-2 border-gray-700/50 hover:border-orange-500/50 hover:bg-gray-900/80 transition-all text-left group"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {team.name}
-                          </h3>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {team.members?.length || 0} members
-                            </span>
-                            <span className="flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400">
-                              {team.score || 0} pts
-                            </span>
-                          </div>
+                      {team.photoUrl ? (
+                        <img src={team.photoUrl} alt="" className="w-12 h-12 rounded-xl object-cover border-2 border-gray-600 shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center border-2 border-gray-600 shrink-0"
+                             style={team.color ? { backgroundColor: team.color + '20', borderColor: team.color + '40' } : {}}>
+                          <Users className="w-6 h-6 text-gray-400" style={team.color ? { color: team.color } : {}} />
                         </div>
-                        <div className="flex-shrink-0 ml-4 p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/70 transition-colors">
-                          <Shield className="w-5 h-5" />
-                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-black text-white uppercase tracking-wider truncate">
+                          {team.name}
+                        </h3>
+                        <p className="text-sm text-slate-300 font-bold uppercase tracking-widest mt-0.5">
+                          {team.members?.length || 0} MEMBERS · <span className="text-orange-400 font-black">{team.score || 0} PTS</span>
+                        </p>
                       </div>
+                      <ChevronRight className="w-5 h-5 text-gray-500 shrink-0 group-hover:text-orange-400 group-hover:translate-x-1 transition-all" />
                     </button>
                   ))}
                 </div>
@@ -142,12 +148,12 @@ const TeamsLobbySelector: React.FC<TeamsLobbySelectorProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+        <div className="p-4 bg-black/60 border-t border-orange-500/10 flex justify-end shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="px-6 py-3 bg-gray-800 border border-gray-600 text-white rounded-xl font-black uppercase tracking-wider text-sm hover:bg-gray-700 transition-colors"
           >
-            Close
+            CLOSE
           </button>
         </div>
       </div>
