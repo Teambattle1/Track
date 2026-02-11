@@ -17,7 +17,7 @@ import WalkingExplorer from './WalkingExplorer';
 import './InitialLandingStyles.css';
 
 interface InitialLandingProps {
-  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'CREATE_AROUNDTHEWORLD_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS' | 'TRANSLATIONS' | 'CLIENT') => void;
+  onAction: (action: 'USERS' | 'TEAMS' | 'GAMES' | 'CREATE_GAME' | 'CREATE_MAP_GAME' | 'CREATE_PLAYZONE_GAME' | 'CREATE_ELIMINATION_GAME' | 'CREATE_AROUNDTHEWORLD_GAME' | 'TASKS' | 'TASKLIST' | 'TEAMZONE' | 'EDIT_GAME' | 'PLAY' | 'TEMPLATES' | 'PLAYGROUNDS' | 'DASHBOARD' | 'TAGS' | 'ADMIN' | 'CLIENT_PORTAL' | 'QR_CODES' | 'CHAT' | 'TEAM_LOBBY' | 'DATABASE' | 'DATABASE_TOOLS' | 'DELETE_GAMES' | 'TEAMS_MAP_VIEW' | 'PREVIEW_TEAM' | 'PREVIEW_INSTRUCTOR' | 'MANAGE_TEAMS' | 'EDIT_TEAMS' | 'GAMESTATS' | 'MAP_STYLES' | 'DIAGNOSTICS' | 'ACCESS' | 'MEDIA' | 'SYSTEM_SOUNDS' | 'TRANSLATIONS' | 'CLIENT') => void;
   version: string;
   games: Game[];
   activeGameId: string | null;
@@ -690,14 +690,6 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   delay={300}
                   scale={0.85}
               />
-              <MapPinButton
-                  title="CHAT"
-                  icon={MessageSquare}
-                  gradient="bg-gradient-to-br from-slate-600 to-slate-700"
-                  onClick={() => onAction('CHAT')}
-                  delay={400}
-                  scale={0.85}
-              />
           </div>
       </div>
   );
@@ -713,19 +705,19 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   delay={0}
                   scale={0.85}
               />
-              <MapPinButton 
-                  title="NEW TEAM" 
-                  icon={UserPlus} 
-                  gradient="bg-gradient-to-br from-pink-500 to-rose-500" 
-                  onClick={() => onAction('TEAM_LOBBY')} 
+              <MapPinButton
+                  title="NEW TEAM"
+                  icon={UserPlus}
+                  gradient="bg-gradient-to-br from-pink-500 to-rose-500"
+                  onClick={() => onAction('PLAY')}
                   delay={100}
                   scale={0.85}
               />
-              <MapPinButton 
-                  title="EDIT TEAMS" 
-                  icon={Edit2} 
-                  gradient="bg-gradient-to-br from-orange-600 to-amber-600" 
-                  onClick={() => onAction('MANAGE_TEAMS')} 
+              <MapPinButton
+                  title="EDIT TEAMS"
+                  icon={Edit2}
+                  gradient="bg-gradient-to-br from-orange-600 to-amber-600"
+                  onClick={() => onAction('EDIT_TEAMS')}
                   delay={200}
                   scale={0.85}
               />
@@ -804,6 +796,17 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                               <NavCard title="MAP STYLES" subtitle="CUSTOM MAP LIBRARY" icon={Map} color="bg-purple-600" onClick={() => onAction('MAP_STYLES')} />
                               <NavCard title="SYSTEM SOUNDS" subtitle="GLOBAL AUDIO SETTINGS" icon={Volume2} color="bg-teal-600" onClick={() => onAction('SYSTEM_SOUNDS')} />
                               <NavCard title="MEDIA" subtitle="PHOTOS & VIDEOS MANAGER" icon={Smartphone} color="bg-orange-600" onClick={() => onAction('MEDIA')} />
+                          </div>
+                      </div>
+
+                      {/* === COMMUNICATION SECTION === */}
+                      <div>
+                          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                              <MessageSquare className="w-4 h-4" />
+                              COMMUNICATION
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <NavCard title="CHAT" subtitle="TEAM MESSAGING" icon={MessageSquare} color="bg-indigo-600" onClick={() => onAction('CHAT')} />
                           </div>
                       </div>
 

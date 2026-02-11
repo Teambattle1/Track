@@ -4,6 +4,9 @@
  * Inspired by Jules Verne's "Around the World in 80 Days" (1872)
  */
 
+/* ===== FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Playfair+Display+SC:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=IM+Fell+DW+Pica:ital@0;1&display=swap');
+
 /* ===== CSS VARIABLES ===== */
 :root {
   /* Parchment & Paper */
@@ -54,9 +57,6 @@
   --atw-border-ornate: 3px double var(--atw-sepia);
   --atw-border-simple: 2px solid var(--atw-sepia);
 }
-
-/* ===== FONTS ===== */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Playfair+Display+SC:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=IM+Fell+DW+Pica:ital@0;1&display=swap');
 
 .atw-font-heading {
   font-family: 'Playfair Display', 'Georgia', serif;

@@ -20,14 +20,22 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('English');
   const [availableLanguages, setAvailableLanguages] = useState<Language[]>(['English']);
 
-  // Check URL params for code (from QR scan)
+  // Check URL params for code (from QR scan or team invite link)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    if (code) {
-      setAccessCode(code.toUpperCase());
-      // Auto-validate if code is in URL
-      handleValidateCode(code);
+
+    // Support ?teamCode=M456&gameCode=GAME2026 from team invite links
+    const gameCode = params.get('gameCode') || params.get('code');
+    const teamCode = params.get('teamCode');
+
+    if (teamCode) {
+      // Store team code for the registration flow to pick up
+      localStorage.setItem('geohunt_pending_team_code', teamCode.toUpperCase());
+    }
+
+    if (gameCode) {
+      setAccessCode(gameCode.toUpperCase());
+      handleValidateCode(gameCode);
     }
   }, []);
 
@@ -108,11 +116,20 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
 
     let gameIdOrCode = scannedData.trim().toUpperCase();
 
-    // Check if it's a URL with code parameter
-    if (scannedData.includes('code=')) {
+    // Check if it's a URL with code or gameCode parameter
+    if (scannedData.includes('code=') || scannedData.includes('gameCode=')) {
+      const gameCodeMatch = scannedData.match(/gameCode=([^&]+)/);
       const codeMatch = scannedData.match(/code=([^&]+)/);
-      if (codeMatch) {
+      if (gameCodeMatch) {
+        gameIdOrCode = gameCodeMatch[1];
+      } else if (codeMatch) {
         gameIdOrCode = codeMatch[1];
+      }
+
+      // Extract teamCode if present and store for registration
+      const teamCodeMatch = scannedData.match(/teamCode=([^&]+)/);
+      if (teamCodeMatch) {
+        localStorage.setItem('geohunt_pending_team_code', teamCodeMatch[1].toUpperCase());
       }
     }
 

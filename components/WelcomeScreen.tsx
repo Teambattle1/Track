@@ -47,10 +47,41 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Pending team join state (from QR scan / team invite link)
+  const [pendingTeamName, setPendingTeamName] = useState<string | null>(null);
+
   // Recovery State
   const [recoveryCode, setRecoveryCode] = useState('');
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
+
+  // Check for pending team code from QR scan (stored by Access.tsx)
+  React.useEffect(() => {
+    const pendingCode = localStorage.getItem('geohunt_pending_team_code');
+    if (!pendingCode) return;
+
+    // Look up team by shortCode across all games
+    const findTeam = async () => {
+      try {
+        for (const g of games) {
+          const foundTeam = await db.fetchTeamByShortCode(g.id, pendingCode);
+          if (foundTeam) {
+            // Found the team — auto-fill and go to CREATE_TEAM (player profile)
+            setSelectedGameId(g.id);
+            setTeamName(foundTeam.name);
+            setPendingTeamName(foundTeam.name);
+            setMode('CREATE_TEAM');
+            console.log(`[WelcomeScreen] Auto-joining team "${foundTeam.name}" via code ${pendingCode}`);
+            return;
+          }
+        }
+        console.warn(`[WelcomeScreen] No team found for code: ${pendingCode}`);
+      } catch (err) {
+        console.error('[WelcomeScreen] Error looking up team code:', err);
+      }
+    };
+    findTeam();
+  }, [games]);
 
   // Sorting games by distance for default selection logic if needed
   const sortedGames = [...games].sort((a, b) => {
@@ -65,9 +96,36 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   const selectedGame = games.find(g => g.id === selectedGameId) || sortedGames[0];
 
-  const handleStart = () => {
+  const handleStart = async () => {
       if (selectedGameId && teamName && userName && userPhoto) {
           localStorage.setItem('geohunt_temp_user_photo', userPhoto);
+
+          // If joining via pending team code, add this player to the existing team
+          const pendingCode = localStorage.getItem('geohunt_pending_team_code');
+          if (pendingCode) {
+              try {
+                  const existingTeam = await db.fetchTeamByShortCode(selectedGameId, pendingCode);
+                  if (existingTeam) {
+                      // Register this device as a member of the team
+                      const deviceId = teamSync.getDeviceId();
+                      const alreadyMember = existingTeam.members?.some(m => m.deviceId === deviceId);
+                      if (!alreadyMember) {
+                          await db.addTeamMember(existingTeam.id, {
+                              deviceId,
+                              name: userName,
+                              photo: userPhoto || undefined
+                          });
+                          teamSync.broadcastMemberAdded(deviceId, userName);
+                          console.log(`[WelcomeScreen] Added ${userName} to team "${existingTeam.name}"`);
+                      }
+                  }
+              } catch (err) {
+                  console.error('[WelcomeScreen] Error adding to team:', err);
+              }
+              // Clear the pending code
+              localStorage.removeItem('geohunt_pending_team_code');
+          }
+
           onStartGame(selectedGameId, teamName, userName, teamPhoto, 'osm');
       }
   };

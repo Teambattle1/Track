@@ -29,7 +29,7 @@ import TaskModal from './components/TaskModal';
 import DeleteGamesModal from './components/DeleteGamesModal';
 import ChatDrawer from './components/ChatDrawer';
 import TeamsHubModal from './components/TeamsHubModal';
-import TeamLobbyPanel from './components/TeamLobbyPanel';
+import TeamLobbyView from './components/TeamLobbyView';
 import TeamsLobbySelector from './components/TeamsLobbySelector';
 import DemoTeamsSelector from './components/DemoTeamsSelector';
 import QRScannerModal from './components/QRScannerModal';
@@ -52,6 +52,8 @@ import ClientLobby from './components/ClientLobby';
 import FullscreenOverlay from './components/FullscreenOverlay';
 import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
+import TeamEditorModal from './components/TeamEditorModal';
+import TeamLobbyChooser from './components/TeamLobbyChooser';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
 import RankingModal from './components/RankingModal';
@@ -162,6 +164,8 @@ const GameApp: React.FC = () => {
   const [demoTeamsForLobby, setDemoTeamsForLobby] = useState<Team[]>([]);
   const [showTeamLobbySelectorModal, setShowTeamLobbySelectorModal] = useState(false);
   const [showDemoTeamSelectorModal, setShowDemoTeamSelectorModal] = useState(false);
+  const [showTeamEditor, setShowTeamEditor] = useState(false);
+  const [showTeamLobbyChooser, setShowTeamLobbyChooser] = useState(false);
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
   const gameTemplates = useMemo(() => games.filter(g => g.isGameTemplate), [games]);
@@ -2747,11 +2751,12 @@ const GameApp: React.FC = () => {
           )}
 
           {/* Team View - Team Lobby Modal */}
-          {showTeamLobby && activeGame && (
-              <TeamLobbyPanel
+          {showTeamLobby && activeGame && currentTeam && (
+              <TeamLobbyView
                   isOpen={showTeamLobby}
                   onClose={() => setShowTeamLobby(false)}
-                  isCaptain={false}
+                  teamId={currentTeam.id}
+                  game={activeGame}
               />
           )}
 
@@ -3048,7 +3053,9 @@ const GameApp: React.FC = () => {
                                 break;
                             case 'TASKS': setTaskMasterInitialTab('LIBRARY'); setShowTaskMaster(true); break;
                             case 'TASKLIST': setTaskMasterInitialTab('LISTS'); setShowTaskMaster(true); break;
-                            case 'TEAM_LOBBY': setShowTeamsHub(true); break;
+                            case 'TEAM_LOBBY': setShowTeamLobbyChooser(true); break;
+                            case 'CHAT': setShowChatDrawer(true); break;
+                            case 'EDIT_TEAMS': setShowTeamEditor(true); break;
                             case 'DELETE_GAMES': setShowDeleteGames(true); break;
                             case 'PLAYGROUNDS': setShowPlaygroundManager(true); break;
                             case 'TEMPLATES': setShowPlaygroundManager(true); break;
@@ -3236,6 +3243,7 @@ const GameApp: React.FC = () => {
                     }}
                     onSelectGame={(id) => {
                         console.log('[App] GameManager lobby selection:', { id });
+                        localStorage.setItem('teamtrack_lastLobbyGameId', id);
                         setGameForLobbyAccess(id);
                         setShowGameManagerForLobby(false);
                         setShowTeamLobbySelectorModal(true);
@@ -3302,18 +3310,42 @@ const GameApp: React.FC = () => {
                 />
             )}
 
-            {/* TeamLobbyPanel with selectedTeamIdForLobby */}
+            {/* TeamLobbyView with selectedTeamIdForLobby */}
             {selectedTeamIdForLobby && (
-                <TeamLobbyPanel
+                <TeamLobbyView
                     isOpen={true}
                     onClose={() => {
                         setSelectedTeamIdForLobby(null);
                         setGameForLobbyAccess(null);
                     }}
                     teamId={selectedTeamIdForLobby}
-                    isDemoTeam={demoTeamsForLobby.some(t => t.id === selectedTeamIdForLobby)}
-                    isInstructorMode={mode === GameMode.INSTRUCTOR}
-                    isCaptain={false}
+                    game={gameForLobbyAccess ? games.find(g => g.id === gameForLobbyAccess) : activeGame || undefined}
+                    isCaptain={mode === GameMode.INSTRUCTOR}
+                />
+            )}
+
+            {/* Team Lobby Chooser (has built-in game chooser) */}
+            {showTeamLobbyChooser && (
+                <TeamLobbyChooser
+                    games={games}
+                    onClose={() => setShowTeamLobbyChooser(false)}
+                    onSelectTeam={(teamId) => {
+                        setSelectedTeamIdForLobby(teamId);
+                        setShowTeamLobbyChooser(false);
+                    }}
+                />
+            )}
+
+            {/* Team Editor Modal (has built-in game chooser) */}
+            {showTeamEditor && (
+                <TeamEditorModal
+                    gameId={null}
+                    games={games}
+                    onClose={() => setShowTeamEditor(false)}
+                    onOpenLobby={(teamId) => {
+                        setSelectedTeamIdForLobby(teamId);
+                        setShowTeamEditor(false);
+                    }}
                 />
             )}
 
