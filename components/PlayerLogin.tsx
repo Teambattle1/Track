@@ -28,7 +28,7 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack }) => {
       const timer = setTimeout(() => {
         setIntroFading(true);
         setTimeout(() => setShowIntro(false), 600);
-      }, 3000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [showIntro]);
