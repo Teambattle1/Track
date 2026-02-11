@@ -130,7 +130,7 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
             </div>
             <div>
               <h2 className="text-xl font-black text-white tracking-tight uppercase">{title}</h2>
-              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-0.5">{subtitle}</p>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mt-0.5">{subtitle}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2.5 hover:bg-white/5 rounded-xl text-slate-500 hover:text-white transition-colors">
@@ -147,12 +147,12 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
               className={`flex-1 py-3 text-center transition-all border-b-2 ${
                 tab === t
                   ? `${accentText} border-current font-black`
-                  : 'text-slate-600 border-transparent hover:text-slate-400'
+                  : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}
             >
-              <span className="text-[10px] uppercase tracking-widest">{t}</span>
-              <span className={`ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full ${
-                tab === t ? 'bg-white/10' : 'bg-slate-800'
+              <span className="text-xs uppercase tracking-widest font-bold">{t}</span>
+              <span className={`ml-1.5 text-[10px] px-2 py-0.5 rounded-full font-black ${
+                tab === t ? 'bg-white/15 text-white' : 'bg-slate-800 text-slate-400'
               }`}>
                 {tabCounts[t]}
               </span>
@@ -178,9 +178,9 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {displayGames.length === 0 ? (
             <div className="text-center py-16">
-              <Gamepad2 className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-              <p className="text-sm font-bold text-slate-600 uppercase">
-                {searchQuery ? 'No matches' : tab === 'TODAY' ? 'No games today' : tab === 'PLANNED' ? 'No planned games' : 'No completed games'}
+              <Gamepad2 className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+              <p className="text-base font-black text-slate-300 uppercase tracking-wider">
+                {searchQuery ? 'NO MATCHES' : tab === 'TODAY' ? 'NO GAMES TODAY' : tab === 'PLANNED' ? 'NO PLANNED GAMES' : 'NO COMPLETED GAMES'}
               </p>
             </div>
           ) : (
@@ -196,20 +196,20 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
                     <Gamepad2 className="w-5 h-5 text-slate-500" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-black text-white uppercase tracking-wider truncate">{g.name}</h3>
+                    <h3 className="text-base font-black text-white uppercase tracking-wider truncate">{g.name}</h3>
                     <div className="flex items-center gap-2 mt-0.5">
                       {pd && (
-                        <span className="flex items-center gap-1 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                          <Calendar className="w-3 h-3" />
-                          {isToday(pd) ? 'I dag' : formatDate(pd)}
+                        <span className="flex items-center gap-1 text-xs text-slate-400 font-bold uppercase tracking-widest">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {isToday(pd) ? 'I DAG' : formatDate(pd)}
                         </span>
                       )}
-                      <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
-                        {g.points?.length || 0} tasks
+                      <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                        {g.points?.length || 0} TASKS
                       </span>
                       {g.gameMode && g.gameMode !== 'standard' && (
-                        <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
-                          {g.gameMode}
+                        <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                          {g.gameMode.toUpperCase()}
                         </span>
                       )}
                     </div>
@@ -224,7 +224,7 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
           {hasMoreCompleted && (
             <button
               onClick={() => setCompletedLimit(prev => prev + 10)}
-              className="w-full flex items-center justify-center gap-2 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors"
             >
               <ChevronDown className="w-4 h-4" />
               Load {Math.min(10, currentGames.length - completedLimit)} more

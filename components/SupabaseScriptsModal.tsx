@@ -342,6 +342,25 @@ COMMENT ON TABLE game_location_history IS 'Stores historic team location paths f
 COMMENT ON COLUMN game_location_history.game_id IS 'Reference to the game ID';
 COMMENT ON COLUMN game_location_history.team_paths IS 'JSON object mapping team IDs to arrays of location history items {teamId: [{lat, lng, timestamp}, ...]}';
 COMMENT ON COLUMN game_location_history.timestamp IS 'Unix timestamp of when this data was last updated';`
+  },
+  {
+    id: 'teams_shortcode_color',
+    title: 'Teams Short Code & Color',
+    description: 'Adds color and short_code columns to the teams table for team lobby features',
+    category: 'migrations',
+    createdDate: '2026-02-11',
+    sql: `-- Migration: Teams Short Code & Color
+-- Description: Adds color and short_code columns to the teams table
+-- Created: 2026-02-11
+
+-- Add color column (hex color string)
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS color TEXT;
+
+-- Add short_code column (e.g. "A123" for easy team sharing)
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS short_code TEXT;
+
+-- Create index for fast short_code lookups within a game
+CREATE INDEX IF NOT EXISTS idx_teams_short_code ON teams(game_id, short_code);`
   }
 ];
 

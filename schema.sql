@@ -28,12 +28,15 @@ CREATE TABLE IF NOT EXISTS teams (
     captain_device_id TEXT,
     is_started BOOLEAN DEFAULT FALSE,
     completed_point_ids JSONB DEFAULT '[]',
+    color TEXT,
+    short_code TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_teams_game_id ON teams(game_id);
 CREATE INDEX IF NOT EXISTS idx_teams_join_code ON teams(join_code);
+CREATE INDEX IF NOT EXISTS idx_teams_short_code ON teams(game_id, short_code);
 
 -- Library table - stores task templates
 CREATE TABLE IF NOT EXISTS library (

@@ -154,7 +154,7 @@ const TeamLobbyPanel: React.FC<TeamLobbyPanelProps> = ({
     : <Users className="w-8 h-8 text-blue-600 dark:text-blue-400" />;
 
   return (
-    <div className="fixed inset-0 z-[2500] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}

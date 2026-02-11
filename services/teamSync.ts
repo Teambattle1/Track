@@ -141,6 +141,19 @@ class TeamSyncService {
             this.sendPresence();
         }
       })
+      .on('broadcast', { event: 'captain_change' }, (payload: any) => {
+        console.log('[TeamSync] Captain changed:', payload.payload);
+      })
+      .on('broadcast', { event: 'member_removed' }, (payload: any) => {
+        const { deviceId } = payload.payload;
+        // Remove from local members map
+        this.members.delete(deviceId);
+        this.notifyMemberListeners();
+        // If I was removed, could trigger disconnect — handled by lobby UI
+      })
+      .on('broadcast', { event: 'member_added' }, (payload: any) => {
+        console.log('[TeamSync] New member added:', payload.payload);
+      })
       .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
            this.sendPresence(true); // Force initial send
@@ -349,6 +362,31 @@ class TeamSyncService {
               payload: chatPayload
           });
       }, 500);
+  }
+
+  // Send chat message as a team member (not instructor)
+  public sendTeamChatMessage(gameId: string, message: string, senderName: string, teamName: string) {
+      if (!this.globalChannel) {
+          this.connectGlobal(gameId);
+      }
+
+      setTimeout(() => {
+          const chatPayload: ChatMessage = {
+              id: `msg-${Date.now()}-${this.deviceId}`,
+              gameId,
+              targetTeamId: null,
+              message,
+              sender: `${teamName}: ${senderName}`,
+              timestamp: Date.now(),
+              isUrgent: false
+          };
+
+          this.globalChannel.send({
+              type: 'broadcast',
+              event: 'chat',
+              payload: chatPayload
+          });
+      }, 100);
   }
 
   // --- GLOBAL LOCATION LOGIC (Captain Visibility) ---
@@ -632,6 +670,37 @@ class TeamSyncService {
   // Get all members including their retirement status
   public getAllMembers(): TeamMember[] {
       return Array.from(this.members.values());
+  }
+
+  // --- TEAM MANAGEMENT BROADCASTS ---
+  // Captain changed — notify all team members
+  public broadcastCaptainChange(newCaptainDeviceId: string, newCaptainName: string) {
+      if (!this.channel) return;
+      this.channel.send({
+          type: 'broadcast',
+          event: 'captain_change',
+          payload: { deviceId: newCaptainDeviceId, userName: newCaptainName }
+      });
+  }
+
+  // Member removed from team — notify all team members
+  public broadcastMemberRemoved(removedDeviceId: string, removedName: string) {
+      if (!this.channel) return;
+      this.channel.send({
+          type: 'broadcast',
+          event: 'member_removed',
+          payload: { deviceId: removedDeviceId, userName: removedName }
+      });
+  }
+
+  // New member added to team — notify all team members
+  public broadcastMemberAdded(addedDeviceId: string, addedName: string) {
+      if (!this.channel) return;
+      this.channel.send({
+          type: 'broadcast',
+          event: 'member_added',
+          payload: { deviceId: addedDeviceId, userName: addedName }
+      });
   }
 
   // --- RECOVERY CODE METHODS ---

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2, Crown, ExternalLink } from 'lucide-react';
 import { Team, TeamMemberData, Game } from '../types';
 import * as db from '../services/db';
 import GameChooserView from './GameChooserView';
+import { generateTeamShortCode } from '../utils/teamUtils';
 
 interface TeamEditorModalProps {
   gameId: string | null;
   games: Game[];
   onClose: () => void;
+  onOpenLobby?: (teamId: string) => void;
 }
 
 const DEMO_TEAM_NAMES = ['Alpha Squad', 'Bravo Unit', 'Charlie Force'];
@@ -31,7 +33,7 @@ const DEMO_MEMBERS: { name: string; deviceId: string }[][] = [
 
 const LS_KEY = 'teamtrack_lastEditorGameId';
 
-const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId, games, onClose }) => {
+const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId, games, onClose, onOpenLobby }) => {
   const [selectedGameId, setSelectedGameId] = useState<string | null>(() => {
     // Priority: prop > localStorage > first game
     if (initialGameId) return initialGameId;
@@ -60,6 +62,13 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
     setLoading(true);
     try {
       const data = await db.fetchTeams(gId);
+      // Auto-assign captain for teams that have members but no captain
+      for (const team of data) {
+        if (team.members.length > 0 && !team.captainDeviceId) {
+          team.captainDeviceId = team.members[0].deviceId;
+          await db.updateTeam(team.id, { captainDeviceId: team.captainDeviceId });
+        }
+      }
       setTeams(data);
       setExpandedTeamIds(new Set(data.map(t => t.id)));
     } catch (err) {
@@ -73,32 +82,37 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
     if (!selectedGameId) return;
     setSeeding(true);
     try {
-      // Collect all existing team names and player names in this game session
-      const existingTeamNames = new Set(teams.map(t => t.name.toLowerCase()));
+      // Remove existing demo teams first so re-seed always gives fresh data
+      const oldDemoTeams = teams.filter(t => t.id.startsWith('demo-team-'));
+      if (oldDemoTeams.length > 0) {
+        const { supabase } = await import('../lib/supabase');
+        for (const t of oldDemoTeams) {
+          await supabase.from('teams').delete().eq('id', t.id);
+        }
+      }
+
+      // Collect all remaining (non-demo) player names in this game session
+      const remainingTeams = teams.filter(t => !t.id.startsWith('demo-team-'));
       const existingPlayerNames = new Set(
-        teams.flatMap(t => t.members.map(m => (m.name || '').toLowerCase()))
+        remainingTeams.flatMap(t => t.members.map(m => (m.name || '').toLowerCase()).filter(n => n))
       );
 
       let created = 0;
-      let skipped = 0;
+      const existingCodes = teams.map(t => t.shortCode).filter(Boolean) as string[];
 
       for (let i = 0; i < DEMO_TEAM_NAMES.length; i++) {
-        if (existingTeamNames.has(DEMO_TEAM_NAMES[i].toLowerCase())) {
-          skipped++;
-          continue;
-        }
-        // Filter out members whose names already exist in the game
+        // Filter out members whose names already exist in real teams
         const uniqueMembers: TeamMemberData[] = DEMO_MEMBERS[i]
           .filter(m => !existingPlayerNames.has(m.name.toLowerCase()))
           .map(m => ({ name: m.name, deviceId: m.deviceId }));
 
-        if (uniqueMembers.length === 0) {
-          skipped++;
-          continue;
-        }
+        if (uniqueMembers.length === 0) continue;
 
-        // Add these names to the set so subsequent teams don't reuse them
+        // Track names so subsequent demo teams don't reuse them
         uniqueMembers.forEach(m => existingPlayerNames.add(m.name.toLowerCase()));
+
+        const shortCode = generateTeamShortCode(existingCodes);
+        existingCodes.push(shortCode);
 
         const teamId = `demo-team-${Date.now()}-${i}`;
         const team: Team = {
@@ -112,15 +126,12 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
           captainDeviceId: uniqueMembers[0].deviceId,
           isStarted: true,
           completedPointIds: [],
+          shortCode,
         };
         await db.registerTeam(team);
         created++;
       }
-      if (created > 0) {
-        setSuccessMsg(`Created ${created} demo team${created !== 1 ? 's' : ''}${skipped > 0 ? ` (${skipped} skipped)` : ''}`);
-      } else {
-        setSuccessMsg(`All demo teams already exist`);
-      }
+      setSuccessMsg(created > 0 ? `SEEDED ${created} DEMO TEAMS` : 'NO DEMO TEAMS CREATED');
       setTimeout(() => setSuccessMsg(null), 3000);
       await loadTeams(selectedGameId);
     } catch (err) {
@@ -138,7 +149,7 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
         const { supabase } = await import('../lib/supabase');
         await supabase.from('teams').delete().eq('id', team.id);
       }
-      setSuccessMsg(`Removed ${demoTeams.length} demo teams`);
+      setSuccessMsg(`REMOVED ${demoTeams.length} DEMO TEAMS`);
       setTimeout(() => setSuccessMsg(null), 3000);
       if (selectedGameId) await loadTeams(selectedGameId);
     } catch (err) {
@@ -174,30 +185,59 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
       const targetTeam = teams.find(t => t.id === toTeamId);
       if (!sourceTeam || !targetTeam) return;
 
+      const wasCaptain = sourceTeam.captainDeviceId === movingMember.member.deviceId;
+
       const updatedSourceMembers = sourceTeam.members.filter(
         m => m.deviceId !== movingMember.member.deviceId
       );
       const updatedTargetMembers = [...targetTeam.members, movingMember.member];
 
+      // Source: update members
       await db.updateTeam(sourceTeam.id, { members: updatedSourceMembers });
+      // Target: update members (mover does NOT become captain on target)
       await db.updateTeam(targetTeam.id, { members: updatedTargetMembers });
 
-      if (sourceTeam.captainDeviceId === movingMember.member.deviceId) {
-        const newCaptain = updatedSourceMembers[0]?.deviceId || null;
-        await db.updateTeam(sourceTeam.id, { captainDeviceId: newCaptain || undefined });
+      // Source: if moved player was captain, auto-promote first remaining member
+      let newSourceCaptain = sourceTeam.captainDeviceId;
+      if (wasCaptain) {
+        newSourceCaptain = updatedSourceMembers[0]?.deviceId || undefined;
+        await db.updateTeam(sourceTeam.id, { captainDeviceId: newSourceCaptain });
+      }
+
+      // Target: if team had no captain, auto-assign the existing first member (not the mover)
+      let newTargetCaptain = targetTeam.captainDeviceId;
+      if (!newTargetCaptain || !updatedTargetMembers.some(m => m.deviceId === newTargetCaptain)) {
+        newTargetCaptain = updatedTargetMembers[0]?.deviceId || undefined;
+        await db.updateTeam(targetTeam.id, { captainDeviceId: newTargetCaptain });
       }
 
       setTeams(prev => prev.map(t => {
-        if (t.id === sourceTeam.id) return { ...t, members: updatedSourceMembers, captainDeviceId: t.captainDeviceId === movingMember.member.deviceId ? (updatedSourceMembers[0]?.deviceId || undefined) : t.captainDeviceId };
-        if (t.id === targetTeam.id) return { ...t, members: updatedTargetMembers };
+        if (t.id === sourceTeam.id) return { ...t, members: updatedSourceMembers, captainDeviceId: newSourceCaptain };
+        if (t.id === targetTeam.id) return { ...t, members: updatedTargetMembers, captainDeviceId: newTargetCaptain };
         return t;
       }));
 
-      setSuccessMsg(`Moved ${movingMember.member.name} → ${targetTeam.name}`);
+      setSuccessMsg(`MOVED ${(movingMember.member.name || 'PLAYER').toUpperCase()} → ${targetTeam.name.toUpperCase()}`);
       setTimeout(() => setSuccessMsg(null), 2500);
       setMovingMember(null);
     } catch (err) {
       console.error('[TeamEditor] Error moving member:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setCaptain = async (teamId: string, deviceId: string, memberName: string) => {
+    setSaving(true);
+    try {
+      await db.updateTeam(teamId, { captainDeviceId: deviceId });
+      setTeams(prev => prev.map(t =>
+        t.id === teamId ? { ...t, captainDeviceId: deviceId } : t
+      ));
+      setSuccessMsg(`${memberName || 'PLAYER'} IS NOW CAPTAIN`);
+      setTimeout(() => setSuccessMsg(null), 2500);
+    } catch (err) {
+      console.error('[TeamEditor] Error setting captain:', err);
     } finally {
       setSaving(false);
     }
@@ -232,11 +272,12 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
             </div>
             <div>
               <h2 className="text-xl font-black text-white tracking-tight uppercase">EDIT TEAMS</h2>
-              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-0.5">
-                <button onClick={() => setSelectedGameId(null)} className="hover:text-orange-400 transition-colors">
+              <p className="text-sm text-slate-300 font-black uppercase tracking-wider mt-0.5">
+                <span className="text-slate-500">GAME: </span>
+                <button onClick={() => setSelectedGameId(null)} className="text-orange-400 hover:text-orange-300 transition-colors">
                   {game?.name || 'Unknown Game'}
                 </button>
-                {' '}— {teams.length} teams
+                <span className="text-slate-500"> — {teams.length} TEAMS</span>
               </p>
             </div>
           </div>
@@ -275,12 +316,12 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
           <div className="px-6 py-3 bg-blue-600/20 border-b border-blue-500/30 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <ArrowRight className="w-4 h-4 text-blue-400 animate-pulse" />
-              <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">
-                Moving <span className="text-white">{movingMember.member.name}</span> — click a team to transfer
+              <span className="text-xs font-black text-blue-300 uppercase tracking-wider">
+                MOVING <span className="text-white">{(movingMember.member.name || 'PLAYER').toUpperCase()}</span> — CLICK A TEAM TO TRANSFER
               </span>
             </div>
-            <button onClick={cancelMove} className="text-[10px] font-bold text-blue-400 hover:text-white uppercase tracking-wider transition-colors">
-              Cancel
+            <button onClick={cancelMove} className="text-[10px] font-black text-blue-400 hover:text-white uppercase tracking-widest transition-colors">
+              CANCEL
             </button>
           </div>
         )}
@@ -302,21 +343,21 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
           ) : teams.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <AlertCircle className="w-10 h-10 text-slate-600 mb-3" />
-              <p className="text-sm font-bold text-slate-500 uppercase">No teams found</p>
-              <p className="text-xs text-slate-600 mt-1 mb-6">No teams have joined this game yet.</p>
+              <p className="text-sm font-black text-slate-500 uppercase tracking-wider">NO TEAMS FOUND</p>
+              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1 mb-6">NO TEAMS HAVE JOINED THIS GAME YET</p>
               <button
                 onClick={seedDemoTeams}
                 disabled={seeding}
                 className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/30 transition-colors disabled:opacity-50"
               >
                 <Plus className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} />
-                <span className="text-xs font-black uppercase tracking-wider">
-                  {seeding ? 'Creating...' : 'Seed 3 Demo Teams'}
+                <span className="text-xs font-black uppercase tracking-widest">
+                  {seeding ? 'CREATING...' : 'SEED 3 DEMO TEAMS'}
                 </span>
               </button>
             </div>
           ) : (
-            teams.map(team => {
+            [...teams].sort((a, b) => a.name.localeCompare(b.name)).map(team => {
               const isExpanded = expandedTeamIds.has(team.id);
               const isSource = movingMember?.fromTeamId === team.id;
               const isTarget = movingMember && movingMember.fromTeamId !== team.id;
@@ -340,37 +381,55 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                       if (isTarget) { e.stopPropagation(); confirmMove(team.id); return; }
                       toggleExpand(team.id);
                     }}
-                    className="w-full flex items-center justify-between p-4"
+                    className={`w-full flex items-center justify-between ${movingMember ? 'p-5' : 'p-4'}`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className={`flex items-center ${movingMember ? 'gap-4' : 'gap-3'}`}>
                       {team.photoUrl ? (
-                        <img src={team.photoUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-slate-700" />
+                        <img src={team.photoUrl} alt="" className={`${movingMember ? 'w-12 h-12' : 'w-10 h-10'} rounded-xl object-cover border border-slate-700`} />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700"
+                        <div className={`${movingMember ? 'w-12 h-12' : 'w-10 h-10'} rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700`}
                              style={team.color ? { backgroundColor: team.color + '20', borderColor: team.color + '40' } : {}}>
-                          <Users className="w-5 h-5 text-slate-500" style={team.color ? { color: team.color } : {}} />
+                          <Users className={`${movingMember ? 'w-6 h-6' : 'w-5 h-5'} text-slate-500`} style={team.color ? { color: team.color } : {}} />
                         </div>
                       )}
                       <div className="text-left">
-                        <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                        <h3 className={`${movingMember ? 'text-lg' : 'text-base'} font-black text-white uppercase tracking-wider`}>
                           {team.name}
-                          {isDemoTeam && <span className="ml-2 text-[8px] font-black text-yellow-500 uppercase">Demo</span>}
+                          {isDemoTeam && <span className="ml-2 text-[8px] font-black text-yellow-500 uppercase">DEMO</span>}
                         </h3>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                          {team.members.length} member{team.members.length !== 1 ? 's' : ''} · Score: {team.score}
+                        <p className={`${movingMember ? 'text-sm' : 'text-xs'} text-slate-400 font-bold uppercase tracking-widest mt-0.5`}>
+                          {team.members.length} {team.members.length !== 1 ? 'MEMBERS' : 'MEMBER'} · {team.score} PTS
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {isTarget && (
-                        <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest animate-pulse">
-                          Click to move here
+                        <span className="text-xs font-black text-white uppercase tracking-widest animate-pulse">
+                          MOVE HERE →
+                        </span>
+                      )}
+                      {isSource && (
+                        <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">
+                          SOURCE
                         </span>
                       )}
                       {!movingMember && (
-                        isExpanded
-                          ? <ChevronUp className="w-4 h-4 text-slate-600" />
-                          : <ChevronDown className="w-4 h-4 text-slate-600" />
+                        <>
+                          {onOpenLobby && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onOpenLobby(team.id); }}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-purple-600/10 border border-purple-500/20 text-purple-400 hover:bg-purple-600/20 hover:border-purple-500/40 transition-all"
+                              title="Open team lobby"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              <span className="text-[8px] font-black uppercase tracking-wider">LOBBY</span>
+                            </button>
+                          )}
+                          {isExpanded
+                            ? <ChevronUp className="w-4 h-4 text-slate-600" />
+                            : <ChevronDown className="w-4 h-4 text-slate-600" />
+                          }
+                        </>
                       )}
                     </div>
                   </button>
@@ -379,40 +438,60 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                   {isExpanded && !movingMember && (
                     <div className="px-4 pb-4 space-y-1.5">
                       {team.members.length === 0 ? (
-                        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider text-center py-3">No members</p>
+                        <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest text-center py-3">NO MEMBERS</p>
                       ) : (
-                        team.members.map(member => (
-                          <div
-                            key={member.deviceId}
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/50 border border-slate-800 hover:border-slate-700 transition-colors"
-                          >
-                            <div className="flex items-center gap-2.5">
-                              {member.photo ? (
-                                <img src={member.photo} alt="" className="w-7 h-7 rounded-lg object-cover" />
-                              ) : (
-                                <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center">
-                                  <span className="text-[10px] font-black text-slate-400">{(member.name || '?').charAt(0).toUpperCase()}</span>
+                        [...team.members].sort((a, b) => {
+                          if (a.deviceId === team.captainDeviceId) return -1;
+                          if (b.deviceId === team.captainDeviceId) return 1;
+                          return (a.name || '').localeCompare(b.name || '');
+                        }).map(member => {
+                          const isCaptain = team.captainDeviceId === member.deviceId;
+                          return (
+                            <div
+                              key={member.deviceId}
+                              className={`flex items-center justify-between p-2.5 rounded-xl bg-slate-800/50 border transition-colors ${isCaptain ? 'border-amber-500/30' : 'border-slate-800 hover:border-slate-700'}`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                {member.photo ? (
+                                  <img src={member.photo} alt="" className="w-7 h-7 rounded-lg object-cover" />
+                                ) : (
+                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isCaptain ? 'bg-amber-600/20' : 'bg-slate-700'}`}>
+                                    <span className={`text-[10px] font-black ${isCaptain ? 'text-amber-400' : 'text-slate-400'}`}>{(member.name || '?').charAt(0).toUpperCase()}</span>
+                                  </div>
+                                )}
+                                <div>
+                                  <span className="text-xs font-black text-slate-300 uppercase tracking-wider">{(member.name || 'UNKNOWN').toUpperCase()}</span>
+                                  {isCaptain && (
+                                    <span className="ml-2 text-[8px] font-black text-amber-500 uppercase tracking-widest">CAPTAIN</span>
+                                  )}
                                 </div>
-                              )}
-                              <div>
-                                <span className="text-xs font-bold text-slate-300">{member.name || 'Unknown'}</span>
-                                {team.captainDeviceId === member.deviceId && (
-                                  <span className="ml-2 text-[8px] font-black text-amber-500 uppercase tracking-widest">Captain</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                {!isCaptain && (
+                                  <button
+                                    onClick={() => setCaptain(team.id, member.deviceId, member.name || 'UNKNOWN')}
+                                    disabled={saving}
+                                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-700/50 hover:bg-amber-600/20 border border-slate-700 hover:border-amber-500/40 text-slate-500 hover:text-amber-400 transition-all disabled:opacity-50"
+                                    title={`Make ${member.name} captain`}
+                                  >
+                                    <Crown className="w-3 h-3" />
+                                    <span className="text-[8px] font-black uppercase tracking-wider">CAPTAIN</span>
+                                  </button>
+                                )}
+                                {teams.length > 1 && (
+                                  <button
+                                    onClick={() => startMove(member, team.id)}
+                                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-700/50 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500/40 text-slate-500 hover:text-blue-400 transition-all"
+                                    title={`Move ${member.name} to another team`}
+                                  >
+                                    <ArrowRight className="w-3 h-3" />
+                                    <span className="text-[8px] font-black uppercase tracking-wider">MOVE</span>
+                                  </button>
                                 )}
                               </div>
                             </div>
-                            {teams.length > 1 && (
-                              <button
-                                onClick={() => startMove(member, team.id)}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-700/50 hover:bg-blue-600/20 border border-slate-700 hover:border-blue-500/40 text-slate-500 hover:text-blue-400 transition-all"
-                                title={`Move ${member.name} to another team`}
-                              >
-                                <ArrowRight className="w-3 h-3" />
-                                <span className="text-[8px] font-black uppercase tracking-wider">Move</span>
-                              </button>
-                            )}
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   )}

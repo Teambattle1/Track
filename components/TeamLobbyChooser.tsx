@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, Shield, Search, RefreshCw, ChevronRight } from 'lucide-react';
+import { X, Users, Shield, Search, RefreshCw, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import { Team, Game } from '../types';
 import * as db from '../services/db';
 import GameChooserView from './GameChooserView';
@@ -73,15 +73,20 @@ const TeamLobbyChooser: React.FC<TeamLobbyChooserProps> = ({ games, onClose, onS
             </div>
             <div>
               <h2 className="text-xl font-black text-white tracking-tight uppercase">TEAM LOBBY</h2>
-              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-0.5">
-                <button onClick={() => { setSelectedGameId(null); setSearchQuery(''); }} className="hover:text-purple-400 transition-colors">
-                  {game?.name || 'Unknown Game'}
-                </button>
-                {' '}— {teams.length} teams
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mt-0.5">
+                {game?.name || 'Unknown Game'} — {teams.length} TEAMS
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setSelectedGameId(null); setSearchQuery(''); }}
+              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-purple-600/10 border border-purple-500/20 text-purple-400 hover:bg-purple-600/20 hover:border-purple-500/40 transition-all"
+              title="Switch game"
+            >
+              <ArrowLeftRight className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-black uppercase tracking-wider">GAME</span>
+            </button>
             <button onClick={() => selectedGameId && loadTeams(selectedGameId)} className="p-2.5 hover:bg-white/5 rounded-xl text-slate-500 hover:text-white transition-colors" title="Refresh">
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -113,12 +118,12 @@ const TeamLobbyChooser: React.FC<TeamLobbyChooserProps> = ({ games, onClose, onS
             </div>
           ) : filteredTeams.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <Users className="w-10 h-10 text-slate-600 mb-3" />
-              <p className="text-sm font-bold text-slate-500 uppercase">
-                {teams.length === 0 ? 'No teams yet' : 'No teams match'}
+              <Users className="w-12 h-12 text-slate-500 mb-4" />
+              <p className="text-base font-black text-slate-300 uppercase tracking-wider">
+                {teams.length === 0 ? 'NO TEAMS YET' : 'NO TEAMS MATCH'}
               </p>
-              <p className="text-xs text-slate-600 mt-1">
-                {teams.length === 0 ? 'No teams have joined this game yet.' : 'Try a different search.'}
+              <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mt-2">
+                {teams.length === 0 ? 'NO TEAMS HAVE JOINED THIS GAME YET' : 'TRY A DIFFERENT SEARCH'}
               </p>
             </div>
           ) : (
@@ -140,9 +145,9 @@ const TeamLobbyChooser: React.FC<TeamLobbyChooserProps> = ({ games, onClose, onS
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-black text-white uppercase tracking-wider truncate">{team.name}</h3>
-                  <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                    {team.members?.length || 0} members · {team.score || 0} pts
+                  <h3 className="text-base font-black text-white uppercase tracking-wider truncate">{team.name}</h3>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                    {team.members?.length || 0} MEMBERS · {team.score || 0} PTS
                   </p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />

@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Game, GamePoint, TaskTemplate, TaskList, Team, PlaygroundTemplate, AccountUser, AdminMessage, Coordinate, GameChangeLogEntry, MediaSubmission, MapStyleId } from '../types';
+import { Game, GamePoint, TaskTemplate, TaskList, Team, TeamMemberData, PlaygroundTemplate, AccountUser, AdminMessage, Coordinate, GameChangeLogEntry, MediaSubmission, MapStyleId } from '../types';
 import { DEMO_TASKS, DEMO_LISTS, getDemoGames } from '../utils/demoContent';
 import { detectLanguageFromText, normalizeLanguage } from '../utils/i18n';
 
@@ -509,13 +509,46 @@ export const fetchGameLocationHistory = async (
 };
 
 // --- TEAMS ---
+// Members may be stored as JSON strings in a text[] column — parse them
+const parseMembers = (raw: any): TeamMemberData[] => {
+    if (!Array.isArray(raw)) return [];
+    return raw.map((m: any) => {
+        if (typeof m === 'string') {
+            try { return JSON.parse(m); } catch { return { name: '', deviceId: '' }; }
+        }
+        return m;
+    });
+};
+
+// Track whether optional team columns exist to avoid repeated fallbacks
+let _teamColumnsExist: boolean | null = null;
+
 export const fetchTeams = async (gameId: string): Promise<Team[]> => {
     try {
-        const rows = await fetchInChunks(
-            (offset, limit) => supabase.from('teams').select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids').eq('game_id', gameId).range(offset, offset + limit - 1),
-            `fetchTeams(${gameId})`,
-            CHUNK_SIZE
-        );
+        let rows;
+
+        // First attempt: try with optional columns (unless we already know they don't exist)
+        if (_teamColumnsExist !== false) {
+            const { data, error } = await supabase.from('teams')
+                .select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids, color, short_code, created_at')
+                .eq('game_id', gameId);
+            if (!error) {
+                _teamColumnsExist = true;
+                rows = data || [];
+            } else {
+                console.warn('[DB] fetchTeams: optional columns failed, using fallback:', error.message);
+                _teamColumnsExist = false;
+            }
+        }
+
+        // Fallback: fetch without optional columns
+        if (!rows) {
+            rows = await fetchInChunks(
+                (offset, limit) => supabase.from('teams').select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids').eq('game_id', gameId).range(offset, offset + limit - 1),
+                `fetchTeams(${gameId})`,
+                CHUNK_SIZE
+            );
+        }
         const data = rows;
         if (!data) return [];
         return data.map((row: any) => ({
@@ -524,12 +557,15 @@ export const fetchTeams = async (gameId: string): Promise<Team[]> => {
             name: row.name,
             joinCode: row.join_code,
             photoUrl: row.photo_url,
-            members: row.members,
+            members: parseMembers(row.members),
             score: row.score,
             updatedAt: row.updated_at,
             captainDeviceId: row.captain_device_id,
             isStarted: row.is_started,
-            completedPointIds: row.completed_point_ids || []
+            completedPointIds: row.completed_point_ids || [],
+            color: row.color || undefined,
+            shortCode: row.short_code || undefined,
+            createdAt: row.created_at ? new Date(row.created_at).getTime() : undefined
         }));
     } catch (e) {
         logError('fetchTeams', e);
@@ -539,7 +575,21 @@ export const fetchTeams = async (gameId: string): Promise<Team[]> => {
 
 export const fetchTeam = async (teamId: string): Promise<Team | null> => {
     try {
-        const { data, error } = await supabase.from('teams').select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids').eq('id', teamId).single();
+        let data: any;
+        let error: any;
+
+        if (_teamColumnsExist !== false) {
+            ({ data, error } = await supabase.from('teams').select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids, color, short_code, created_at').eq('id', teamId).single());
+            if (error && !error.message?.includes('not found')) {
+                _teamColumnsExist = false;
+                data = null;
+                error = null;
+            }
+        }
+
+        if (!data && _teamColumnsExist === false) {
+            ({ data, error } = await supabase.from('teams').select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids').eq('id', teamId).single());
+        }
         if (error) throw error;
         if (!data) return null;
         return {
@@ -548,12 +598,15 @@ export const fetchTeam = async (teamId: string): Promise<Team | null> => {
             name: data.name,
             joinCode: data.join_code,
             photoUrl: data.photo_url,
-            members: data.members,
+            members: parseMembers(data.members),
             score: data.score,
             updatedAt: data.updated_at,
             captainDeviceId: data.captain_device_id,
             isStarted: data.is_started,
-            completedPointIds: data.completed_point_ids || []
+            completedPointIds: data.completed_point_ids || [],
+            color: data.color || undefined,
+            shortCode: data.short_code || undefined,
+            createdAt: data.created_at ? new Date(data.created_at).getTime() : undefined
         };
     } catch (e) {
         logError('fetchTeam', e);
@@ -576,10 +629,11 @@ export const isTeamNameTaken = async (gameId: string, teamName: string): Promise
 };
 
 export const isPlayerNameTaken = async (gameId: string, playerName: string): Promise<boolean> => {
+    if (!playerName) return false; // Empty names are not considered taken
     try {
         const allTeams = await fetchTeams(gameId);
         return allTeams.some(t =>
-            t.members.some(m => (m.name || '').toLowerCase() === playerName.toLowerCase())
+            t.members.some(m => m.name && m.name.toLowerCase() === playerName.toLowerCase())
         );
     } catch {
         return true; // Assume taken on error to be safe
@@ -594,17 +648,17 @@ export const registerTeam = async (team: Team) => {
             throw new Error(`Team name "${team.name}" is already taken in this game`);
         }
 
-        // Check for duplicate player names across all teams in this game
+        // Check for duplicate player names across all teams in this game (skip empty names)
         const existingTeams = await fetchTeams(team.gameId);
         const existingPlayerNames = new Set(
-            existingTeams.flatMap(t => t.members.map(m => (m.name || '').toLowerCase()))
+            existingTeams.flatMap(t => t.members.map(m => (m.name || '').toLowerCase()).filter(n => n))
         );
-        const dupeNames = team.members.filter(m => existingPlayerNames.has((m.name || '').toLowerCase()));
+        const dupeNames = team.members.filter(m => m.name && existingPlayerNames.has(m.name.toLowerCase()));
         if (dupeNames.length > 0) {
             throw new Error(`Player name(s) already taken: ${dupeNames.map(m => m.name).join(', ')}`);
         }
 
-        const { error } = await supabase.from('teams').insert({
+        const insertData: any = {
             id: team.id,
             game_id: team.gameId,
             name: team.name,
@@ -616,7 +670,25 @@ export const registerTeam = async (team: Team) => {
             captain_device_id: team.captainDeviceId,
             is_started: team.isStarted,
             completed_point_ids: team.completedPointIds
-        });
+        };
+        // Only include optional columns if we know they exist
+        if (_teamColumnsExist !== false) {
+            if (team.color) insertData.color = team.color;
+            if (team.shortCode) insertData.short_code = team.shortCode;
+        }
+
+        let { error } = await supabase.from('teams').insert(insertData);
+
+        // If insert fails and we included optional columns, retry without them
+        if (error && (insertData.color !== undefined || insertData.short_code !== undefined)) {
+            console.warn('[DB] Retrying registerTeam without optional columns:', error.message);
+            _teamColumnsExist = false;
+            delete insertData.color;
+            delete insertData.short_code;
+            const retry = await supabase.from('teams').insert(insertData);
+            error = retry.error;
+        }
+
         if (error) throw error;
     } catch (e) { logError('registerTeam', e); }
 };
@@ -633,6 +705,10 @@ export const updateTeam = async (teamId: string, updates: Partial<Team>) => {
         if (updates.captainDeviceId !== undefined) payload.captain_device_id = updates.captainDeviceId;
         if (updates.isStarted !== undefined) payload.is_started = updates.isStarted;
         if (updates.completedPointIds !== undefined) payload.completed_point_ids = updates.completedPointIds;
+        if (_teamColumnsExist !== false) {
+            if (updates.color !== undefined) payload.color = updates.color;
+            if (updates.shortCode !== undefined) payload.short_code = updates.shortCode;
+        }
 
         payload.updated_at = updates.updatedAt || new Date().toISOString();
 
@@ -735,6 +811,79 @@ export const updateMemberPhoto = async (teamId: string, memberDeviceId: string, 
 
         await supabase.from('teams').update({ members: updatedMembers, updated_at: new Date().toISOString() }).eq('id', teamId);
     } catch (e) { logError('updateMemberPhoto', e); }
+};
+
+export const fetchTeamByShortCode = async (gameId: string, shortCode: string): Promise<Team | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('teams')
+            .select('id, game_id, name, join_code, photo_url, members, score, updated_at, captain_device_id, is_started, completed_point_ids, color, short_code, created_at')
+            .eq('game_id', gameId)
+            .eq('short_code', shortCode.toUpperCase())
+            .single();
+        if (error || !data) return null;
+        return {
+            id: data.id,
+            gameId: data.game_id,
+            name: data.name,
+            joinCode: data.join_code,
+            photoUrl: data.photo_url,
+            members: parseMembers(data.members),
+            score: data.score,
+            updatedAt: data.updated_at,
+            captainDeviceId: data.captain_device_id,
+            isStarted: data.is_started,
+            completedPointIds: data.completed_point_ids || [],
+            color: data.color || undefined,
+            shortCode: data.short_code || undefined,
+            createdAt: data.created_at ? new Date(data.created_at).getTime() : undefined
+        };
+    } catch (e) {
+        logError('fetchTeamByShortCode', e);
+        return null;
+    }
+};
+
+export const removeTeamMember = async (teamId: string, deviceId: string): Promise<void> => {
+    try {
+        const team = await fetchTeam(teamId);
+        if (!team) return;
+
+        const updatedMembers = team.members.filter(m => m.deviceId !== deviceId);
+
+        // If captain was removed, promote first remaining member
+        let captainId = team.captainDeviceId;
+        if (captainId === deviceId && updatedMembers.length > 0) {
+            captainId = updatedMembers[0].deviceId;
+        }
+
+        await supabase.from('teams').update({
+            members: updatedMembers.map(m => JSON.stringify(m)),
+            captain_device_id: captainId,
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+    } catch (e) {
+        logError('removeTeamMember', e);
+    }
+};
+
+export const addTeamMember = async (teamId: string, member: { deviceId: string; name: string; photo?: string }): Promise<void> => {
+    try {
+        const team = await fetchTeam(teamId);
+        if (!team) return;
+
+        // Don't add if already a member
+        if (team.members.some(m => m.deviceId === member.deviceId)) return;
+
+        const updatedMembers = [...team.members, member];
+
+        await supabase.from('teams').update({
+            members: updatedMembers.map(m => JSON.stringify(m)),
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+    } catch (e) {
+        logError('addTeamMember', e);
+    }
 };
 
 // --- LIBRARY & LISTS ---

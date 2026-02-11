@@ -34,7 +34,7 @@ import PlaygroundEditor from './PlaygroundEditor';
 import MessagePopup from './MessagePopup';
 import Dashboard from './Dashboard';
 import DangerZoneModal from './DangerZoneModal';
-import TeamLobbyPanel from './TeamLobbyPanel';
+import TeamLobbyView from './TeamLobbyView';
 import PlayzoneGameEntry from './PlayzoneGameEntry';
 import AroundTheWorldGameView from './AroundTheWorldGameView';
 import { AroundTheWorldDashboard } from './aroundtheworld';
@@ -81,6 +81,7 @@ const GameApp: React.FC = () => {
   const [showTeamsHub, setShowTeamsHub] = useState(false);
   const [showGameCreator, setShowGameCreator] = useState(false);
   const [showTeamLobby, setShowTeamLobby] = useState(false);
+  const [selectedTeamIdForLobby, setSelectedTeamIdForLobby] = useState<string | null>(null);
   const [showAroundTheWorldDashboard, setShowAroundTheWorldDashboard] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
   const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | null>(null);
@@ -225,6 +226,33 @@ const GameApp: React.FC = () => {
           if (game?.defaultMapStyle) setLocalMapStyle(game.defaultMapStyle);
       }
   }, [activeGameId, games]);
+
+  // --- GAMEMASTER CHAT: Listen for team messages to show popup ---
+  useEffect(() => {
+      if (!activeGameId) return;
+      // Only listen when in instructor/edit mode (gamemaster)
+      if (mode !== GameMode.EDIT && mode !== GameMode.INSTRUCTOR) return;
+
+      const channelId = `game_${activeGameId}_global`;
+      const channel = supabase.channel(channelId);
+
+      channel
+          .on('broadcast', { event: 'chat' }, (payload: any) => {
+              const msg = payload.payload as ChatMessage;
+              if (!msg) return;
+              // Only show popup for messages NOT from the gamemaster
+              if (msg.sender === 'Instructor' || msg.sender === 'Gamemaster') return;
+              // Add to chat history
+              setChatHistory(prev => [...prev, msg]);
+              // Show popup notification
+              setLatestMessage(msg);
+          })
+          .subscribe();
+
+      return () => {
+          supabase.removeChannel(channel);
+      };
+  }, [activeGameId, mode]);
 
   // --- MULTI-USER EDIT SYNC (realtime with safe fallback) ---
   useEffect(() => {
@@ -1405,12 +1433,15 @@ const GameApp: React.FC = () => {
               />
           )}
           {showTeamsModal && (
-              <TeamsModal 
+              <TeamsModal
                   gameId={activeGameId}
                   games={games}
                   onSelectGame={setActiveGameId}
                   onClose={() => setShowTeamsModal(false)}
                   isAdmin={true}
+                  onEnterLobby={(team) => {
+                      setSelectedTeamIdForLobby(team.id);
+                  }}
               />
           )}
           {showInstructorDashboard && activeGame && (
@@ -1443,10 +1474,22 @@ const GameApp: React.FC = () => {
               />
           )}
           {showTeamLobby && currentTeam && activeGame?.gameMode !== 'playzone' && (
-              <TeamLobbyPanel
+              <TeamLobbyView
                   isOpen={showTeamLobby}
                   onClose={() => setShowTeamLobby(false)}
+                  teamId={currentTeam.id}
+                  game={activeGame || undefined}
+                  allTeams={games.find(g => g.id === activeGameId)?.id ? undefined : undefined}
                   isCaptain={currentTeam.captainDeviceId === teamSync.getDeviceId() || mode === GameMode.SIMULATION}
+              />
+          )}
+          {selectedTeamIdForLobby && (
+              <TeamLobbyView
+                  isOpen={true}
+                  onClose={() => setSelectedTeamIdForLobby(null)}
+                  teamId={selectedTeamIdForLobby}
+                  game={activeGame || undefined}
+                  isCaptain={mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT}
               />
           )}
           {showDeleteGames && (

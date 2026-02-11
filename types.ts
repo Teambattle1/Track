@@ -67,6 +67,7 @@ export interface Team {
   startedAt?: number;
   createdAt?: number; // Timestamp when team was created
   color?: string; // Team color (hex)
+  shortCode?: string; // Simple team ID like "A123" for easy sharing
   // Jorden 80 specific fields
   vehicle?: Jorden80Vehicle; // Transport type chosen by team
 }
@@ -527,6 +528,10 @@ export interface GamePoint {
   fieldMissionLocation?: Coordinate; // Where player must go (can differ from task location)
   fieldMissionRadius?: number;      // Radius for activation (default: config.defaultFieldRadius)
   fieldMissionHint?: string;        // Hint to help find the location ("By the large oak tree")
+
+  // Team voting per task
+  teamVotingEnabled?: boolean;        // Whether this task uses team voting
+  teamVotingMode?: 'require_consensus' | 'captain_submit'; // Per-task override
 
   // Jorden 80 specific fields
   jorden80TaskType?: Jorden80TaskType; // 'by' | 'land' | 'creative' for 80 Days mode
