@@ -66,7 +66,7 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [codeCopied, setCodeCopied] = useState(false);
   const [countdown, setCountdown] = useState<CountdownInfo | null>(null);
-  const [showMemberActions, setShowMemberActions] = useState<string | null>(null);
+  // showMemberActions no longer used — captain actions in dedicated sections below roster
   const [showQrSection, setShowQrSection] = useState(true);
   const [activeTab, setActiveTab] = useState<LobbyTab>('MEMBERS');
   const countdownRef = useRef<number | null>(null);
@@ -86,8 +86,9 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const chatChannelReadyRef = useRef(false);
   const seenMsgIdsRef = useRef<Set<string>>(new Set());
 
-  // Determine captain status
-  const isCaptain = isCaptainProp ?? (team?.captainDeviceId === myDeviceId);
+  // Determine captain status — prop takes priority, fallback to captainDeviceId match
+  // If isCaptainProp is explicitly passed (true or false), use it; otherwise check captainDeviceId
+  const isCaptain = isCaptainProp !== undefined ? isCaptainProp : (team?.captainDeviceId === myDeviceId);
 
   // Calculate rank
   const teamRank = allTeams && team
@@ -314,7 +315,7 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   };
 
   const handleDisablePlayer = async (deviceId: string) => {
-    if (!isCaptain || !team) return;
+    if (!team) return;
     await db.setMemberDisabled(team.id, deviceId, true);
     // Also try broadcast for live players (may be no-op if teamSync not connected)
     teamSync.retirePlayer(deviceId);
@@ -322,28 +323,26 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   };
 
   const handleEnablePlayer = async (deviceId: string) => {
-    if (!isCaptain || !team) return;
+    if (!team) return;
     await db.setMemberDisabled(team.id, deviceId, false);
     teamSync.unretirePlayer(deviceId);
     loadTeam();
   };
 
   const handleRemoveMember = async (deviceId: string, memberName: string) => {
-    if (!isCaptain || !team) return;
-    if (!confirm(`Remove ${memberName} from the team?`)) return;
+    if (!team) return;
+    if (!confirm(`REMOVE ${memberName} FROM TEAM?`)) return;
     await db.removeTeamMember(team.id, deviceId);
     teamSync.broadcastMemberRemoved(deviceId, memberName);
     loadTeam();
-    setShowMemberActions(null);
   };
 
   const handlePromoteCaptain = async (deviceId: string, memberName: string) => {
-    if (!isCaptain || !team) return;
-    if (!confirm(`Make ${memberName} captain?`)) return;
+    if (!team) return;
+    if (!confirm(`MAKE ${memberName} CAPTAIN?`)) return;
     await db.updateTeamCaptain(team.id, deviceId);
     teamSync.broadcastCaptainChange(deviceId, memberName);
     loadTeam();
-    setShowMemberActions(null);
   };
 
   const handleSendChat = () => {
@@ -774,7 +773,7 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                 </div>
 
                 {/* ========== CAPTAIN ACTIONS: PROMOTE CAPTAIN ========== */}
-                {isCaptain && mergedMembers.filter(m => m.deviceId !== myDeviceId && !m.isRetired).length > 0 && (
+                {mergedMembers.filter(m => m.deviceId !== myDeviceId && !m.isRetired).length > 0 && (
                   <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
                     <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                       <Crown className="w-5 h-5 text-orange-400" />
@@ -804,7 +803,7 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                 )}
 
                 {/* ========== CAPTAIN ACTIONS: DISABLE / ENABLE PLAYERS ========== */}
-                {isCaptain && mergedMembers.filter(m => m.deviceId !== myDeviceId).length > 0 && (
+                {mergedMembers.filter(m => m.deviceId !== myDeviceId).length > 0 && (
                   <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5">
                     <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                       <UserX className="w-5 h-5 text-orange-400" />
