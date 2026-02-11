@@ -76,6 +76,7 @@ export interface TeamMemberData {
     name: string;
     photo?: string;
     deviceId: string;
+    isDisabled?: boolean;
 }
 
 export interface TaskVote {

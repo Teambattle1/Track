@@ -313,14 +313,19 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     setTimeout(() => setCodeCopied(false), 2000);
   };
 
-  const handleRetirePlayer = (deviceId: string) => {
-    if (!isCaptain) return;
+  const handleDisablePlayer = async (deviceId: string) => {
+    if (!isCaptain || !team) return;
+    await db.setMemberDisabled(team.id, deviceId, true);
+    // Also try broadcast for live players (may be no-op if teamSync not connected)
     teamSync.retirePlayer(deviceId);
+    loadTeam();
   };
 
-  const handleUnretirePlayer = (deviceId: string) => {
-    if (!isCaptain) return;
+  const handleEnablePlayer = async (deviceId: string) => {
+    if (!isCaptain || !team) return;
+    await db.setMemberDisabled(team.id, deviceId, false);
     teamSync.unretirePlayer(deviceId);
+    loadTeam();
   };
 
   const handleRemoveMember = async (deviceId: string, memberName: string) => {
@@ -395,7 +400,8 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
         ...m,
         isOnline: !!live && (Date.now() - live.lastSeen < 60000),
         isSolving: live?.isSolving,
-        isRetired: live?.isRetired,
+        // isDisabled from DB takes priority, fallback to live broadcast isRetired
+        isRetired: m.isDisabled || live?.isRetired,
         deviceType: live?.deviceType
       };
     });
@@ -833,14 +839,14 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                               </span>
                               {isDisabled ? (
                                 <button
-                                  onClick={() => handleUnretirePlayer(member.deviceId)}
+                                  onClick={() => handleEnablePlayer(member.deviceId)}
                                   className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-orange-600/20 text-orange-400 border-2 border-orange-500/40 hover:bg-orange-600/30 active:bg-orange-600/40 transition-colors shrink-0"
                                 >
                                   <UserCheck className="w-5 h-5" /> ENABLE
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => handleRetirePlayer(member.deviceId)}
+                                  onClick={() => handleDisablePlayer(member.deviceId)}
                                   className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black uppercase tracking-wider bg-red-600/10 text-red-400 border-2 border-red-500/30 hover:bg-red-600/20 active:bg-red-600/30 transition-colors shrink-0"
                                 >
                                   <UserX className="w-5 h-5" /> DISABLE

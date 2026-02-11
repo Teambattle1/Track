@@ -787,6 +787,20 @@ export const updateTeamCaptain = async (teamId: string, captainDeviceId: string)
     } catch (e) { logError('updateTeamCaptain', e); }
 };
 
+export const setMemberDisabled = async (teamId: string, memberDeviceId: string, isDisabled: boolean) => {
+    try {
+        const team = await fetchTeam(teamId);
+        if (!team) return;
+        const updatedMembers = team.members.map(m =>
+            m.deviceId === memberDeviceId ? { ...m, isDisabled } : m
+        );
+        await supabase.from('teams').update({
+            members: updatedMembers.map(m => JSON.stringify(m)),
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+    } catch (e) { logError('setMemberDisabled', e); }
+};
+
 export const updateTeamPhoto = async (teamId: string, photoUrl: string) => {
     try {
         await supabase.from('teams').update({ photo_url: photoUrl, updated_at: new Date().toISOString() }).eq('id', teamId);

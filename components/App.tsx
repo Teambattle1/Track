@@ -1480,7 +1480,7 @@ const GameApp: React.FC = () => {
                   teamId={currentTeam.id}
                   game={activeGame || undefined}
                   allTeams={games.find(g => g.id === activeGameId)?.id ? undefined : undefined}
-                  isCaptain={currentTeam.captainDeviceId === teamSync.getDeviceId() || mode === GameMode.SIMULATION}
+                  isCaptain={currentTeam.captainDeviceId === teamSync.getDeviceId() || mode === GameMode.SIMULATION || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR}
               />
           )}
           {selectedTeamIdForLobby && (
@@ -1489,7 +1489,7 @@ const GameApp: React.FC = () => {
                   onClose={() => setSelectedTeamIdForLobby(null)}
                   teamId={selectedTeamIdForLobby}
                   game={activeGame || undefined}
-                  isCaptain={mode === GameMode.INSTRUCTOR || mode === GameMode.EDIT}
+                  isCaptain={true}
               />
           )}
           {showDeleteGames && (
