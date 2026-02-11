@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2, Crown, ExternalLink } from 'lucide-react';
+import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2, Crown, ExternalLink, Wand2 } from 'lucide-react';
 import { Team, TeamMemberData, Game } from '../types';
 import * as db from '../services/db';
 import GameChooserView from './GameChooserView';
@@ -10,6 +10,7 @@ interface TeamEditorModalProps {
   games: Game[];
   onClose: () => void;
   onOpenLobby?: (teamId: string) => void;
+  onOpenWizard?: () => void;
 }
 
 const DEMO_TEAM_NAMES = ['Alpha Squad', 'Bravo Unit', 'Charlie Force'];
@@ -33,7 +34,7 @@ const DEMO_MEMBERS: { name: string; deviceId: string }[][] = [
 
 const LS_KEY = 'teamtrack_lastEditorGameId';
 
-const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId, games, onClose, onOpenLobby }) => {
+const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId, games, onClose, onOpenLobby, onOpenWizard }) => {
   const [selectedGameId, setSelectedGameId] = useState<string | null>(() => {
     // Priority: prop > localStorage > first game
     if (initialGameId) return initialGameId;
@@ -282,6 +283,16 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {onOpenWizard && (
+              <button
+                onClick={onOpenWizard}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-orange-600/10 border border-orange-500/20 text-orange-400 hover:bg-orange-600/20 transition-colors"
+                title="Bulk create teams with QR codes"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                <span className="text-[9px] font-black uppercase tracking-wider">Wizard</span>
+              </button>
+            )}
             {hasDemoTeams && (
               <button
                 onClick={removeDemoTeams}
@@ -345,16 +356,27 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
               <AlertCircle className="w-10 h-10 text-slate-600 mb-3" />
               <p className="text-sm font-black text-slate-500 uppercase tracking-wider">NO TEAMS FOUND</p>
               <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1 mb-6">NO TEAMS HAVE JOINED THIS GAME YET</p>
-              <button
-                onClick={seedDemoTeams}
-                disabled={seeding}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/30 transition-colors disabled:opacity-50"
-              >
-                <Plus className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} />
-                <span className="text-xs font-black uppercase tracking-widest">
-                  {seeding ? 'CREATING...' : 'SEED 3 DEMO TEAMS'}
-                </span>
-              </button>
+              <div className="flex flex-col gap-3 items-center">
+                {onOpenWizard && (
+                  <button
+                    onClick={onOpenWizard}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-orange-600/20 border border-orange-500/30 text-orange-400 hover:bg-orange-600/30 transition-colors"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                    <span className="text-xs font-black uppercase tracking-widest">CREATE TEAMS WITH WIZARD</span>
+                  </button>
+                )}
+                <button
+                  onClick={seedDemoTeams}
+                  disabled={seeding}
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/30 transition-colors disabled:opacity-50"
+                >
+                  <Plus className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} />
+                  <span className="text-xs font-black uppercase tracking-widest">
+                    {seeding ? 'CREATING...' : 'SEED 3 DEMO TEAMS'}
+                  </span>
+                </button>
+              </div>
             </div>
           ) : (
             [...teams].sort((a, b) => a.name.localeCompare(b.name)).map(team => {

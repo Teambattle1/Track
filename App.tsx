@@ -53,6 +53,7 @@ import FullscreenOverlay from './components/FullscreenOverlay';
 import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
 import TeamEditorModal from './components/TeamEditorModal';
+import TeamWizard from './components/TeamWizard';
 import TeamLobbyChooser from './components/TeamLobbyChooser';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
@@ -165,6 +166,7 @@ const GameApp: React.FC = () => {
   const [showTeamLobbySelectorModal, setShowTeamLobbySelectorModal] = useState(false);
   const [showDemoTeamSelectorModal, setShowDemoTeamSelectorModal] = useState(false);
   const [showTeamEditor, setShowTeamEditor] = useState(false);
+  const [showTeamWizard, setShowTeamWizard] = useState(false);
   const [showTeamLobbyChooser, setShowTeamLobbyChooser] = useState(false);
 
   const playableGames = useMemo(() => games.filter(g => !g.isGameTemplate), [games]);
@@ -3345,6 +3347,22 @@ const GameApp: React.FC = () => {
                     onOpenLobby={(teamId) => {
                         setSelectedTeamIdForLobby(teamId);
                         setShowTeamEditor(false);
+                    }}
+                    onOpenWizard={() => {
+                        setShowTeamEditor(false);
+                        setShowTeamWizard(true);
+                    }}
+                />
+            )}
+
+            {/* Team Wizard - bulk create teams with QR codes */}
+            {showTeamWizard && (
+                <TeamWizard
+                    gameId={null}
+                    games={games}
+                    onClose={() => setShowTeamWizard(false)}
+                    onTeamsCreated={() => {
+                        // Refresh teams data if needed
                     }}
                 />
             )}

@@ -196,8 +196,49 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   });
 
                   if (code) {
-                      setJoinCode(code.data);
-                      setMode('JOIN_CODE'); // Switch to code view with filled code
+                      const scannedData = code.data;
+
+                      // Check if scanned data is a URL with teamCode parameter
+                      const teamCodeMatch = scannedData.match(/teamCode=([^&]+)/i);
+                      const gameCodeMatch = scannedData.match(/gameCode=([^&]+)/i);
+
+                      if (teamCodeMatch) {
+                        const scannedTeamCode = teamCodeMatch[1].toUpperCase();
+                        localStorage.setItem('geohunt_pending_team_code', scannedTeamCode);
+
+                        // If gameCode is also present, auto-select the game
+                        if (gameCodeMatch) {
+                          const scannedGameCode = gameCodeMatch[1].toUpperCase();
+                          const matchingGame = games.find(g => g.accessCode?.toUpperCase() === scannedGameCode);
+                          if (matchingGame) {
+                            setSelectedGameId(matchingGame.id);
+                          }
+                        }
+
+                        // Look up team and go to CREATE_TEAM (profile entry)
+                        setIsScanning(false);
+                        const findAndJoin = async () => {
+                          for (const g of games) {
+                            const foundTeam = await db.fetchTeamByShortCode(g.id, scannedTeamCode);
+                            if (foundTeam) {
+                              setSelectedGameId(g.id);
+                              setTeamName(foundTeam.name);
+                              setPendingTeamName(foundTeam.name);
+                              setMode('CREATE_TEAM');
+                              return;
+                            }
+                          }
+                          // Team not found — fall back to code entry
+                          setJoinCode(scannedTeamCode);
+                          setMode('JOIN_CODE');
+                        };
+                        findAndJoin();
+                        return;
+                      }
+
+                      // Plain code — go to code view
+                      setJoinCode(scannedData);
+                      setMode('JOIN_CODE');
                       setIsScanning(false);
                       return;
                   }
@@ -310,8 +351,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                         <User className="w-12 h-12 text-white" />
                     </div>
 
-                    <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-1">NEW TEAM</h1>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mb-6">IDENTIFY YOURSELF</p>
+                    <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-1">
+                      {pendingTeamName ? 'JOIN TEAM' : 'NEW TEAM'}
+                    </h1>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mb-6">
+                      {pendingTeamName ? `JOINING: ${pendingTeamName.toUpperCase()}` : 'IDENTIFY YOURSELF'}
+                    </p>
 
                     {/* Game Badge */}
                     {selectedGame && (
@@ -323,11 +368,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     {/* Form Container */}
                     <div className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col gap-6 shadow-xl">
                         
-                        {/* 1. Game Select */}
+                        {/* 1. Game Select — hidden when joining existing team */}
+                        {!pendingTeamName && (
                         <div>
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">SELECT GAME</label>
                             <div className="relative">
-                                <select 
+                                <select
                                     value={selectedGameId}
                                     onChange={(e) => setSelectedGameId(e.target.value)}
                                     className="w-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-white font-bold outline-none appearance-none text-sm uppercase tracking-wide focus:border-blue-500 transition-colors"
@@ -339,34 +385,41 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                             </div>
                         </div>
+                        )}
 
                         {/* 2. Team Name & Avatar */}
                         <div className="space-y-4 pt-4 border-t border-slate-800/50">
                             <div>
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">TEAM NAME</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">
+                                  {pendingTeamName ? 'TEAM (AUTO-JOINED)' : 'TEAM NAME'}
+                                </label>
                                 <div className="relative">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><Users className="w-4 h-4" /></div>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={teamName}
-                                        onChange={(e) => setTeamName(e.target.value)}
+                                        onChange={(e) => !pendingTeamName && setTeamName(e.target.value)}
                                         placeholder="ENTER TEAM NAME..."
-                                        className="w-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide focus:border-blue-500 transition-colors placeholder-slate-600"
+                                        readOnly={!!pendingTeamName}
+                                        className={`w-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide transition-colors placeholder-slate-600 ${
+                                          pendingTeamName ? 'opacity-70 cursor-not-allowed' : 'focus:border-blue-500'
+                                        }`}
                                     />
                                 </div>
                             </div>
 
-                            {/* Team Avatar (New Requirement) */}
-                            <div>
+                            {/* Team Avatar — hidden when joining existing team */}
+                            {!pendingTeamName && (
+                              <div>
                                 <div className="flex justify-between items-center mb-2 ml-1">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TEAM AVATAR</label>
                                     <span className={`text-[9px] font-black uppercase tracking-widest ${teamPhoto ? 'text-green-500' : 'text-slate-600'}`}>{teamPhoto ? 'READY' : 'OPTIONAL'}</span>
                                 </div>
-                                
+
                                 {!teamPhoto ? (
                                     <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-2">
-                                        <AvatarCreator 
-                                            onConfirm={(img) => setTeamPhoto(img)} 
+                                        <AvatarCreator
+                                            onConfirm={(img) => setTeamPhoto(img)}
                                             title="CREATE YOUR TEAM"
                                             placeholder="e.g. Cyberpunk Wolf Pack Neon"
                                         />
@@ -383,7 +436,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                         <Check className="w-6 h-6 text-green-500 mr-2" />
                                     </div>
                                 )}
-                            </div>
+                              </div>
+                            )}
                         </div>
 
                         {/* 3. User Name & Avatar */}
@@ -436,7 +490,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                             disabled={!teamName || !userName || !selectedGameId || !userPhoto}
                             className="w-full bg-slate-700 hover:bg-orange-600 text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] shadow-lg transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed group"
                         >
-                            CREATE LOBBY <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
+                            {pendingTeamName ? 'JOIN TEAM' : 'CREATE LOBBY'} <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
                         </button>
 
                     </div>
