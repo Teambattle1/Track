@@ -269,7 +269,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
             {featuredTemplates.length > 0 ? featuredTemplates.map(tpl => (
               <div className="flex items-center gap-4 group cursor-pointer hover:translate-x-1 transition-transform" onClick={() => { setActiveTab('templates'); }}>
                 <div className="w-12 h-12 bg-[#2d2d2d] rounded-xl overflow-hidden shrink-0 border border-white/5 group-hover:border-blue-500/50 transition-colors">
-                  {tpl.imageUrl ? <img src={tpl.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><LayoutTemplate className="w-5 h-5" /></div>}
+                  {tpl.imageUrl ? <img src={tpl.imageUrl} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-500"><LayoutTemplate className="w-5 h-5" /></div>}
                 </div>
                 <span className="font-bold text-sm text-gray-300 group-hover:text-white transition-colors">{tpl.name}</span>
               </div>
@@ -324,7 +324,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, taskLists, taskLibrary = [
             <div key={list.id} className="group bg-[#111111] border border-white/5 rounded-xl overflow-hidden hover:border-[#00adef]/30 transition-all cursor-pointer shadow-lg hover:-translate-y-1">
               <div className="aspect-[16/9] bg-[#1a1a1a] overflow-hidden relative">
                 {list.imageUrl ? (
-                  <img src={list.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={list.name} />
+                  <img src={list.imageUrl} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={list.name} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-800 bg-[url('https://www.transparenttextures.com/patterns/circles.png')] bg-repeat">
                     <LayoutTemplate className="w-12 h-12 opacity-20" />

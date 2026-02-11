@@ -153,6 +153,7 @@ const PlayzoneSelector: React.FC<PlayzoneSelectorProps> = ({ onClose, onAddToGam
                         {tpl.playgroundData.imageUrl ? (
                           <img
                             src={tpl.playgroundData.imageUrl}
+                            loading="lazy"
                             className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700"
                             alt={tpl.title}
                           />

@@ -35,6 +35,11 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         }
       },
+      esbuild: {
+        // Strip console.log/warn in production builds (~750 statements, saves ~20-30KB)
+        drop: mode === 'production' ? ['debugger'] : [],
+        pure: mode === 'production' ? ['console.log', 'console.warn'] : [],
+      },
       build: {
         chunkSizeWarningLimit: 1600,
         rollupOptions: {

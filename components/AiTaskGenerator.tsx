@@ -1223,7 +1223,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                                             <div key={getUniqueTaskKey(task.id, idx)} className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex gap-4 group hover:border-purple-500/50 transition-colors animate-in slide-in-from-bottom-2 fade-in fill-mode-backwards" style={{ animationDelay: `${idx * 50}ms` }}>
                                                 <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
                                                     {task.task.imageUrl ? (
-                                                        <img src={task.task.imageUrl} className="w-full h-full object-cover rounded-xl" />
+                                                        <img src={task.task.imageUrl} loading="lazy" className="w-full h-full object-cover rounded-xl" />
                                                     ) : (
                                                         <Icon className="w-6 h-6 text-slate-400" />
                                                     )}
@@ -1321,7 +1321,7 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
                                             <div key={getUniqueTaskKey(task.id, idx)} className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex gap-4 group hover:border-green-500/40 transition-colors animate-in slide-in-from-bottom-2 fade-in fill-mode-backwards" style={{ animationDelay: `${idx * 40}ms` }}>
                                                 <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
                                                     {task.task.imageUrl ? (
-                                                        <img src={task.task.imageUrl} className="w-full h-full object-cover rounded-xl" />
+                                                        <img src={task.task.imageUrl} loading="lazy" className="w-full h-full object-cover rounded-xl" />
                                                     ) : (
                                                         <Icon className="w-6 h-6 text-slate-400" />
                                                     )}

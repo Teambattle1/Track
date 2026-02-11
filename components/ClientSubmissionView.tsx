@@ -240,7 +240,7 @@ const ClientSubmissionView: React.FC<ClientSubmissionViewProps> = ({ token }) =>
                             </div>
                             {image && (
                                 <div className="rounded-lg overflow-hidden border border-slate-200">
-                                    <img src={image} className="w-full h-48 object-cover" />
+                                    <img src={image} loading="lazy" className="w-full h-48 object-cover" />
                                 </div>
                             )}
                             <div className="p-3 bg-green-50 rounded-xl border border-green-100">
@@ -282,7 +282,7 @@ const ClientSubmissionView: React.FC<ClientSubmissionViewProps> = ({ token }) =>
                                 <div onClick={() => fileInputRef.current?.click()} className="w-full h-32 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center bg-slate-50 cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all relative overflow-hidden group">
                                     {image ? (
                                         <>
-                                            <img src={image} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                            <img src={image} loading="lazy" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold uppercase">Change Image</div>
                                         </>
                                     ) : (

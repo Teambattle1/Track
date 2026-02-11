@@ -53,7 +53,7 @@ const ScoreManager: React.FC<ScoreManagerProps> = ({ teams, onClose, activeGameI
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
                                     {team.photoUrl ? (
-                                        <img src={team.photoUrl} className="w-full h-full object-cover" />
+                                        <img src={team.photoUrl} loading="lazy" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-slate-600 font-bold text-xs">{team.name.substring(0,2)}</div>
                                     )}

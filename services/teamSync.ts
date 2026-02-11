@@ -26,11 +26,62 @@ type MemberCallback = (members: TeamMember[]) => void;
 type ChatCallback = (message: ChatMessage) => void;
 type GlobalLocationCallback = (locations: { teamId: string, location: Coordinate, name: string, photoUrl?: string, timestamp: number }[]) => void;
 
+// --- OFFLINE VOTE QUEUE (localStorage-backed) ---
+const OFFLINE_QUEUE_KEY = 'teamtrack_offline_vote_queue';
+
+interface QueuedVote {
+  vote: TaskVote;
+  gameId: string;
+  teamKey: string;
+}
+
+function loadOfflineQueue(): QueuedVote[] {
+  try {
+    const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveOfflineQueue(queue: QueuedVote[]) {
+  try {
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+  } catch (e) {
+    console.warn('[TeamSync] Failed to save offline queue:', e);
+  }
+}
+
+function clearOfflineQueue() {
+  localStorage.removeItem(OFFLINE_QUEUE_KEY);
+}
+
+// --- GAME STATE PERSISTENCE (localStorage-backed) ---
+const GAME_STATE_KEY = 'teamtrack_game_state';
+
+export function saveGameStateLocally(gameId: string, state: any) {
+  try {
+    const existing = JSON.parse(localStorage.getItem(GAME_STATE_KEY) || '{}');
+    existing[gameId] = { ...state, savedAt: Date.now() };
+    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(existing));
+  } catch (e) {
+    console.warn('[TeamSync] Failed to save game state locally:', e);
+  }
+}
+
+export function loadGameStateLocally(gameId: string): any | null {
+  try {
+    const existing = JSON.parse(localStorage.getItem(GAME_STATE_KEY) || '{}');
+    const state = existing[gameId];
+    // Expire after 24 hours
+    if (state && Date.now() - state.savedAt < 86400000) return state;
+    return null;
+  } catch { return null; }
+}
+
 class TeamSyncService {
   private channel: any = null;
   private globalChannel: any = null;
   private votesDbChannel: any = null;
-  
+
   private deviceId: string = '';
   private userName: string = 'Anonymous';
   private deviceType: DeviceType = 'mobile'; // Detect device type for responsive team view
@@ -65,7 +116,10 @@ class TeamSyncService {
   private lastMemberListHash: string = '';
 
   // Track latest vote timestamp PER DEVICE to safely ignore out-of-order packets without global clock sync issues
-  private deviceVoteTimestamps: Record<string, number> = {}; 
+  private deviceVoteTimestamps: Record<string, number> = {};
+
+  // Offline queue processing state
+  private isProcessingQueue = false;
 
   constructor() {
     let storedId = localStorage.getItem('geohunt_device_id');
@@ -77,6 +131,60 @@ class TeamSyncService {
 
     // Detect device type on initialization
     this.deviceType = detectDeviceTypeWithUA();
+
+    // Process offline queue when connection restored
+    window.addEventListener('online', () => {
+      console.log('[TeamSync] Back online — flushing offline vote queue');
+      this.processOfflineQueue();
+    });
+
+    // On startup, try to flush any leftover queued votes
+    if (navigator.onLine) {
+      setTimeout(() => this.processOfflineQueue(), 3000);
+    }
+  }
+
+  // --- OFFLINE QUEUE PROCESSING ---
+  private async processOfflineQueue() {
+    if (this.isProcessingQueue) return;
+    const queue = loadOfflineQueue();
+    if (queue.length === 0) return;
+
+    this.isProcessingQueue = true;
+    console.log(`[TeamSync] Processing ${queue.length} queued offline votes`);
+
+    const remaining: QueuedVote[] = [];
+
+    for (const item of queue) {
+      try {
+        const { error } = await supabase.rpc('upsert_task_vote', {
+          p_game_id: item.gameId,
+          p_team_key: item.teamKey,
+          p_point_id: item.vote.pointId,
+          p_device_id: item.vote.deviceId,
+          p_user_name: item.vote.userName,
+          p_answer: item.vote.answer,
+          p_client_timestamp: item.vote.timestamp
+        });
+        if (error) {
+          console.warn('[TeamSync] Failed to flush queued vote:', error.message);
+          remaining.push(item);
+        }
+      } catch (e) {
+        console.warn('[TeamSync] Network error flushing vote, keeping in queue');
+        remaining.push(item);
+        break; // Stop processing if network is still down
+      }
+    }
+
+    if (remaining.length > 0) {
+      saveOfflineQueue(remaining);
+    } else {
+      clearOfflineQueue();
+    }
+
+    this.isProcessingQueue = false;
+    console.log(`[TeamSync] Queue flush complete. ${remaining.length} remaining.`);
   }
 
   public getDeviceId() {
@@ -168,6 +276,11 @@ class TeamSyncService {
 
     // 3. DB-backed votes (authoritative, survives refresh/reconnect)
     this.connectVotesDb();
+
+    // 4. Flush any offline-queued votes from previous session
+    if (navigator.onLine) {
+      setTimeout(() => this.processOfflineQueue(), 1000);
+    }
   }
 
   public connectGlobal(gameId: string) {
@@ -316,8 +429,6 @@ class TeamSyncService {
   }
 
   public castVote(pointId: string, answer: any) {
-    if (!this.channel) return;
-
     const vote: TaskVote = {
       deviceId: this.deviceId,
       userName: this.userName,
@@ -326,10 +437,21 @@ class TeamSyncService {
       timestamp: Date.now()
     };
 
-    // Update local state immediately for low-latency UI.
+    // Update local state immediately for low-latency UI (always works, even offline).
     this.handleIncomingVote(vote);
 
-    // Broadcast for ultra-fast peer updates.
+    if (!navigator.onLine || !this.channel) {
+      // OFFLINE: Queue vote for later sync
+      console.log('[TeamSync] Offline — queuing vote for later sync');
+      if (this.gameId && this.teamKey) {
+        const queue = loadOfflineQueue();
+        queue.push({ vote, gameId: this.gameId, teamKey: this.teamKey });
+        saveOfflineQueue(queue);
+      }
+      return;
+    }
+
+    // ONLINE: Broadcast for ultra-fast peer updates.
     this.channel.send({
       type: 'broadcast',
       event: 'vote',
@@ -337,7 +459,14 @@ class TeamSyncService {
     });
 
     // Persist to DB for durability + authoritative ordering.
-    void this.persistVoteToDb(vote);
+    this.persistVoteToDb(vote).catch((err) => {
+      console.warn('[TeamSync] Vote DB persist failed, queuing for retry:', err);
+      if (this.gameId && this.teamKey) {
+        const queue = loadOfflineQueue();
+        queue.push({ vote, gameId: this.gameId, teamKey: this.teamKey });
+        saveOfflineQueue(queue);
+      }
+    });
   }
 
   public sendChatMessage(gameId: string, message: string, targetTeamId: string | null = null, isUrgent: boolean = false) {

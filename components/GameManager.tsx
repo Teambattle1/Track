@@ -17,7 +17,8 @@ import {
   QrCode,
   Copy,
   Check,
-  Download
+  Download,
+  KeyRound
 } from 'lucide-react';
 import { getGameModeIcon } from '../utils/gameModeIcons';
 import { getGameDisplayId, formatGameNameWithId } from '../utils/gameIdUtils';
@@ -260,6 +261,64 @@ const AccessCodePopup: React.FC<{
   );
 };
 
+// Inline tooltip showing game code + QR on hover
+const GameCodeBadge: React.FC<{ accessCode?: string }> = ({ accessCode }) => {
+  const [qrUrl, setQrUrl] = React.useState<string | null>(null);
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isHovered || !accessCode || qrUrl) return;
+    (async () => {
+      try {
+        const QRCode = (await import('qrcode')).default;
+        const loginUrl = `${window.location.origin}/login?code=${accessCode}`;
+        const url = await QRCode.toDataURL(loginUrl, { width: 160, margin: 1, color: { dark: '#000000', light: '#ffffff' } });
+        setQrUrl(url);
+      } catch { /* QR generation failed */ }
+    })();
+  }, [isHovered, accessCode, qrUrl]);
+
+  if (!accessCode) return null;
+
+  return (
+    <div className="relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-700 cursor-pointer hover:bg-orange-200 dark:hover:bg-orange-900/40 transition-colors whitespace-nowrap">
+        <KeyRound className="w-3 h-3" />
+        {accessCode}
+      </span>
+
+      {/* Hover tooltip */}
+      {isHovered && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl shadow-2xl p-4 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-gray-900 border-l border-t border-gray-300 dark:border-gray-700 rotate-45" />
+
+          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 text-center">Player Login Code</p>
+
+          <div className="bg-gray-900 dark:bg-black/40 rounded-lg p-3 text-center mb-3">
+            <span className="text-2xl font-black text-orange-500 tracking-[0.3em]">{accessCode}</span>
+          </div>
+
+          <div className="flex justify-center">
+            {qrUrl ? (
+              <div className="bg-white p-2 rounded-lg border border-gray-200">
+                <img src={qrUrl} alt="Game QR" className="w-32 h-32" />
+              </div>
+            ) : (
+              <div className="w-32 h-32 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center animate-pulse">
+                <QrCode className="w-8 h-8 text-gray-400" />
+              </div>
+            )}
+          </div>
+
+          <p className="text-[8px] text-gray-500 text-center mt-2 font-bold uppercase tracking-wider">
+            /login?code={accessCode}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const GameSummaryCard: React.FC<{
   game?: Game | null;
   isActive: boolean;
@@ -317,7 +376,7 @@ const GameSummaryCard: React.FC<{
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-bold text-gray-800 dark:text-white uppercase truncate">
               <span className="text-orange-600 dark:text-orange-400 font-black">[{getGameDisplayId(game.id)}]</span> {game.name || 'Unnamed Game'}
               {game.identificator && (
@@ -333,6 +392,7 @@ const GameSummaryCard: React.FC<{
                 </span>
               );
             })()}
+            <GameCodeBadge accessCode={game.accessCode} />
           </div>
           <p className="text-xs text-gray-500 truncate">
             {sessionDate.toLocaleDateString()} • {(game.points?.length || 0)} Tasks{game.gameMode !== 'playzone' ? ` • ${mapTaskCount} On map` : ''} • {zoneCount} Zones

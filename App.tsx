@@ -54,6 +54,7 @@ import ClientGameChooser from './components/ClientGameChooser';
 import Access from './components/Access';
 import TeamEditorModal from './components/TeamEditorModal';
 import TeamLobbyChooser from './components/TeamLobbyChooser';
+import PlayerLogin from './components/PlayerLogin';
 import MediaApprovalNotification from './components/MediaApprovalNotification';
 import MediaRejectionPopup from './components/MediaRejectionPopup';
 import RankingModal from './components/RankingModal';
@@ -148,6 +149,7 @@ const GameApp: React.FC = () => {
   const [clientGameId, setClientGameId] = useState<string | null>(null);
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [showAccess, setShowAccess] = useState(false);
+  const [showPlayerLogin, setShowPlayerLogin] = useState(() => window.location.pathname === '/login');
   const [showPlayzoneChoiceModal, setShowPlayzoneChoiceModal] = useState(false);
   const [showPlayzoneSelector, setShowPlayzoneSelector] = useState(false);
   const [showAroundTheWorldDashboard, setShowAroundTheWorldDashboard] = useState(false);
@@ -374,10 +376,7 @@ const GameApp: React.FC = () => {
   // --- INITIALIZATION ---
   useEffect(() => {
     const init = async () => {
-      // Redirect /login URL to home - no login required
-      if (window.location.pathname === '/login') {
-        window.history.pushState({}, '', '/');
-      }
+      // /login URL is handled by showPlayerLogin state (initialized in useState)
 
       try {
         // Attempt to load data without blocking on connection test
@@ -434,6 +433,34 @@ const GameApp: React.FC = () => {
       localStorage.removeItem('activeGameId');
     }
   }, [activeGameId]);
+
+  // --- FLUSH PENDING SAVES WHEN BACK ONLINE ---
+  useEffect(() => {
+    const flushPendingSaves = async () => {
+      try {
+        const pendingSaves = JSON.parse(localStorage.getItem('teamtrack_pending_saves') || '[]');
+        if (pendingSaves.length === 0) return;
+        console.log(`[App] Back online — flushing ${pendingSaves.length} pending game saves`);
+        for (const pending of pendingSaves) {
+          const backup = localStorage.getItem(`teamtrack_game_backup_${pending.id}`);
+          if (backup) {
+            try {
+              await db.saveGame(JSON.parse(backup));
+              localStorage.removeItem(`teamtrack_game_backup_${pending.id}`);
+            } catch (e) {
+              console.warn(`[App] Failed to flush pending save for ${pending.id}:`, e);
+            }
+          }
+        }
+        localStorage.removeItem('teamtrack_pending_saves');
+      } catch (e) { /* non-critical */ }
+    };
+
+    window.addEventListener('online', flushPendingSaves);
+    // Also try on mount if we're online
+    if (navigator.onLine) flushPendingSaves();
+    return () => window.removeEventListener('online', flushPendingSaves);
+  }, []);
 
   // --- DEMO TEAMS GENERATION FOR EDIT MODE (Lobby Preview) ---
   useEffect(() => {
@@ -975,8 +1002,27 @@ const GameApp: React.FC = () => {
           setActiveGame(gameToSave);
       }
 
-      // Then save to database in background
-      await db.saveGame(gameToSave);
+      // Backup to localStorage for offline resilience
+      try {
+          localStorage.setItem(`teamtrack_game_backup_${gameToSave.id}`, JSON.stringify(gameToSave));
+      } catch (e) { /* localStorage full — non-critical */ }
+
+      // Then save to database in background with error handling + retry
+      try {
+          await db.saveGame(gameToSave);
+      } catch (error: any) {
+          console.error('[App] Failed to save game to database:', error);
+          // Queue for retry if offline
+          if (!navigator.onLine) {
+              try {
+                  const pendingSaves = JSON.parse(localStorage.getItem('teamtrack_pending_saves') || '[]');
+                  // Keep only latest save per game
+                  const filtered = pendingSaves.filter((s: any) => s.id !== gameToSave.id);
+                  filtered.push({ id: gameToSave.id, savedAt: Date.now() });
+                  localStorage.setItem('teamtrack_pending_saves', JSON.stringify(filtered));
+              } catch (e) { /* localStorage full */ }
+          }
+      }
   };
 
   const handleSaveGameTemplate = async () => {
@@ -1832,10 +1878,28 @@ const GameApp: React.FC = () => {
       return <ClientSubmissionView token={submissionToken} />;
   }
 
-  // Login page removed - no login required for gamemaster access
-  // Redirect /login URL to home if someone navigates there directly
-  if (window.location.pathname === '/login') {
-      window.history.pushState({}, '', '/');
+  // Player Login page - accessible at /login for players to enter game
+  if (showPlayerLogin) {
+      return (
+          <PlayerLogin
+              onComplete={(gameId, teamName, userName, teamPhoto) => {
+                  setShowPlayerLogin(false);
+                  setActiveGameId(gameId);
+                  teamSync.connect(gameId, teamName, userName);
+                  setMode(GameMode.PLAY);
+                  setShowLanding(false);
+                  if (window.location.pathname === '/login') {
+                      window.history.pushState({}, '', '/');
+                  }
+              }}
+              onBack={() => {
+                  setShowPlayerLogin(false);
+                  if (window.location.pathname === '/login') {
+                      window.history.pushState({}, '', '/');
+                  }
+              }}
+          />
+      );
   }
 
   // Render fullscreen overlay on all screens

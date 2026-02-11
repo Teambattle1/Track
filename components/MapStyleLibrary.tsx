@@ -366,6 +366,7 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                                 {getStylePreview(style) ? (
                                                     <img
                                                         src={getStylePreview(style)}
+                                                        loading="lazy"
                                                         alt={getStyleLabel(style)}
                                                         className={`w-full h-32 object-cover ${style.className || ''}`}
                                                     />
@@ -472,6 +473,7 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                                     {style.previewUrl ? (
                                                         <img
                                                             src={style.previewUrl}
+                                                            loading="lazy"
                                                             alt={style.name}
                                                             className="w-full h-32 object-cover"
                                                         />
@@ -522,6 +524,7 @@ const MapStyleLibrary: React.FC<MapStyleLibraryProps> = ({ onClose }) => {
                                                 <div className="relative">
                                                     <img
                                                         src={style.preview}
+                                                        loading="lazy"
                                                         alt={style.label}
                                                         className={`w-full h-32 object-cover grayscale ${style.className || ''}`}
                                                     />

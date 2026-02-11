@@ -20,12 +20,12 @@ const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({ onOnline, onOffline
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      
+
       if (wasOffline) {
         setShowReconnected(true);
         setTimeout(() => setShowReconnected(false), 3000);
       }
-      
+
       if (onOnline) onOnline();
     };
 
@@ -35,12 +35,22 @@ const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({ onOnline, onOffline
       if (onOffline) onOffline();
     };
 
+    // Listen for service worker sync completion
+    const handleSWMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'SYNC_COMPLETE') {
+        setShowReconnected(true);
+        setTimeout(() => setShowReconnected(false), 3000);
+      }
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    navigator.serviceWorker?.addEventListener('message', handleSWMessage);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      navigator.serviceWorker?.removeEventListener('message', handleSWMessage);
     };
   }, [wasOffline, onOnline, onOffline]);
 

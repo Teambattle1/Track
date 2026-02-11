@@ -55,7 +55,7 @@ const PlaygroundLibraryModal: React.FC<PlaygroundLibraryModalProps> = ({ onClose
                             <div key={tpl.id} className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all group flex flex-col">
                                 <div className="aspect-video bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
                                     {tpl.playgroundData.imageUrl ? (
-                                        <img src={tpl.playgroundData.imageUrl} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt={tpl.title} />
+                                        <img src={tpl.playgroundData.imageUrl} loading="lazy" className="w-full h-full object-cover transition-transform group-hover:scale-105" alt={tpl.title} />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold uppercase">NO IMAGE</div>
                                     )}

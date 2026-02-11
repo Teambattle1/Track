@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Game, TaskList, MapStyleId, GameChangeLogEntry } from '../types';
-import { X, Search, Gamepad2, Plus, Calendar, MapPin, RefreshCw, Settings, Layers, Clock, Hourglass, StopCircle, LayoutGrid, Map as MapIcon, List, LayoutList, History, User, FileClock, ChevronDown, PlayCircle } from 'lucide-react';
+import { X, Search, Gamepad2, Plus, Calendar, MapPin, RefreshCw, Settings, Layers, Clock, Hourglass, StopCircle, LayoutGrid, Map as MapIcon, List, LayoutList, History, User, FileClock, ChevronDown, PlayCircle, KeyRound, QrCode } from 'lucide-react';
 import { getFlag } from '../utils/i18n';
 import { getGameModeIcon } from '../utils/gameModeIcons';
 
@@ -76,7 +76,75 @@ const GameHistoryModal = ({ logs, gameName, onClose }: { logs: GameChangeLogEntr
     </div>
 );
 
-const GameChooser: React.FC<GameChooserProps> = ({ 
+// Tooltip showing game access code + QR on hover
+const GameCodeTooltip: React.FC<{ accessCode?: string; gameName?: string }> = ({ accessCode, gameName }) => {
+    const [qrUrl, setQrUrl] = React.useState<string | null>(null);
+    const [isHovered, setIsHovered] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!isHovered || !accessCode || qrUrl) return;
+        (async () => {
+            try {
+                const QRCode = (await import('qrcode')).default;
+                const loginUrl = `${window.location.origin}/login?code=${accessCode}`;
+                const url = await QRCode.toDataURL(loginUrl, { width: 160, margin: 1, color: { dark: '#000000', light: '#ffffff' } });
+                setQrUrl(url);
+            } catch (err) { /* QR generation failed silently */ }
+        })();
+    }, [isHovered, accessCode, qrUrl]);
+
+    if (!accessCode) {
+        return (
+            <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-800/50 rounded border border-slate-700/50 opacity-40">
+                <KeyRound className="w-3 h-3 text-slate-600" />
+                <span className="text-[9px] font-bold text-slate-600 uppercase">No Code</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-500/15 rounded-lg border border-orange-500/30 cursor-pointer hover:bg-orange-500/25 transition-colors">
+                <KeyRound className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-[10px] font-black text-orange-400 tracking-wider">{accessCode}</span>
+            </div>
+
+            {/* Hover tooltip */}
+            {isHovered && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/50 p-4 min-w-[200px] animate-in fade-in duration-150" onClick={(e) => e.stopPropagation()}>
+                    {/* Arrow */}
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-l border-t border-slate-700 rotate-45" />
+
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 text-center">Player Login Code</p>
+
+                    {/* Code display */}
+                    <div className="bg-black/40 rounded-lg p-3 text-center mb-3">
+                        <span className="text-2xl font-black text-orange-400 tracking-[0.3em]">{accessCode}</span>
+                    </div>
+
+                    {/* QR Code */}
+                    <div className="flex justify-center">
+                        {qrUrl ? (
+                            <div className="bg-white p-2 rounded-lg">
+                                <img src={qrUrl} alt="Game QR" className="w-32 h-32" />
+                            </div>
+                        ) : (
+                            <div className="w-32 h-32 bg-slate-800 rounded-lg flex items-center justify-center animate-pulse">
+                                <QrCode className="w-8 h-8 text-slate-600" />
+                            </div>
+                        )}
+                    </div>
+
+                    <p className="text-[8px] text-slate-600 text-center mt-2 font-bold uppercase tracking-wider">
+                        /login?code={accessCode}
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const GameChooser: React.FC<GameChooserProps> = ({
     games, 
     taskLists, 
     onSelectGame, 
@@ -247,6 +315,7 @@ const GameChooser: React.FC<GameChooserProps> = ({
                                                     <TimerIcon className="w-3 h-3 text-orange-400" />
                                                     <span className="text-[9px] font-bold text-slate-400 uppercase">{timerInfo.label}</span>
                                                 </div>
+                                                <GameCodeTooltip accessCode={game.accessCode} gameName={game.name} />
                                             </div>
                                             <div className="flex flex-wrap items-center gap-4 mt-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
                                                 <span className="flex items-center gap-1.5 truncate"><MapPin className="w-3 h-3 text-indigo-500" /> CLIENT: {game.client?.name || 'N/A'}</span>
@@ -326,17 +395,20 @@ const GameChooser: React.FC<GameChooserProps> = ({
 
                                     <div className="relative z-10 flex flex-col h-full p-5">
                                         
-                                        {/* Top Row: Icon + Flag */}
+                                        {/* Top Row: Mode + Code + Flag */}
                                         <div className="flex justify-between items-start mb-3">
-                                            {(() => {
-                                                const { Icon, label, color, bgColor, borderColor } = getGameModeIcon(game.gameMode);
-                                                return (
-                                                    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${color} ${bgColor} ${borderColor}`}>
-                                                        <Icon className="w-4 h-4" />
-                                                        <span className="text-[9px] font-black uppercase">{label}</span>
-                                                    </div>
-                                                );
-                                            })()}
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {(() => {
+                                                    const { Icon, label, color, bgColor, borderColor } = getGameModeIcon(game.gameMode);
+                                                    return (
+                                                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${color} ${bgColor} ${borderColor}`}>
+                                                            <Icon className="w-4 h-4" />
+                                                            <span className="text-[9px] font-black uppercase">{label}</span>
+                                                        </div>
+                                                    );
+                                                })()}
+                                                <GameCodeTooltip accessCode={game.accessCode} gameName={game.name} />
+                                            </div>
                                             {/* Large Flag */}
                                             <div className="text-3xl filter drop-shadow-md" title={`Language: ${game.language}`}>
                                                 {getFlag(game.language)}

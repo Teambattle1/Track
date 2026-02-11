@@ -2218,7 +2218,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                             {/* Thumbnail */}
                                             <div className="w-12 h-12 bg-slate-800 rounded-lg flex-shrink-0 overflow-hidden">
                                                 {list.imageUrl ? (
-                                                    <img src={list.imageUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                                    <img src={list.imageUrl} loading="lazy" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-slate-600">
                                                         <LayoutList className="w-6 h-6" />
@@ -2332,7 +2332,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                                         <div key={list.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg group hover:border-blue-500/50 transition-all flex flex-col h-full">
                                             <div className="h-32 bg-slate-800 relative">
                                                 {list.imageUrl ? (
-                                                    <img src={list.imageUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                                    <img src={list.imageUrl} loading="lazy" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-slate-600">
                                                         <LayoutList className="w-10 h-10" />
