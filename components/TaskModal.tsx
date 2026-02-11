@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { GamePoint, TaskVote, GameMode, TimelineItem, Game } from '../types';
-import { X, CheckCircle, Lock, MapPin, Glasses, AlertCircle, ChevronDown, ChevronsUpDown, Users, AlertTriangle, Loader2, ThumbsUp, Zap, Edit2, Skull, ArrowRight, ArrowDown, Lightbulb, Shield, Camera, Video, Upload } from 'lucide-react';
+import { X, CheckCircle, Lock, MapPin, Glasses, AlertCircle, ChevronDown, ChevronsUpDown, Users, AlertTriangle, Loader2, ThumbsUp, Zap, Edit2, Skull, ArrowRight, ArrowDown, Lightbulb, Shield, Camera, Video, Upload, Vote } from 'lucide-react';
 import { teamSync } from '../services/teamSync';
 import DOMPurify from 'dompurify';
 import { isAnswerAcceptable, getAttemptMessage } from '../utils/stringMatch';
@@ -24,6 +24,7 @@ interface TaskModalProps {
   onTaskIncorrect?: () => void;
   game?: Game | null;
   isCaptain?: boolean;
+  onOpenLobby?: () => void;
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({
@@ -39,7 +40,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
     onTaskOpen,
     onTaskIncorrect,
     game,
-    isCaptain = false
+    isCaptain = false,
+    onOpenLobby
 }) => {
   // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   const [answer, setAnswer] = useState('');
@@ -1278,6 +1280,46 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     </button>
                   </div>
                 ) : point.task.type === 'timeline' ? renderTimelineGame() : (
+                    // TEAM VOTE BLOCKER — block non-instructors on team-voting tasks
+                    point.teamVotingEnabled && !isInstructor && !isSimulation ? (
+                      <div className="text-center py-8 space-y-6">
+                        <div className="inline-flex items-center justify-center w-24 h-24 bg-orange-500/20 rounded-full mb-2">
+                          <Vote className="w-12 h-12 text-orange-400" />
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-widest">
+                          TEAMTASK
+                        </h3>
+                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          ENTER TEAMLOBBY FOR VOTE
+                        </p>
+                        {/* Vote code hint */}
+                        <div className="inline-block bg-gray-100 dark:bg-gray-800 rounded-xl px-6 py-3 border-2 border-orange-500/30">
+                          <p className="text-xs text-orange-500 font-black uppercase tracking-widest mb-1">TASK</p>
+                          <p className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                            {point.title || `#${game?.points ? game.points.indexOf(point) + 1 : '?'}`}
+                          </p>
+                          <p className="text-xs text-gray-500 font-bold uppercase mt-1">{point.points} PTS</p>
+                        </div>
+                        {onOpenLobby && (
+                          <button
+                            type="button"
+                            onClick={() => { onClose(); onOpenLobby(); }}
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 px-6 rounded-xl transition-colors shadow-lg shadow-orange-600/20 uppercase tracking-wider text-sm"
+                          >
+                            OPEN TEAM LOBBY
+                          </button>
+                        )}
+                        {!onOpenLobby && (
+                          <button
+                            type="button"
+                            onClick={() => onClose()}
+                            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition-colors uppercase text-sm"
+                          >
+                            CLOSE
+                          </button>
+                        )}
+                      </div>
+                    ) :
                     isInstructor ? (
                         <div className="opacity-80 pointer-events-none">
                             {renderInput()}

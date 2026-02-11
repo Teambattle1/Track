@@ -99,6 +99,16 @@ export const getCountdownState = (
 };
 
 /**
+ * Generate a 4-character task vote code: first 2 chars of team shortCode + 2-digit task index.
+ * Example: Team "A123" + task index 2 → "A103"
+ */
+export const generateTaskVoteCode = (teamShortCode: string, taskIndex: number): string => {
+  const teamPart = (teamShortCode || 'XX').slice(0, 2).toUpperCase();
+  const taskPart = String(taskIndex + 1).padStart(2, '0');
+  return `${teamPart}${taskPart}`;
+};
+
+/**
  * Format milliseconds into HH:MM:SS display string.
  */
 export const formatCountdown = (ms: number): string => {

@@ -27,10 +27,19 @@ const Access: React.FC<AccessProps> = ({ onGameSelected, onBack }) => {
     // Support ?teamCode=M456&gameCode=GAME2026 from team invite links
     const gameCode = params.get('gameCode') || params.get('code');
     const teamCode = params.get('teamCode');
+    const action = params.get('action');
+    const taskId = params.get('taskId');
+    const voteCode = params.get('voteCode');
 
     if (teamCode) {
       // Store team code for the registration flow to pick up
       localStorage.setItem('geohunt_pending_team_code', teamCode.toUpperCase());
+    }
+
+    // Store pending vote task for lobby auto-navigation
+    if (action === 'teamvote' && taskId) {
+      localStorage.setItem('geohunt_pending_vote_task', taskId);
+      if (voteCode) localStorage.setItem('geohunt_pending_vote_code', voteCode.toUpperCase());
     }
 
     if (gameCode) {

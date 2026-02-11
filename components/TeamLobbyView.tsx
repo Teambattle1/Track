@@ -4,15 +4,16 @@ import {
   QrCode, Copy, Check, RefreshCw, Clock, Wifi, WifiOff,
   Smartphone, Tablet, Monitor, Trophy, ChevronDown, ChevronUp,
   Trash2, MessageSquare, BarChart3, Send, CheckCircle, Circle,
-  AlertCircle, Pencil, XCircle, Target
+  AlertCircle, Pencil, XCircle, Target, RotateCcw, Vote
 } from 'lucide-react';
-import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage } from '../types';
+import { Team, Game, GamePoint, TeamMember, TeamMemberData, TaskVote, ChatMessage } from '../types';
 import { teamSync } from '../services/teamSync';
 import * as db from '../services/db';
-import { getCountdownState, formatCountdown, CountdownInfo } from '../utils/teamUtils';
+import { getCountdownState, formatCountdown, CountdownInfo, generateTaskVoteCode } from '../utils/teamUtils';
 import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
 import MessagePopup from './MessagePopup';
+import DOMPurify from 'dompurify';
 
 // Notification sound using Web Audio API (no external files)
 const playNotificationSound = () => {
@@ -50,6 +51,7 @@ interface TeamLobbyViewProps {
   game?: Game;
   allTeams?: Team[];
   isCaptain?: boolean;
+  onCompleteTask?: (pointId: string, score: number) => void;
 }
 
 const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
@@ -58,7 +60,8 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   teamId,
   game,
   allTeams,
-  isCaptain: isCaptainProp
+  isCaptain: isCaptainProp,
+  onCompleteTask
 }) => {
   const [team, setTeam] = useState<Team | null>(null);
   const [liveMembers, setLiveMembers] = useState<TeamMember[]>([]);
@@ -75,6 +78,12 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   // --- VOTE STATE ---
   const [taskVotes, setTaskVotes] = useState<Record<string, TaskVote[]>>({});
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
+  const [selectedVoteTask, setSelectedVoteTask] = useState<string | null>(null);
+  const [captainAnswer, setCaptainAnswer] = useState<string>('');
+  const [captainSelectedOptions, setCaptainSelectedOptions] = useState<string[]>([]);
+  const [captainSliderValue, setCaptainSliderValue] = useState<number>(50);
+  const [captainSelectedAnswer, setCaptainSelectedAnswer] = useState<string | null>(null);
+  const [voteQrDataUrls, setVoteQrDataUrls] = useState<Record<string, string>>({});
 
   // --- CHAT STATE ---
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -112,6 +121,18 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     if (!isOpen) return;
     loadTeam();
   }, [isOpen, teamId, loadTeam]);
+
+  // Check for pending vote task from deep link
+  useEffect(() => {
+    if (!isOpen) return;
+    const pendingTaskId = localStorage.getItem('geohunt_pending_vote_task');
+    if (pendingTaskId) {
+      localStorage.removeItem('geohunt_pending_vote_task');
+      localStorage.removeItem('geohunt_pending_vote_code');
+      setActiveTab('VOTES');
+      setSelectedVoteTask(pendingTaskId);
+    }
+  }, [isOpen]);
 
   // Subscribe to live members via teamSync
   useEffect(() => {
@@ -343,6 +364,105 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     await db.updateTeamCaptain(team.id, deviceId);
     teamSync.broadcastCaptainChange(deviceId, memberName);
     loadTeam();
+  };
+
+  // Generate QR codes for voting tasks
+  useEffect(() => {
+    if (!isOpen || !game?.points || !team) return;
+    const voteTasks = game.points.filter(p => p.teamVotingEnabled);
+    if (voteTasks.length === 0) return;
+
+    const generateQrs = async () => {
+      const urls: Record<string, string> = {};
+      for (const point of voteTasks) {
+        const taskIndex = game.points.indexOf(point);
+        const voteCode = generateTaskVoteCode(team.shortCode || '', taskIndex);
+        const url = `${window.location.origin}?action=teamvote&gameCode=${game.accessCode || ''}&teamCode=${team.shortCode || ''}&taskId=${point.id}&voteCode=${voteCode}`;
+        try {
+          urls[point.id] = await QRCode.toDataURL(url, {
+            width: 180, margin: 1,
+            color: { dark: '#ffffff', light: '#00000000' }
+          });
+        } catch {}
+      }
+      setVoteQrDataUrls(urls);
+    };
+    generateQrs();
+  }, [isOpen, game?.points, team]);
+
+  // Captain: cast own vote for selected task
+  const handleCaptainVote = (pointId: string) => {
+    const point = game?.points?.find(p => p.id === pointId);
+    if (!point) return;
+
+    let finalAnswer: any = captainAnswer;
+    if (point.task.type === 'checkbox' || point.task.type === 'multi_select_dropdown') {
+      finalAnswer = captainSelectedOptions;
+    } else if (point.task.type === 'slider') {
+      finalAnswer = captainSliderValue;
+    }
+
+    teamSync.castVote(pointId, finalAnswer);
+  };
+
+  // Captain: submit selected team answer
+  const handleSubmitTeamAnswer = (pointId: string) => {
+    const point = game?.points?.find(p => p.id === pointId);
+    if (!point || !onCompleteTask) return;
+
+    const votes = taskVotes[pointId] || [];
+    if (votes.length === 0) return;
+
+    // Use captain's selected answer, or if consensus just use first vote
+    let teamAnswer: any;
+    if (captainSelectedAnswer) {
+      // Find the vote with this answer
+      const matchingVote = votes.find(v => {
+        const ansStr = typeof v.answer === 'string' ? v.answer : JSON.stringify(v.answer);
+        return ansStr === captainSelectedAnswer;
+      });
+      teamAnswer = matchingVote?.answer || votes[0].answer;
+    } else {
+      teamAnswer = votes[0].answer;
+    }
+
+    // Validate answer
+    let isCorrect = false;
+    if (point.task.type === 'multiple_choice' || point.task.type === 'boolean' || point.task.type === 'dropdown') {
+      isCorrect = String(teamAnswer) === String(point.task.answer);
+    } else if (point.task.type === 'checkbox' || point.task.type === 'multi_select_dropdown') {
+      const correct = point.task.correctAnswers || [];
+      const sortedSelected = [...(Array.isArray(teamAnswer) ? teamAnswer : [])].sort();
+      const sortedCorrect = [...correct].sort();
+      isCorrect = JSON.stringify(sortedSelected) === JSON.stringify(sortedCorrect);
+    } else if (point.task.type === 'slider') {
+      const val = Number(teamAnswer);
+      const target = point.task.range?.correctValue || 0;
+      const tolerance = point.task.range?.tolerance || 0;
+      isCorrect = Math.abs(val - target) <= tolerance;
+    } else {
+      // Text comparison
+      const val = String(teamAnswer).trim().toLowerCase();
+      const correct = String(point.task.answer || '').trim().toLowerCase();
+      isCorrect = val === correct;
+    }
+
+    const score = isCorrect
+      ? (point.pointsOnCorrect ?? point.points)
+      : (point.pointsOnIncorrect ?? 0);
+
+    if (!confirm(`SUBMIT TEAM ANSWER: "${typeof teamAnswer === 'string' ? teamAnswer : JSON.stringify(teamAnswer)}"?\n\n${isCorrect ? '✓ CORRECT' : '✗ INCORRECT'} — ${score} PTS`)) return;
+
+    onCompleteTask(pointId, score);
+    setSelectedVoteTask(null);
+    setCaptainSelectedAnswer(null);
+  };
+
+  // Captain: trigger revote
+  const handleRevote = (pointId: string) => {
+    if (!confirm('CLEAR ALL VOTES AND REQUEST REVOTE?')) return;
+    teamSync.broadcastRevote(pointId);
+    setCaptainSelectedAnswer(null);
   };
 
   const handleSendChat = () => {
@@ -867,121 +987,308 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
           )}
 
           {/* ==================== VOTES TAB ==================== */}
-          {activeTab === 'VOTES' && (
-            <div className="space-y-3">
-              {votingTasks.length === 0 ? (
-                <div className="text-center py-16">
-                  <BarChart3 className="w-14 h-14 text-orange-500/30 mx-auto mb-3" />
-                  <p className="text-base font-black text-white uppercase tracking-wider">NO ACTIVE VOTES</p>
-                  <p className="text-sm text-slate-300 font-bold uppercase mt-2">
-                    TASKS WITH TEAM VOTING ENABLED WILL APPEAR HERE
-                  </p>
-                </div>
-              ) : (
-                votingTasks.map(point => {
-                  const votes = taskVotes[point.id] || [];
-                  const isExpanded = expandedTask === point.id;
-                  const activeCount = activeMembers.length || 1;
-                  const voteProgress = Math.min(votes.length / activeCount, 1);
+          {activeTab === 'VOTES' && (() => {
+            const selectedPoint = selectedVoteTask ? game?.points?.find(p => p.id === selectedVoteTask) : null;
+            const selectedVotes = selectedVoteTask ? (taskVotes[selectedVoteTask] || []) : [];
+            const activeCount = activeMembers.length || 1;
 
-                  // Check consensus
-                  let hasConsensus = false;
-                  let consensusAnswer: string | null = null;
-                  if (votes.length >= activeCount && votes.length > 0) {
-                    const firstNorm = normalizeAnswer(votes[0].answer);
-                    hasConsensus = votes.every(v => normalizeAnswer(v.answer) === firstNorm);
-                    if (hasConsensus) {
-                      consensusAnswer = typeof votes[0].answer === 'string'
-                        ? votes[0].answer
-                        : JSON.stringify(votes[0].answer);
-                    }
-                  }
+            // Check consensus for selected task
+            let hasConsensus = false;
+            let consensusAnswer: string | null = null;
+            if (selectedVotes.length >= activeCount && selectedVotes.length > 0) {
+              const firstNorm = normalizeAnswer(selectedVotes[0].answer);
+              hasConsensus = selectedVotes.every(v => normalizeAnswer(v.answer) === firstNorm);
+              if (hasConsensus) {
+                consensusAnswer = typeof selectedVotes[0].answer === 'string'
+                  ? selectedVotes[0].answer
+                  : JSON.stringify(selectedVotes[0].answer);
+              }
+            }
 
-                  // Who voted, who hasn't
-                  const votedDeviceIds = new Set(votes.map(v => v.deviceId));
-                  const notVoted = activeMembers.filter(m => !votedDeviceIds.has(m.deviceId));
+            const votedDeviceIds = new Set(selectedVotes.map(v => v.deviceId));
+            const notVoted = activeMembers.filter(m => !votedDeviceIds.has(m.deviceId));
 
-                  return (
-                    <div key={point.id} className="bg-black/30 border-2 border-orange-500/20 rounded-2xl overflow-hidden">
-                      <button
-                        onClick={() => setExpandedTask(isExpanded ? null : point.id)}
-                        className="w-full p-4 flex items-center gap-3 text-left hover:bg-orange-500/5 transition-colors"
-                      >
-                        {/* Status Icon */}
-                        {hasConsensus ? (
-                          <CheckCircle className="w-7 h-7 text-orange-400 shrink-0" />
-                        ) : votes.length > 0 ? (
-                          <AlertCircle className="w-7 h-7 text-orange-300 shrink-0 animate-pulse" />
-                        ) : (
-                          <Circle className="w-7 h-7 text-slate-400 shrink-0" />
-                        )}
+            // Unique answers for captain selection
+            const uniqueAnswers: { answer: string; count: number; voters: string[] }[] = [];
+            selectedVotes.forEach(v => {
+              const ansStr = typeof v.answer === 'string' ? v.answer : JSON.stringify(v.answer);
+              const existing = uniqueAnswers.find(a => a.answer === ansStr);
+              if (existing) { existing.count++; existing.voters.push(v.userName); }
+              else uniqueAnswers.push({ answer: ansStr, count: 1, voters: [v.userName] });
+            });
+            uniqueAnswers.sort((a, b) => b.count - a.count);
 
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-black text-white uppercase tracking-wider truncate">
-                            {point.title || `TASK ${point.id.slice(-4)}`}
-                          </p>
-                          <p className="text-xs text-orange-300 font-bold uppercase tracking-wider mt-1">
-                            {hasConsensus ? 'CONSENSUS REACHED' :
-                             votes.length > 0 ? `${votes.length}/${activeCount} VOTED` :
-                             'NO VOTES YET'}
-                          </p>
+            // Vote code for selected task
+            const selectedTaskIndex = selectedPoint ? (game?.points?.indexOf(selectedPoint) ?? 0) : 0;
+            const selectedVoteCode = selectedPoint ? generateTaskVoteCode(team?.shortCode || '', selectedTaskIndex) : '';
+
+            // Voting mode
+            const votingMode = selectedPoint?.teamVotingMode || game?.taskConfig?.teamVotingMode || 'captain_submit';
+
+            return (
+              <div className="space-y-3">
+                {votingTasks.length === 0 ? (
+                  <div className="text-center py-16">
+                    <BarChart3 className="w-14 h-14 text-orange-500/30 mx-auto mb-3" />
+                    <p className="text-base font-black text-white uppercase tracking-wider">NO ACTIVE VOTES</p>
+                    <p className="text-sm text-slate-300 font-bold uppercase mt-2">
+                      TASKS WITH TEAM VOTING ENABLED WILL APPEAR HERE
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Task pills - horizontal scrollable */}
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                      {votingTasks.map((point, idx) => {
+                        const votes = taskVotes[point.id] || [];
+                        const isSelected = selectedVoteTask === point.id;
+                        const taskVoteCode = generateTaskVoteCode(team?.shortCode || '', game?.points?.indexOf(point) ?? idx);
+                        const taskActiveCount = activeMembers.length || 1;
+                        const taskHasConsensus = votes.length >= taskActiveCount && votes.length > 0 &&
+                          votes.every(v => normalizeAnswer(v.answer) === normalizeAnswer(votes[0].answer));
+
+                        return (
+                          <button
+                            key={point.id}
+                            onClick={() => {
+                              setSelectedVoteTask(isSelected ? null : point.id);
+                              setCaptainAnswer('');
+                              setCaptainSelectedOptions([]);
+                              setCaptainSelectedAnswer(null);
+                            }}
+                            className={`shrink-0 px-4 py-3 rounded-xl border-2 font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+                              isSelected
+                                ? 'bg-orange-500/20 border-orange-500/50 text-orange-400'
+                                : taskHasConsensus
+                                ? 'bg-emerald-900/20 border-emerald-500/30 text-emerald-400'
+                                : votes.length > 0
+                                ? 'bg-white/5 border-orange-500/20 text-white'
+                                : 'bg-white/5 border-white/10 text-slate-300'
+                            }`}
+                          >
+                            {taskHasConsensus ? <CheckCircle className="w-4 h-4" /> :
+                             votes.length > 0 ? <AlertCircle className="w-4 h-4 animate-pulse" /> :
+                             <Circle className="w-4 h-4" />}
+                            <span className="truncate max-w-[120px]">{point.title || taskVoteCode}</span>
+                            <span className="text-orange-300">{votes.length}/{taskActiveCount}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Selected task detail view */}
+                    {selectedPoint ? (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* LEFT: Task Preview */}
+                        <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5 space-y-4">
+                          <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest flex items-center gap-2">
+                            <BarChart3 className="w-5 h-5" />
+                            TASK PREVIEW
+                          </h2>
+
+                          <div>
+                            <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                              {selectedPoint.title || 'UNTITLED TASK'}
+                            </h3>
+                            <p className="text-xs text-orange-300 font-bold uppercase mt-1">
+                              {selectedPoint.points} PTS · {selectedPoint.task.type.toUpperCase().replace('_', ' ')} · {votingMode === 'require_consensus' ? 'CONSENSUS REQUIRED' : 'CAPTAIN SUBMIT'}
+                            </p>
+                          </div>
+
+                          {/* Question text */}
+                          {selectedPoint.task.question && (
+                            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                              <p className="text-sm text-white font-bold leading-relaxed"
+                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPoint.task.question) }} />
+                            </div>
+                          )}
+
+                          {/* Task image */}
+                          {selectedPoint.task.imageUrl && (
+                            <img src={selectedPoint.task.imageUrl} alt="Task" className="w-full h-auto max-h-48 object-contain rounded-xl border-2 border-white/10" />
+                          )}
+
+                          {/* Captain answer input */}
+                          <div className="space-y-2">
+                            <p className="text-xs font-black text-orange-400 uppercase tracking-widest">YOUR VOTE (CAPTAIN)</p>
+
+                            {/* Multiple choice */}
+                            {selectedPoint.task.type === 'multiple_choice' && selectedPoint.task.options?.map((opt, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setCaptainAnswer(opt)}
+                                className={`w-full p-3 rounded-xl border-2 text-left text-sm font-bold uppercase tracking-wider transition-all ${
+                                  captainAnswer === opt
+                                    ? 'border-orange-500 bg-orange-500/20 text-orange-400'
+                                    : 'border-white/10 text-white hover:bg-white/5'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+
+                            {/* Boolean */}
+                            {selectedPoint.task.type === 'boolean' && (
+                              <div className="flex gap-2">
+                                <button onClick={() => setCaptainAnswer('true')}
+                                  className={`flex-1 p-3 rounded-xl border-2 font-black uppercase text-sm ${captainAnswer === 'true' ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400' : 'border-white/10 text-white'}`}>
+                                  TRUE
+                                </button>
+                                <button onClick={() => setCaptainAnswer('false')}
+                                  className={`flex-1 p-3 rounded-xl border-2 font-black uppercase text-sm ${captainAnswer === 'false' ? 'border-red-500 bg-red-500/20 text-red-400' : 'border-white/10 text-white'}`}>
+                                  FALSE
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Text */}
+                            {selectedPoint.task.type === 'text' && (
+                              <input
+                                type="text"
+                                value={captainAnswer}
+                                onChange={e => setCaptainAnswer(e.target.value)}
+                                placeholder="TYPE YOUR ANSWER..."
+                                className="w-full px-4 py-3 rounded-xl border-2 border-white/20 bg-white/5 text-white font-bold uppercase placeholder:text-slate-400 focus:border-orange-500 outline-none"
+                              />
+                            )}
+
+                            {/* Dropdown */}
+                            {selectedPoint.task.type === 'dropdown' && (
+                              <select
+                                value={captainAnswer}
+                                onChange={e => setCaptainAnswer(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border-2 border-white/20 bg-slate-900 text-white font-bold uppercase focus:border-orange-500 outline-none"
+                              >
+                                <option value="">SELECT...</option>
+                                {selectedPoint.task.options?.map((opt, idx) => (
+                                  <option key={idx} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            )}
+
+                            {/* Checkbox / multi-select */}
+                            {(selectedPoint.task.type === 'checkbox' || selectedPoint.task.type === 'multi_select_dropdown') && selectedPoint.task.options?.map((opt, idx) => (
+                              <label key={idx} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                                captainSelectedOptions.includes(opt) ? 'border-orange-500 bg-orange-500/20' : 'border-white/10 hover:bg-white/5'
+                              }`}>
+                                <input
+                                  type="checkbox"
+                                  checked={captainSelectedOptions.includes(opt)}
+                                  onChange={e => {
+                                    if (e.target.checked) setCaptainSelectedOptions(prev => [...prev, opt]);
+                                    else setCaptainSelectedOptions(prev => prev.filter(o => o !== opt));
+                                  }}
+                                  className="w-5 h-5 rounded border-2 accent-orange-500"
+                                />
+                                <span className="text-sm font-bold text-white uppercase">{opt}</span>
+                              </label>
+                            ))}
+
+                            {/* Slider */}
+                            {selectedPoint.task.type === 'slider' && (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-slate-400">{selectedPoint.task.range?.min || 0}</span>
+                                  <span className="text-2xl font-black text-orange-400">{captainSliderValue}</span>
+                                  <span className="text-xs font-bold text-slate-400">{selectedPoint.task.range?.max || 100}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min={selectedPoint.task.range?.min || 0}
+                                  max={selectedPoint.task.range?.max || 100}
+                                  step={selectedPoint.task.range?.step || 1}
+                                  value={captainSliderValue}
+                                  onChange={e => setCaptainSliderValue(parseInt(e.target.value))}
+                                  className="w-full h-3 rounded-lg appearance-none cursor-pointer accent-orange-500 bg-slate-700"
+                                />
+                              </div>
+                            )}
+
+                            {/* Cast vote button */}
+                            <button
+                              onClick={() => handleCaptainVote(selectedPoint.id)}
+                              disabled={!captainAnswer && captainSelectedOptions.length === 0 && selectedPoint.task.type !== 'slider'}
+                              className="w-full py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-wider text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                            >
+                              <Vote className="w-5 h-5" /> CAST MY VOTE
+                            </button>
+                          </div>
+
+                          {/* QR Code + Vote Code */}
+                          <div className="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center gap-4">
+                            {voteQrDataUrls[selectedPoint.id] && (
+                              <img src={voteQrDataUrls[selectedPoint.id]} alt="Vote QR" className="w-24 h-24 rounded-lg" />
+                            )}
+                            <div>
+                              <p className="text-xs text-orange-400 font-black uppercase tracking-widest">VOTE CODE</p>
+                              <p className="text-3xl font-black text-white tracking-[0.2em] mt-1">{selectedVoteCode}</p>
+                              <p className="text-xs text-slate-300 font-bold uppercase mt-1">SCAN QR OR ENTER CODE TO VOTE</p>
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Progress bar */}
-                        <div className="w-20 shrink-0">
-                          <div className="h-3 bg-slate-800 rounded-full overflow-hidden border border-orange-500/20">
+                        {/* RIGHT: Member Votes */}
+                        <div className="bg-black/30 border-2 border-orange-500/20 rounded-2xl p-5 space-y-4">
+                          <h2 className="text-sm font-black text-orange-400 uppercase tracking-widest flex items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            MEMBER VOTES
+                            <span className="ml-auto text-xs text-orange-300">
+                              {selectedVotes.length}/{activeCount} VOTED
+                            </span>
+                          </h2>
+
+                          {/* Progress bar */}
+                          <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-orange-500/20">
                             <div
-                              className={`h-full rounded-full transition-all ${
-                                hasConsensus ? 'bg-orange-400' : 'bg-orange-600/60'
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                hasConsensus ? 'bg-emerald-500' : 'bg-orange-500'
                               }`}
-                              style={{ width: `${voteProgress * 100}%` }}
+                              style={{ width: `${Math.min(selectedVotes.length / activeCount, 1) * 100}%` }}
                             />
                           </div>
-                          <p className="text-xs text-white font-black text-center mt-1">
-                            {votes.length}/{activeCount}
-                          </p>
-                        </div>
 
-                        {isExpanded ? <ChevronUp className="w-5 h-5 text-orange-400 shrink-0" /> : <ChevronDown className="w-5 h-5 text-white shrink-0" />}
-                      </button>
-
-                      {/* Expanded: Show individual votes */}
-                      {isExpanded && (
-                        <div className="px-4 pb-4 border-t-2 border-orange-500/20 pt-3">
-                          {/* Consensus answer */}
+                          {/* Consensus indicator */}
                           {hasConsensus && consensusAnswer && (
-                            <div className="mb-3 p-4 bg-orange-900/20 border-2 border-orange-500/40 rounded-xl">
-                              <p className="text-xs text-orange-400 font-black uppercase tracking-widest mb-1">CONSENSUS ANSWER</p>
-                              <p className="text-base text-white font-black">{consensusAnswer}</p>
+                            <div className="p-4 bg-emerald-900/20 border-2 border-emerald-500/40 rounded-xl">
+                              <p className="text-xs text-emerald-400 font-black uppercase tracking-widest mb-1">CONSENSUS REACHED</p>
+                              <p className="text-lg text-white font-black">{consensusAnswer}</p>
                             </div>
                           )}
 
                           {/* Individual votes */}
                           <div className="space-y-2">
-                            <p className="text-xs text-orange-400 font-black uppercase tracking-widest">VOTES</p>
-                            {votes.map(vote => (
-                              <div key={vote.deviceId} className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-orange-500/10">
-                                <CheckCircle className="w-4 h-4 text-orange-400 shrink-0" />
+                            {selectedVotes.map(vote => (
+                              <div
+                                key={vote.deviceId}
+                                onClick={() => setCaptainSelectedAnswer(
+                                  typeof vote.answer === 'string' ? vote.answer : JSON.stringify(vote.answer)
+                                )}
+                                className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                                  captainSelectedAnswer === (typeof vote.answer === 'string' ? vote.answer : JSON.stringify(vote.answer))
+                                    ? 'bg-orange-500/20 border-orange-500/50'
+                                    : 'bg-white/5 border-white/10 hover:border-orange-500/30'
+                                }`}
+                              >
+                                <CheckCircle className="w-5 h-5 text-orange-400 shrink-0" />
                                 <span className="text-sm font-black text-white uppercase tracking-wider flex-1 truncate">
                                   {vote.userName}
                                 </span>
-                                <span className="text-sm text-slate-300 font-bold truncate max-w-[140px]">
+                                <span className="text-sm text-orange-300 font-bold truncate max-w-[160px]">
                                   {typeof vote.answer === 'string' ? vote.answer : JSON.stringify(vote.answer)}
                                 </span>
                               </div>
                             ))}
 
-                            {/* Not yet voted */}
+                            {/* Waiting for */}
                             {notVoted.length > 0 && (
                               <>
-                                <p className="text-xs text-orange-300 font-black uppercase tracking-widest mt-3">WAITING FOR</p>
+                                <p className="text-xs text-slate-400 font-black uppercase tracking-widest mt-3">WAITING FOR</p>
                                 {notVoted.map(m => (
-                                  <div key={m.deviceId} className="flex items-center gap-2 p-3 bg-slate-900/30 rounded-xl opacity-60 border border-slate-600/20">
-                                    <Circle className="w-4 h-4 text-slate-400 shrink-0" />
-                                    <span className="text-sm font-bold text-white uppercase tracking-wider">
-                                      {m.name || 'UNKNOWN'}
-                                    </span>
-                                    <span className="text-xs text-slate-300 ml-auto font-bold uppercase">
+                                  <div key={m.deviceId} className="flex items-center gap-2 p-3 bg-slate-900/30 rounded-xl border border-slate-600/20 opacity-50">
+                                    <Circle className="w-5 h-5 text-slate-400 shrink-0" />
+                                    <span className="text-sm font-bold text-white uppercase">{m.name || 'UNKNOWN'}</span>
+                                    <span className="text-xs text-slate-400 ml-auto font-bold uppercase">
                                       {m.isOnline ? 'ONLINE' : 'OFFLINE'}
                                     </span>
                                   </div>
@@ -989,14 +1296,106 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                               </>
                             )}
                           </div>
+
+                          {/* Answer distribution summary */}
+                          {uniqueAnswers.length > 1 && (
+                            <div className="space-y-1">
+                              <p className="text-xs text-orange-400 font-black uppercase tracking-widest">ANSWER DISTRIBUTION</p>
+                              {uniqueAnswers.map((ua, idx) => (
+                                <div key={idx} className="flex items-center gap-2 text-xs">
+                                  <div className="h-3 bg-orange-500/60 rounded-full" style={{ width: `${(ua.count / selectedVotes.length) * 100}%`, minWidth: '20px' }} />
+                                  <span className="text-white font-bold truncate">{ua.answer}</span>
+                                  <span className="text-orange-300 font-black shrink-0">{ua.count}x</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Captain Controls */}
+                          {isCaptain && selectedVotes.length > 0 && (
+                            <div className="border-t-2 border-orange-500/20 pt-4 space-y-3">
+                              <p className="text-xs font-black text-orange-400 uppercase tracking-widest">CAPTAIN CONTROLS</p>
+
+                              {/* Select answer dropdown */}
+                              {uniqueAnswers.length > 0 && (
+                                <select
+                                  value={captainSelectedAnswer || ''}
+                                  onChange={e => setCaptainSelectedAnswer(e.target.value || null)}
+                                  className="w-full px-4 py-3 rounded-xl border-2 border-orange-500/30 bg-slate-900 text-white font-bold uppercase text-sm focus:border-orange-500 outline-none"
+                                >
+                                  <option value="">SELECT TEAM ANSWER...</option>
+                                  {uniqueAnswers.map((ua, idx) => (
+                                    <option key={idx} value={ua.answer}>
+                                      {ua.answer} ({ua.count} VOTES)
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+
+                              <div className="flex gap-2">
+                                {/* Submit button */}
+                                <button
+                                  onClick={() => handleSubmitTeamAnswer(selectedPoint.id)}
+                                  disabled={votingMode === 'require_consensus' && !hasConsensus}
+                                  className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-wider text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <CheckCircle className="w-5 h-5" /> SUBMIT TEAM ANSWER
+                                </button>
+
+                                {/* Revote button */}
+                                <button
+                                  onClick={() => handleRevote(selectedPoint.id)}
+                                  className="px-4 py-3 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-400 font-black uppercase tracking-wider text-sm border-2 border-red-500/30 transition-colors flex items-center gap-2"
+                                >
+                                  <RotateCcw className="w-5 h-5" /> REVOTE
+                                </button>
+                              </div>
+
+                              {votingMode === 'require_consensus' && !hasConsensus && (
+                                <p className="text-xs text-red-400 font-bold uppercase text-center">
+                                  CONSENSUS REQUIRED — ALL MEMBERS MUST AGREE BEFORE SUBMIT
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
+                      </div>
+                    ) : (
+                      /* No task selected — show list */
+                      <div className="space-y-2">
+                        <p className="text-xs text-orange-400 font-black uppercase tracking-widest">SELECT A TASK TO VIEW DETAILS</p>
+                        {votingTasks.map(point => {
+                          const votes = taskVotes[point.id] || [];
+                          const taskIdx = game?.points?.indexOf(point) ?? 0;
+                          const voteCode = generateTaskVoteCode(team?.shortCode || '', taskIdx);
+                          return (
+                            <button
+                              key={point.id}
+                              onClick={() => setSelectedVoteTask(point.id)}
+                              className="w-full p-4 flex items-center gap-3 text-left bg-black/30 border-2 border-orange-500/20 rounded-xl hover:bg-orange-500/5 transition-colors"
+                            >
+                              {votes.length >= activeCount && votes.every(v => normalizeAnswer(v.answer) === normalizeAnswer(votes[0]?.answer))
+                                ? <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
+                                : votes.length > 0
+                                ? <AlertCircle className="w-6 h-6 text-orange-300 shrink-0 animate-pulse" />
+                                : <Circle className="w-6 h-6 text-slate-400 shrink-0" />}
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-black text-white uppercase truncate">{point.title || 'UNTITLED'}</p>
+                                <p className="text-xs text-orange-300 font-bold uppercase mt-0.5">
+                                  {votes.length}/{activeCount} VOTED · CODE: {voteCode}
+                                </p>
+                              </div>
+                              <ChevronDown className="w-5 h-5 text-white shrink-0" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ==================== CHAT TAB ==================== */}
           {activeTab === 'CHAT' && (

@@ -1301,6 +1301,7 @@ const GameApp: React.FC = () => {
                   isInstructorMode={mode === GameMode.INSTRUCTOR}
                   game={activeGame}
                   isCaptain={currentTeam?.captainDeviceId === teamSync.getDeviceId() || mode === GameMode.SIMULATION}
+                  onOpenLobby={() => { setActiveTaskModalId(null); setShowTeamLobby(true); }}
               />
           )}
           {showTaskMaster && (
@@ -1481,6 +1482,7 @@ const GameApp: React.FC = () => {
                   game={activeGame || undefined}
                   allTeams={games.find(g => g.id === activeGameId)?.id ? undefined : undefined}
                   isCaptain={currentTeam.captainDeviceId === teamSync.getDeviceId() || mode === GameMode.SIMULATION || mode === GameMode.EDIT || mode === GameMode.INSTRUCTOR}
+                  onCompleteTask={handleTaskComplete}
               />
           )}
           {selectedTeamIdForLobby && (
@@ -1490,6 +1492,7 @@ const GameApp: React.FC = () => {
                   teamId={selectedTeamIdForLobby}
                   game={activeGame || undefined}
                   isCaptain={true}
+                  onCompleteTask={handleTaskComplete}
               />
           )}
           {showDeleteGames && (

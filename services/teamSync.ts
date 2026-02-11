@@ -154,6 +154,12 @@ class TeamSyncService {
       .on('broadcast', { event: 'member_added' }, (payload: any) => {
         console.log('[TeamSync] New member added:', payload.payload);
       })
+      .on('broadcast', { event: 'revote' }, (payload: any) => {
+        const { pointId } = payload.payload;
+        console.log('[TeamSync] Revote requested for task:', pointId);
+        this.clearVotesForTask(pointId);
+        this.revoteListeners.forEach(l => l(pointId));
+      })
       .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
            this.sendPresence(true); // Force initial send
@@ -692,6 +698,43 @@ class TeamSyncService {
           event: 'member_added',
           payload: { deviceId: addedDeviceId, userName: addedName }
       });
+  }
+
+  // --- REVOTE BROADCASTS ---
+  // Captain triggers a revote — clears votes and notifies members to re-vote
+  public broadcastRevote(pointId: string) {
+      // Clear local vote cache for this task
+      this.clearVotesForTask(pointId);
+
+      if (!this.channel) return;
+      this.channel.send({
+          type: 'broadcast',
+          event: 'revote',
+          payload: { pointId, timestamp: Date.now() }
+      });
+  }
+
+  // Clear all votes for a specific task (used during revote)
+  public clearVotesForTask(pointId: string) {
+      this.votes[pointId] = [];
+      // Clear timestamps so re-votes are accepted
+      const keysToDelete = Object.keys(this.deviceVoteTimestamps).filter(k => k.startsWith(`${pointId}_`));
+      keysToDelete.forEach(k => delete this.deviceVoteTimestamps[k]);
+      // Notify listeners
+      this.voteListeners.forEach(l => {
+          if (l.pointId === null || l.pointId === pointId) {
+              l.callback([]);
+          }
+      });
+  }
+
+  // Subscribe to revote events
+  private revoteListeners: ((pointId: string) => void)[] = [];
+  public subscribeToRevote(callback: (pointId: string) => void) {
+      this.revoteListeners.push(callback);
+      return () => {
+          this.revoteListeners = this.revoteListeners.filter(l => l !== callback);
+      };
   }
 
   // --- RECOVERY CODE METHODS ---
