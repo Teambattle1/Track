@@ -140,6 +140,7 @@ const GameApp: React.FC = () => {
   const [showGameWizard, setShowGameWizard] = useState(false);
   const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
   const [initialGameMode, setInitialGameMode] = useState<'standard' | 'playzone' | 'elimination' | null>(null);
+  const [initialCreatorTab, setInitialCreatorTab] = useState<string | undefined>(undefined);
   const [showGameStats, setShowGameStats] = useState(false);
   const [showMapStyleLibrary, setShowMapStyleLibrary] = useState(false);
   const [showQRCodesTool, setShowQRCodesTool] = useState(false);
@@ -1983,6 +1984,17 @@ const GameApp: React.FC = () => {
                       if (game) {
                           setGameToEdit(game);
                           setActiveGameId(id);
+                          setInitialCreatorTab(undefined);
+                          setShowGameCreator(true);
+                          setShowGameChooser(false);
+                      }
+                  }}
+                  onOpenAccessSettings={(id) => {
+                      const game = games.find(g => g.id === id);
+                      if (game) {
+                          setGameToEdit(game);
+                          setActiveGameId(id);
+                          setInitialCreatorTab('ACCESS');
                           setShowGameCreator(true);
                           setShowGameChooser(false);
                       }
@@ -2295,6 +2307,7 @@ const GameApp: React.FC = () => {
                   onClose={() => {
                       setShowGameCreator(false);
                       setInitialGameMode(null);
+                      setInitialCreatorTab(undefined);
                   }}
                   onCreate={async (gameData) => {
                       if (gameToEdit && gameToEdit.id === gameData.id) {
@@ -2349,6 +2362,7 @@ const GameApp: React.FC = () => {
                   baseGame={gameToEdit || undefined}
                   onDelete={handleDeleteGame}
                   initialGameMode={initialGameMode}
+                  initialTab={initialCreatorTab}
               />
               </SafeSuspense>
           )}
@@ -3325,6 +3339,17 @@ const GameApp: React.FC = () => {
                         if (game) {
                             setGameToEdit(game);
                             setActiveGameId(id);
+                            setInitialCreatorTab(undefined);
+                            setShowGameCreator(true);
+                            setShowGameManagerForLobby(false);
+                        }
+                    }}
+                    onOpenAccessSettings={(id) => {
+                        const game = games.find(g => g.id === id);
+                        if (game) {
+                            setGameToEdit(game);
+                            setActiveGameId(id);
+                            setInitialCreatorTab('ACCESS');
                             setShowGameCreator(true);
                             setShowGameManagerForLobby(false);
                         }

@@ -35,6 +35,7 @@ interface GameCreatorProps {
   onDelete?: (id: string) => void;
   onOpenPlaygroundEditor?: (playgroundId?: string) => void;
   initialGameMode?: 'standard' | 'playzone' | 'elimination' | 'aroundtheworld' | null;
+  initialTab?: string;
 }
 
 // Map Styles with working preview logic
@@ -240,8 +241,8 @@ const MapStyleCard: React.FC<MapStyleCardProps> = ({
     );
 };
 
-const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, onDelete, onOpenPlaygroundEditor, initialGameMode = null }) => {
-  const [activeTab, setActiveTab] = useState('GAME');
+const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, onDelete, onOpenPlaygroundEditor, initialGameMode = null, initialTab }) => {
+  const [activeTab, setActiveTab] = useState(initialTab || 'GAME');
   const [gameMode, setGameMode] = useState<'standard' | 'playzone' | 'elimination' | 'aroundtheworld'>(() => {
     // Migrate legacy jorden80 games to aroundtheworld
     const mode = baseGame?.gameMode || initialGameMode || 'standard';

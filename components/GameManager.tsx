@@ -53,6 +53,7 @@ interface GameManagerProps {
   onOpenAiGenerator?: () => void;
   onOpenGameCreator?: () => void;
   onEditGameSetup?: (gameId: string) => void;
+  onOpenAccessSettings?: (gameId: string) => void;
   onStartSimulation?: (game: Game) => void;
   onOpenWizard?: () => void;
 }
@@ -326,7 +327,8 @@ const GameSummaryCard: React.FC<{
   onDelete: () => void;
   onSettings?: () => void;
   onShowAccessCode?: () => void;
-}> = ({ game, isActive, onPrimaryAction, onDelete, onSettings, onShowAccessCode }) => {
+  onOpenAccessSettings?: () => void;
+}> = ({ game, isActive, onPrimaryAction, onDelete, onSettings, onShowAccessCode, onOpenAccessSettings }) => {
   // CRITICAL: Guard against undefined/null game data - must be first check
   if (!game || typeof game !== 'object') {
     console.error('[GameSummaryCard] Invalid game data:', game);
@@ -410,13 +412,13 @@ const GameSummaryCard: React.FC<{
         </button>
         {onShowAccessCode && (
           <button
-            onClick={onShowAccessCode}
+            onClick={game?.accessCode ? onShowAccessCode : (onOpenAccessSettings || onShowAccessCode)}
             className={`p-2 rounded-lg transition-colors ${
               game?.accessCode
                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700'
+                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-400 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 animate-pulse'
             }`}
-            title={game?.accessCode ? `Access Code: ${game.accessCode}` : 'No Access Code Set'}
+            title={game?.accessCode ? `Access Code: ${game.accessCode}` : 'Click to set Access Code in Game Settings'}
           >
             <QrCode className="w-4 h-4" />
           </button>
@@ -453,6 +455,7 @@ const GameManager: React.FC<GameManagerProps> = ({
   onCreateFromTemplate,
   onOpenGameCreator,
   onEditGameSetup,
+  onOpenAccessSettings,
   onOpenWizard,
   mode
 }) => {
@@ -707,7 +710,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
-                Today
+                Today <span className="ml-1 text-[10px] opacity-70">({todayGames.length})</span>
               </button>
               <button
                 onClick={() => setStatusTab('PLANNED')}
@@ -717,7 +720,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
-                Planned
+                Planned <span className="ml-1 text-[10px] opacity-70">({plannedGames.length})</span>
               </button>
               <button
                 onClick={() => setStatusTab('COMPLETED')}
@@ -727,7 +730,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
-                Completed
+                Completed <span className="ml-1 text-[10px] opacity-70">({completedGames.length})</span>
               </button>
             </div>
           )}
@@ -750,12 +753,15 @@ const GameManager: React.FC<GameManagerProps> = ({
                     isActive={game.id === activeGameId}
                     onPrimaryAction={() => primaryActionForGame(game.id)}
                     onShowAccessCode={() => setAccessCodeGame(game)}
+                    onOpenAccessSettings={onOpenAccessSettings ? () => {
+                      onOpenAccessSettings(game.id);
+                    } : undefined}
                     onSettings={() => {
-                      onSelectGame(game.id);
                       if (onEditGameSetup) {
                         onEditGameSetup(game.id);
-                      } else if (onEditGame) {
-                        onEditGame(game.id);
+                      } else {
+                        onSelectGame(game.id);
+                        if (onEditGame) onEditGame(game.id);
                       }
                     }}
                     onDelete={() => {

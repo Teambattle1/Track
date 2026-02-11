@@ -95,10 +95,7 @@ const GameCodeTooltip: React.FC<{ accessCode?: string; gameName?: string }> = ({
 
     if (!accessCode) {
         return (
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-800/50 rounded border border-slate-700/50 opacity-40">
-                <KeyRound className="w-3 h-3 text-slate-600" />
-                <span className="text-[9px] font-bold text-slate-600 uppercase">No Code</span>
-            </div>
+            <QrCode className="w-4 h-4 text-blue-400 animate-pulse" />
         );
     }
 
