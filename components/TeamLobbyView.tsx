@@ -4,9 +4,10 @@ import {
   QrCode, Copy, Check, RefreshCw, Clock, Wifi, WifiOff,
   Smartphone, Tablet, Monitor, Trophy, ChevronDown, ChevronUp,
   Trash2, MessageSquare, BarChart3, Send, CheckCircle, Circle,
-  AlertCircle, Eye
+  AlertCircle, Eye, Play
 } from 'lucide-react';
-import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage } from '../types';
+import DOMPurify from 'dompurify';
+import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage, GameMessage } from '../types';
 import { teamSync } from '../services/teamSync';
 import * as db from '../services/db';
 import { getCountdownState, formatCountdown, CountdownInfo } from '../utils/teamUtils';
@@ -22,6 +23,7 @@ interface TeamLobbyViewProps {
   game?: Game;
   allTeams?: Team[];
   isCaptain?: boolean;
+  onStartGame?: () => void;
 }
 
 const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
@@ -30,7 +32,8 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   teamId,
   game,
   allTeams,
-  isCaptain: isCaptainProp
+  isCaptain: isCaptainProp,
+  onStartGame
 }) => {
   const [team, setTeam] = useState<Team | null>(null);
   const [liveMembers, setLiveMembers] = useState<TeamMember[]>([]);
@@ -63,17 +66,25 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     : null;
   const totalTeams = allTeams?.length || 0;
 
-  // Load team data from DB
+  // Load team data from DB (try by ID first, then by name within the game)
   const loadTeam = useCallback(async () => {
     try {
-      const data = await db.fetchTeam(teamId);
+      let data = await db.fetchTeam(teamId);
+      // If not found by ID, teamId might be a teamSync key — look up by name in the game
+      if (!data && game?.id) {
+          const teamState = teamSync.getState();
+          if (teamState.teamName) {
+              const allGameTeams = await db.fetchTeams(game.id);
+              data = allGameTeams.find(t => t.name.toLowerCase() === teamState.teamName.toLowerCase()) || null;
+          }
+      }
       if (data) setTeam(data);
     } catch (err) {
       console.error('[TeamLobbyView] Error loading team:', err);
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, game?.id]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -428,6 +439,48 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-4">
+
+          {/* Lobby Welcome Message (shown when onStartGame mode is active) */}
+          {onStartGame && game?.lobbyMessageConfig?.enabled && game.lobbyMessageConfig.text && (
+            <div
+              className="mb-4 rounded-2xl p-5 border-2 border-blue-500/30"
+              style={{ backgroundColor: game.lobbyMessageConfig.backgroundColor || '#1e293b' }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <MessageSquare className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-black text-blue-400 uppercase tracking-widest">Welcome</span>
+              </div>
+              {game.lobbyMessageConfig.useImage && game.lobbyMessageConfig.imageUrl ? (
+                <img
+                  src={game.lobbyMessageConfig.imageUrl}
+                  alt="Welcome"
+                  className="max-w-full max-h-[200px] object-contain rounded-lg mx-auto"
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  className={`font-bold leading-relaxed ${
+                    game.lobbyMessageConfig.fontSize === 'small' ? 'text-sm' :
+                    game.lobbyMessageConfig.fontSize === 'large' ? 'text-xl' :
+                    game.lobbyMessageConfig.fontSize === 'xlarge' ? 'text-2xl' : 'text-base'
+                  }`}
+                  style={{ color: game.lobbyMessageConfig.textColor || '#ffffff' }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(game.lobbyMessageConfig.text) }}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Timer display when no timer is configured (show 00:00) */}
+          {onStartGame && (!countdown || countdown.state === 'no_timer') && (
+            <div className="mb-4 rounded-2xl p-5 text-center border-2 bg-slate-900/50 border-slate-600/30">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Clock className="w-5 h-5 text-slate-400" />
+                <span className="text-sm font-black uppercase tracking-widest text-slate-400">GAME TIME</span>
+              </div>
+              <p className="text-4xl font-black tracking-wider text-white">00:00</p>
+            </div>
+          )}
 
           {/* ==================== MEMBERS TAB ==================== */}
           {activeTab === 'MEMBERS' && (
@@ -920,6 +973,30 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* START GAME Button (fixed bottom bar in lobby-after-join mode) */}
+      {onStartGame && (
+        <div className="border-t-2 border-orange-500/30 bg-[#0a0f1d]/95 backdrop-blur-sm p-4">
+          {(!countdown || countdown.state === 'no_timer' || countdown.state === 'game_started') ? (
+            <button
+              onClick={onStartGame}
+              className="w-full max-w-md mx-auto block py-5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-2xl font-black text-xl uppercase tracking-[0.2em] shadow-2xl shadow-orange-600/40 transition-all flex items-center justify-center gap-3 group animate-pulse hover:animate-none"
+            >
+              <Play className="w-7 h-7 group-hover:scale-110 transition-transform" />
+              START GAME
+            </button>
+          ) : (
+            <div className="text-center">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                {countdown.label}
+              </p>
+              <p className="text-3xl font-black text-orange-400 tracking-wider">
+                {countdown.remainingMs > 0 ? formatCountdown(countdown.remainingMs) : '00:00'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Loading overlay */}
       {loading && !team && (

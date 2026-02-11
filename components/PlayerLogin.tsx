@@ -13,14 +13,16 @@ import jsQR from 'jsqr';
 interface PlayerLoginProps {
   onComplete: (gameId: string, teamName: string, userName: string, teamPhoto: string | null) => void;
   onBack: () => void;
+  /** Pre-selected game — skips intro + game code step, goes straight to CREATE_TEAM */
+  preSelectedGame?: Game;
 }
 
 type PlayerLoginStep = 'GAME_CODE' | 'TEAM_MENU' | 'CREATE_TEAM' | 'JOIN_OPTIONS' | 'JOIN_CODE' | 'JOIN_QR' | 'RECOVER_DEVICE';
 
-const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack }) => {
+const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelectedGame }) => {
   // --- INTRO ANIMATION ---
   const hasAutoCode = new URLSearchParams(window.location.search).get('code');
-  const [showIntro, setShowIntro] = useState(!hasAutoCode);
+  const [showIntro, setShowIntro] = useState(!hasAutoCode && !preSelectedGame);
   const [introFading, setIntroFading] = useState(false);
 
   useEffect(() => {
@@ -41,13 +43,13 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack }) => {
   };
 
   // --- STEP STATE ---
-  const [step, setStep] = useState<PlayerLoginStep>('GAME_CODE');
+  const [step, setStep] = useState<PlayerLoginStep>(preSelectedGame ? 'CREATE_TEAM' : 'GAME_CODE');
 
   // --- GAME CODE STATE ---
   const [accessCode, setAccessCode] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [validGame, setValidGame] = useState<Game | null>(null);
+  const [validGame, setValidGame] = useState<Game | null>(preSelectedGame || null);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('English');
   const [availableLanguages, setAvailableLanguages] = useState<Language[]>(['English']);
@@ -182,8 +184,10 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack }) => {
 
   // --- CREATE TEAM SUBMIT ---
   const handleCreateTeam = () => {
-    if (validGame && teamName && userName && userPhoto) {
-      localStorage.setItem('geohunt_temp_user_photo', userPhoto);
+    if (validGame && teamName && userName) {
+      if (userPhoto) {
+        localStorage.setItem('geohunt_temp_user_photo', userPhoto);
+      }
       onComplete(validGame.id, teamName, userName, teamPhoto);
     }
   };
@@ -595,7 +599,7 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack }) => {
       <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col font-sans overflow-hidden">
         <div className="flex flex-col h-full items-center overflow-y-auto custom-scrollbar">
           <div className="w-full max-w-sm p-6 flex flex-col items-center pb-20">
-            <button onClick={() => setStep('TEAM_MENU')} className="self-start p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white mb-4">
+            <button onClick={() => preSelectedGame ? onBack() : setStep('TEAM_MENU')} className="self-start p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white mb-4">
               <ArrowLeft className="w-5 h-5" />
             </button>
 
@@ -680,7 +684,7 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack }) => {
               <div>
                 <div className="flex justify-between items-center mb-2 ml-1">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">PROFILE AVATAR</label>
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${userPhoto ? 'text-green-500' : 'text-red-500'}`}>{userPhoto ? 'READY' : 'REQUIRED'}</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${userPhoto ? 'text-green-500' : 'text-slate-600'}`}>{userPhoto ? 'READY' : 'OPTIONAL'}</span>
                 </div>
                 {!userPhoto ? (
                   <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-2">
@@ -706,7 +710,7 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack }) => {
               {/* Submit */}
               <button
                 onClick={handleCreateTeam}
-                disabled={!teamName || !userName || !userPhoto}
+                disabled={!teamName || !userName}
                 className="w-full bg-slate-700 hover:bg-orange-600 text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] shadow-lg transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 START PLAYING <Play className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

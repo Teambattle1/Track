@@ -781,6 +781,7 @@ export interface Game {
   finishMessage?: string; // New: Finish Message (legacy - use finishMessageConfig for new games)
   introMessageConfig?: GameMessage; // New: Rich intro message configuration
   finishMessageConfig?: GameMessage; // New: Rich finish message configuration
+  lobbyMessageConfig?: GameMessage; // Lobby welcome message shown after team creation
   tags?: string[]; // New: Game Tags
   language?: Language;
   points: GamePoint[];

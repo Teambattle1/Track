@@ -119,6 +119,7 @@ const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onCha
 const TABS = [
     { id: 'GAME', label: 'Game', icon: Gamepad2 },
     { id: 'TIMING', label: 'Timing', icon: Clock }, // Timing Tab - moved to position 2
+    { id: 'INTRO', label: 'Intro', icon: MessageSquare }, // Intro & lobby messages
     { id: 'TEAMS', label: 'Teams', icon: Users },
     { id: 'VOTE', label: 'Vote', icon: Users },
     { id: 'MAP', label: 'Mapstyle', icon: MapIcon },
@@ -278,9 +279,19 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
       fontSize: 'large'
     }
   );
+  const [lobbyMessageConfig, setLobbyMessageConfig] = useState<GameMessage>(
+    baseGame?.lobbyMessageConfig || {
+      enabled: false,
+      useImage: false,
+      text: '',
+      textColor: '#ffffff',
+      backgroundColor: '#1e293b',
+      fontSize: 'medium'
+    }
+  );
 
   const [language, setLanguage] = useState<Language>(baseGame?.language || 'Danish');
-  
+
   // Tags
   const [tags, setTags] = useState<string[]>(baseGame?.tags || []);
   const [tagInput, setTagInput] = useState('');
@@ -294,7 +305,22 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [clientName, setClientName] = useState(baseGame?.client?.name || '');
   // Default to today's date when creating new game, or use existing date when editing
   const getTodayDate = () => new Date().toISOString().split('T')[0];
-  const [playingDate, setPlayingDate] = useState(baseGame?.client?.playingDate || getTodayDate());
+  const getInitialPlayingDate = () => {
+    // 1. Use explicit playingDate if set
+    if (baseGame?.client?.playingDate) {
+      // Normalize ISO datetime strings (e.g. "2025-06-15T00:00:00.000Z") to YYYY-MM-DD for date input
+      const d = new Date(baseGame.client.playingDate);
+      if (!Number.isNaN(d.getTime())) return d.toISOString().split('T')[0];
+      return baseGame.client.playingDate;
+    }
+    // 2. When editing an existing game without playingDate, derive from createdAt to preserve original date
+    if (baseGame?.createdAt) {
+      return new Date(baseGame.createdAt).toISOString().split('T')[0];
+    }
+    // 3. New game: default to today
+    return getTodayDate();
+  };
+  const [playingDate, setPlayingDate] = useState(getInitialPlayingDate());
   const [clientLogo, setClientLogo] = useState(baseGame?.client?.logoUrl || '');
   const [isSearchingLogo, setIsSearchingLogo] = useState(false);
   const [isGeneratingAiLogo, setIsGeneratingAiLogo] = useState(false);
@@ -968,6 +994,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           finishMessage,
           introMessageConfig,
           finishMessageConfig,
+          lobbyMessageConfig,
           language,
           gameMode,
           defaultMapStyle: selectedMapStyle,
@@ -1520,6 +1547,44 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
                       </div>
                   </div>
               );
+          case 'INTRO':
+              return (
+                  <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
+                      {/* Lobby Welcome Message */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <div className="flex items-center gap-2 mb-4">
+                              <Users className="w-4 h-4 text-blue-500" />
+                              <h3 className="text-sm font-bold text-white uppercase">Lobby Welcome Message</h3>
+                          </div>
+                          <p className="text-xs text-slate-400 mb-4">
+                            Shown in the team lobby when players create or join a team. Use this to welcome players and explain the game rules while they wait for the game to start.
+                          </p>
+                          <GameMessageEditor
+                              message={lobbyMessageConfig}
+                              onChange={setLobbyMessageConfig}
+                              label="Lobby Welcome"
+                              placeholder="Welcome to the game! Please wait for all team members to join before we begin..."
+                          />
+                      </div>
+
+                      {/* Game Start Intro Message (moved from PLAY tab) */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <div className="flex items-center gap-2 mb-4">
+                              <MessageSquare className="w-4 h-4 text-orange-500" />
+                              <h3 className="text-sm font-bold text-white uppercase">Game Start Message</h3>
+                          </div>
+                          <p className="text-xs text-slate-400 mb-4">
+                            Displayed as a fullscreen popup when the game start time is reached and players begin playing
+                          </p>
+                          <GameMessageEditor
+                              message={introMessageConfig}
+                              onChange={setIntroMessageConfig}
+                              label="Game Introduction"
+                              placeholder="Welcome to the game! Your mission begins now..."
+                          />
+                      </div>
+                  </div>
+              );
           case 'MAP':
               return (
                   <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-2 space-y-6">
@@ -1734,23 +1799,6 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           case 'PLAY': // NEW TAB
               return (
                   <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
-                      {/* Intro Message */}
-                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-                          <div className="flex items-center gap-2 mb-4">
-                              <MessageSquare className="w-4 h-4 text-orange-500" />
-                              <h3 className="text-sm font-bold text-white uppercase">Intro Message</h3>
-                          </div>
-                          <p className="text-xs text-slate-400 mb-4">
-                            Displayed when players enter the game after the lobby timer expires
-                          </p>
-                          <GameMessageEditor
-                              message={introMessageConfig}
-                              onChange={setIntroMessageConfig}
-                              label="Game Introduction"
-                              placeholder="Welcome to the game! Your mission begins now..."
-                          />
-                      </div>
-
                       {/* Finish Message */}
                       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                           <div className="flex items-center gap-2 mb-4">
