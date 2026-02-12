@@ -70,6 +70,7 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
   const [recoveryCode, setRecoveryCode] = useState('');
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [showRecoveryQR, setShowRecoveryQR] = useState(false);
 
   // --- REJOIN STATE ---
   const [rejoinTeams, setRejoinTeams] = useState<any[]>([]);
@@ -264,6 +265,59 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
     } catch (e) {
       console.error('[Recovery] Error:', e);
       setRecoveryError('Something went wrong. Please try again.');
+      setRecoveryLoading(false);
+    }
+  };
+
+  // --- RECOVERY QR SCAN (scan team QR to rejoin) ---
+  const handleRecoveryQRScan = async (scannedData: string) => {
+    setShowRecoveryQR(false);
+    setRecoveryLoading(true);
+    setRecoveryError(null);
+
+    try {
+      // Extract teamCode and gameCode from scanned URL
+      const teamCodeMatch = scannedData.match(/teamCode=([^&]+)/);
+      const gameCodeMatch = scannedData.match(/gameCode=([^&]+)/);
+
+      if (!teamCodeMatch) {
+        setRecoveryError('Invalid QR code. Please scan your team\'s QR code from the Team Lobby.');
+        setRecoveryLoading(false);
+        return;
+      }
+
+      const teamCode = teamCodeMatch[1].toUpperCase();
+      const gameCode = gameCodeMatch ? gameCodeMatch[1].toUpperCase() : '';
+
+      // If we don't have a valid game yet, look it up by access code
+      let targetGame = validGame;
+      if (!targetGame && gameCode) {
+        const allGames = await db.fetchGames();
+        targetGame = allGames.find(g => g.accessCode?.toUpperCase() === gameCode) || null;
+        if (targetGame) {
+          setValidGame(targetGame);
+        }
+      }
+
+      if (!targetGame) {
+        setRecoveryError('Could not find the game. Please enter your game code first.');
+        setRecoveryLoading(false);
+        return;
+      }
+
+      // Look up team by short code
+      const foundTeam = await db.fetchTeamByShortCode(targetGame.id, teamCode);
+      if (foundTeam && foundTeam.members && foundTeam.members.length > 0) {
+        setRecoverTeam(foundTeam);
+        setTeamName(foundTeam.name);
+        setStep('RECOVER_AS_PLAYER');
+      } else {
+        setRecoveryError('Team not found or has no members. Please try a different QR code.');
+      }
+    } catch (e) {
+      console.error('[Recovery QR] Error:', e);
+      setRecoveryError('Something went wrong scanning the QR code. Please try again.');
+    } finally {
       setRecoveryLoading(false);
     }
   };
@@ -1347,7 +1401,34 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
               </>
             )}
           </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-slate-800" />
+            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">OR</span>
+            <div className="flex-1 h-px bg-slate-800" />
+          </div>
+
+          {/* Scan Team QR Button */}
+          <button
+            onClick={() => setShowRecoveryQR(true)}
+            disabled={recoveryLoading}
+            className="w-full bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 hover:border-green-500/50 disabled:opacity-50 text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+          >
+            <QrCode className="w-5 h-5 text-green-400" />
+            SCAN TEAM QR CODE
+          </button>
+          <p className="text-[10px] text-slate-600 mt-2 text-center leading-relaxed">
+            Scan the QR code shown in your team's lobby to rejoin
+          </p>
         </div>
+
+        {/* Recovery QR Scanner Modal */}
+        <QRScannerModal
+          isOpen={showRecoveryQR}
+          onClose={() => setShowRecoveryQR(false)}
+          onScan={handleRecoveryQRScan}
+        />
       </div>
     );
   }
