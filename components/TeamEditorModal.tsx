@@ -50,6 +50,7 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
   const [seeding, setSeeding] = useState(false);
   const [recoveryCodes, setRecoveryCodes] = useState<Record<string, string>>({}); // deviceId -> code
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [deleteConfirmTeamId, setDeleteConfirmTeamId] = useState<string | null>(null);
 
   const game = games.find(g => g.id === selectedGameId);
 
@@ -256,6 +257,23 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
     }
   };
 
+  const deleteTeam = async (teamId: string) => {
+    setSaving(true);
+    try {
+      const team = teams.find(t => t.id === teamId);
+      const { supabase } = await import('../lib/supabase');
+      await supabase.from('teams').delete().eq('id', teamId);
+      setTeams(prev => prev.filter(t => t.id !== teamId));
+      setDeleteConfirmTeamId(null);
+      setSuccessMsg(`DELETED ${(team?.name || 'TEAM').toUpperCase()}`);
+      setTimeout(() => setSuccessMsg(null), 2500);
+    } catch (err) {
+      console.error('[TeamEditor] Error deleting team:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const hasDemoTeams = teams.some(t => t.id.startsWith('demo-team-'));
 
   // ========== GAME CHOOSER VIEW ==========
@@ -438,6 +456,13 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                               <span className="text-[8px] font-black uppercase tracking-wider">LOBBY</span>
                             </button>
                           )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirmTeamId(team.id); }}
+                            className="p-1.5 rounded-lg hover:bg-red-600/20 text-slate-600 hover:text-red-400 transition-all"
+                            title="Delete team"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                           {isExpanded
                             ? <ChevronUp className="w-4 h-4 text-slate-600" />
                             : <ChevronDown className="w-4 h-4 text-slate-600" />
@@ -536,6 +561,58 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
             })
           )}
         </div>
+
+        {/* Delete confirmation dialog */}
+        {deleteConfirmTeamId && (() => {
+          const teamToDelete = teams.find(t => t.id === deleteConfirmTeamId);
+          if (!teamToDelete) return null;
+          return (
+            <div className="fixed inset-0 z-[6000] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+              <div className="bg-slate-900 border-2 border-red-500/40 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                <div className="text-center mb-4">
+                  <div className="w-14 h-14 bg-red-500/20 rounded-full mx-auto flex items-center justify-center mb-3 border-2 border-red-500/30">
+                    <Trash2 className="w-7 h-7 text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-black text-white uppercase tracking-widest">DELETE TEAM</h3>
+                  <p className="text-2xl font-black text-red-400 uppercase tracking-wider mt-1">
+                    {teamToDelete.name}?
+                  </p>
+                </div>
+
+                <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-3 mb-4">
+                  <p className="text-xs text-red-300 font-bold text-center leading-relaxed">
+                    This will permanently delete this team, all {teamToDelete.members.length} member(s), and their game progress. This cannot be undone.
+                  </p>
+                </div>
+
+                {teamToDelete.score > 0 && (
+                  <div className="bg-orange-900/20 border border-orange-500/30 rounded-xl p-3 mb-4">
+                    <p className="text-xs text-orange-300 font-bold text-center">
+                      This team has {teamToDelete.score} points! Are you sure?
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <button
+                    onClick={() => deleteTeam(deleteConfirmTeamId)}
+                    disabled={saving}
+                    className="w-full py-3 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {saving ? 'DELETING...' : 'DELETE TEAM'}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirmTeamId(null)}
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
