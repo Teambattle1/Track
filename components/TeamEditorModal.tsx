@@ -34,13 +34,8 @@ const DEMO_MEMBERS: { name: string; deviceId: string }[][] = [
 const LS_KEY = 'teamtrack_lastEditorGameId';
 
 const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId, games, onClose, onOpenLobby }) => {
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(() => {
-    // Priority: prop > localStorage > first game
-    if (initialGameId) return initialGameId;
-    const stored = localStorage.getItem(LS_KEY);
-    if (stored && games.some(g => g.id === stored)) return stored;
-    return null;
-  });
+  // Always start with game chooser unless a specific gameId prop is provided
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(initialGameId || null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -331,7 +326,7 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
               title="Add demo teams"
             >
               <Plus className={`w-3.5 h-3.5 ${seeding ? 'animate-spin' : ''}`} />
-              <span className="text-[9px] font-black uppercase tracking-wider">Seed</span>
+              <span className="text-[9px] font-black uppercase tracking-wider">Seed 3 Demo Teams</span>
             </button>
             <button onClick={() => selectedGameId && loadTeams(selectedGameId)} className="p-2.5 hover:bg-white/5 rounded-xl text-slate-500 hover:text-white transition-colors" title="Refresh">
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -375,17 +370,7 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <AlertCircle className="w-10 h-10 text-slate-600 mb-3" />
               <p className="text-sm font-black text-slate-500 uppercase tracking-wider">NO TEAMS FOUND</p>
-              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1 mb-6">NO TEAMS HAVE JOINED THIS GAME YET</p>
-              <button
-                onClick={seedDemoTeams}
-                disabled={seeding}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/30 transition-colors disabled:opacity-50"
-              >
-                <Plus className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} />
-                <span className="text-xs font-black uppercase tracking-widest">
-                  {seeding ? 'CREATING...' : 'SEED 3 DEMO TEAMS'}
-                </span>
-              </button>
+              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1">NO TEAMS HAVE JOINED THIS GAME YET</p>
             </div>
           ) : (
             [...teams].sort((a, b) => a.name.localeCompare(b.name)).map(team => {

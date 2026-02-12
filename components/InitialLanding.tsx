@@ -659,19 +659,11 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
       <div className="flex flex-col items-center w-full">
           <div className="flex flex-col md:flex-row gap-12 md:gap-16 lg:gap-20 items-center justify-center w-full px-4 pb-10">
               <MapPinButton
-                  title="ACCESS"
-                  icon={KeyRound}
-                  gradient="bg-gradient-to-br from-blue-600 to-cyan-600"
-                  onClick={() => onAction('ACCESS')}
-                  delay={0}
-                  scale={0.85}
-              />
-              <MapPinButton
                   title="PLAY GAME"
                   icon={Play}
                   gradient="bg-gradient-to-br from-emerald-600 to-green-600"
                   onClick={() => onAction('PLAY')}
-                  delay={100}
+                  delay={0}
                   scale={0.85}
               />
               <MapPinButton
@@ -679,7 +671,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   icon={Users}
                   gradient="bg-gradient-to-br from-purple-600 to-fuchsia-600"
                   onClick={() => onAction('CLIENT')}
-                  delay={200}
+                  delay={100}
                   scale={0.85}
               />
               <MapPinButton
@@ -687,7 +679,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   icon={Users}
                   gradient="bg-gradient-to-br from-indigo-600 to-blue-600"
                   onClick={() => setView('PLAY_TEAMS_MENU')}
-                  delay={300}
+                  delay={200}
                   scale={0.85}
               />
           </div>
@@ -697,20 +689,12 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
   const renderPlayTeamsMenu = () => (
       <div className="flex flex-col items-center w-full">
           <div className="flex flex-col md:flex-row gap-12 md:gap-16 lg:gap-20 items-center justify-center w-full px-4 pb-10">
-              <MapPinButton 
-                  title="TEAMLOBBY" 
-                  icon={Users} 
-                  gradient="bg-gradient-to-br from-purple-600 to-indigo-600" 
-                  onClick={() => onAction('TEAM_LOBBY')} 
-                  delay={0}
-                  scale={0.85}
-              />
               <MapPinButton
                   title="NEW TEAM"
                   icon={UserPlus}
                   gradient="bg-gradient-to-br from-pink-500 to-rose-500"
                   onClick={() => onAction('CREATE_TEAM')}
-                  delay={100}
+                  delay={0}
                   scale={0.85}
               />
               <MapPinButton
@@ -718,6 +702,14 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   icon={Edit2}
                   gradient="bg-gradient-to-br from-orange-600 to-amber-600"
                   onClick={() => onAction('EDIT_TEAMS')}
+                  delay={100}
+                  scale={0.85}
+              />
+              <MapPinButton
+                  title="TEAMLOBBY"
+                  icon={Users}
+                  gradient="bg-gradient-to-br from-purple-600 to-indigo-600"
+                  onClick={() => onAction('TEAM_LOBBY')}
                   delay={200}
                   scale={0.85}
               />

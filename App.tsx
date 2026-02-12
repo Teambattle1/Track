@@ -1414,7 +1414,7 @@ const GameApp: React.FC = () => {
           const teamKey = teamName.replace(/[^a-zA-Z0-9]/g, '_');
           const teamId = `team-${teamKey}-${Date.now()}`;
 
-          // Fetch existing teams to get short codes and avoid duplicates
+          // Single fetch to check existing teams, short codes, and duplicates
           const existingTeams = await db.fetchTeams(gameId);
           const existingCodes = existingTeams.map(t => t.shortCode).filter(Boolean) as string[];
 
@@ -1436,7 +1436,8 @@ const GameApp: React.FC = () => {
 
           const shortCode = generateTeamShortCode(existingCodes);
 
-          const team: Team = {
+          // Direct insert — skip registerTeam's redundant fetchTeams call
+          await db.registerTeamDirect({
               id: teamId,
               gameId,
               name: teamName,
@@ -1453,9 +1454,7 @@ const GameApp: React.FC = () => {
               captainDeviceId: deviceId,
               isStarted: false,
               shortCode,
-          };
-
-          await db.registerTeam(team);
+          });
           console.log(`[App] Registered new team "${teamName}" (${teamId}) with player "${userName}"`);
       } catch (error) {
           console.error('[App] Failed to register team:', error);
@@ -3575,7 +3574,7 @@ const GameApp: React.FC = () => {
                     }}
                     teamId={selectedTeamIdForLobby}
                     game={gameForLobbyAccess ? games.find(g => g.id === gameForLobbyAccess) : activeGame || undefined}
-                    isCaptain={mode === GameMode.INSTRUCTOR}
+                    isCaptain={true}
                 />
             )}
 

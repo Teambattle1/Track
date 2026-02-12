@@ -261,36 +261,25 @@ export const generateAiImage = async (prompt: string, style: string = 'cartoon')
     const translatedWords = words.map(w => translations[w] || w);
     const englishPrompt = translatedWords.join(' ');
 
-    // Try Stability AI first if key is available
+    // Try Stability AI first if key is available (v2beta API)
     const stabilityKey = getStabilityApiKey();
     if (stabilityKey) {
         try {
-            console.log('[AI Image] Generating with Stability AI:', englishPrompt);
+            console.log('[AI Image] Generating with Stability AI v2beta:', englishPrompt);
 
-            const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+            const formData = new FormData();
+            formData.append('prompt', `${englishPrompt}, ${style} style, vibrant colors, clean design, suitable for mobile app icon`);
+            formData.append('negative_prompt', 'blurry, bad quality, text, watermark, signature');
+            formData.append('output_format', 'png');
+            formData.append('aspect_ratio', '1:1');
+
+            const response = await fetch('https://api.stability.ai/v2beta/stable-image/generate/core', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${stabilityKey}`,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    text_prompts: [
-                        {
-                            text: `${englishPrompt}, ${style} style, vibrant colors, clean design, suitable for mobile app icon`,
-                            weight: 1
-                        },
-                        {
-                            text: 'blurry, bad quality, text, watermark, signature',
-                            weight: -1
-                        }
-                    ],
-                    cfg_scale: 7,
-                    height: 1024,
-                    width: 1024,
-                    steps: 30,
-                    samples: 1
-                })
+                body: formData
             });
 
             if (!response.ok) {
@@ -300,15 +289,20 @@ export const generateAiImage = async (prompt: string, style: string = 'cartoon')
             }
 
             const data = await response.json();
+            if (data?.image) {
+                console.log('[AI Image] Stability AI v2beta success!');
+                return `data:image/png;base64,${data.image}`;
+            }
+            // Fallback: check old format too
             if (data?.artifacts && Array.isArray(data.artifacts) && data.artifacts[0]?.base64) {
-                console.log('[AI Image] Stability AI success!');
+                console.log('[AI Image] Stability AI success (legacy format)!');
                 return `data:image/png;base64,${data.artifacts[0].base64}`;
             }
 
             console.warn('[AI Image] No image in Stability response, data:', JSON.stringify(data).slice(0, 200));
         } catch (e: any) {
             console.error('[AI Image] Stability AI failed:', e.message);
-            // Fall through to Unsplash fallback
+            // Fall through to placeholder fallback
         }
     }
 
@@ -349,37 +343,26 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
     const translatedWords = words.map(w => translations[w] || w);
     const englishKeywords = translatedWords.join(' ');
 
-    // Try Stability AI first if key is available
+    // Try Stability AI first if key is available (v2beta API)
     const stabilityKey = getStabilityApiKey();
     if (stabilityKey) {
         try {
             const zoneContext = zoneName ? ` for ${zoneName}` : '';
-            console.log('[AI Background] Generating with Stability AI:', englishKeywords);
+            console.log('[AI Background] Generating with Stability AI v2beta:', englishKeywords);
 
-            const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+            const formData = new FormData();
+            formData.append('prompt', `Wide panoramic game background${zoneContext}, theme: ${englishKeywords}, vibrant colors, adventure game style`);
+            formData.append('negative_prompt', 'text, watermark, signature, ui elements, blurry');
+            formData.append('output_format', 'png');
+            formData.append('aspect_ratio', '16:9');
+
+            const response = await fetch('https://api.stability.ai/v2beta/stable-image/generate/core', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${stabilityKey}`,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    text_prompts: [
-                        {
-                            text: `Wide panoramic game background${zoneContext}, theme: ${englishKeywords}, vibrant colors, adventure game style, 16:9 aspect ratio`,
-                            weight: 1
-                        },
-                        {
-                            text: 'text, watermark, signature, ui elements, blurry',
-                            weight: -1
-                        }
-                    ],
-                    cfg_scale: 7,
-                    height: 768,  // SDXL allowed: 1344x768 (close to 16:9)
-                    width: 1344,
-                    steps: 30,
-                    samples: 1
-                })
+                body: formData
             });
 
             if (!response.ok) {
@@ -389,8 +372,12 @@ export const generateAiBackground = async (keywords: string, zoneName?: string):
             }
 
             const data = await response.json();
+            if (data?.image) {
+                console.log('[AI Background] Stability AI v2beta success!');
+                return `data:image/png;base64,${data.image}`;
+            }
             if (data.artifacts && data.artifacts[0]?.base64) {
-                console.log('[AI Background] Stability AI success!');
+                console.log('[AI Background] Stability AI success (legacy format)!');
                 return `data:image/png;base64,${data.artifacts[0].base64}`;
             }
         } catch (e: any) {
@@ -478,41 +465,41 @@ export const generateAiLogo = async (companyName: string, style: string = 'profe
         console.log('[AI Logo] 🎨 Generating AI logo for:', companyName);
         console.log('[AI Logo] Style:', style);
 
-        // Try Stability AI for logo generation
+        // Try Stability AI for logo generation (v2beta API)
         const stabilityKey = getStabilityApiKey();
         if (stabilityKey) {
             try {
-                const prompt = `Professional modern company logo for "${companyName}", ${style}, clean minimalist design, bold colors, square format, white background, vector art style`;
-                console.log('[AI Logo] Generating with Stability AI...');
+                const promptText = `Professional modern company logo for "${companyName}", ${style}, clean minimalist design, bold colors, square format, white background, vector art style`;
+                console.log('[AI Logo] Generating with Stability AI v2beta...');
 
-                const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+                const formData = new FormData();
+                formData.append('prompt', promptText);
+                formData.append('negative_prompt', 'blurry, bad quality, text, watermark, complex, cluttered, photograph');
+                formData.append('output_format', 'png');
+                formData.append('aspect_ratio', '1:1');
+
+                const response = await fetch('https://api.stability.ai/v2beta/stable-image/generate/core', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${stabilityKey}`,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        text_prompts: [
-                            { text: prompt, weight: 1 },
-                            { text: 'blurry, bad quality, text, watermark, complex, cluttered, photograph', weight: -1 }
-                        ],
-                        cfg_scale: 7,
-                        height: 1024,
-                        width: 1024,
-                        steps: 30,
-                        samples: 1
-                    })
+                    body: formData
                 });
 
                 if (response.ok) {
                     const data = await response.json();
+                    if (data?.image) {
+                        console.log('[AI Logo] ✅ Stability AI v2beta logo generated successfully');
+                        return `data:image/png;base64,${data.image}`;
+                    }
                     if (data?.artifacts?.[0]?.base64) {
-                        console.log('[AI Logo] ✅ Stability AI logo generated successfully');
+                        console.log('[AI Logo] ✅ Stability AI logo generated (legacy format)');
                         return `data:image/png;base64,${data.artifacts[0].base64}`;
                     }
                 } else {
-                    console.warn('[AI Logo] Stability AI error:', response.status);
+                    const errorText = await response.text();
+                    console.warn('[AI Logo] Stability AI error:', response.status, errorText);
                 }
             } catch (aiError) {
                 console.warn('[AI Logo] Stability AI failed, falling back to SVG:', aiError);

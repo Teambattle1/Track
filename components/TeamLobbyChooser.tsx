@@ -13,11 +13,8 @@ interface TeamLobbyChooserProps {
 const LS_KEY = 'teamtrack_lastLobbyGameId';
 
 const TeamLobbyChooser: React.FC<TeamLobbyChooserProps> = ({ games, onClose, onSelectTeam }) => {
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(() => {
-    const stored = localStorage.getItem(LS_KEY);
-    if (stored && games.some(g => g.id === stored && !g.isGameTemplate)) return stored;
-    return null;
-  });
+  // Always start with game chooser — never auto-lock to a stored game
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

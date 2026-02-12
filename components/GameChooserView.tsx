@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { X, Gamepad2, Search, ChevronRight, Calendar, ChevronDown } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { X, Gamepad2, Search, ChevronRight, Calendar, ChevronDown, Users } from 'lucide-react';
 import { Game } from '../types';
+import * as db from '../services/db';
 
 interface GameChooserViewProps {
   games: Game[];
@@ -46,10 +47,36 @@ const formatDate = (dateStr: string): string => {
   return date.toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
+// Game mode display config
+const gameModeConfig: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  aroundtheworld: { label: 'ATW80', color: 'text-purple-300', bg: 'bg-purple-600/20', border: 'border-purple-500/30' },
+  playzone:       { label: 'PLAYZONE', color: 'text-cyan-300', bg: 'bg-cyan-600/20', border: 'border-cyan-500/30' },
+  elimination:    { label: 'ELIMINATION', color: 'text-red-300', bg: 'bg-red-600/20', border: 'border-red-500/30' },
+  standard:       { label: 'STANDARD', color: 'text-emerald-300', bg: 'bg-emerald-600/20', border: 'border-emerald-500/30' },
+};
+
 const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitle, accentColor, onSelectGame, onClose }) => {
   const [tab, setTab] = useState<Tab>('TODAY');
   const [searchQuery, setSearchQuery] = useState('');
   const [completedLimit, setCompletedLimit] = useState(10);
+  const [teamStats, setTeamStats] = useState<Record<string, { teams: number; players: number }>>({});
+
+  // Load team/player counts for all games
+  useEffect(() => {
+    const loadStats = async () => {
+      const stats: Record<string, { teams: number; players: number }> = {};
+      const playable = games.filter(g => !g.isGameTemplate);
+      await Promise.all(playable.map(async (g) => {
+        try {
+          const teams = await db.fetchTeams(g.id);
+          const players = teams.reduce((sum, t) => sum + (t.members?.length || 0), 0);
+          stats[g.id] = { teams: teams.length, players };
+        } catch { stats[g.id] = { teams: 0, players: 0 }; }
+      }));
+      setTeamStats(stats);
+    };
+    loadStats();
+  }, [games]);
 
   const playableGames = games.filter(g => !g.isGameTemplate);
 
@@ -197,21 +224,31 @@ const GameChooserView: React.FC<GameChooserViewProps> = ({ games, title, subtitl
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="text-base font-black text-white uppercase tracking-wider truncate">{g.name}</h3>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                       {pd && (
                         <span className="flex items-center gap-1 text-xs text-slate-400 font-bold uppercase tracking-widest">
                           <Calendar className="w-3.5 h-3.5" />
                           {isToday(pd) ? 'I DAG' : formatDate(pd)}
                         </span>
                       )}
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                      <span className="text-xs text-emerald-400 font-bold uppercase tracking-widest">
                         {g.points?.length || 0} TASKS
                       </span>
-                      {g.gameMode && g.gameMode !== 'standard' && (
-                        <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-                          {g.gameMode.toUpperCase()}
-                        </span>
-                      )}
+                      {(() => {
+                        const mode = g.gameMode || 'standard';
+                        const cfg = gameModeConfig[mode] || gameModeConfig.standard;
+                        return (
+                          <span className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${cfg.bg} ${cfg.color} border ${cfg.border}`}>
+                            {cfg.label}
+                          </span>
+                        );
+                      })()}
+                      <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest">
+                        <Users className="w-3 h-3 text-orange-400" />
+                        <span className="text-orange-400">{teamStats[g.id]?.teams ?? '…'} TEAMS</span>
+                        <span className="text-slate-600">/</span>
+                        <span className="text-cyan-400">{teamStats[g.id]?.players ?? '…'} PLAYERS</span>
+                      </span>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />

@@ -4,15 +4,17 @@ import {
   QrCode, Copy, Check, RefreshCw, Clock, Wifi, WifiOff,
   Smartphone, Tablet, Monitor, Trophy, ChevronDown, ChevronUp,
   Trash2, MessageSquare, BarChart3, Send, CheckCircle, Circle,
-  AlertCircle, Eye, Play, Key, Info, Pencil, Radio, Megaphone, AlertTriangle
+  AlertCircle, Eye, Play, Key, Info, Pencil, Radio, Megaphone, AlertTriangle, Camera
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import AvatarCreator from './AvatarCreator';
 import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage, GameMessage } from '../types';
 import { teamSync } from '../services/teamSync';
 import * as db from '../services/db';
 import { getCountdownState, formatCountdown, CountdownInfo } from '../utils/teamUtils';
 import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
+import { uploadImage } from '../services/storage';
 
 type LobbyTab = 'MEMBERS' | 'VOTES' | 'CHAT';
 
@@ -98,6 +100,15 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const [editingPlayerName, setEditingPlayerName] = useState<string | null>(null); // deviceId of member being edited
   const [editPlayerNameValue, setEditPlayerNameValue] = useState('');
   const [editPlayerNameError, setEditPlayerNameError] = useState<string | null>(null);
+
+  // --- ADD MEMBER STATE ---
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberPhoto, setNewMemberPhoto] = useState<string | null>(null);
+  const [addMemberError, setAddMemberError] = useState<string | null>(null);
+
+  // --- TEAM LOGO EDITOR STATE ---
+  const [showLogoEditor, setShowLogoEditor] = useState(false);
 
   // Determine captain status
   const isCaptain = isCaptainProp ?? (team?.captainDeviceId === myDeviceId);
@@ -511,6 +522,58 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     setShowMemberActions(null);
   };
 
+  // --- ADD MEMBER ---
+  const handleAddMember = async () => {
+    if (!team || !newMemberName.trim()) {
+      setAddMemberError('Enter a player name');
+      return;
+    }
+    const dup = team.members.find(m => m.name.toLowerCase() === newMemberName.trim().toLowerCase());
+    if (dup) { setAddMemberError(`"${dup.name}" already on team`); return; }
+    const manualDeviceId = `manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Upload photo to storage if it's a base64 string
+    let photoUrl: string | undefined;
+    if (newMemberPhoto) {
+      try {
+        const uploaded = await uploadImage(newMemberPhoto);
+        photoUrl = uploaded || undefined;
+      } catch (e) {
+        console.error('[TeamLobbyView] Failed to upload member photo:', e);
+      }
+    }
+    await db.addTeamMember(team.id, {
+      deviceId: manualDeviceId,
+      name: newMemberName.trim(),
+      photo: photoUrl
+    });
+    setNewMemberName('');
+    setNewMemberPhoto(null);
+    setShowAddMember(false);
+    setAddMemberError(null);
+    loadTeam();
+  };
+
+  // --- TEAM LOGO ---
+  const handleTeamLogoClick = () => {
+    if (!isCaptain) return;
+    setShowLogoEditor(true);
+  };
+
+  const handleLogoConfirm = async (imageData: string) => {
+    if (!team) return;
+    try {
+      // Upload base64 to storage first, then save the URL
+      const url = await uploadImage(imageData);
+      if (url) {
+        await db.updateTeamPhoto(team.id, url);
+      }
+    } catch (e) {
+      console.error('[TeamLobbyView] Failed to update team logo:', e);
+    }
+    setShowLogoEditor(false);
+    loadTeam();
+  };
+
   const handleSendChat = (forceSendAll = false) => {
     const msg = chatInput.trim();
     if (!msg || !game) return;
@@ -671,19 +734,27 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
         <div className="h-2 w-28 rounded-full" style={{ backgroundColor: teamColor }} />
       </div>
 
-      {/* Header */}
+      {/* Header — 3-column: [Avatar+Name] [Score center] [Buttons] */}
       <div className="bg-black/40 border-b-2 border-orange-500/20 px-4 py-3 shrink-0">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+          {/* LEFT: Avatar + Name + Online + Code */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            {/* Team Avatar */}
+            {/* Team Avatar — clickable for captain to change logo */}
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center border-2 shrink-0"
+              className={`relative w-14 h-14 rounded-2xl flex items-center justify-center border-2 shrink-0 overflow-hidden group ${isCaptain ? 'cursor-pointer' : ''}`}
               style={{ backgroundColor: teamColor + '20', borderColor: teamColor + '60' }}
+              onClick={isCaptain ? handleTeamLogoClick : undefined}
+              title={isCaptain ? 'Click to change team logo' : undefined}
             >
               {team?.photoUrl ? (
                 <img src={team.photoUrl} alt="" className="w-full h-full rounded-2xl object-cover" />
               ) : (
                 <Users className="w-7 h-7" style={{ color: teamColor }} />
+              )}
+              {isCaptain && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
               )}
             </div>
             <div className="min-w-0">
@@ -712,15 +783,6 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                 </h1>
               )}
               <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-sm text-white font-black uppercase tracking-wider">
-                  <Trophy className="w-4 h-4 inline mr-1 text-orange-400" />
-                  {team?.score || 0} PTS
-                </span>
-                {teamRank && (
-                  <span className="text-sm text-orange-300 font-black uppercase tracking-wider">
-                    #{teamRank}/{totalTeams}
-                  </span>
-                )}
                 <span className="text-sm text-white font-bold uppercase">
                   {onlineCount}/{mergedMembers.length} ONLINE
                 </span>
@@ -738,6 +800,21 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
             </div>
           </div>
 
+          {/* CENTER: Score + Rank — prominent */}
+          <div className="flex flex-col items-center shrink-0 px-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-orange-400" />
+              <span className="text-3xl font-black text-white tracking-wider">{team?.score || 0}</span>
+              <span className="text-sm font-black text-orange-300 uppercase">PTS</span>
+            </div>
+            {teamRank && (
+              <span className="text-xs text-orange-300 font-black uppercase tracking-wider mt-0.5">
+                RANK #{teamRank}/{totalTeams}
+              </span>
+            )}
+          </div>
+
+          {/* RIGHT: Refresh + Close */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => loadTeam()}
@@ -1137,11 +1214,22 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                     </div>
                   )}
 
+                  {/* Add Member button (captain only) */}
+                  {isCaptain && (
+                    <button
+                      onClick={() => setShowAddMember(true)}
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-3 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 rounded-xl text-orange-400 font-black text-xs uppercase tracking-widest transition-all"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      ADD MEMBER
+                    </button>
+                  )}
+
                   {/* Recover Player button (captain only) */}
                   {isCaptain && (
                     <button
                       onClick={handleShowRecoveryCodes}
-                      className="mt-4 w-full flex items-center justify-center gap-2 py-3 bg-green-900/40 hover:bg-green-800/50 border border-green-500/30 rounded-xl text-green-400 font-black text-xs uppercase tracking-widest transition-all"
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-3 bg-green-900/40 hover:bg-green-800/50 border border-green-500/30 rounded-xl text-green-400 font-black text-xs uppercase tracking-widest transition-all"
                     >
                       <Key className="w-4 h-4" />
                       RECOVER PLAYER CODES
@@ -1897,6 +1985,102 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
             <p className="text-xs text-slate-400 mt-4 uppercase tracking-widest transition-opacity duration-500 h-5">
               {funLoadingTexts[loadingTextIndex]}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== ADD MEMBER MODAL ==================== */}
+      {showAddMember && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-[#0f172a] border-2 border-orange-500/30 rounded-2xl p-6 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-orange-400" />
+                ADD MEMBER
+              </h3>
+              <button onClick={() => { setShowAddMember(false); setNewMemberName(''); setNewMemberPhoto(null); setAddMemberError(null); }} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Name input */}
+            <div className="mb-4">
+              <label className="text-[10px] font-black text-orange-400 uppercase tracking-widest block mb-2">PLAYER NAME</label>
+              <input
+                type="text"
+                value={newMemberName}
+                onChange={(e) => { setNewMemberName(e.target.value); setAddMemberError(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && newMemberName.trim()) handleAddMember(); }}
+                placeholder="Enter player name..."
+                className="w-full bg-slate-800 border-2 border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-bold uppercase tracking-wider outline-none focus:border-orange-500 transition-colors placeholder:text-slate-500 placeholder:normal-case"
+                autoFocus
+              />
+              {addMemberError && (
+                <p className="text-xs text-red-400 font-bold mt-1.5">{addMemberError}</p>
+              )}
+            </div>
+
+            {/* Optional avatar */}
+            {!newMemberPhoto ? (
+              <AvatarCreator
+                onConfirm={(img) => setNewMemberPhoto(img)}
+                onCancel={() => {}}
+                title="PLAYER AVATAR (OPTIONAL)"
+                placeholder="e.g. Cool warrior blue"
+                defaultKeywords={newMemberName}
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-3 mb-4">
+                <div className="w-24 h-24 rounded-full border-4 border-orange-500/40 overflow-hidden shadow-xl">
+                  <img src={newMemberPhoto} className="w-full h-full object-cover" alt="Player avatar" />
+                </div>
+                <button
+                  onClick={() => setNewMemberPhoto(null)}
+                  className="text-xs text-red-400 font-black uppercase tracking-widest hover:text-red-300 transition-colors"
+                >
+                  CHANGE AVATAR
+                </button>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <button
+                onClick={() => { setShowAddMember(false); setNewMemberName(''); setNewMemberPhoto(null); setAddMemberError(null); }}
+                className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-xl text-xs font-black uppercase tracking-widest transition-colors"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handleAddMember}
+                disabled={!newMemberName.trim()}
+                className="py-3 bg-orange-600 hover:bg-orange-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg shadow-orange-900/30"
+              >
+                ADD MEMBER
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== TEAM LOGO EDITOR MODAL ==================== */}
+      {showLogoEditor && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="relative">
+            <button
+              onClick={() => setShowLogoEditor(false)}
+              className="absolute -top-3 -right-3 z-10 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors border border-slate-600 shadow-lg"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <AvatarCreator
+              onConfirm={handleLogoConfirm}
+              onCancel={() => setShowLogoEditor(false)}
+              initialImage={team?.photoUrl}
+              title="TEAM LOGO"
+              placeholder="e.g. Fierce eagle golden"
+              defaultKeywords={team?.name || ''}
+            />
           </div>
         </div>
       )}

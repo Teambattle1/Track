@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Wand2, Camera, RefreshCw, CheckCircle, X, Loader2, Upload, User } from 'lucide-react';
 import { generateAvatar } from '../services/ai';
 import { uploadImage } from '../services/storage';
@@ -19,6 +19,13 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ onConfirm, onCancel, init
     const [isUploading, setIsUploading] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(initialImage || null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Sync keywords when defaultKeywords prop changes (e.g. team name typed after mount)
+    useEffect(() => {
+        if (defaultKeywords && !keywords) {
+            setKeywords(defaultKeywords);
+        }
+    }, [defaultKeywords]);
 
     const handleGenerate = async () => {
         if (!keywords.trim()) return;
@@ -61,19 +68,19 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = ({ onConfirm, onCancel, init
                     <label className="text-[10px] font-black text-orange-400 uppercase tracking-widest block mb-2 flex items-center gap-1.5">
                         <Wand2 className="w-3 h-3" /> AI GENERATE
                     </label>
-                    <div className="flex gap-2">
+                    <div className="relative">
                         <input
                             type="text"
                             value={keywords}
                             onChange={(e) => setKeywords(e.target.value)}
                             placeholder={placeholder}
-                            className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-bold outline-none focus:border-orange-500 transition-colors"
+                            className="w-full bg-slate-800 border-2 border-slate-700 rounded-xl pl-3 pr-[72px] py-3 text-sm text-white font-bold outline-none focus:border-orange-500 transition-colors"
                             onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
                         />
                         <button
                             onClick={handleGenerate}
                             disabled={isGenerating || !keywords.trim()}
-                            className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white px-3 py-2 rounded-xl transition-colors shadow-lg flex items-center gap-1.5 text-xs font-black uppercase"
+                            className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white px-3 py-2 rounded-lg transition-colors shadow-lg flex items-center gap-1.5 text-xs font-black uppercase"
                         >
                             {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
                             {isGenerating ? '' : 'GO'}

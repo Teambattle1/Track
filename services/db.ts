@@ -642,14 +642,16 @@ export const isPlayerNameTaken = async (gameId: string, playerName: string): Pro
 
 export const registerTeam = async (team: Team) => {
     try {
-        // Check for duplicate team name in this game
-        const taken = await isTeamNameTaken(team.gameId, team.name);
-        if (taken) {
+        // Single fetch to check both team name and player name duplicates
+        const existingTeams = await fetchTeams(team.gameId);
+
+        // Check for duplicate team name
+        const nameTaken = existingTeams.some(t => t.name.toLowerCase() === team.name.toLowerCase());
+        if (nameTaken) {
             throw new Error(`Team name "${team.name}" is already taken in this game`);
         }
 
         // Check for duplicate player names across all teams in this game (skip empty names)
-        const existingTeams = await fetchTeams(team.gameId);
         const existingPlayerNames = new Set(
             existingTeams.flatMap(t => t.members.map(m => (m.name || '').toLowerCase()).filter(n => n))
         );
@@ -691,6 +693,42 @@ export const registerTeam = async (team: Team) => {
 
         if (error) throw error;
     } catch (e) { logError('registerTeam', e); }
+};
+
+// Direct insert — skips duplicate checking (caller already verified)
+export const registerTeamDirect = async (team: Team) => {
+    try {
+        const insertData: any = {
+            id: team.id,
+            game_id: team.gameId,
+            name: team.name,
+            join_code: team.joinCode,
+            photo_url: team.photoUrl,
+            members: team.members,
+            score: team.score,
+            updated_at: team.updatedAt,
+            captain_device_id: team.captainDeviceId,
+            is_started: team.isStarted,
+            completed_point_ids: team.completedPointIds
+        };
+        if (_teamColumnsExist !== false) {
+            if (team.color) insertData.color = team.color;
+            if (team.shortCode) insertData.short_code = team.shortCode;
+        }
+
+        let { error } = await supabase.from('teams').insert(insertData);
+
+        if (error && (insertData.color !== undefined || insertData.short_code !== undefined)) {
+            console.warn('[DB] Retrying registerTeamDirect without optional columns:', error.message);
+            _teamColumnsExist = false;
+            delete insertData.color;
+            delete insertData.short_code;
+            const retry = await supabase.from('teams').insert(insertData);
+            error = retry.error;
+        }
+
+        if (error) throw error;
+    } catch (e) { logError('registerTeamDirect', e); }
 };
 
 export const updateTeam = async (teamId: string, updates: Partial<Team>) => {

@@ -886,7 +886,8 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
           </div>
         )}
 
-        <h1 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-12">JOIN MISSION</h1>
+        <h1 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-3">JOIN MISSION</h1>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-10">Ask Your TEAMCAPTAIN to look in teamlobby!</p>
 
         <div className="flex gap-4 w-full max-w-lg">
           {/* Enter Code */}
