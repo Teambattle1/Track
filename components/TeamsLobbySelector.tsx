@@ -105,36 +105,48 @@ const TeamsLobbySelector: React.FC<TeamsLobbySelectorProps> = ({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {filteredTeams.map(team => (
-                    <button
-                      key={team.id}
-                      onClick={() => {
-                        onSelectTeam(team.id);
-                        onClose();
-                      }}
-                      className="w-full text-left p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl hover:border-blue-400 dark:hover:border-blue-600 transition-all group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {team.name}
-                          </h3>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {team.members?.length || 0} members
-                            </span>
-                            <span className="flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400">
-                              {team.score || 0} pts
-                            </span>
+                  {filteredTeams.map(team => {
+                    const tc = team.color || '#3b82f6'; // fallback blue
+                    return (
+                      <button
+                        key={team.id}
+                        onClick={() => {
+                          onSelectTeam(team.id);
+                          onClose();
+                        }}
+                        className="w-full text-left p-4 rounded-xl transition-all group"
+                        style={{
+                          backgroundColor: tc + '10',
+                          borderWidth: '1px',
+                          borderStyle: 'solid',
+                          borderColor: tc + '30',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = tc + '60'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = tc + '30'; }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-white text-lg transition-colors" style={{ color: tc }}>
+                              {team.name}
+                            </h3>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-400">
+                              <span className="flex items-center gap-1">
+                                <Users className="w-4 h-4" />
+                                {team.members?.length || 0} members
+                              </span>
+                              <span className="flex items-center gap-1 font-bold" style={{ color: tc }}>
+                                {team.score || 0} pts
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 ml-4 p-3 rounded-lg transition-colors"
+                               style={{ backgroundColor: tc + '20', color: tc }}>
+                            <Shield className="w-5 h-5" />
                           </div>
                         </div>
-                        <div className="flex-shrink-0 ml-4 p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-blue-600 dark:text-blue-400 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/70 transition-colors">
-                          <Shield className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </>

@@ -127,32 +127,43 @@ const TeamLobbyChooser: React.FC<TeamLobbyChooserProps> = ({ games, onClose, onS
               </p>
             </div>
           ) : (
-            filteredTeams.map(team => (
-              <button
-                key={team.id}
-                onClick={() => {
-                  onSelectTeam(team.id);
-                  onClose();
-                }}
-                className="w-full flex items-center gap-3 p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:border-purple-500/40 hover:bg-slate-800/60 transition-all text-left group"
-              >
-                {team.photoUrl ? (
-                  <img src={team.photoUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0" />
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700 shrink-0"
-                       style={team.color ? { backgroundColor: team.color + '20', borderColor: team.color + '40' } : {}}>
-                    <Users className="w-5 h-5 text-slate-500" style={team.color ? { color: team.color } : {}} />
+            filteredTeams.map(team => {
+              const tc = team.color || '#8b5cf6'; // fallback purple
+              return (
+                <button
+                  key={team.id}
+                  onClick={() => {
+                    onSelectTeam(team.id);
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-3 p-4 rounded-xl transition-all text-left group"
+                  style={{
+                    backgroundColor: tc + '10',
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                    borderColor: tc + '30',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = tc + '60'; (e.currentTarget as HTMLElement).style.backgroundColor = tc + '18'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = tc + '30'; (e.currentTarget as HTMLElement).style.backgroundColor = tc + '10'; }}
+                >
+                  {team.photoUrl ? (
+                    <img src={team.photoUrl} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" style={{ borderWidth: '2px', borderStyle: 'solid', borderColor: tc + '50' }} />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                         style={{ backgroundColor: tc + '20', borderWidth: '1px', borderStyle: 'solid', borderColor: tc + '40' }}>
+                      <Users className="w-5 h-5" style={{ color: tc }} />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-black text-white uppercase tracking-wider truncate">{team.name}</h3>
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: tc + 'aa' }}>
+                      {team.members?.length || 0} MEMBERS · {team.score || 0} PTS
+                    </p>
                   </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-base font-black text-white uppercase tracking-wider truncate">{team.name}</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-                    {team.members?.length || 0} MEMBERS · {team.score || 0} PTS
-                  </p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            ))
+                  <ChevronRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" style={{ color: tc + '80' }} />
+                </button>
+              );
+            }))
           )}
         </div>
       </div>
