@@ -24,6 +24,8 @@ interface TeamLobbyViewProps {
   allTeams?: Team[];
   isCaptain?: boolean;
   onStartGame?: () => void;
+  autoOpenVotesForPoint?: string | null;
+  onTaskDecided?: (pointId: string) => void;
 }
 
 const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
@@ -33,7 +35,9 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   game,
   allTeams,
   isCaptain: isCaptainProp,
-  onStartGame
+  onStartGame,
+  autoOpenVotesForPoint,
+  onTaskDecided
 }) => {
   const [team, setTeam] = useState<Team | null>(null);
   const [liveMembers, setLiveMembers] = useState<TeamMember[]>([]);
@@ -45,6 +49,9 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const [showQrSection, setShowQrSection] = useState(true);
   const [activeTab, setActiveTab] = useState<LobbyTab>('MEMBERS');
   const countdownRef = useRef<number | null>(null);
+  const autoStartFiredRef = useRef(false);
+  const lastBeepSecondRef = useRef<number | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const myDeviceId = teamSync.getDeviceId();
 
   // --- VOTE STATE ---
@@ -141,6 +148,17 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     if (!isOpen) return;
     loadTeam();
   }, [isOpen, teamId, loadTeam]);
+
+  // Lock landscape orientation for captain tablet view
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      (window.screen as any).orientation?.lock?.('landscape-primary')?.catch?.(() => {});
+    } catch {}
+    return () => {
+      try { (window.screen as any).orientation?.unlock?.(); } catch {}
+    };
+  }, [isOpen]);
 
   // Subscribe to live members via teamSync
   useEffect(() => {
@@ -272,10 +290,34 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     generateQr();
   }, [isOpen, team, game]);
 
-  // Countdown timer
+  // Beep sound using Web Audio API
+  const playBeep = useCallback((frequency: number = 800, duration: number = 150, volume: number = 0.3) => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioCtxRef.current;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = frequency;
+      osc.type = 'square';
+      gain.gain.value = volume;
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration / 1000);
+    } catch (e) {
+      // Audio not available
+    }
+  }, []);
+
+  // Countdown timer with 10-second beep and auto-start
   useEffect(() => {
     if (!isOpen || !game?.timerConfig?.startTime) {
       setCountdown(null);
+      autoStartFiredRef.current = false;
+      lastBeepSecondRef.current = null;
       return;
     }
 
@@ -285,6 +327,32 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
         game.timerConfig?.lobbyOpenTime
       );
       setCountdown(info);
+
+      // 10-second countdown beeps + auto-start for captain
+      if (isCaptain && onStartGame && info.state === 'lobby_open') {
+        const secondsLeft = Math.ceil(info.remainingMs / 1000);
+
+        if (secondsLeft <= 10 && secondsLeft > 0 && secondsLeft !== lastBeepSecondRef.current) {
+          lastBeepSecondRef.current = secondsLeft;
+          // Higher pitch + louder for last 3 seconds
+          if (secondsLeft <= 3) {
+            playBeep(1200, 200, 0.5);
+          } else {
+            playBeep(800, 150, 0.3);
+          }
+        }
+      }
+
+      // Auto-start when countdown reaches zero
+      if (isCaptain && onStartGame && info.state === 'game_started' && !autoStartFiredRef.current) {
+        autoStartFiredRef.current = true;
+        // Final long beep
+        playBeep(1400, 500, 0.6);
+        // Small delay so the final beep plays before navigation
+        setTimeout(() => {
+          onStartGame();
+        }, 600);
+      }
     };
 
     tick();
@@ -292,7 +360,15 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     return () => {
       if (countdownRef.current) window.clearInterval(countdownRef.current);
     };
-  }, [isOpen, game]);
+  }, [isOpen, game, isCaptain, onStartGame, playBeep]);
+
+  // Auto-switch to VOTES tab when a voting task is opened by captain
+  useEffect(() => {
+    if (autoOpenVotesForPoint && isOpen) {
+      setActiveTab('VOTES');
+      setExpandedTask(autoOpenVotesForPoint);
+    }
+  }, [autoOpenVotesForPoint, isOpen]);
 
   // Fun loading text rotation
   const funLoadingTexts = [
@@ -1198,6 +1274,54 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                                 ))}
                               </>
                             )}
+
+                            {/* Captain: Submit Team Answer */}
+                            {isCaptain && votes.length > 0 && onTaskDecided && (
+                              <div className="mt-4 pt-4 border-t-2 border-orange-500/20">
+                                <button
+                                  onClick={() => {
+                                    // Determine the majority answer (most common)
+                                    const answerCounts: Record<string, { count: number; answer: any }> = {};
+                                    votes.forEach(v => {
+                                      const key = normalizeAnswer(v.answer);
+                                      if (!answerCounts[key]) answerCounts[key] = { count: 0, answer: v.answer };
+                                      answerCounts[key].count++;
+                                    });
+                                    const sorted = Object.values(answerCounts).sort((a, b) => b.count - a.count);
+                                    const agreedAnswer = sorted[0]?.answer;
+
+                                    // Check correctness
+                                    let isCorrect = false;
+                                    const task = point.task;
+                                    const correctAnswer = task.answer || (task.correctAnswers && task.correctAnswers[0]);
+                                    if (correctAnswer !== undefined && agreedAnswer !== undefined) {
+                                      const agreedStr = typeof agreedAnswer === 'string' ? agreedAnswer : JSON.stringify(agreedAnswer);
+                                      const correctStr = typeof correctAnswer === 'string' ? correctAnswer : JSON.stringify(correctAnswer);
+                                      isCorrect = normalizeAnswer(agreedStr) === normalizeAnswer(correctStr);
+                                    }
+
+                                    // Broadcast decision to players
+                                    teamSync.broadcastTaskDecided({
+                                      pointId: point.id,
+                                      isCorrect,
+                                      correctAnswer: task.answer || (task.correctAnswers ? task.correctAnswers[0] : undefined),
+                                      agreedAnswer,
+                                      pointsAwarded: isCorrect ? (point.points || 0) : 0,
+                                      timestamp: Date.now()
+                                    });
+
+                                    onTaskDecided(point.id);
+                                  }}
+                                  className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-black text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 shadow-lg shadow-green-900/30 transition-all"
+                                >
+                                  <CheckCircle className="w-5 h-5" />
+                                  SUBMIT TEAM ANSWER
+                                </button>
+                                <p className="text-[9px] text-slate-500 text-center mt-2 font-bold uppercase">
+                                  SUBMITS THE MAJORITY ANSWER AND NOTIFIES ALL PLAYERS
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -1386,7 +1510,7 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
       {onStartGame && (
         <div className="border-t-2 border-orange-500/30 bg-[#0a0f1d]/95 backdrop-blur-sm p-4">
           {isCaptain ? (
-            // Captain sees the START GAME button (or countdown if timer is set)
+            // Captain sees the START GAME button — disabled until master game start time is due
             (!countdown || countdown.state === 'no_timer' || countdown.state === 'game_started') ? (
               <button
                 onClick={onStartGame}
@@ -1397,26 +1521,61 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
               </button>
             ) : (
               <div className="text-center">
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                  {countdown.label}
-                </p>
-                <p className="text-3xl font-black text-orange-400 tracking-wider">
-                  {countdown.remainingMs > 0 ? formatCountdown(countdown.remainingMs) : '00:00'}
-                </p>
+                {(() => {
+                  const secondsLeft = Math.ceil(countdown.remainingMs / 1000);
+                  const isBeeping = secondsLeft <= 10 && secondsLeft > 0;
+                  const isFinal = secondsLeft <= 3 && secondsLeft > 0;
+                  return (
+                    <>
+                      <p className={`text-xs font-black uppercase tracking-widest mb-2 ${isBeeping ? 'text-red-400' : 'text-slate-400'}`}>
+                        {isBeeping ? 'GET READY!' : countdown.label}
+                      </p>
+                      <p className={`font-black tracking-wider mb-3 transition-all ${
+                        isFinal ? 'text-5xl text-red-500 animate-pulse' :
+                        isBeeping ? 'text-4xl text-orange-400 animate-pulse' :
+                        'text-3xl text-orange-400'
+                      }`}>
+                        {countdown.remainingMs > 0 ? (isBeeping ? secondsLeft : formatCountdown(countdown.remainingMs)) : '00:00'}
+                      </p>
+                      <button
+                        disabled
+                        className={`w-full max-w-md mx-auto block py-4 rounded-2xl font-black text-lg uppercase tracking-[0.15em] cursor-not-allowed flex items-center justify-center gap-3 border-2 ${
+                          isBeeping
+                            ? 'bg-orange-900/30 border-orange-500/50 text-orange-400 opacity-80'
+                            : 'bg-slate-800 border-slate-700 text-slate-500 opacity-60'
+                        }`}
+                      >
+                        <Play className="w-6 h-6" />
+                        {isBeeping ? 'AUTO-STARTING...' : 'WAITING FOR START TIME'}
+                      </button>
+                    </>
+                  );
+                })()}
               </div>
             )
           ) : (
             // Player sees "waiting for captain" message or countdown
             <div className="text-center">
               {countdown && countdown.state !== 'no_timer' && countdown.remainingMs > 0 ? (
-                <>
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                    {countdown.label}
-                  </p>
-                  <p className="text-3xl font-black text-orange-400 tracking-wider">
-                    {formatCountdown(countdown.remainingMs)}
-                  </p>
-                </>
+                (() => {
+                  const sLeft = Math.ceil(countdown.remainingMs / 1000);
+                  const beeping = sLeft <= 10;
+                  const final3 = sLeft <= 3;
+                  return (
+                    <>
+                      <p className={`text-xs font-black uppercase tracking-widest mb-2 ${beeping ? 'text-red-400' : 'text-slate-400'}`}>
+                        {beeping ? 'GET READY!' : countdown.label}
+                      </p>
+                      <p className={`font-black tracking-wider ${
+                        final3 ? 'text-5xl text-red-500 animate-pulse' :
+                        beeping ? 'text-4xl text-orange-400 animate-pulse' :
+                        'text-3xl text-orange-400'
+                      }`}>
+                        {beeping ? sLeft : formatCountdown(countdown.remainingMs)}
+                      </p>
+                    </>
+                  );
+                })()
               ) : (
                 <>
                   <div className="flex items-center justify-center gap-2 mb-1">

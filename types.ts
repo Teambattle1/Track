@@ -86,6 +86,31 @@ export interface TaskVote {
   timestamp: number;
 }
 
+export interface OpenTaskPayload {
+  pointId: string;
+  title: string;
+  task: GameTask;
+  teamVotingMode: 'require_consensus' | 'captain_submit';
+  points: number;
+  timestamp: number;
+}
+
+export interface TaskDecidedPayload {
+  pointId: string;
+  isCorrect: boolean;
+  correctAnswer?: string | string[] | number;
+  agreedAnswer?: string | string[] | number;
+  pointsAwarded: number;
+  timestamp: number;
+}
+
+export interface PlayerTaskStats {
+  correctCount: number;
+  incorrectCount: number;
+  totalAttempted: number;
+  pointsEarned: number;
+}
+
 export interface ChatMessage {
   id: string;
   gameId: string;

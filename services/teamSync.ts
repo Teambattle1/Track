@@ -108,6 +108,8 @@ class TeamSyncService {
   private memberListeners: MemberCallback[] = [];
   private chatListeners: ChatCallback[] = [];
   private globalLocationListeners: GlobalLocationCallback[] = [];
+  private openTaskListeners: ((p: import('../types').OpenTaskPayload) => void)[] = [];
+  private taskDecidedListeners: ((p: import('../types').TaskDecidedPayload) => void)[] = [];
 
   private presenceIntervalId: number | null = null;
 
@@ -261,6 +263,12 @@ class TeamSyncService {
       })
       .on('broadcast', { event: 'member_added' }, (payload: any) => {
         console.log('[TeamSync] New member added:', payload.payload);
+      })
+      .on('broadcast', { event: 'open_task' }, (payload: any) => {
+        this.openTaskListeners.forEach(cb => cb(payload.payload));
+      })
+      .on('broadcast', { event: 'task_decided' }, (payload: any) => {
+        this.taskDecidedListeners.forEach(cb => cb(payload.payload));
       })
       .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
@@ -426,6 +434,8 @@ class TeamSyncService {
     this.votes = {};
     this.members.clear();
     this.otherTeams.clear();
+    this.openTaskListeners = [];
+    this.taskDecidedListeners = [];
   }
 
   public castVote(pointId: string, answer: any) {
@@ -467,6 +477,18 @@ class TeamSyncService {
         saveOfflineQueue(queue);
       }
     });
+  }
+
+  // Broadcast a task opening to all team members (captain → players)
+  public broadcastOpenTask(payload: import('../types').OpenTaskPayload) {
+    if (!this.channel) return;
+    this.channel.send({ type: 'broadcast', event: 'open_task', payload });
+  }
+
+  // Broadcast task decision result to all team members (captain → players)
+  public broadcastTaskDecided(payload: import('../types').TaskDecidedPayload) {
+    if (!this.channel) return;
+    this.channel.send({ type: 'broadcast', event: 'task_decided', payload });
   }
 
   public sendChatMessage(gameId: string, message: string, targetTeamId: string | null = null, isUrgent: boolean = false, confirmRequired: boolean = false) {
@@ -775,6 +797,16 @@ class TeamSyncService {
 
   public subscribeToMemberCount(callback: (c: number) => void) {
       return this.subscribeToMembers((members) => callback(members.length));
+  }
+
+  public subscribeToOpenTask(callback: (p: import('../types').OpenTaskPayload) => void) {
+      this.openTaskListeners.push(callback);
+      return () => { this.openTaskListeners = this.openTaskListeners.filter(l => l !== callback); };
+  }
+
+  public subscribeToTaskDecided(callback: (p: import('../types').TaskDecidedPayload) => void) {
+      this.taskDecidedListeners.push(callback);
+      return () => { this.taskDecidedListeners = this.taskDecidedListeners.filter(l => l !== callback); };
   }
 
   public getVotesForTask(pointId: string): TaskVote[] {

@@ -30,6 +30,7 @@ import DeleteGamesModal from './components/DeleteGamesModal';
 import ChatDrawer from './components/ChatDrawer';
 import TeamsHubModal from './components/TeamsHubModal';
 import TeamLobbyView from './components/TeamLobbyView';
+import PlayerPlayView from './components/PlayerPlayView';
 import TeamsLobbySelector from './components/TeamsLobbySelector';
 import DemoTeamsSelector from './components/DemoTeamsSelector';
 import QRScannerModal from './components/QRScannerModal';
@@ -165,6 +166,8 @@ const GameApp: React.FC = () => {
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishModalShown, setFinishModalShown] = useState(false);
   const [showTeamLobbyAfterJoin, setShowTeamLobbyAfterJoin] = useState(false);
+  const [playerGameStarted, setPlayerGameStarted] = useState(false);
+  const [autoVotesPointId, setAutoVotesPointId] = useState<string | null>(null);
 
   // --- TEAM LOBBY ACCESS STATE ---
   const [gameForLobbyAccess, setGameForLobbyAccess] = useState<string | null>(null);
@@ -725,6 +728,9 @@ const GameApp: React.FC = () => {
       return () => clearInterval(interval);
   }, [activeGameId, mode]);
 
+  // Captain detection for play mode routing
+  const isCaptainInPlay = currentTeam?.captainDeviceId === teamSync.getDeviceId();
+
   // --- MEDIA REJECTION NOTIFICATIONS (for team players) ---
   useEffect(() => {
       if (!activeGameId || !activeGame) return;
@@ -1268,6 +1274,21 @@ const GameApp: React.FC = () => {
       } else if (mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR) {
           console.log('[handlePointClick] Setting activeTaskModalId:', point.id);
           setActiveTaskModalId(point.id);
+
+          // Captain: broadcast task to team players for voting
+          if (isCaptainInPlay && playerGameStarted && point.teamVotingEnabled) {
+              teamSync.broadcastOpenTask({
+                  pointId: point.id,
+                  title: point.title || `Task ${point.id.slice(-4)}`,
+                  task: point.task,
+                  teamVotingMode: point.teamVotingMode || activeGame?.taskConfig?.teamVotingMode || 'captain_submit',
+                  points: point.points || 0,
+                  timestamp: Date.now()
+              });
+              // Also open TeamLobby on VOTES tab to manage voting
+              setAutoVotesPointId(point.id);
+              setShowTeamLobby(true);
+          }
       }
   };
 
@@ -1621,8 +1642,9 @@ const GameApp: React.FC = () => {
       } else if ((elem as any).mozRequestFullScreen) {
           (elem as any).mozRequestFullScreen();
       }
-      // Close lobby overlay, reveal game map
+      // Close lobby overlay, reveal game map (captain) or player view (player)
       setShowTeamLobbyAfterJoin(false);
+      setPlayerGameStarted(true);
   };
 
   const handleStartSimulation = () => {
@@ -2943,9 +2965,14 @@ const GameApp: React.FC = () => {
           {showTeamLobby && activeGame && currentTeam && (
               <TeamLobbyView
                   isOpen={showTeamLobby}
-                  onClose={() => setShowTeamLobby(false)}
+                  onClose={() => { setShowTeamLobby(false); setAutoVotesPointId(null); }}
                   teamId={currentTeam.id}
                   game={activeGame}
+                  autoOpenVotesForPoint={autoVotesPointId}
+                  onTaskDecided={(pointId) => {
+                      setShowTeamLobby(false);
+                      setAutoVotesPointId(null);
+                  }}
               />
           )}
 
@@ -3879,8 +3906,17 @@ const GameApp: React.FC = () => {
             );
         })()}
 
-        {/* PLAY MODE: Team HUD with device frame centered */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (() => {
+        {/* PLAY MODE: Player Play View for non-captain players */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && !isCaptainInPlay && playerGameStarted && currentTeam && activeGame && (
+            <PlayerPlayView
+                game={activeGame}
+                teamName={currentTeam.name || teamSync.getState().teamName || 'Team'}
+                teamColor={currentTeam.color}
+            />
+        )}
+
+        {/* PLAY MODE: Team HUD with device frame centered (captain view) */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (isCaptainInPlay || !playerGameStarted) && (() => {
             const teamState = teamSync.getState();
             const teamMembers = teamSync.getAllMembers();
             const allTasks = activeGame?.points || [];
