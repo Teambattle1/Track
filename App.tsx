@@ -2966,7 +2966,7 @@ const GameApp: React.FC = () => {
               </>
           )}
           {showChatDrawer && activeGameId && (
-              <ChatDrawer 
+              <ChatDrawer
                   isOpen={showChatDrawer}
                   onClose={() => setShowChatDrawer(false)}
                   messages={chatHistory}
@@ -2974,6 +2974,7 @@ const GameApp: React.FC = () => {
                   mode={mode}
                   userName={authUser?.name || "Player"}
                   isInstructor={mode === GameMode.INSTRUCTOR}
+                  teams={teamsForFogOfWar}
               />
           )}
 

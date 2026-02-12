@@ -112,7 +112,7 @@ const NavCard = ({
       </div>
 
       <div className="mt-6 flex items-center gap-1 text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] group-hover:text-white transition-colors group-hover:translate-x-1">
-        ACCESS MODULE <ChevronRight className="w-3 h-3" />
+        OPEN <ChevronRight className="w-3 h-3" />
       </div>
     </div>
   </button>
@@ -307,10 +307,8 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
           return;
         }
 
-        // Check environment variables (configured at build time on deployment)
-        const envKey = process.env.VITE_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
-        const hasKey = !!envKey && envKey.trim().length > 0;
-        setShowApiKeyWarning(!hasKey);
+        // No env var fallback — keys are managed via localStorage only
+        setShowApiKeyWarning(true);
         setHasCheckedApiKey(true);
       } catch (e) {
         console.error('Failed to check API key:', e);

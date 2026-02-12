@@ -7,20 +7,17 @@ import { normalizeLanguage } from "../utils/i18n";
 // ============================================================================
 
 // Get Anthropic API key (for Claude - text generation)
+// Keys are stored in localStorage via the Settings/Admin modal.
+// We no longer use import.meta.env.VITE_* to avoid baking secrets into client JS bundles.
 const getAnthropicApiKey = (): string => {
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('ANTHROPIC_API_KEY') : null;
-    if (localKey) return localKey;
-    // Vite bakes import.meta.env.VITE_* at build time from .env or Netlify env vars
-    const envKey = import.meta.env.VITE_ANTHROPIC_API_KEY || '';
-    return envKey;
+    return localKey || '';
 };
 
 // Get Stability AI API key (for image generation)
 const getStabilityApiKey = (): string => {
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('STABILITY_API_KEY') : null;
-    if (localKey) return localKey;
-    const envKey = import.meta.env.VITE_STABILITY_API_KEY || '';
-    return envKey;
+    return localKey || '';
 };
 
 // Check if Claude API key is available (for text generation)
