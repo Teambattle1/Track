@@ -65,6 +65,7 @@ import FinishMessageModal from './components/FinishMessageModal';
 import { AroundTheWorldDashboard } from './components/aroundtheworld';
 import { getTaskById } from './utils/aroundtheworld/defaultTasks';
 import { ensureATWTaskList } from './utils/aroundtheworld/initTaskList';
+import PlayerHUD from './components/PlayerHUD';
 
 // Lazy-loaded heavy components for code splitting
 const TaskMaster = lazy(() => import('./components/TaskMaster'));
@@ -281,7 +282,8 @@ const GameApp: React.FC = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [latestMessage, setLatestMessage] = useState<ChatMessage | null>(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
-  
+  const [playerTeamName, setPlayerTeamName] = useState<string>('');
+
   // --- MAP STATE ---
   const [localMapStyle, setLocalMapStyle] = useState<MapStyleId>('osm');
   const mapRef = useRef<GameMapHandle>(null);
@@ -1443,6 +1445,7 @@ const GameApp: React.FC = () => {
   const handleStartGame = (gameId: string, teamName: string, userName: string, teamPhoto: string | null, style: MapStyleId) => {
       setActiveGameId(gameId);
       setLocalMapStyle(style);
+      setPlayerTeamName(teamName);
       teamSync.connect(gameId, teamName, userName);
       setMode(GameMode.PLAY);
       setShowLanding(false);

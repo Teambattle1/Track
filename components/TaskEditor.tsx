@@ -6,7 +6,7 @@ import { ICON_COMPONENTS } from '../utils/icons';
 import { getCroppedImg } from '../utils/image';
 import Cropper from 'react-easy-crop';
 import { generateAiImage, translateTaskContent } from '../services/ai';
-import { uploadImage } from '../services/storage'; // IMPORTED
+import { uploadImage } from '../services/storage';
 import { fetchUniqueTags } from '../services/db';
 import { useTagColors } from '../contexts/TagColorsContext';
 import QRCode from 'qrcode';
@@ -156,7 +156,7 @@ const RichTextEditor = ({ value, onChange, placeholder }: { value: string, onCha
         ref={editorRef}
         className="p-3 min-h-[120px] outline-none text-sm text-gray-900 dark:text-white prose dark:prose-invert max-w-none"
         contentEditable
-        onInput={(e) => onChange(e.currentTarget.innerHTML)}
+        onInput={(e) => onChange(DOMPurify.sanitize(e.currentTarget.innerHTML))}
         onBlur={(e) => previousValueRef.current = e.currentTarget.innerHTML}
         onPaste={handlePaste}
         suppressContentEditableWarning

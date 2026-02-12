@@ -10,7 +10,7 @@ interface LoquizImporterProps {
 
 const LoquizImporter: React.FC<LoquizImporterProps> = ({ onClose, onImportTasks }) => {
   // Pre-fill with the provided credentials or local storage
-  const [apiKey, setApiKey] = useState(localStorage.getItem('loquiz_api_key') || '35dda9f2ec9b4acabc414157ac03ea8454682b5f54969faae0b8d7121150298e');
+  const [apiKey, setApiKey] = useState(localStorage.getItem('loquiz_api_key') || '7972afbaae52face652419f4cfc849a41a6edec2c99b4a5adf6d290444e4b264');
   
   const [step, setStep] = useState<'AUTH' | 'BROWSE'>('AUTH');
   const [browseTab, setBrowseTab] = useState<'GAMES' | 'LIBRARY'>('GAMES');

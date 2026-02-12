@@ -13,11 +13,11 @@ type LoginMode = 'SELECT' | 'EDITOR' | 'INSTRUCTOR' | 'TEAM';
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onPlayAsGuest, onBack }) => {
     const [mode, setMode] = useState<LoginMode>('SELECT');
-    
+
     // EDITOR login
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    
+
     // INSTRUCTOR login
     const [InstructorCode, setInstructorCode] = useState('');
     

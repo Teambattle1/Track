@@ -24,6 +24,8 @@ const readFileAsDataUrl = (file: File): Promise<string> => {
   });
 };
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
 export const uploadImage = async (fileOrBase64: File | string, bucket: string = 'game-assets'): Promise<string | null> => {
   try {
     let file: File | Blob;
@@ -32,10 +34,16 @@ export const uploadImage = async (fileOrBase64: File | string, bucket: string = 
     if (typeof fileOrBase64 === 'string') {
       if (!fileOrBase64.startsWith('data:')) return fileOrBase64; // Already a URL
       file = base64ToBlob(fileOrBase64);
-      fileName += '.jpg'; // Assume jpg for base64 conversions usually
+      fileName += '.jpg';
     } else {
       file = fileOrBase64;
       fileName += `-${fileOrBase64.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      console.error(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 10MB.`);
+      return null;
     }
 
     // 1. Attempt upload to Supabase Storage

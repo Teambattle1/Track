@@ -749,25 +749,29 @@ export const updateTeamScore = async (teamId: string, delta: number) => {
     }
 };
 
-export const updateTeamProgress = async (teamId: string, pointId: string, newScore: number) => {
+export const updateTeamProgress = async (teamId: string, pointId: string, scoreToAdd: number) => {
     try {
-        const team = await fetchTeam(teamId);
-        if (team) {
-            const completed = new Set(team.completedPointIds || []);
-            // Check if already completed to prevent double-score logic on client side before calling this
-            // But we reinforce here:
-            if (!completed.has(pointId)) {
-                completed.add(pointId);
-                await retryWithBackoff(
-                    () => supabase.from('teams').update({
-                        score: newScore, // Caller should calculate score, OR we use RPC logic separately
+        // Attempt atomic RPC first (prevents race conditions / double-scoring)
+        const { error: rpcError } = await supabase.rpc('complete_task', {
+            p_team_id: teamId,
+            p_point_id: pointId,
+            p_score_delta: scoreToAdd
+        });
+
+        if (rpcError) {
+            // Fallback to client-side check if RPC doesn't exist
+            console.warn("RPC complete_task missing, using fallback", rpcError.message);
+            const team = await fetchTeam(teamId);
+            if (team) {
+                const completed = new Set(team.completedPointIds || []);
+                if (!completed.has(pointId)) {
+                    completed.add(pointId);
+                    const { error } = await supabase.from('teams').update({
+                        score: team.score + scoreToAdd,
                         completed_point_ids: Array.from(completed)
-                    }).eq('id', teamId).then(result => {
-                        if (result.error) throw result.error;
-                        return result;
-                    }),
-                    'updateTeamProgress'
-                );
+                    }).eq('id', teamId);
+                    if (error) throw error;
+                }
             }
         }
     } catch (e) {
