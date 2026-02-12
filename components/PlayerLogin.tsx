@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { KeyRound, Play, QrCode, Loader2, CheckCircle, XCircle, Camera, Globe, Users, Hash, ArrowLeft, User, X, Smartphone, MapPin, ChevronDown, Check } from 'lucide-react';
+import { KeyRound, Play, QrCode, Loader2, CheckCircle, XCircle, Camera, Globe, Users, Hash, ArrowLeft, User, X, Smartphone, MapPin, ChevronDown, Check, Crown, RefreshCw, UserPlus, Shield } from 'lucide-react';
 import * as db from '../services/db';
 import { teamSync } from '../services/teamSync';
 import { Game, Language } from '../types';
@@ -17,7 +17,7 @@ interface PlayerLoginProps {
   preSelectedGame?: Game;
 }
 
-type PlayerLoginStep = 'GAME_CODE' | 'TEAM_MENU' | 'CREATE_TEAM' | 'JOIN_OPTIONS' | 'JOIN_CODE' | 'JOIN_QR' | 'RECOVER_DEVICE';
+type PlayerLoginStep = 'GAME_CODE' | 'TEAM_MENU' | 'CREATE_TEAM' | 'JOIN_OPTIONS' | 'JOIN_CODE' | 'JOIN_QR' | 'RECOVER_DEVICE' | 'REJOIN_TEAM' | 'RECOVER_AS_PLAYER';
 
 const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelectedGame }) => {
   // --- INTRO ANIMATION ---
@@ -70,6 +70,22 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
   const [recoveryCode, setRecoveryCode] = useState('');
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [showRecoveryQR, setShowRecoveryQR] = useState(false);
+
+  // --- REJOIN STATE ---
+  const [rejoinTeams, setRejoinTeams] = useState<any[]>([]);
+  const [rejoinLoading, setRejoinLoading] = useState(false);
+  const [rejoinSelectedTeam, setRejoinSelectedTeam] = useState<any | null>(null);
+  const [rejoinPlayerName, setRejoinPlayerName] = useState('');
+  const [rejoinError, setRejoinError] = useState<string | null>(null);
+  const [rejoinWaiting, setRejoinWaiting] = useState(false);
+  const [rejoinRequestId, setRejoinRequestId] = useState<string | null>(null);
+
+  // --- RECOVER AS EXISTING PLAYER STATE ---
+  const [recoverTeam, setRecoverTeam] = useState<any | null>(null);
+  const [recoverSelectedMember, setRecoverSelectedMember] = useState<any | null>(null);
+  const [recoverConfirming, setRecoverConfirming] = useState(false);
+  const [recoverLoading, setRecoverLoading] = useState(false);
 
   // --- AUTO-FILL FROM URL PARAMS ---
   useEffect(() => {
@@ -80,6 +96,26 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
       handleValidateCode(code);
     }
   }, []);
+
+  // --- DETECT PENDING TEAM CODE (from team QR scan) ---
+  useEffect(() => {
+    const pendingCode = localStorage.getItem('geohunt_pending_team_code');
+    if (!pendingCode || !validGame) return;
+
+    const loadTeamForRecovery = async () => {
+      try {
+        const foundTeam = await db.fetchTeamByShortCode(validGame.id, pendingCode);
+        if (foundTeam && foundTeam.members && foundTeam.members.length > 0) {
+          setRecoverTeam(foundTeam);
+          setTeamName(foundTeam.name);
+          setStep('RECOVER_AS_PLAYER');
+        }
+      } catch (err) {
+        console.error('[PlayerLogin] Error looking up team for recovery:', err);
+      }
+    };
+    loadTeamForRecovery();
+  }, [validGame?.id]);
 
   // --- GAME CODE VALIDATION ---
   const handleValidateCode = async (code?: string) => {
@@ -109,6 +145,14 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
           setSelectedLanguage(gameLanguage);
         } else {
           setSelectedLanguage('English');
+        }
+        // Auto-advance: if only one language, go directly to team menu
+        if (approvedLangs.length <= 1) {
+          localStorage.setItem(`game_${matchingGame.id}_language`, approvedLangs.includes(gameLanguage) ? gameLanguage : 'English');
+          window.history.replaceState({}, '', window.location.pathname);
+          setIsValidating(false);
+          setStep('TEAM_MENU');
+          return;
         }
       } else {
         setValidationError('Invalid access code. Please check and try again.');
@@ -225,6 +269,59 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
     }
   };
 
+  // --- RECOVERY QR SCAN (scan team QR to rejoin) ---
+  const handleRecoveryQRScan = async (scannedData: string) => {
+    setShowRecoveryQR(false);
+    setRecoveryLoading(true);
+    setRecoveryError(null);
+
+    try {
+      // Extract teamCode and gameCode from scanned URL
+      const teamCodeMatch = scannedData.match(/teamCode=([^&]+)/);
+      const gameCodeMatch = scannedData.match(/gameCode=([^&]+)/);
+
+      if (!teamCodeMatch) {
+        setRecoveryError('Invalid QR code. Please scan your team\'s QR code from the Team Lobby.');
+        setRecoveryLoading(false);
+        return;
+      }
+
+      const teamCode = teamCodeMatch[1].toUpperCase();
+      const gameCode = gameCodeMatch ? gameCodeMatch[1].toUpperCase() : '';
+
+      // If we don't have a valid game yet, look it up by access code
+      let targetGame = validGame;
+      if (!targetGame && gameCode) {
+        const allGames = await db.fetchGames();
+        targetGame = allGames.find(g => g.accessCode?.toUpperCase() === gameCode) || null;
+        if (targetGame) {
+          setValidGame(targetGame);
+        }
+      }
+
+      if (!targetGame) {
+        setRecoveryError('Could not find the game. Please enter your game code first.');
+        setRecoveryLoading(false);
+        return;
+      }
+
+      // Look up team by short code
+      const foundTeam = await db.fetchTeamByShortCode(targetGame.id, teamCode);
+      if (foundTeam && foundTeam.members && foundTeam.members.length > 0) {
+        setRecoverTeam(foundTeam);
+        setTeamName(foundTeam.name);
+        setStep('RECOVER_AS_PLAYER');
+      } else {
+        setRecoveryError('Team not found or has no members. Please try a different QR code.');
+      }
+    } catch (e) {
+      console.error('[Recovery QR] Error:', e);
+      setRecoveryError('Something went wrong scanning the QR code. Please try again.');
+    } finally {
+      setRecoveryLoading(false);
+    }
+  };
+
   // --- QR SCANNING FOR JOIN ---
   useEffect(() => {
     let animationFrameId: number;
@@ -279,6 +376,33 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
       }
     };
   }, [isScanning]);
+
+  // --- REJOIN: load teams when entering rejoin step ---
+  useEffect(() => {
+    if (step !== 'REJOIN_TEAM' || !validGame || rejoinTeams.length > 0 || rejoinLoading) return;
+    setRejoinLoading(true);
+    db.fetchTeams(validGame.id).then(teams => {
+      setRejoinTeams(teams);
+    }).catch(e => {
+      console.error('[PlayerLogin] Error loading teams for rejoin:', e);
+    }).finally(() => {
+      setRejoinLoading(false);
+    });
+  }, [step, validGame?.id]);
+
+  // --- REJOIN: listen for captain's response ---
+  useEffect(() => {
+    if (!rejoinWaiting || !rejoinRequestId || !validGame) return;
+    const unsub = teamSync.subscribeToRejoinResponse(validGame.id, rejoinRequestId, (response) => {
+      setRejoinWaiting(false);
+      if (response.accepted) {
+        onComplete(validGame.id, rejoinSelectedTeam!.name, rejoinPlayerName.trim(), null);
+      } else {
+        setRejoinError('Captain rejected your request. Please try another team or ask your captain.');
+      }
+    });
+    return unsub;
+  }, [rejoinWaiting, rejoinRequestId, validGame?.id]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !isValidating) {
@@ -391,7 +515,7 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
                     setValidGame(null);
                   }}
                   onKeyPress={handleKeyPress}
-                  placeholder="GAME2026"
+                  placeholder="ENTER CODE..."
                   maxLength={20}
                   className="w-full bg-slate-900/90 border-2 border-slate-800 rounded-2xl px-6 py-5 text-white text-2xl font-bold uppercase tracking-widest text-center outline-none focus:border-white focus:ring-4 focus:ring-white/20 transition-all placeholder:text-slate-500"
                   disabled={isValidating}
@@ -526,65 +650,86 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
   // ========================================
   if (step === 'TEAM_MENU') {
     return (
-      <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col font-sans overflow-hidden">
+      <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col font-sans overflow-y-auto">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/footprints.png')] opacity-10 pointer-events-none" />
 
-        <div className="flex flex-col h-full items-center relative">
+        <div className="flex flex-col min-h-full items-center relative">
           {/* Back Button */}
           <button
             onClick={() => setStep('GAME_CODE')}
-            className="absolute top-6 left-6 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-50 hover:scale-110 active:scale-95"
+            className="absolute top-4 left-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-50 hover:scale-110 active:scale-95"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
 
-          <div className="p-6 pt-12 text-center z-10">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl mx-auto flex items-center justify-center shadow-lg mb-4">
-              <MapPin className="w-8 h-8 text-white" />
+          <div className="p-4 pt-14 text-center z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-3">
+              <MapPin className="w-7 h-7 text-white" />
             </div>
 
             {/* Game Badge */}
             {validGame && (
-              <div className="bg-orange-600/20 border border-orange-500/50 text-orange-400 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-4 inline-block shadow-[0_0_15px_rgba(234,88,12,0.3)]">
+              <div className="bg-orange-600/20 border border-orange-500/50 text-orange-400 px-5 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest mb-3 inline-block shadow-[0_0_15px_rgba(234,88,12,0.3)]">
                 {validGame.name}
               </div>
             )}
 
-            <h1 className="text-2xl font-black uppercase tracking-[0.2em] text-slate-200 mb-2">
+            <h1 className="text-xl font-black uppercase tracking-[0.2em] text-slate-200 mb-1">
               CHOOSE YOUR PATH
             </h1>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center px-6 gap-6 z-10 max-w-sm w-full pb-20">
-            {/* Create Team */}
-            <button
-              onClick={() => setStep('CREATE_TEAM')}
-              className="group relative h-40 bg-gradient-to-r from-orange-600 to-red-600 rounded-3xl flex flex-col items-center justify-center shadow-xl hover:scale-[1.02] transition-transform border-t border-orange-400 overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
-              <div className="relative z-10 flex flex-col items-center">
-                <Users className="w-10 h-10 text-white mb-3" />
-                <span className="text-2xl font-black uppercase tracking-widest text-white leading-none mb-2">CREATE TEAM</span>
-                <span className="text-[10px] font-bold text-orange-100 uppercase tracking-widest opacity-80">FIRST PERSON JOINS HERE</span>
-              </div>
-            </button>
+          <div className="flex-1 flex flex-col justify-center items-center px-6 py-6 gap-6 z-10 max-w-lg w-full">
+            {/* Three round glowing buttons — horizontal on tablet, vertical on mobile */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-10 w-full">
 
-            <div className="flex items-center gap-4 text-slate-700 font-black text-[10px] tracking-widest uppercase">
-              <div className="h-px bg-slate-800 flex-1"></div>OR<div className="h-px bg-slate-800 flex-1"></div>
+              {/* I'm a Captain — Create Team */}
+              <button
+                onClick={() => setStep('CREATE_TEAM')}
+                className="group flex flex-col items-center gap-2.5 transition-transform hover:scale-105 active:scale-95"
+              >
+                <div className="w-[5.5rem] h-[5.5rem] sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-[0_0_30px_rgba(234,88,12,0.4)] group-hover:shadow-[0_0_50px_rgba(234,88,12,0.6)] transition-shadow border-2 border-orange-400/50">
+                  <Crown className="w-9 h-9 sm:w-12 sm:h-12 text-white" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm sm:text-base font-black text-white uppercase tracking-widest">CAPTAIN</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-orange-300 uppercase tracking-widest mt-0.5">Create Team</p>
+                </div>
+              </button>
+
+              {/* I'm a Player — Join Team */}
+              <button
+                onClick={() => setStep('JOIN_OPTIONS')}
+                className="group flex flex-col items-center gap-2.5 transition-transform hover:scale-105 active:scale-95"
+              >
+                <div className="w-[5.5rem] h-[5.5rem] sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.3)] group-hover:shadow-[0_0_50px_rgba(59,130,246,0.5)] transition-shadow border-2 border-blue-400/50">
+                  <UserPlus className="w-9 h-9 sm:w-12 sm:h-12 text-white" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm sm:text-base font-black text-white uppercase tracking-widest">PLAYER</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-blue-300 uppercase tracking-widest mt-0.5">Join Team</p>
+                </div>
+              </button>
+
+              {/* Recover / Rejoin */}
+              <button
+                onClick={() => {
+                  setRecoveryCode('');
+                  setRecoveryError(null);
+                  setStep('RECOVER_DEVICE');
+                }}
+                className="group flex flex-col items-center gap-2.5 transition-transform hover:scale-105 active:scale-95"
+              >
+                <div className="w-[5.5rem] h-[5.5rem] sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.3)] group-hover:shadow-[0_0_50px_rgba(34,197,94,0.5)] transition-shadow border-2 border-green-400/50">
+                  <RefreshCw className="w-9 h-9 sm:w-12 sm:h-12 text-white" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm sm:text-base font-black text-white uppercase tracking-widest">REJOIN</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-green-300 uppercase tracking-widest mt-0.5">Ask Captain</p>
+                </div>
+              </button>
+
             </div>
-
-            {/* Join Team */}
-            <button
-              onClick={() => setStep('JOIN_OPTIONS')}
-              className="group relative h-40 bg-slate-900 border-2 border-slate-800 hover:border-blue-500/50 rounded-3xl flex flex-col items-center justify-center shadow-xl hover:scale-[1.02] transition-transform overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10 flex flex-col items-center">
-                <Hash className="w-10 h-10 text-blue-500 mb-3" />
-                <span className="text-2xl font-black uppercase tracking-widest text-white leading-none mb-2">JOIN TEAM</span>
-                <span className="text-[10px] font-bold text-slate-500 group-hover:text-blue-200 uppercase tracking-widest transition-colors">USING CODE OR QR</span>
-              </div>
-            </button>
           </div>
         </div>
       </div>
@@ -644,8 +789,9 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
                   <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-2">
                     <AvatarCreator
                       onConfirm={(img) => setTeamPhoto(img)}
-                      title="CREATE YOUR TEAM"
+                      title="TEAM LOGO"
                       placeholder="e.g. Cyberpunk Wolf Pack Neon"
+                      defaultKeywords={teamName}
                     />
                   </div>
                 ) : (
@@ -667,14 +813,14 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
 
               {/* User Name */}
               <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">YOUR NAME</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">CHOOSE YOUR PLAYER NAME</label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500"><User className="w-4 h-4" /></div>
                   <input
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    placeholder="OPERATIVE NAME..."
+                    placeholder="PLAYER NAME..."
                     className="w-full bg-slate-800/50 border border-orange-500/50 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide focus:border-orange-500 transition-colors placeholder-slate-600 shadow-[0_0_10px_rgba(234,88,12,0.1)]"
                   />
                 </div>
@@ -690,7 +836,8 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
                   <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-2">
                     <AvatarCreator
                       onConfirm={(img) => setUserPhoto(img)}
-                      title="CREATE YOUR AGENT"
+                      title="PLAYER LOGO"
+                      defaultKeywords={userName}
                     />
                   </div>
                 ) : (
@@ -739,7 +886,8 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
           </div>
         )}
 
-        <h1 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-12">JOIN MISSION</h1>
+        <h1 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-3">JOIN MISSION</h1>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-10">Ask Your TEAMCAPTAIN to look in teamlobby!</p>
 
         <div className="flex gap-4 w-full max-w-lg">
           {/* Enter Code */}
@@ -840,12 +988,370 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
   }
 
   // ========================================
+  // STEP: REJOIN_TEAM
+  // ========================================
+  if (step === 'REJOIN_TEAM') {
+    const handleRejoinSubmit = async () => {
+      if (!rejoinSelectedTeam || !rejoinPlayerName.trim() || !validGame) return;
+      setRejoinError(null);
+
+      // Check player name uniqueness
+      try {
+        const taken = await db.isPlayerNameTaken(validGame.id, rejoinPlayerName.trim());
+        if (taken) {
+          setRejoinError('This player name is already taken. Choose another.');
+          return;
+        }
+      } catch {
+        // proceed anyway
+      }
+
+      // Send rejoin request via teamSync
+      const requestId = `rejoin-${Date.now()}-${teamSync.getDeviceId().slice(0, 4)}`;
+      setRejoinRequestId(requestId);
+      setRejoinWaiting(true);
+
+      teamSync.sendRejoinRequest(
+        validGame.id,
+        rejoinSelectedTeam.id,
+        rejoinSelectedTeam.name,
+        rejoinPlayerName.trim(),
+        teamSync.getDeviceId(),
+        requestId
+      );
+    };
+
+    // Waiting for captain approval
+    if (rejoinWaiting) {
+      return (
+        <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col items-center justify-center p-6">
+          <button onClick={() => { setRejoinWaiting(false); setRejoinRequestId(null); }} className="absolute top-6 left-6 p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-full mx-auto flex items-center justify-center mb-6 border-2 border-green-500/40">
+              <Loader2 className="w-10 h-10 text-green-500 animate-spin" />
+            </div>
+            <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-3">WAITING FOR CAPTAIN</h2>
+            <p className="text-sm text-slate-400 mb-2">
+              Your request to rejoin <span className="text-green-400 font-black">{rejoinSelectedTeam?.name}</span> has been sent.
+            </p>
+            <p className="text-xs text-slate-500">The captain will see a notification to accept or reject you.</p>
+
+            <div className="mt-8 flex gap-1 justify-center">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col font-sans overflow-hidden">
+        <div className="flex flex-col h-full items-center overflow-y-auto custom-scrollbar">
+          <div className="w-full max-w-md p-6 flex flex-col items-center pb-20">
+            <button onClick={() => { setStep('TEAM_MENU'); setRejoinTeams([]); }} className="self-start p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white mb-4">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-[2rem] flex items-center justify-center shadow-2xl mb-4">
+              <RefreshCw className="w-10 h-10 text-white" />
+            </div>
+
+            <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-1">REJOIN TEAM</h1>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mb-6">SELECT YOUR TEAM</p>
+
+            {/* Game Badge */}
+            {validGame && (
+              <div className="bg-green-600/20 border border-green-500/50 text-green-400 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                {validGame.name}
+              </div>
+            )}
+
+            {/* Error */}
+            {rejoinError && (
+              <div className="w-full bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl mb-4 text-xs font-bold text-center">
+                {rejoinError}
+              </div>
+            )}
+
+            {/* Team List */}
+            {rejoinLoading ? (
+              <div className="flex flex-col items-center py-12">
+                <Loader2 className="w-10 h-10 text-green-500 animate-spin mb-4" />
+                <p className="text-sm text-slate-400 font-bold uppercase">Loading teams...</p>
+              </div>
+            ) : rejoinTeams.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="w-14 h-14 text-slate-600 mx-auto mb-3" />
+                <p className="text-base font-black text-slate-400 uppercase">No teams found</p>
+                <p className="text-xs text-slate-500 mt-2">No teams have been created in this game yet.</p>
+              </div>
+            ) : (
+              <div className="w-full space-y-3">
+                {rejoinTeams.map(team => {
+                  const isSelected = rejoinSelectedTeam?.id === team.id;
+                  const teamColor = team.color || '#f97316';
+                  return (
+                    <div key={team.id}>
+                      <button
+                        onClick={() => setRejoinSelectedTeam(isSelected ? null : team)}
+                        className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all border-2 text-left ${
+                          isSelected
+                            ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.15)]'
+                            : 'bg-slate-900 border-slate-800 hover:border-green-500/30'
+                        }`}
+                      >
+                        {/* Team Avatar */}
+                        <div
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center border-2 shrink-0"
+                          style={{ backgroundColor: teamColor + '20', borderColor: teamColor + '50' }}
+                        >
+                          {team.photoUrl ? (
+                            <img src={team.photoUrl} alt="" className="w-full h-full rounded-2xl object-cover" />
+                          ) : (
+                            <Users className="w-7 h-7" style={{ color: teamColor }} />
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-lg font-black text-white uppercase tracking-wider truncate">{team.name}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-xs font-bold text-slate-400 uppercase">
+                              {team.members?.length || 0} members
+                            </span>
+                            {team.shortCode && (
+                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                #{team.shortCode}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <ChevronDown className={`w-5 h-5 shrink-0 transition-transform ${isSelected ? 'rotate-180 text-green-400' : 'text-slate-500'}`} />
+                      </button>
+
+                      {/* Expanded: Player name input */}
+                      {isSelected && (
+                        <div className="mt-2 bg-slate-900 border-2 border-green-500/30 rounded-2xl p-5 space-y-4">
+                          <div>
+                            <label className="text-[10px] font-black text-green-400 uppercase tracking-widest mb-2 block">YOUR PLAYER NAME</label>
+                            <div className="relative">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-green-500"><User className="w-4 h-4" /></div>
+                              <input
+                                type="text"
+                                value={rejoinPlayerName}
+                                onChange={(e) => { setRejoinPlayerName(e.target.value); setRejoinError(null); }}
+                                placeholder="ENTER YOUR NAME..."
+                                className="w-full bg-slate-800/50 border border-green-500/30 rounded-xl p-4 pl-12 text-white font-bold outline-none text-sm uppercase tracking-wide focus:border-green-500 transition-colors placeholder-slate-600"
+                                autoFocus
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={handleRejoinSubmit}
+                            disabled={!rejoinPlayerName.trim()}
+                            className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] shadow-lg transition-all flex items-center justify-center gap-2"
+                          >
+                            <RefreshCw className="w-5 h-5" />
+                            REQUEST TO REJOIN
+                          </button>
+
+                          {/* Team members preview */}
+                          {team.members && team.members.length > 0 && (
+                            <div className="pt-3 border-t border-slate-800">
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">CURRENT MEMBERS</p>
+                              <div className="flex flex-wrap gap-2">
+                                {team.members.map((m: any, i: number) => (
+                                  <span key={i} className="text-xs font-bold text-slate-400 bg-slate-800 px-3 py-1.5 rounded-lg">
+                                    {m.name || 'Unknown'}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ========================================
+  // STEP: RECOVER_AS_PLAYER
+  // ========================================
+  if (step === 'RECOVER_AS_PLAYER' && recoverTeam) {
+    const handleRecoverAsPlayer = async (member: any) => {
+      setRecoverSelectedMember(member);
+      setRecoverConfirming(true);
+    };
+
+    const handleConfirmRecover = async () => {
+      if (!recoverSelectedMember || !validGame || !recoverTeam) return;
+      setRecoverLoading(true);
+
+      try {
+        // Take over the existing member's device identity
+        localStorage.setItem('geohunt_device_id', recoverSelectedMember.deviceId);
+        // Clear the pending team code
+        localStorage.removeItem('geohunt_pending_team_code');
+        // Restore photo if available
+        if (recoverSelectedMember.photo) {
+          localStorage.setItem('geohunt_temp_user_photo', recoverSelectedMember.photo);
+        }
+
+        onComplete(validGame.id, recoverTeam.name, recoverSelectedMember.name, null);
+      } catch (err) {
+        console.error('[PlayerLogin] Error recovering as player:', err);
+        setRecoverLoading(false);
+        setRecoverConfirming(false);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col font-sans overflow-hidden">
+        <div className="flex flex-col h-full items-center overflow-y-auto custom-scrollbar">
+          <div className="w-full max-w-md p-6 flex flex-col items-center pb-20">
+            <button onClick={() => {
+              setRecoverTeam(null);
+              setRecoverSelectedMember(null);
+              setRecoverConfirming(false);
+              localStorage.removeItem('geohunt_pending_team_code');
+              setStep('TEAM_MENU');
+            }} className="self-start p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white mb-4">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-[2rem] flex items-center justify-center shadow-2xl mb-4">
+              <RefreshCw className="w-10 h-10 text-white" />
+            </div>
+
+            <h1 className="text-2xl font-black text-white uppercase tracking-widest mb-1">RECOVER PLAYER</h1>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mb-2">SELECT YOURSELF</p>
+
+            {/* Team Badge */}
+            <div className="bg-green-600/20 border border-green-500/50 text-green-400 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+              {recoverTeam.name}
+            </div>
+
+            <p className="text-xs text-slate-400 text-center mb-6 leading-relaxed max-w-xs">
+              Select your name from the team members below to continue playing on this device.
+            </p>
+
+            {/* Member List */}
+            <div className="w-full space-y-3">
+              {(recoverTeam.members || []).map((member: any, i: number) => {
+                const teamColor = recoverTeam.color || '#f97316';
+                return (
+                  <button
+                    key={member.deviceId || i}
+                    onClick={() => handleRecoverAsPlayer(member)}
+                    className="w-full flex items-center gap-4 p-4 rounded-2xl transition-all border-2 text-left bg-slate-900 border-slate-800 hover:border-green-500/50 hover:bg-green-500/5 active:scale-[0.98]"
+                  >
+                    {member.photo ? (
+                      <img src={member.photo} alt="" className="w-12 h-12 rounded-xl object-cover border-2 border-green-500/30 shrink-0" />
+                    ) : (
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center border-2 shrink-0"
+                        style={{ backgroundColor: teamColor + '20', borderColor: teamColor + '40' }}
+                      >
+                        <User className="w-6 h-6" style={{ color: teamColor }} />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-black text-white uppercase tracking-wider truncate">{member.name || 'Unknown'}</p>
+                      <p className="text-xs text-slate-500 font-bold uppercase">
+                        {member.deviceId === recoverTeam.captainDeviceId ? 'Captain' : 'Member'}
+                      </p>
+                    </div>
+                    <Play className="w-5 h-5 text-green-500 shrink-0" />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Or join as new player */}
+            <div className="w-full mt-6 pt-4 border-t border-slate-800">
+              <button
+                onClick={() => {
+                  localStorage.removeItem('geohunt_pending_team_code');
+                  setRecoverTeam(null);
+                  setStep('TEAM_MENU');
+                }}
+                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl font-black text-xs uppercase tracking-widest transition-all border border-slate-800"
+              >
+                JOIN AS NEW PLAYER INSTEAD
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Confirm Modal */}
+        {recoverConfirming && recoverSelectedMember && (
+          <div className="fixed inset-0 z-[6000] bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-slate-900 border-2 border-green-500/50 rounded-3xl p-6 max-w-sm w-full shadow-2xl shadow-green-500/20">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-green-500/20 rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-green-500/40">
+                  {recoverSelectedMember.photo ? (
+                    <img src={recoverSelectedMember.photo} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <User className="w-8 h-8 text-green-400" />
+                  )}
+                </div>
+                <h2 className="text-lg font-black text-white uppercase tracking-widest mb-2">CONTINUE AS</h2>
+                <p className="text-2xl font-black text-green-400 uppercase tracking-wider">
+                  {recoverSelectedMember.name}?
+                </p>
+              </div>
+
+              <div className="bg-orange-900/20 border border-orange-500/30 rounded-xl p-3 mb-6">
+                <p className="text-xs text-orange-300 font-bold text-center leading-relaxed">
+                  This will transfer {recoverSelectedMember.name}'s game progress to this device. Only do this if you are {recoverSelectedMember.name}.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleConfirmRecover}
+                  disabled={recoverLoading}
+                  className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                >
+                  {recoverLoading ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" /> RECOVERING...</>
+                  ) : (
+                    <><Play className="w-5 h-5" /> YES, I AM {recoverSelectedMember.name?.toUpperCase()}</>
+                  )}
+                </button>
+                <button
+                  onClick={() => { setRecoverConfirming(false); setRecoverSelectedMember(null); }}
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+                >
+                  CANCEL
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ========================================
   // STEP: RECOVER_DEVICE
   // ========================================
   if (step === 'RECOVER_DEVICE') {
     return (
       <div className="fixed inset-0 z-[5000] bg-slate-950 text-white flex flex-col items-center justify-center p-6">
-        <button onClick={() => setStep('JOIN_OPTIONS')} className="absolute top-6 left-6 p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white">
+        <button onClick={() => setStep('TEAM_MENU')} className="absolute top-6 left-6 p-2 bg-slate-900 rounded-full text-slate-400 hover:text-white">
           <ArrowLeft className="w-5 h-5" />
         </button>
 
@@ -856,7 +1362,7 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
 
           <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-2">RECOVER ACCESS</h2>
           <p className="text-xs text-slate-500 mb-8 leading-relaxed">
-            Enter the 6-digit recovery code from your original device to continue playing on this device.
+            Ask your captain for your recovery code — they can find it under <strong className="text-green-400">Players</strong> in the Team Lobby.
           </p>
 
           <input
@@ -896,7 +1402,34 @@ const PlayerLogin: React.FC<PlayerLoginProps> = ({ onComplete, onBack, preSelect
               </>
             )}
           </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-slate-800" />
+            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">OR</span>
+            <div className="flex-1 h-px bg-slate-800" />
+          </div>
+
+          {/* Scan Team QR Button */}
+          <button
+            onClick={() => setShowRecoveryQR(true)}
+            disabled={recoveryLoading}
+            className="w-full bg-slate-900 hover:bg-slate-800 border-2 border-slate-700 hover:border-green-500/50 disabled:opacity-50 text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+          >
+            <QrCode className="w-5 h-5 text-green-400" />
+            SCAN TEAM QR CODE
+          </button>
+          <p className="text-[10px] text-slate-600 mt-2 text-center leading-relaxed">
+            Scan the QR code shown in your team's lobby to rejoin
+          </p>
         </div>
+
+        {/* Recovery QR Scanner Modal */}
+        <QRScannerModal
+          isOpen={showRecoveryQR}
+          onClose={() => setShowRecoveryQR(false)}
+          onScan={handleRecoveryQRScan}
+        />
       </div>
     );
   }

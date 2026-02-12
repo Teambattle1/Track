@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage, GameMode, Team } from '../types';
-import { X, Send, MessageSquare, User, Shield, Radio, Siren, CheckCircle2, ChevronDown, Globe, Check } from 'lucide-react';
+import { X, Send, MessageSquare, User, Shield, Radio, Siren, CheckCircle2, ChevronDown, Globe, Check, Megaphone } from 'lucide-react';
 import { teamSync } from '../services/teamSync';
 import { vibrateChatNotification } from '../utils/vibration';
 
@@ -31,6 +31,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
+  const [confirmRequired, setConfirmRequired] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [targetTeamIds, setTargetTeamIds] = useState<string[] | null>(null); // Null = Global Broadcast
   const [showTeamSelector, setShowTeamSelector] = useState(false);
@@ -74,20 +75,22 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
     setIsSending(true);
 
     const urgentFlag = isInstructorMode ? isUrgent : false;
-    
+    const confirmFlag = isInstructorMode ? confirmRequired : false;
+
     // Send to specific team channels if selected, otherwise global
     if (targetTeamIds && targetTeamIds.length > 0) {
         // Multi-cast
         targetTeamIds.forEach(id => {
-            teamSync.sendChatMessage(gameId, newMessage, id, urgentFlag);
+            teamSync.sendChatMessage(gameId, newMessage, id, urgentFlag, confirmFlag);
         });
     } else {
         // Broadcast
-        teamSync.sendChatMessage(gameId, newMessage, null, urgentFlag);
+        teamSync.sendChatMessage(gameId, newMessage, null, urgentFlag, confirmFlag);
     }
-    
+
     setNewMessage('');
     setIsUrgent(false);
+    setConfirmRequired(false);
     setIsSending(false);
   };
 
@@ -225,11 +228,17 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
       <div className="p-4 bg-slate-950 border-t border-slate-800 shrink-0">
         {isInstructorMode && (
           <div className="flex items-center gap-2 mb-3">
-             <button 
+             <button
                 onClick={() => setIsUrgent(!isUrgent)}
                 className={`flex-1 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${isUrgent ? 'bg-red-600 border-red-600 text-white' : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-red-500/50'}`}
              >
-                <Siren className="w-3 h-3" /> {isUrgent ? 'URGENT ENABLED' : 'MARK URGENT'}
+                <Siren className="w-3 h-3" /> {isUrgent ? 'URGENT ON' : 'URGENT'}
+             </button>
+             <button
+                onClick={() => setConfirmRequired(!confirmRequired)}
+                className={`flex-1 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${confirmRequired ? 'bg-orange-600 border-orange-600 text-white' : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-orange-500/50'}`}
+             >
+                <Megaphone className="w-3 h-3" /> {confirmRequired ? 'CONFIRM ON' : 'CONFIRM READ'}
              </button>
           </div>
         )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2, Crown, ExternalLink } from 'lucide-react';
+import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2, Crown, ExternalLink, Key, Copy } from 'lucide-react';
 import { Team, TeamMemberData, Game } from '../types';
 import * as db from '../services/db';
 import GameChooserView from './GameChooserView';
@@ -34,13 +34,8 @@ const DEMO_MEMBERS: { name: string; deviceId: string }[][] = [
 const LS_KEY = 'teamtrack_lastEditorGameId';
 
 const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId, games, onClose, onOpenLobby }) => {
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(() => {
-    // Priority: prop > localStorage > first game
-    if (initialGameId) return initialGameId;
-    const stored = localStorage.getItem(LS_KEY);
-    if (stored && games.some(g => g.id === stored)) return stored;
-    return null;
-  });
+  // Always start with game chooser unless a specific gameId prop is provided
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(initialGameId || null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -48,6 +43,9 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
   const [movingMember, setMovingMember] = useState<{ member: TeamMemberData; fromTeamId: string } | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [recoveryCodes, setRecoveryCodes] = useState<Record<string, string>>({}); // deviceId -> code
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [deleteConfirmTeamId, setDeleteConfirmTeamId] = useState<string | null>(null);
 
   const game = games.find(g => g.id === selectedGameId);
 
@@ -71,6 +69,17 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
       }
       setTeams(data);
       setExpandedTeamIds(new Set(data.map(t => t.id)));
+      // Load recovery codes
+      try {
+        const codes = await db.fetchRecoveryCodesForGame(gId);
+        const codeMap: Record<string, string> = {};
+        for (const c of codes) {
+          codeMap[c.deviceId] = c.code;
+        }
+        setRecoveryCodes(codeMap);
+      } catch (e) {
+        console.error('[TeamEditor] Error loading recovery codes:', e);
+      }
     } catch (err) {
       console.error('[TeamEditor] Error loading teams:', err);
     } finally {
@@ -243,6 +252,23 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
     }
   };
 
+  const deleteTeam = async (teamId: string) => {
+    setSaving(true);
+    try {
+      const team = teams.find(t => t.id === teamId);
+      const { supabase } = await import('../lib/supabase');
+      await supabase.from('teams').delete().eq('id', teamId);
+      setTeams(prev => prev.filter(t => t.id !== teamId));
+      setDeleteConfirmTeamId(null);
+      setSuccessMsg(`DELETED ${(team?.name || 'TEAM').toUpperCase()}`);
+      setTimeout(() => setSuccessMsg(null), 2500);
+    } catch (err) {
+      console.error('[TeamEditor] Error deleting team:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const hasDemoTeams = teams.some(t => t.id.startsWith('demo-team-'));
 
   // ========== GAME CHOOSER VIEW ==========
@@ -300,7 +326,7 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
               title="Add demo teams"
             >
               <Plus className={`w-3.5 h-3.5 ${seeding ? 'animate-spin' : ''}`} />
-              <span className="text-[9px] font-black uppercase tracking-wider">Seed</span>
+              <span className="text-[9px] font-black uppercase tracking-wider">Seed 3 Demo Teams</span>
             </button>
             <button onClick={() => selectedGameId && loadTeams(selectedGameId)} className="p-2.5 hover:bg-white/5 rounded-xl text-slate-500 hover:text-white transition-colors" title="Refresh">
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -344,17 +370,7 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <AlertCircle className="w-10 h-10 text-slate-600 mb-3" />
               <p className="text-sm font-black text-slate-500 uppercase tracking-wider">NO TEAMS FOUND</p>
-              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1 mb-6">NO TEAMS HAVE JOINED THIS GAME YET</p>
-              <button
-                onClick={seedDemoTeams}
-                disabled={seeding}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/30 transition-colors disabled:opacity-50"
-              >
-                <Plus className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} />
-                <span className="text-xs font-black uppercase tracking-widest">
-                  {seeding ? 'CREATING...' : 'SEED 3 DEMO TEAMS'}
-                </span>
-              </button>
+              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-1">NO TEAMS HAVE JOINED THIS GAME YET</p>
             </div>
           ) : (
             [...teams].sort((a, b) => a.name.localeCompare(b.name)).map(team => {
@@ -393,11 +409,12 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                         </div>
                       )}
                       <div className="text-left">
-                        <h3 className={`${movingMember ? 'text-lg' : 'text-base'} font-black text-white uppercase tracking-wider`}>
+                        <h3 className={`${movingMember ? 'text-lg' : 'text-lg'} font-black text-white uppercase tracking-wider`}>
                           {team.name}
                           {isDemoTeam && <span className="ml-2 text-[8px] font-black text-yellow-500 uppercase">DEMO</span>}
                         </h3>
-                        <p className={`${movingMember ? 'text-sm' : 'text-xs'} text-slate-400 font-bold uppercase tracking-widest mt-0.5`}>
+                        <p className={`${movingMember ? 'text-sm' : 'text-sm'} font-black uppercase tracking-widest mt-0.5`}
+                           style={team.color ? { color: team.color } : { color: '#94a3b8' }}>
                           {team.members.length} {team.members.length !== 1 ? 'MEMBERS' : 'MEMBER'} · {team.score} PTS
                         </p>
                       </div>
@@ -425,6 +442,13 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                               <span className="text-[8px] font-black uppercase tracking-wider">LOBBY</span>
                             </button>
                           )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirmTeamId(team.id); }}
+                            className="p-1.5 rounded-lg hover:bg-red-600/20 text-slate-600 hover:text-red-400 transition-all"
+                            title="Delete team"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                           {isExpanded
                             ? <ChevronUp className="w-4 h-4 text-slate-600" />
                             : <ChevronDown className="w-4 h-4 text-slate-600" />
@@ -460,9 +484,32 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                                   </div>
                                 )}
                                 <div>
-                                  <span className="text-xs font-black text-slate-300 uppercase tracking-wider">{(member.name || 'UNKNOWN').toUpperCase()}</span>
-                                  {isCaptain && (
-                                    <span className="ml-2 text-[8px] font-black text-amber-500 uppercase tracking-widest">CAPTAIN</span>
+                                  <div className="flex items-center">
+                                    <span className="text-xs font-black text-slate-300 uppercase tracking-wider">{(member.name || 'UNKNOWN').toUpperCase()}</span>
+                                    {isCaptain && (
+                                      <span className="ml-2 text-[8px] font-black text-amber-500 uppercase tracking-widest">CAPTAIN</span>
+                                    )}
+                                  </div>
+                                  {recoveryCodes[member.deviceId] && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const code = recoveryCodes[member.deviceId];
+                                        navigator.clipboard.writeText(code).catch(() => {});
+                                        setCopiedCode(code);
+                                        setTimeout(() => setCopiedCode(null), 2000);
+                                      }}
+                                      className="flex items-center gap-1 mt-0.5 group/code"
+                                      title="Click to copy recovery code"
+                                    >
+                                      <Key className="w-2.5 h-2.5 text-green-500/60" />
+                                      <span className="text-[9px] font-mono font-bold text-green-500/60 tracking-wider group-hover/code:text-green-400 transition-colors">{recoveryCodes[member.deviceId]}</span>
+                                      {copiedCode === recoveryCodes[member.deviceId] ? (
+                                        <Check className="w-2.5 h-2.5 text-green-400" />
+                                      ) : (
+                                        <Copy className="w-2.5 h-2.5 text-slate-600 group-hover/code:text-green-400 transition-colors" />
+                                      )}
+                                    </button>
                                   )}
                                 </div>
                               </div>
@@ -500,6 +547,58 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
             })
           )}
         </div>
+
+        {/* Delete confirmation dialog */}
+        {deleteConfirmTeamId && (() => {
+          const teamToDelete = teams.find(t => t.id === deleteConfirmTeamId);
+          if (!teamToDelete) return null;
+          return (
+            <div className="fixed inset-0 z-[6000] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+              <div className="bg-slate-900 border-2 border-red-500/40 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                <div className="text-center mb-4">
+                  <div className="w-14 h-14 bg-red-500/20 rounded-full mx-auto flex items-center justify-center mb-3 border-2 border-red-500/30">
+                    <Trash2 className="w-7 h-7 text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-black text-white uppercase tracking-widest">DELETE TEAM</h3>
+                  <p className="text-2xl font-black text-red-400 uppercase tracking-wider mt-1">
+                    {teamToDelete.name}?
+                  </p>
+                </div>
+
+                <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-3 mb-4">
+                  <p className="text-xs text-red-300 font-bold text-center leading-relaxed">
+                    This will permanently delete this team, all {teamToDelete.members.length} member(s), and their game progress. This cannot be undone.
+                  </p>
+                </div>
+
+                {teamToDelete.score > 0 && (
+                  <div className="bg-orange-900/20 border border-orange-500/30 rounded-xl p-3 mb-4">
+                    <p className="text-xs text-orange-300 font-bold text-center">
+                      This team has {teamToDelete.score} points! Are you sure?
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <button
+                    onClick={() => deleteTeam(deleteConfirmTeamId)}
+                    disabled={saving}
+                    className="w-full py-3 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {saving ? 'DELETING...' : 'DELETE TEAM'}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirmTeamId(null)}
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

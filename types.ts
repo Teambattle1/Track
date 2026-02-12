@@ -86,6 +86,31 @@ export interface TaskVote {
   timestamp: number;
 }
 
+export interface OpenTaskPayload {
+  pointId: string;
+  title: string;
+  task: GameTask;
+  teamVotingMode: 'require_consensus' | 'captain_submit';
+  points: number;
+  timestamp: number;
+}
+
+export interface TaskDecidedPayload {
+  pointId: string;
+  isCorrect: boolean;
+  correctAnswer?: string | string[] | number;
+  agreedAnswer?: string | string[] | number;
+  pointsAwarded: number;
+  timestamp: number;
+}
+
+export interface PlayerTaskStats {
+  correctCount: number;
+  incorrectCount: number;
+  totalAttempted: number;
+  pointsEarned: number;
+}
+
 export interface ChatMessage {
   id: string;
   gameId: string;
@@ -93,7 +118,9 @@ export interface ChatMessage {
   message: string;
   sender: string;
   timestamp: number;
-  isUrgent?: boolean; 
+  isUrgent?: boolean;
+  confirmRequired?: boolean;
+  senderTeamName?: string;
 }
 
 export interface TeamSyncState {
@@ -837,9 +864,10 @@ export interface Game {
   jorden80TeamProgress?: Record<string, Jorden80TeamProgress>;
 
   // Team & Permission Settings
+  devicesPerTeam?: 'single' | 'multiple'; // 'single' = one device per team (no team lobby), 'multiple' = multi-device with team lobby (default)
   showOtherTeams?: boolean;
-  showTaskDetailsToPlayers?: boolean; 
-  showRankingToPlayers?: boolean; 
+  showTaskDetailsToPlayers?: boolean;
+  showRankingToPlayers?: boolean;
   allowChatting?: boolean;
   showPlayerLocations?: boolean;
   

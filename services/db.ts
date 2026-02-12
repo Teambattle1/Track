@@ -642,14 +642,16 @@ export const isPlayerNameTaken = async (gameId: string, playerName: string): Pro
 
 export const registerTeam = async (team: Team) => {
     try {
-        // Check for duplicate team name in this game
-        const taken = await isTeamNameTaken(team.gameId, team.name);
-        if (taken) {
+        // Single fetch to check both team name and player name duplicates
+        const existingTeams = await fetchTeams(team.gameId);
+
+        // Check for duplicate team name
+        const nameTaken = existingTeams.some(t => t.name.toLowerCase() === team.name.toLowerCase());
+        if (nameTaken) {
             throw new Error(`Team name "${team.name}" is already taken in this game`);
         }
 
         // Check for duplicate player names across all teams in this game (skip empty names)
-        const existingTeams = await fetchTeams(team.gameId);
         const existingPlayerNames = new Set(
             existingTeams.flatMap(t => t.members.map(m => (m.name || '').toLowerCase()).filter(n => n))
         );
@@ -691,6 +693,42 @@ export const registerTeam = async (team: Team) => {
 
         if (error) throw error;
     } catch (e) { logError('registerTeam', e); }
+};
+
+// Direct insert — skips duplicate checking (caller already verified)
+export const registerTeamDirect = async (team: Team) => {
+    try {
+        const insertData: any = {
+            id: team.id,
+            game_id: team.gameId,
+            name: team.name,
+            join_code: team.joinCode,
+            photo_url: team.photoUrl,
+            members: team.members,
+            score: team.score,
+            updated_at: team.updatedAt,
+            captain_device_id: team.captainDeviceId,
+            is_started: team.isStarted,
+            completed_point_ids: team.completedPointIds
+        };
+        if (_teamColumnsExist !== false) {
+            if (team.color) insertData.color = team.color;
+            if (team.shortCode) insertData.short_code = team.shortCode;
+        }
+
+        let { error } = await supabase.from('teams').insert(insertData);
+
+        if (error && (insertData.color !== undefined || insertData.short_code !== undefined)) {
+            console.warn('[DB] Retrying registerTeamDirect without optional columns:', error.message);
+            _teamColumnsExist = false;
+            delete insertData.color;
+            delete insertData.short_code;
+            const retry = await supabase.from('teams').insert(insertData);
+            error = retry.error;
+        }
+
+        if (error) throw error;
+    } catch (e) { logError('registerTeamDirect', e); }
 };
 
 export const updateTeam = async (teamId: string, updates: Partial<Team>) => {
@@ -749,25 +787,29 @@ export const updateTeamScore = async (teamId: string, delta: number) => {
     }
 };
 
-export const updateTeamProgress = async (teamId: string, pointId: string, newScore: number) => {
+export const updateTeamProgress = async (teamId: string, pointId: string, scoreToAdd: number) => {
     try {
-        const team = await fetchTeam(teamId);
-        if (team) {
-            const completed = new Set(team.completedPointIds || []);
-            // Check if already completed to prevent double-score logic on client side before calling this
-            // But we reinforce here:
-            if (!completed.has(pointId)) {
-                completed.add(pointId);
-                await retryWithBackoff(
-                    () => supabase.from('teams').update({
-                        score: newScore, // Caller should calculate score, OR we use RPC logic separately
+        // Attempt atomic RPC first (prevents race conditions / double-scoring)
+        const { error: rpcError } = await supabase.rpc('complete_task', {
+            p_team_id: teamId,
+            p_point_id: pointId,
+            p_score_delta: scoreToAdd
+        });
+
+        if (rpcError) {
+            // Fallback to client-side check if RPC doesn't exist
+            console.warn("RPC complete_task missing, using fallback", rpcError.message);
+            const team = await fetchTeam(teamId);
+            if (team) {
+                const completed = new Set(team.completedPointIds || []);
+                if (!completed.has(pointId)) {
+                    completed.add(pointId);
+                    const { error } = await supabase.from('teams').update({
+                        score: team.score + scoreToAdd,
                         completed_point_ids: Array.from(completed)
-                    }).eq('id', teamId).then(result => {
-                        if (result.error) throw result.error;
-                        return result;
-                    }),
-                    'updateTeamProgress'
-                );
+                    }).eq('id', teamId);
+                    if (error) throw error;
+                }
             }
         }
     } catch (e) {
@@ -883,6 +925,37 @@ export const addTeamMember = async (teamId: string, member: { deviceId: string; 
         }).eq('id', teamId);
     } catch (e) {
         logError('addTeamMember', e);
+    }
+};
+
+// Merge a rejoining player with an existing member (transfer device identity)
+export const mergeTeamMember = async (teamId: string, oldDeviceId: string, newDeviceId: string, newName?: string): Promise<void> => {
+    try {
+        const team = await fetchTeam(teamId);
+        if (!team) return;
+
+        const updatedMembers = team.members.map(m => {
+            if (m.deviceId === oldDeviceId) {
+                return { ...m, deviceId: newDeviceId, name: newName || m.name };
+            }
+            return m;
+        });
+
+        // Also update captain if the merged member was captain
+        let captainId = team.captainDeviceId;
+        if (captainId === oldDeviceId) {
+            captainId = newDeviceId;
+        }
+
+        await supabase.from('teams').update({
+            members: updatedMembers,
+            captain_device_id: captainId,
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+
+        console.log(`[DB] Merged member: ${oldDeviceId} → ${newDeviceId} in team ${teamId}`);
+    } catch (e) {
+        logError('mergeTeamMember', e);
     }
 };
 
@@ -2119,4 +2192,27 @@ export const deleteRecoveryCode = async (code: string): Promise<void> => {
         // Ignore errors - code cleanup is best-effort
     }
     localStorage.removeItem(`recovery_code_${code.toUpperCase()}`);
+};
+
+// Fetch all recovery codes for a given game (captain use: show codes for team members)
+export const fetchRecoveryCodesForGame = async (gameId: string): Promise<RecoveryCodeData[]> => {
+    try {
+        const { data, error } = await supabase
+            .from('player_recovery_codes')
+            .select('data, expires_at')
+            .eq('game_id', gameId);
+
+        if (error) {
+            if (error.code === '42P01') return [];
+            throw error;
+        }
+
+        const now = Date.now();
+        return (data || [])
+            .filter(r => new Date(r.expires_at).getTime() > now)
+            .map(r => r.data as RecoveryCodeData);
+    } catch (e) {
+        logError('fetchRecoveryCodesForGame', e);
+        return [];
+    }
 };

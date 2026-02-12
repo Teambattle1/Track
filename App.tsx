@@ -30,6 +30,7 @@ import DeleteGamesModal from './components/DeleteGamesModal';
 import ChatDrawer from './components/ChatDrawer';
 import TeamsHubModal from './components/TeamsHubModal';
 import TeamLobbyView from './components/TeamLobbyView';
+import PlayerPlayView from './components/PlayerPlayView';
 import TeamsLobbySelector from './components/TeamsLobbySelector';
 import DemoTeamsSelector from './components/DemoTeamsSelector';
 import QRScannerModal from './components/QRScannerModal';
@@ -65,6 +66,7 @@ import FinishMessageModal from './components/FinishMessageModal';
 import { AroundTheWorldDashboard } from './components/aroundtheworld';
 import { getTaskById } from './utils/aroundtheworld/defaultTasks';
 import { ensureATWTaskList } from './utils/aroundtheworld/initTaskList';
+import PlayerHUD from './components/PlayerHUD';
 
 // Lazy-loaded heavy components for code splitting
 const TaskMaster = lazy(() => import('./components/TaskMaster'));
@@ -164,6 +166,8 @@ const GameApp: React.FC = () => {
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishModalShown, setFinishModalShown] = useState(false);
   const [showTeamLobbyAfterJoin, setShowTeamLobbyAfterJoin] = useState(false);
+  const [playerGameStarted, setPlayerGameStarted] = useState(false);
+  const [autoVotesPointId, setAutoVotesPointId] = useState<string | null>(null);
 
   // --- TEAM LOBBY ACCESS STATE ---
   const [gameForLobbyAccess, setGameForLobbyAccess] = useState<string | null>(null);
@@ -281,7 +285,8 @@ const GameApp: React.FC = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [latestMessage, setLatestMessage] = useState<ChatMessage | null>(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
-  
+  const [playerTeamName, setPlayerTeamName] = useState<string>('');
+
   // --- MAP STATE ---
   const [localMapStyle, setLocalMapStyle] = useState<MapStyleId>('osm');
   const mapRef = useRef<GameMapHandle>(null);
@@ -722,6 +727,9 @@ const GameApp: React.FC = () => {
       const interval = setInterval(loadTeam, 10000); // Every 10 seconds
       return () => clearInterval(interval);
   }, [activeGameId, mode]);
+
+  // Captain detection for play mode routing
+  const isCaptainInPlay = currentTeam?.captainDeviceId === teamSync.getDeviceId();
 
   // --- MEDIA REJECTION NOTIFICATIONS (for team players) ---
   useEffect(() => {
@@ -1266,6 +1274,21 @@ const GameApp: React.FC = () => {
       } else if (mode === GameMode.PLAY || mode === GameMode.INSTRUCTOR) {
           console.log('[handlePointClick] Setting activeTaskModalId:', point.id);
           setActiveTaskModalId(point.id);
+
+          // Captain: broadcast task to team players for voting (only in multi-device mode)
+          if (isCaptainInPlay && playerGameStarted && point.teamVotingEnabled && activeGame?.devicesPerTeam !== 'single') {
+              teamSync.broadcastOpenTask({
+                  pointId: point.id,
+                  title: point.title || `Task ${point.id.slice(-4)}`,
+                  task: point.task,
+                  teamVotingMode: point.teamVotingMode || activeGame?.taskConfig?.teamVotingMode || 'captain_submit',
+                  points: point.points || 0,
+                  timestamp: Date.now()
+              });
+              // Also open TeamLobby on VOTES tab to manage voting
+              setAutoVotesPointId(point.id);
+              setShowTeamLobby(true);
+          }
       }
   };
 
@@ -1391,7 +1414,7 @@ const GameApp: React.FC = () => {
           const teamKey = teamName.replace(/[^a-zA-Z0-9]/g, '_');
           const teamId = `team-${teamKey}-${Date.now()}`;
 
-          // Fetch existing teams to get short codes and avoid duplicates
+          // Single fetch to check existing teams, short codes, and duplicates
           const existingTeams = await db.fetchTeams(gameId);
           const existingCodes = existingTeams.map(t => t.shortCode).filter(Boolean) as string[];
 
@@ -1413,7 +1436,8 @@ const GameApp: React.FC = () => {
 
           const shortCode = generateTeamShortCode(existingCodes);
 
-          const team: Team = {
+          // Direct insert — skip registerTeam's redundant fetchTeams call
+          await db.registerTeamDirect({
               id: teamId,
               gameId,
               name: teamName,
@@ -1430,9 +1454,7 @@ const GameApp: React.FC = () => {
               captainDeviceId: deviceId,
               isStarted: false,
               shortCode,
-          };
-
-          await db.registerTeam(team);
+          });
           console.log(`[App] Registered new team "${teamName}" (${teamId}) with player "${userName}"`);
       } catch (error) {
           console.error('[App] Failed to register team:', error);
@@ -1443,6 +1465,7 @@ const GameApp: React.FC = () => {
   const handleStartGame = (gameId: string, teamName: string, userName: string, teamPhoto: string | null, style: MapStyleId) => {
       setActiveGameId(gameId);
       setLocalMapStyle(style);
+      setPlayerTeamName(teamName);
       teamSync.connect(gameId, teamName, userName);
       setMode(GameMode.PLAY);
       setShowLanding(false);
@@ -1618,8 +1641,9 @@ const GameApp: React.FC = () => {
       } else if ((elem as any).mozRequestFullScreen) {
           (elem as any).mozRequestFullScreen();
       }
-      // Close lobby overlay, reveal game map
+      // Close lobby overlay, reveal game map (captain) or player view (player)
       setShowTeamLobbyAfterJoin(false);
+      setPlayerGameStarted(true);
   };
 
   const handleStartSimulation = () => {
@@ -1994,8 +2018,23 @@ const GameApp: React.FC = () => {
                   teamSync.connect(gameId, teamName, userName);
                   setMode(GameMode.PLAY);
                   setShowLanding(false);
-                  // Show team lobby immediately after joining
-                  setShowTeamLobbyAfterJoin(true);
+
+                  const joinedGame = games.find(g => g.id === gameId);
+                  const isSingleDevice = joinedGame?.devicesPerTeam === 'single';
+
+                  if (isSingleDevice) {
+                      // Single device mode: skip team lobby, go directly to game
+                      setPlayerGameStarted(true);
+                      // Show intro screen if enabled
+                      if (joinedGame?.introMessageConfig?.enabled) {
+                          setShowIntroModal(true);
+                          setIntroModalShown(true);
+                      }
+                  } else {
+                      // Multiple devices: show team lobby as before
+                      setShowTeamLobbyAfterJoin(true);
+                  }
+
                   // Register team in database (async, non-blocking)
                   registerPlayerTeam(gameId, teamName, userName, teamPhoto);
                   if (window.location.pathname === '/login') {
@@ -2940,9 +2979,14 @@ const GameApp: React.FC = () => {
           {showTeamLobby && activeGame && currentTeam && (
               <TeamLobbyView
                   isOpen={showTeamLobby}
-                  onClose={() => setShowTeamLobby(false)}
+                  onClose={() => { setShowTeamLobby(false); setAutoVotesPointId(null); }}
                   teamId={currentTeam.id}
                   game={activeGame}
+                  autoOpenVotesForPoint={autoVotesPointId}
+                  onTaskDecided={(pointId) => {
+                      setShowTeamLobby(false);
+                      setAutoVotesPointId(null);
+                  }}
               />
           )}
 
@@ -3530,7 +3574,7 @@ const GameApp: React.FC = () => {
                     }}
                     teamId={selectedTeamIdForLobby}
                     game={gameForLobbyAccess ? games.find(g => g.id === gameForLobbyAccess) : activeGame || undefined}
-                    isCaptain={mode === GameMode.INSTRUCTOR}
+                    isCaptain={true}
                 />
             )}
 
@@ -3876,8 +3920,17 @@ const GameApp: React.FC = () => {
             );
         })()}
 
-        {/* PLAY MODE: Team HUD with device frame centered */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (() => {
+        {/* PLAY MODE: Player Play View for non-captain players (multi-device only) */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && activeGame?.devicesPerTeam !== 'single' && !isCaptainInPlay && playerGameStarted && currentTeam && activeGame && (
+            <PlayerPlayView
+                game={activeGame}
+                teamName={currentTeam.name || teamSync.getState().teamName || 'Team'}
+                teamColor={currentTeam.color}
+            />
+        )}
+
+        {/* PLAY MODE: Team HUD with device frame centered (captain view / single-device) */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (isCaptainInPlay || !playerGameStarted || activeGame?.devicesPerTeam === 'single') && (() => {
             const teamState = teamSync.getState();
             const teamMembers = teamSync.getAllMembers();
             const allTasks = activeGame?.points || [];
