@@ -163,7 +163,7 @@ const TeamLobbyChooser: React.FC<TeamLobbyChooserProps> = ({ games, onClose, onS
                   <ChevronRight className="w-5 h-5 shrink-0 group-hover:translate-x-0.5 transition-transform" style={{ color: tc }} />
                 </button>
               );
-            }))
+            })
           )}
         </div>
       </div>
