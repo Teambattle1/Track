@@ -1275,8 +1275,8 @@ const GameApp: React.FC = () => {
           console.log('[handlePointClick] Setting activeTaskModalId:', point.id);
           setActiveTaskModalId(point.id);
 
-          // Captain: broadcast task to team players for voting
-          if (isCaptainInPlay && playerGameStarted && point.teamVotingEnabled) {
+          // Captain: broadcast task to team players for voting (only in multi-device mode)
+          if (isCaptainInPlay && playerGameStarted && point.teamVotingEnabled && activeGame?.devicesPerTeam !== 'single') {
               teamSync.broadcastOpenTask({
                   pointId: point.id,
                   title: point.title || `Task ${point.id.slice(-4)}`,
@@ -2019,8 +2019,23 @@ const GameApp: React.FC = () => {
                   teamSync.connect(gameId, teamName, userName);
                   setMode(GameMode.PLAY);
                   setShowLanding(false);
-                  // Show team lobby immediately after joining
-                  setShowTeamLobbyAfterJoin(true);
+
+                  const joinedGame = games.find(g => g.id === gameId);
+                  const isSingleDevice = joinedGame?.devicesPerTeam === 'single';
+
+                  if (isSingleDevice) {
+                      // Single device mode: skip team lobby, go directly to game
+                      setPlayerGameStarted(true);
+                      // Show intro screen if enabled
+                      if (joinedGame?.introMessageConfig?.enabled) {
+                          setShowIntroModal(true);
+                          setIntroModalShown(true);
+                      }
+                  } else {
+                      // Multiple devices: show team lobby as before
+                      setShowTeamLobbyAfterJoin(true);
+                  }
+
                   // Register team in database (async, non-blocking)
                   registerPlayerTeam(gameId, teamName, userName, teamPhoto);
                   if (window.location.pathname === '/login') {
@@ -3906,8 +3921,8 @@ const GameApp: React.FC = () => {
             );
         })()}
 
-        {/* PLAY MODE: Player Play View for non-captain players */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && !isCaptainInPlay && playerGameStarted && currentTeam && activeGame && (
+        {/* PLAY MODE: Player Play View for non-captain players (multi-device only) */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && activeGame?.devicesPerTeam !== 'single' && !isCaptainInPlay && playerGameStarted && currentTeam && activeGame && (
             <PlayerPlayView
                 game={activeGame}
                 teamName={currentTeam.name || teamSync.getState().teamName || 'Team'}
@@ -3915,8 +3930,8 @@ const GameApp: React.FC = () => {
             />
         )}
 
-        {/* PLAY MODE: Team HUD with device frame centered (captain view) */}
-        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (isCaptainInPlay || !playerGameStarted) && (() => {
+        {/* PLAY MODE: Team HUD with device frame centered (captain view / single-device) */}
+        {mode === GameMode.PLAY && activeGame?.gameMode !== 'playzone' && activeGame?.gameMode !== 'aroundtheworld' && (isCaptainInPlay || !playerGameStarted || activeGame?.devicesPerTeam === 'single') && (() => {
             const teamState = teamSync.getState();
             const teamMembers = teamSync.getAllMembers();
             const allTasks = activeGame?.points || [];

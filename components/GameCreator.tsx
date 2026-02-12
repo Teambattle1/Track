@@ -332,6 +332,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
   const [allowChatting, setAllowChatting] = useState(baseGame?.allowChatting ?? true);
   const [showPlayerLocations, setShowPlayerLocations] = useState(baseGame?.showPlayerLocations ?? true);
   const [showTaskDetails, setShowTaskDetails] = useState(baseGame?.showTaskDetailsToPlayers ?? true);
+  const [devicesPerTeam, setDevicesPerTeam] = useState<'single' | 'multiple'>(baseGame?.devicesPerTeam || 'multiple');
 
   // New Fields
   const [aboutTemplate, setAboutTemplate] = useState(baseGame?.aboutTemplate || '');
@@ -1005,6 +1006,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           tags,
           endLocation,
           enableMeetingPoint,
+          devicesPerTeam,
           showOtherTeams,
           showRankingToPlayers: showRanking,
           allowChatting,
@@ -3113,6 +3115,28 @@ const GameCreator: React.FC<GameCreatorProps> = ({ onClose, onCreate, baseGame, 
           case 'TEAMS':
               return (
                   <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2">
+                      {/* Devices Per Team */}
+                      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-4">Devices Per Team</label>
+                          <p className="text-xs text-slate-400 mb-4">How many devices does each team play with?</p>
+                          <div className="grid grid-cols-2 gap-3">
+                              <button
+                                  onClick={() => setDevicesPerTeam('single')}
+                                  className={`p-4 rounded-xl border-2 transition-all text-left ${devicesPerTeam === 'single' ? 'bg-orange-900/20 border-orange-500' : 'border-slate-700 hover:border-slate-500'}`}
+                              >
+                                  <p className={`text-xs font-black uppercase ${devicesPerTeam === 'single' ? 'text-orange-400' : 'text-slate-400'}`}>ONE DEVICE</p>
+                                  <p className="text-[10px] text-slate-500 mt-1">One shared device per team. No team lobby. Voting tasks answered directly on screen.</p>
+                              </button>
+                              <button
+                                  onClick={() => setDevicesPerTeam('multiple')}
+                                  className={`p-4 rounded-xl border-2 transition-all text-left ${devicesPerTeam === 'multiple' ? 'bg-blue-900/20 border-blue-500' : 'border-slate-700 hover:border-slate-500'}`}
+                              >
+                                  <p className={`text-xs font-black uppercase ${devicesPerTeam === 'multiple' ? 'text-blue-400' : 'text-slate-400'}`}>MULTIPLE DEVICES</p>
+                                  <p className="text-[10px] text-slate-500 mt-1">Each player has their own device. Team lobby enabled with captain + player roles.</p>
+                              </button>
+                          </div>
+                      </div>
+
                       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-6">
                           <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4">Player permissions</h3>
                           

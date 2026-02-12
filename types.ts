@@ -864,9 +864,10 @@ export interface Game {
   jorden80TeamProgress?: Record<string, Jorden80TeamProgress>;
 
   // Team & Permission Settings
+  devicesPerTeam?: 'single' | 'multiple'; // 'single' = one device per team (no team lobby), 'multiple' = multi-device with team lobby (default)
   showOtherTeams?: boolean;
-  showTaskDetailsToPlayers?: boolean; 
-  showRankingToPlayers?: boolean; 
+  showTaskDetailsToPlayers?: boolean;
+  showRankingToPlayers?: boolean;
   allowChatting?: boolean;
   showPlayerLocations?: boolean;
   
