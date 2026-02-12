@@ -93,7 +93,9 @@ export interface ChatMessage {
   message: string;
   sender: string;
   timestamp: number;
-  isUrgent?: boolean; 
+  isUrgent?: boolean;
+  confirmRequired?: boolean;
+  senderTeamName?: string;
 }
 
 export interface TeamSyncState {

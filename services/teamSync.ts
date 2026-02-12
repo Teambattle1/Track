@@ -469,7 +469,7 @@ class TeamSyncService {
     });
   }
 
-  public sendChatMessage(gameId: string, message: string, targetTeamId: string | null = null, isUrgent: boolean = false) {
+  public sendChatMessage(gameId: string, message: string, targetTeamId: string | null = null, isUrgent: boolean = false, confirmRequired: boolean = false) {
       if (!this.globalChannel) {
           this.connectGlobal(gameId);
       }
@@ -482,7 +482,8 @@ class TeamSyncService {
               message,
               sender: 'Instructor',
               timestamp: Date.now(),
-              isUrgent // Pass urgent flag
+              isUrgent,
+              confirmRequired
           };
 
           this.globalChannel.send({
@@ -494,7 +495,13 @@ class TeamSyncService {
   }
 
   // Send chat message as a team member (not instructor)
-  public sendTeamChatMessage(gameId: string, message: string, senderName: string, teamName: string) {
+  public sendTeamChatMessage(
+    gameId: string,
+    message: string,
+    senderName: string,
+    teamName: string,
+    targetTeamId: string | null = null
+  ) {
       if (!this.globalChannel) {
           this.connectGlobal(gameId);
       }
@@ -503,9 +510,10 @@ class TeamSyncService {
           const chatPayload: ChatMessage = {
               id: `msg-${Date.now()}-${this.deviceId}`,
               gameId,
-              targetTeamId: null,
+              targetTeamId,
               message,
               sender: `${teamName}: ${senderName}`,
+              senderTeamName: teamName,
               timestamp: Date.now(),
               isUrgent: false
           };
@@ -516,6 +524,24 @@ class TeamSyncService {
               payload: chatPayload
           });
       }, 100);
+  }
+
+  // Send a "confirm read" acknowledgement for an important message
+  public sendConfirmRead(gameId: string, messageId: string, teamName: string) {
+    if (!this.globalChannel) {
+      this.connectGlobal(gameId);
+    }
+
+    this.globalChannel.send({
+      type: 'broadcast',
+      event: 'confirm_read',
+      payload: {
+        messageId,
+        teamName,
+        deviceId: this.deviceId,
+        timestamp: Date.now()
+      }
+    });
   }
 
   // --- GLOBAL LOCATION LOGIC (Captain Visibility) ---
@@ -901,6 +927,117 @@ class TeamSyncService {
           userName: this.userName,
           deviceId: this.deviceId
       };
+  }
+
+  // =============================================
+  // REJOIN REQUEST/RESPONSE SYSTEM
+  // =============================================
+
+  // Player sends a rejoin request to the captain of a team
+  public sendRejoinRequest(
+    gameId: string,
+    teamId: string,
+    teamName: string,
+    playerName: string,
+    deviceId: string,
+    requestId: string
+  ) {
+    // Use global channel for the game
+    if (!this.globalChannel) {
+      this.connectGlobal(gameId);
+    }
+
+    setTimeout(() => {
+      this.globalChannel.send({
+        type: 'broadcast',
+        event: 'rejoin_request',
+        payload: {
+          requestId,
+          teamId,
+          teamName,
+          playerName,
+          newDeviceId: deviceId,
+          timestamp: Date.now()
+        }
+      });
+      console.log(`[TeamSync] Sent rejoin request: ${playerName} → ${teamName} (${requestId})`);
+    }, 300);
+  }
+
+  // Captain subscribes to rejoin requests for their team
+  public subscribeToRejoinRequests(
+    gameId: string,
+    teamName: string,
+    callback: (request: { requestId: string; teamId: string; teamName: string; playerName: string; newDeviceId: string; timestamp: number }) => void
+  ): () => void {
+    if (!this.globalChannel) {
+      this.connectGlobal(gameId);
+    }
+
+    const handler = (payload: any) => {
+      const data = payload.payload;
+      // Only handle requests for this captain's team
+      if (data.teamName?.toLowerCase() === teamName.toLowerCase()) {
+        callback(data);
+      }
+    };
+
+    this.globalChannel.on('broadcast', { event: 'rejoin_request' }, handler);
+
+    return () => {
+      // Note: Supabase doesn't support removing individual handlers easily,
+      // but the channel will be cleaned up when disconnected
+    };
+  }
+
+  // Captain responds to a rejoin request (accept/reject)
+  public respondToRejoinRequest(
+    gameId: string,
+    requestId: string,
+    accepted: boolean,
+    mergeWithDeviceId?: string
+  ) {
+    if (!this.globalChannel) {
+      this.connectGlobal(gameId);
+    }
+
+    setTimeout(() => {
+      this.globalChannel.send({
+        type: 'broadcast',
+        event: 'rejoin_response',
+        payload: {
+          requestId,
+          accepted,
+          mergeWithDeviceId: mergeWithDeviceId || null,
+          timestamp: Date.now()
+        }
+      });
+      console.log(`[TeamSync] Sent rejoin response: ${requestId} → ${accepted ? 'ACCEPTED' : 'REJECTED'}`);
+    }, 100);
+  }
+
+  // Player listens for response to their specific rejoin request
+  public subscribeToRejoinResponse(
+    gameId: string,
+    requestId: string,
+    callback: (response: { requestId: string; accepted: boolean; mergeWithDeviceId?: string }) => void
+  ): () => void {
+    if (!this.globalChannel) {
+      this.connectGlobal(gameId);
+    }
+
+    const handler = (payload: any) => {
+      const data = payload.payload;
+      if (data.requestId === requestId) {
+        callback(data);
+      }
+    };
+
+    this.globalChannel.on('broadcast', { event: 'rejoin_response' }, handler);
+
+    return () => {
+      // Cleanup handled by channel disconnect
+    };
   }
 }
 

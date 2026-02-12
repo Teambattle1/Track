@@ -4,7 +4,7 @@ import {
   QrCode, Copy, Check, RefreshCw, Clock, Wifi, WifiOff,
   Smartphone, Tablet, Monitor, Trophy, ChevronDown, ChevronUp,
   Trash2, MessageSquare, BarChart3, Send, CheckCircle, Circle,
-  AlertCircle, Eye, Play
+  AlertCircle, Eye, Play, Key, Info, Pencil, Radio, Megaphone, AlertTriangle
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { Team, Game, TeamMember, TeamMemberData, TaskVote, ChatMessage, GameMessage } from '../types';
@@ -56,6 +56,41 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const [chatInput, setChatInput] = useState('');
   const [unreadChat, setUnreadChat] = useState(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [chatRecipient, setChatRecipient] = useState<'gamemaster' | 'all' | string>('gamemaster'); // 'gamemaster', 'all', or a team id
+  const [showRecipientSelector, setShowRecipientSelector] = useState(false);
+  const [gameTeams, setGameTeams] = useState<Team[]>([]);
+  const [showSendAllWarning, setShowSendAllWarning] = useState(false);
+  const [confirmReadMessages, setConfirmReadMessages] = useState<ChatMessage[]>([]);
+  const [confirmedMessageIds, setConfirmedMessageIds] = useState<Set<string>>(new Set());
+
+  // --- REJOIN REQUEST STATE (captain only) ---
+  const [rejoinRequest, setRejoinRequest] = useState<{
+    requestId: string;
+    teamId: string;
+    teamName: string;
+    playerName: string;
+    newDeviceId: string;
+    timestamp: number;
+  } | null>(null);
+  const [rejoinShowMerge, setRejoinShowMerge] = useState(false);
+  const [rejoinShowRetire, setRejoinShowRetire] = useState(false);
+
+  // --- RECOVERY CODES STATE (captain only) ---
+  const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
+  const [recoveryCodes, setRecoveryCodes] = useState<Record<string, string>>({}); // deviceId -> code
+  const [recoveryCodesLoading, setRecoveryCodesLoading] = useState(false);
+  const [copiedRecoveryCode, setCopiedRecoveryCode] = useState<string | null>(null);
+
+  // --- LOADING FUN TEXT STATE ---
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+
+  // --- EDIT NAME STATE ---
+  const [editingTeamName, setEditingTeamName] = useState(false);
+  const [editTeamNameValue, setEditTeamNameValue] = useState('');
+  const [editTeamNameError, setEditTeamNameError] = useState<string | null>(null);
+  const [editingPlayerName, setEditingPlayerName] = useState<string | null>(null); // deviceId of member being edited
+  const [editPlayerNameValue, setEditPlayerNameValue] = useState('');
+  const [editPlayerNameError, setEditPlayerNameError] = useState<string | null>(null);
 
   // Determine captain status
   const isCaptain = isCaptainProp ?? (team?.captainDeviceId === myDeviceId);
@@ -67,22 +102,38 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   const totalTeams = allTeams?.length || 0;
 
   // Load team data from DB (try by ID first, then by name within the game)
-  const loadTeam = useCallback(async () => {
+  const loadTeam = useCallback(async (retryCount = 0): Promise<void> => {
     try {
-      let data = await db.fetchTeam(teamId);
-      // If not found by ID, teamId might be a teamSync key — look up by name in the game
+      let data: Team | null = null;
+      // Try by ID first (only if teamId looks like a real DB id, not a name)
+      if (teamId && teamId.startsWith('team-')) {
+        data = await db.fetchTeam(teamId);
+      }
+      // Fallback: look up by name within the game
       if (!data && game?.id) {
           const teamState = teamSync.getState();
-          if (teamState.teamName) {
+          const nameToSearch = teamState.teamName || teamId;
+          if (nameToSearch) {
               const allGameTeams = await db.fetchTeams(game.id);
-              data = allGameTeams.find(t => t.name.toLowerCase() === teamState.teamName.toLowerCase()) || null;
+              data = allGameTeams.find(t => t.name.toLowerCase() === nameToSearch.toLowerCase()) || null;
           }
       }
-      if (data) setTeam(data);
+      if (data) {
+        setTeam(data);
+        setLoading(false);
+      } else if (retryCount < 5) {
+        // Team may still be registering in DB — retry after a short delay
+        setTimeout(() => loadTeam(retryCount + 1), 800);
+      } else {
+        setLoading(false);
+      }
     } catch (err) {
       console.error('[TeamLobbyView] Error loading team:', err);
-    } finally {
-      setLoading(false);
+      if (retryCount < 5) {
+        setTimeout(() => loadTeam(retryCount + 1), 800);
+      } else {
+        setLoading(false);
+      }
     }
   }, [teamId, game?.id]);
 
@@ -118,13 +169,43 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     const unsub = teamSync.subscribeToChat((msg: ChatMessage) => {
+      // Filter: only show messages targeted to this team, gamemaster messages, or broadcast messages
+      const myTeamName = team?.name?.toLowerCase();
+      const isForMe =
+        !msg.targetTeamId || // broadcast
+        msg.targetTeamId === team?.id || // targeted to this team by ID
+        msg.targetTeamId === 'gamemaster' || // gamemaster messages (visible to all)
+        msg.sender === 'Instructor' || msg.sender === 'Gamemaster' || // from instructor
+        msg.senderTeamName?.toLowerCase() === myTeamName; // from our own team
+
+      if (!isForMe) return;
+
       setChatMessages(prev => [...prev, msg]);
       if (activeTab !== 'CHAT') {
         setUnreadChat(prev => prev + 1);
       }
+
+      // If confirm required, add to confirm queue
+      if (msg.confirmRequired && msg.sender !== `${team?.name}: ${teamSync.getUserName()}`) {
+        setConfirmReadMessages(prev => [...prev, msg]);
+      }
     });
     return unsub;
-  }, [isOpen, activeTab]);
+  }, [isOpen, activeTab, team?.name, team?.id]);
+
+  // Fetch all teams for recipient selector
+  useEffect(() => {
+    if (!isOpen || !game?.id) return;
+    const fetchTeams = async () => {
+      try {
+        const teams = await db.fetchTeams(game.id);
+        setGameTeams(teams.filter(t => t.id !== team?.id)); // exclude own team
+      } catch (e) {
+        console.error('[TeamLobbyView] Error fetching teams for chat:', e);
+      }
+    };
+    fetchTeams();
+  }, [isOpen, game?.id, team?.id]);
 
   // Scroll chat to bottom on new messages
   useEffect(() => {
@@ -133,6 +214,18 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
       setUnreadChat(0);
     }
   }, [chatMessages, activeTab]);
+
+  // Subscribe to rejoin requests (captain only)
+  useEffect(() => {
+    if (!isOpen || !isCaptain || !game?.id || !team?.name) return;
+    const unsub = teamSync.subscribeToRejoinRequests(game.id, team.name, (request) => {
+      console.log('[TeamLobbyView] Received rejoin request:', request);
+      setRejoinRequest(request);
+      setRejoinShowMerge(false);
+      setRejoinShowRetire(false);
+    });
+    return unsub;
+  }, [isOpen, isCaptain, game?.id, team?.name]);
 
   // Subscribe to real-time DB changes for team members
   useEffect(() => {
@@ -201,6 +294,33 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     };
   }, [isOpen, game]);
 
+  // Fun loading text rotation
+  const funLoadingTexts = [
+    'Cleaning up the lobby from previous guests...',
+    'Painting the walls so it looks nice...',
+    'Setting up the scoreboard...',
+    'Polishing the trophies...',
+    'Warming up the game engine...',
+    'Rolling out the red carpet...',
+    'Checking the weather forecast...',
+    'Tuning the radio...',
+    'Sharpening the pencils...',
+    'Brewing coffee for the team...',
+    'Loading secret missions...',
+    'Calibrating GPS satellites...',
+    'Counting team members twice...',
+    'Stretching before the race...',
+    'Almost there, hang tight!'
+  ];
+
+  useEffect(() => {
+    if (!loading || team) return;
+    const interval = window.setInterval(() => {
+      setLoadingTextIndex(prev => (prev + 1) % funLoadingTexts.length);
+    }, 2500);
+    return () => window.clearInterval(interval);
+  }, [loading, team]);
+
   // Refresh team data periodically (fallback for when realtime doesn't fire)
   useEffect(() => {
     if (!isOpen) return;
@@ -214,6 +334,77 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     navigator.clipboard.writeText(code);
     setCodeCopied(true);
     setTimeout(() => setCodeCopied(false), 2000);
+  };
+
+  // Load recovery codes for all team members
+  const handleShowRecoveryCodes = async () => {
+    if (!game?.id) return;
+    setShowRecoveryCodes(true);
+    setRecoveryCodesLoading(true);
+    try {
+      const codes = await db.fetchRecoveryCodesForGame(game.id);
+      const codeMap: Record<string, string> = {};
+      for (const c of codes) {
+        codeMap[c.deviceId] = c.code;
+      }
+      setRecoveryCodes(codeMap);
+    } catch (e) {
+      console.error('[TeamLobbyView] Error loading recovery codes:', e);
+    } finally {
+      setRecoveryCodesLoading(false);
+    }
+  };
+
+  const handleCopyRecoveryCode = (code: string) => {
+    navigator.clipboard.writeText(code).catch(() => {});
+    setCopiedRecoveryCode(code);
+    setTimeout(() => setCopiedRecoveryCode(null), 2000);
+  };
+
+  // --- EDIT TEAM NAME ---
+  const handleStartEditTeamName = () => {
+    if (!isCaptain || !team) return;
+    setEditTeamNameValue(team.name);
+    setEditTeamNameError(null);
+    setEditingTeamName(true);
+  };
+
+  const handleSaveTeamName = async () => {
+    if (!team || !game?.id) return;
+    const newName = editTeamNameValue.trim();
+    if (!newName) { setEditTeamNameError('Name cannot be empty'); return; }
+    if (newName === team.name) { setEditingTeamName(false); return; }
+    // Check for duplicate team name
+    const allGameTeams = await db.fetchTeams(game.id);
+    const dup = allGameTeams.find(t => t.id !== team.id && t.name.toLowerCase() === newName.toLowerCase());
+    if (dup) { setEditTeamNameError(`Team "${dup.name}" already exists`); return; }
+    await db.updateTeam(team.id, { name: newName });
+    setEditingTeamName(false);
+    loadTeam();
+  };
+
+  // --- EDIT PLAYER NAME ---
+  const handleStartEditPlayerName = (deviceId: string, currentName: string) => {
+    setEditPlayerNameValue(currentName);
+    setEditPlayerNameError(null);
+    setEditingPlayerName(deviceId);
+  };
+
+  const handleSavePlayerName = async () => {
+    if (!team || !editingPlayerName) return;
+    const newName = editPlayerNameValue.trim();
+    if (!newName) { setEditPlayerNameError('Name cannot be empty'); return; }
+    const currentMember = team.members.find(m => m.deviceId === editingPlayerName);
+    if (currentMember && currentMember.name === newName) { setEditingPlayerName(null); return; }
+    // Check for duplicate player name within the team
+    const dup = team.members.find(m => m.deviceId !== editingPlayerName && m.name.toLowerCase() === newName.toLowerCase());
+    if (dup) { setEditPlayerNameError(`Player "${dup.name}" already exists on this team`); return; }
+    const updatedMembers = team.members.map(m =>
+      m.deviceId === editingPlayerName ? { ...m, name: newName } : m
+    );
+    await db.updateTeam(team.id, { members: updatedMembers });
+    setEditingPlayerName(null);
+    loadTeam();
   };
 
   const handleRetirePlayer = (deviceId: string) => {
@@ -244,25 +435,50 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
     setShowMemberActions(null);
   };
 
-  const handleSendChat = () => {
+  const handleSendChat = (forceSendAll = false) => {
     const msg = chatInput.trim();
     if (!msg || !game) return;
 
+    // If sending to all, show warning first (unless forced)
+    if (chatRecipient === 'all' && !forceSendAll) {
+      setShowSendAllWarning(true);
+      return;
+    }
+
+    const targetId = chatRecipient === 'gamemaster' ? 'gamemaster' : chatRecipient === 'all' ? null : chatRecipient;
+    const myTeamName = team?.name || 'Team';
+
     // Send via teamSync's global channel
-    teamSync.sendTeamChatMessage(game.id, msg, teamSync.getUserName(), team?.name || 'Team');
+    teamSync.sendTeamChatMessage(game.id, msg, teamSync.getUserName(), myTeamName, targetId);
 
     // Add locally for immediate feedback
     const chatPayload: ChatMessage = {
       id: `msg-${Date.now()}-${myDeviceId}`,
       gameId: game.id,
-      targetTeamId: null,
+      targetTeamId: targetId,
       message: msg,
-      sender: `${team?.name || 'Team'}: ${teamSync.getUserName()}`,
+      sender: `${myTeamName}: ${teamSync.getUserName()}`,
+      senderTeamName: myTeamName,
       timestamp: Date.now(),
       isUrgent: false
     };
     setChatMessages(prev => [...prev, chatPayload]);
     setChatInput('');
+    setShowSendAllWarning(false);
+  };
+
+  const handleConfirmRead = (messageId: string) => {
+    if (!game) return;
+    teamSync.sendConfirmRead(game.id, messageId, team?.name || 'Team');
+    setConfirmedMessageIds(prev => new Set([...prev, messageId]));
+    setConfirmReadMessages(prev => prev.filter(m => m.id !== messageId));
+  };
+
+  const getRecipientLabel = () => {
+    if (chatRecipient === 'gamemaster') return 'GAMEMASTER';
+    if (chatRecipient === 'all') return 'ALL TEAMS';
+    const t = gameTeams.find(t => t.id === chatRecipient);
+    return t ? t.name : 'SELECT RECIPIENT';
   };
 
   const handleChatKeyPress = (e: React.KeyboardEvent) => {
@@ -270,6 +486,53 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
       e.preventDefault();
       handleSendChat();
     }
+  };
+
+  // --- REJOIN REQUEST HANDLERS ---
+  const handleAcceptRejoin = () => {
+    if (!rejoinRequest) return;
+    // Show merge prompt
+    setRejoinShowMerge(true);
+  };
+
+  const handleRejectRejoin = () => {
+    if (!rejoinRequest) return;
+    // Show retire prompt
+    setRejoinShowRetire(true);
+  };
+
+  const handleMergeWith = async (oldDeviceId: string) => {
+    if (!rejoinRequest || !team || !game) return;
+    // Merge: transfer the old member's identity to the new device
+    await db.mergeTeamMember(team.id, oldDeviceId, rejoinRequest.newDeviceId, rejoinRequest.playerName);
+    // Add the new device as a team member if needed
+    teamSync.respondToRejoinRequest(game.id, rejoinRequest.requestId, true, oldDeviceId);
+    setRejoinRequest(null);
+    setRejoinShowMerge(false);
+    loadTeam(); // Refresh team data
+  };
+
+  const handleAddAsNewMember = async () => {
+    if (!rejoinRequest || !team || !game) return;
+    await db.addTeamMember(team.id, {
+      deviceId: rejoinRequest.newDeviceId,
+      name: rejoinRequest.playerName
+    });
+    teamSync.respondToRejoinRequest(game.id, rejoinRequest.requestId, true);
+    setRejoinRequest(null);
+    setRejoinShowMerge(false);
+    loadTeam();
+  };
+
+  const handleRejectConfirm = (shouldRetire: boolean) => {
+    if (!rejoinRequest || !game) return;
+    if (shouldRetire) {
+      // Captain can't retire a player that hasn't joined yet, so this is a no-op
+      // But it signals intent
+    }
+    teamSync.respondToRejoinRequest(game.id, rejoinRequest.requestId, false);
+    setRejoinRequest(null);
+    setRejoinShowRetire(false);
   };
 
   if (!isOpen) return null;
@@ -348,9 +611,30 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
               )}
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl font-black text-white uppercase tracking-wider truncate">
-                {team?.name || 'LOADING...'}
-              </h1>
+              {editingTeamName ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editTeamNameValue}
+                    onChange={(e) => { setEditTeamNameValue(e.target.value); setEditTeamNameError(null); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSaveTeamName(); if (e.key === 'Escape') setEditingTeamName(false); }}
+                    className="bg-slate-800 border border-orange-500/50 rounded-lg px-3 py-1 text-lg font-black text-white uppercase tracking-wider outline-none focus:border-orange-500 w-40"
+                    autoFocus
+                  />
+                  <button onClick={handleSaveTeamName} className="p-1.5 bg-green-600 rounded-lg hover:bg-green-700"><Check className="w-4 h-4 text-white" /></button>
+                  <button onClick={() => setEditingTeamName(false)} className="p-1.5 bg-slate-700 rounded-lg hover:bg-slate-600"><X className="w-4 h-4 text-white" /></button>
+                  {editTeamNameError && <span className="text-xs text-red-400 font-bold">{editTeamNameError}</span>}
+                </div>
+              ) : (
+                <h1
+                  className={`text-xl font-black text-white uppercase tracking-wider truncate ${isCaptain ? 'cursor-pointer hover:text-orange-300 transition-colors' : ''}`}
+                  onClick={isCaptain ? handleStartEditTeamName : undefined}
+                  title={isCaptain ? 'Click to edit team name' : undefined}
+                >
+                  {team?.name || 'LOADING...'}
+                  {isCaptain && <Pencil className="w-3.5 h-3.5 inline ml-2 text-slate-500" />}
+                </h1>
+              )}
               <div className="flex items-center gap-3 mt-0.5">
                 <span className="text-sm text-white font-black uppercase tracking-wider">
                   <Trophy className="w-4 h-4 inline mr-1 text-orange-400" />
@@ -657,9 +941,30 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                             {/* Info */}
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-white uppercase tracking-wider truncate">
+                                {editingPlayerName === member.deviceId ? (
+                                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                    <input
+                                      type="text"
+                                      value={editPlayerNameValue}
+                                      onChange={(e) => { setEditPlayerNameValue(e.target.value); setEditPlayerNameError(null); }}
+                                      onKeyDown={(e) => { if (e.key === 'Enter') handleSavePlayerName(); if (e.key === 'Escape') setEditingPlayerName(null); }}
+                                      className="bg-slate-800 border border-orange-500/50 rounded px-2 py-0.5 text-sm font-black text-white uppercase tracking-wider outline-none focus:border-orange-500 w-24"
+                                      autoFocus
+                                    />
+                                    <button onClick={(e) => { e.stopPropagation(); handleSavePlayerName(); }} className="p-1 bg-green-600 rounded hover:bg-green-700"><Check className="w-3 h-3 text-white" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); setEditingPlayerName(null); }} className="p-1 bg-slate-700 rounded hover:bg-slate-600"><X className="w-3 h-3 text-white" /></button>
+                                    {editPlayerNameError && <span className="text-[10px] text-red-400 font-bold">{editPlayerNameError}</span>}
+                                  </div>
+                                ) : (
+                                <span
+                                  className={`text-sm font-black text-white uppercase tracking-wider truncate ${(isCaptain || isMe) ? 'cursor-pointer hover:text-orange-300 transition-colors' : ''}`}
+                                  onClick={(isCaptain || isMe) ? (e) => { e.stopPropagation(); handleStartEditPlayerName(member.deviceId, member.name); } : undefined}
+                                  title={(isCaptain || isMe) ? 'Click to edit name' : undefined}
+                                >
                                   {member.name || 'UNKNOWN'}
+                                  {(isCaptain || isMe) && <Pencil className="w-2.5 h-2.5 inline ml-1.5 text-slate-600" />}
                                 </span>
+                                )}
                                 {isMemberCaptain && (
                                   <span className="text-xs font-black uppercase px-1.5 py-0.5 rounded border" style={{ color: teamColor, backgroundColor: teamColor + '20', borderColor: teamColor + '40' }}>
                                     CPT
@@ -754,6 +1059,17 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                         TAP A MEMBER FOR CAPTAIN ACTIONS
                       </div>
                     </div>
+                  )}
+
+                  {/* Recover Player button (captain only) */}
+                  {isCaptain && (
+                    <button
+                      onClick={handleShowRecoveryCodes}
+                      className="mt-4 w-full flex items-center justify-center gap-2 py-3 bg-green-900/40 hover:bg-green-800/50 border border-green-500/30 rounded-xl text-green-400 font-black text-xs uppercase tracking-widest transition-all"
+                    >
+                      <Key className="w-4 h-4" />
+                      RECOVER PLAYER CODES
+                    </button>
                   )}
                 </div>
               </div>
@@ -895,6 +1211,73 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
           {/* ==================== CHAT TAB ==================== */}
           {activeTab === 'CHAT' && (
             <div className="flex flex-col" style={{ height: 'calc(100vh - 240px)' }}>
+              {/* Recipient Selector */}
+              <div className="mb-3 relative">
+                <button
+                  onClick={() => setShowRecipientSelector(!showRecipientSelector)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 text-sm font-black uppercase tracking-widest transition-all ${
+                    chatRecipient === 'gamemaster'
+                      ? 'bg-green-900/30 border-green-500/50 text-green-400'
+                      : chatRecipient === 'all'
+                      ? 'bg-red-900/20 border-red-500/40 text-red-400'
+                      : 'bg-blue-900/20 border-blue-500/40 text-blue-400'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {chatRecipient === 'gamemaster' && <Radio className="w-4 h-4" />}
+                    {chatRecipient === 'all' && <Megaphone className="w-4 h-4" />}
+                    {chatRecipient !== 'gamemaster' && chatRecipient !== 'all' && <Users className="w-4 h-4" />}
+                    TO: {getRecipientLabel()}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showRecipientSelector ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showRecipientSelector && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border-2 border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-y-auto z-50 animate-in slide-in-from-top-1">
+                    {/* GAMEMASTER — always at top */}
+                    <button
+                      onClick={() => { setChatRecipient('gamemaster'); setShowRecipientSelector(false); }}
+                      className={`w-full text-left px-4 py-3 border-b border-slate-700/50 hover:bg-green-900/30 text-sm font-black uppercase tracking-wider flex items-center gap-3 transition-all ${
+                        chatRecipient === 'gamemaster' ? 'bg-green-900/20 text-green-400' : 'text-white'
+                      }`}
+                    >
+                      <Radio className="w-4 h-4 text-green-400" />
+                      GAMEMASTER
+                      {chatRecipient === 'gamemaster' && <Check className="w-4 h-4 ml-auto text-green-400" />}
+                    </button>
+
+                    {/* Individual teams */}
+                    {gameTeams.map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => { setChatRecipient(t.id); setShowRecipientSelector(false); }}
+                        className={`w-full text-left px-4 py-3 border-b border-slate-700/50 hover:bg-blue-900/20 text-sm font-bold flex items-center justify-between transition-all ${
+                          chatRecipient === t.id ? 'text-blue-400 bg-blue-900/10' : 'text-slate-300'
+                        }`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color || '#94a3b8' }} />
+                          {t.name}
+                        </span>
+                        {chatRecipient === t.id && <Check className="w-4 h-4 text-blue-400" />}
+                      </button>
+                    ))}
+
+                    {/* SEND TO ALL — always at bottom */}
+                    <button
+                      onClick={() => { setChatRecipient('all'); setShowRecipientSelector(false); }}
+                      className={`w-full text-left px-4 py-3 hover:bg-red-900/20 text-sm font-black uppercase tracking-wider flex items-center gap-3 transition-all ${
+                        chatRecipient === 'all' ? 'bg-red-900/20 text-red-400' : 'text-orange-400'
+                      }`}
+                    >
+                      <Megaphone className="w-4 h-4 text-red-400" />
+                      SEND TO ALL TEAMS
+                      {chatRecipient === 'all' && <Check className="w-4 h-4 ml-auto text-red-400" />}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto space-y-3 pb-4">
                 {chatMessages.length === 0 ? (
@@ -902,13 +1285,14 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                     <MessageSquare className="w-14 h-14 text-orange-500/30 mx-auto mb-3" />
                     <p className="text-base font-black text-white uppercase tracking-wider">NO MESSAGES YET</p>
                     <p className="text-sm text-slate-300 font-bold uppercase mt-2">
-                      MESSAGES FROM GAMEMASTER AND TEAM WILL APPEAR HERE
+                      SELECT A RECIPIENT AND SEND A MESSAGE
                     </p>
                   </div>
                 ) : (
                   chatMessages.map(msg => {
-                    const isFromMe = msg.sender.includes(teamSync.getUserName());
+                    const isFromMe = msg.senderTeamName?.toLowerCase() === team?.name?.toLowerCase() || msg.sender.includes(teamSync.getUserName());
                     const isFromInstructor = msg.sender === 'Instructor' || msg.sender === 'Gamemaster';
+                    const isConfirmed = confirmedMessageIds.has(msg.id);
 
                     return (
                       <div
@@ -917,16 +1301,16 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                       >
                         <div className={`max-w-[80%] rounded-2xl px-4 py-3 border-2 ${
                           isFromInstructor
-                            ? 'bg-orange-900/30 border-orange-500/40'
+                            ? 'bg-gradient-to-br from-green-900/40 to-orange-900/30 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.15)]'
                             : isFromMe
-                            ? 'bg-white/10 border-orange-500/20'
+                            ? 'bg-blue-900/30 border-blue-500/30'
                             : 'bg-slate-800/50 border-slate-600/30'
                         }`}>
                           <p className={`text-xs font-black uppercase tracking-widest mb-1 ${
-                            isFromInstructor ? 'text-orange-400' :
-                            isFromMe ? 'text-orange-300' : 'text-white'
+                            isFromInstructor ? 'text-green-400' :
+                            isFromMe ? 'text-blue-400' : 'text-slate-300'
                           }`}>
-                            {isFromInstructor && <Shield className="w-3.5 h-3.5 inline mr-1" />}
+                            {isFromInstructor && <Shield className="w-3.5 h-3.5 inline mr-1 text-orange-400" />}
                             {msg.sender}
                           </p>
                           <p className={`text-sm font-bold ${
@@ -934,9 +1318,25 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                           }`}>
                             {msg.message}
                           </p>
-                          <p className="text-xs text-slate-300 font-bold mt-1">
-                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-xs text-slate-400 font-bold">
+                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                            {msg.confirmRequired && !isFromMe && (
+                              isConfirmed ? (
+                                <span className="text-[10px] font-black text-green-400 uppercase flex items-center gap-1">
+                                  <CheckCircle className="w-3 h-3" /> CONFIRMED
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleConfirmRead(msg.id)}
+                                  className="text-[10px] font-black text-orange-400 uppercase bg-orange-500/20 border border-orange-500/40 rounded-lg px-2 py-0.5 hover:bg-orange-500/30 transition-all"
+                                >
+                                  CONFIRM READ
+                                </button>
+                              )
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -953,20 +1353,28 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={handleChatKeyPress}
-                    placeholder="TYPE A MESSAGE..."
+                    placeholder={chatRecipient === 'gamemaster' ? 'MESSAGE GAMEMASTER...' : chatRecipient === 'all' ? 'MESSAGE ALL TEAMS...' : 'TYPE A MESSAGE...'}
                     className="flex-1 bg-black/30 border-2 border-orange-500/20 rounded-xl px-4 py-4 text-sm text-white font-bold uppercase tracking-wider placeholder:text-slate-400 outline-none focus:border-orange-500/60 transition-colors"
                   />
                   <button
-                    onClick={handleSendChat}
+                    onClick={() => handleSendChat()}
                     disabled={!chatInput.trim()}
-                    className="px-6 py-4 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-black uppercase tracking-wider transition-colors flex items-center gap-2 border-2 border-orange-500 disabled:border-slate-700"
+                    className={`px-6 py-4 text-white rounded-xl font-black uppercase tracking-wider transition-colors flex items-center gap-2 border-2 disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 ${
+                      chatRecipient === 'gamemaster'
+                        ? 'bg-green-600 hover:bg-green-700 border-green-500'
+                        : chatRecipient === 'all'
+                        ? 'bg-red-600 hover:bg-red-700 border-red-500'
+                        : 'bg-blue-600 hover:bg-blue-700 border-blue-500'
+                    }`}
                   >
                     <Send className="w-5 h-5" />
                     SEND
                   </button>
                 </div>
-                <p className="text-xs text-slate-300 font-bold uppercase tracking-wider mt-2 text-center">
-                  MESSAGES ARE VISIBLE TO GAMEMASTER AND ALL TEAMS
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-2 text-center">
+                  {chatRecipient === 'gamemaster' ? 'SENDS TO GAMEMASTER & INSTRUCTOR' :
+                   chatRecipient === 'all' ? 'SENDS TO ALL TEAMS IN THE GAME' :
+                   `SENDS TO ${getRecipientLabel()}`}
                 </p>
               </div>
             </div>
@@ -974,36 +1382,362 @@ const TeamLobbyView: React.FC<TeamLobbyViewProps> = ({
         </div>
       </div>
 
-      {/* START GAME Button (fixed bottom bar in lobby-after-join mode) */}
+      {/* Bottom bar: START GAME (captain only) or countdown/waiting (player) */}
       {onStartGame && (
         <div className="border-t-2 border-orange-500/30 bg-[#0a0f1d]/95 backdrop-blur-sm p-4">
-          {(!countdown || countdown.state === 'no_timer' || countdown.state === 'game_started') ? (
-            <button
-              onClick={onStartGame}
-              className="w-full max-w-md mx-auto block py-5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-2xl font-black text-xl uppercase tracking-[0.2em] shadow-2xl shadow-orange-600/40 transition-all flex items-center justify-center gap-3 group animate-pulse hover:animate-none"
-            >
-              <Play className="w-7 h-7 group-hover:scale-110 transition-transform" />
-              START GAME
-            </button>
+          {isCaptain ? (
+            // Captain sees the START GAME button (or countdown if timer is set)
+            (!countdown || countdown.state === 'no_timer' || countdown.state === 'game_started') ? (
+              <button
+                onClick={onStartGame}
+                className="w-full max-w-md mx-auto block py-5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-2xl font-black text-xl uppercase tracking-[0.2em] shadow-2xl shadow-orange-600/40 transition-all flex items-center justify-center gap-3 group animate-pulse hover:animate-none"
+              >
+                <Play className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                START GAME
+              </button>
+            ) : (
+              <div className="text-center">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                  {countdown.label}
+                </p>
+                <p className="text-3xl font-black text-orange-400 tracking-wider">
+                  {countdown.remainingMs > 0 ? formatCountdown(countdown.remainingMs) : '00:00'}
+                </p>
+              </div>
+            )
           ) : (
+            // Player sees "waiting for captain" message or countdown
             <div className="text-center">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                {countdown.label}
-              </p>
-              <p className="text-3xl font-black text-orange-400 tracking-wider">
-                {countdown.remainingMs > 0 ? formatCountdown(countdown.remainingMs) : '00:00'}
-              </p>
+              {countdown && countdown.state !== 'no_timer' && countdown.remainingMs > 0 ? (
+                <>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                    {countdown.label}
+                  </p>
+                  <p className="text-3xl font-black text-orange-400 tracking-wider">
+                    {formatCountdown(countdown.remainingMs)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Clock className="w-4 h-4 text-slate-500" />
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                      WAITING FOR CAPTAIN TO START
+                    </p>
+                  </div>
+                  <div className="flex gap-1 justify-center mt-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
       )}
 
-      {/* Loading overlay */}
+      {/* ==================== REJOIN REQUEST MODAL (captain) ==================== */}
+      {rejoinRequest && !rejoinShowMerge && !rejoinShowRetire && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border-2 border-green-500/50 rounded-3xl p-6 max-w-sm w-full shadow-2xl shadow-green-500/20">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-green-500/40">
+                <UserPlus className="w-8 h-8 text-green-400" />
+              </div>
+              <h2 className="text-xl font-black text-white uppercase tracking-widest mb-2">REJOIN REQUEST</h2>
+              <p className="text-sm text-slate-300">
+                <span className="text-green-400 font-black">{rejoinRequest.playerName}</span> wants to rejoin your team
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-3">
+              <button
+                onClick={handleAcceptRejoin}
+                className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+              >
+                <UserCheck className="w-5 h-5" />
+                ACCEPT
+              </button>
+              <button
+                onClick={handleRejectRejoin}
+                className="w-full py-4 bg-red-600/20 hover:bg-red-600/30 text-red-400 border-2 border-red-500/40 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+              >
+                <UserX className="w-5 h-5" />
+                REJECT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== MERGE MEMBER MODAL (captain accepted rejoin) ==================== */}
+      {rejoinRequest && rejoinShowMerge && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border-2 border-orange-500/50 rounded-3xl p-6 max-w-sm w-full shadow-2xl max-h-[80vh] overflow-y-auto">
+            {/* Header */}
+            <div className="text-center mb-5">
+              <h2 className="text-lg font-black text-white uppercase tracking-widest mb-2">MERGE PLAYER?</h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Should <span className="text-green-400 font-black">{rejoinRequest.playerName}</span> take over an existing member's identity? This transfers their game progress to the new device.
+              </p>
+            </div>
+
+            {/* Member list for merge */}
+            <div className="space-y-2 mb-4">
+              <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-2">SELECT MEMBER TO MERGE WITH</p>
+              {mergedMembers.map(member => (
+                <button
+                  key={member.deviceId}
+                  onClick={() => handleMergeWith(member.deviceId)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-800 border-2 border-slate-700 hover:border-orange-500/50 transition-all text-left"
+                >
+                  {member.photo ? (
+                    <img src={member.photo} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-slate-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-black text-white uppercase tracking-wider truncate">{member.name}</p>
+                    <p className="text-xs text-slate-400">
+                      {member.deviceId === team?.captainDeviceId ? 'Captain' : 'Member'}
+                      {member.isRetired ? ' • Retired' : ''}
+                      {!member.isOnline ? ' • Offline' : ''}
+                    </p>
+                  </div>
+                  <RefreshCw className="w-4 h-4 text-orange-400 shrink-0" />
+                </button>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-4">
+              <div className="h-px bg-slate-700 flex-1" />
+              <span className="text-[10px] font-black text-slate-500 uppercase">OR</span>
+              <div className="h-px bg-slate-700 flex-1" />
+            </div>
+
+            {/* Add as new */}
+            <button
+              onClick={handleAddAsNewMember}
+              className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 mb-3"
+            >
+              <UserPlus className="w-5 h-5" />
+              ADD AS NEW MEMBER
+            </button>
+
+            {/* Cancel */}
+            <button
+              onClick={() => { setRejoinShowMerge(false); setRejoinRequest(null); }}
+              className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== RETIRE PROMPT (captain rejected rejoin) ==================== */}
+      {rejoinRequest && rejoinShowRetire && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border-2 border-red-500/50 rounded-3xl p-6 max-w-sm w-full shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-red-500/40">
+                <UserX className="w-8 h-8 text-red-400" />
+              </div>
+              <h2 className="text-lg font-black text-white uppercase tracking-widest mb-2">REJECT PLAYER</h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-red-400 font-black">{rejoinRequest.playerName}</span> will be rejected. Should they be retired from the team roster?
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => handleRejectConfirm(true)}
+                className="w-full py-4 bg-red-600/20 hover:bg-red-600/30 text-red-400 border-2 border-red-500/40 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all"
+              >
+                YES, RETIRE PLAYER
+              </button>
+              <button
+                onClick={() => handleRejectConfirm(false)}
+                className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all"
+              >
+                NO, JUST REJECT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== RECOVERY CODES MODAL (captain) ==================== */}
+      {showRecoveryCodes && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border-2 border-green-500/50 rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-green-500/40">
+                <Key className="w-8 h-8 text-green-400" />
+              </div>
+              <h2 className="text-lg font-black text-white uppercase tracking-widest mb-2">RECOVERY CODES</h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Share these codes with players who need to recover their game on a new device.
+              </p>
+            </div>
+
+            {recoveryCodesLoading ? (
+              <div className="text-center py-8">
+                <RefreshCw className="w-8 h-8 text-green-500 animate-spin mx-auto mb-3" />
+                <p className="text-xs text-slate-400 uppercase tracking-wider">Loading codes...</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {mergedMembers.map(member => {
+                  const code = recoveryCodes[member.deviceId];
+                  return (
+                    <div key={member.deviceId} className="flex items-center justify-between bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {member.photo ? (
+                          <img src={member.photo} className="w-8 h-8 rounded-full object-cover border border-slate-600" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                            <Users className="w-4 h-4 text-slate-400" />
+                          </div>
+                        )}
+                        <span className="text-sm font-black text-white uppercase truncate">{member.name}</span>
+                      </div>
+                      {code ? (
+                        <button
+                          onClick={() => handleCopyRecoveryCode(code)}
+                          className="flex items-center gap-2 bg-green-900/40 hover:bg-green-800/50 border border-green-500/30 rounded-lg px-3 py-1.5 transition-all"
+                        >
+                          <span className="text-sm font-mono font-bold text-green-400 tracking-widest">{code}</span>
+                          {copiedRecoveryCode === code ? (
+                            <Check className="w-3.5 h-3.5 text-green-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5 text-green-500/60" />
+                          )}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-500 italic">No code</span>
+                      )}
+                    </div>
+                  );
+                })}
+                {mergedMembers.length === 0 && (
+                  <p className="text-center text-xs text-slate-500 py-4">No team members yet</p>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowRecoveryCodes(false)}
+              className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all"
+            >
+              CLOSE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== SEND TO ALL WARNING MODAL ==================== */}
+      {showSendAllWarning && (
+        <div className="fixed inset-0 z-[6000] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border-2 border-red-500/50 rounded-3xl p-6 max-w-sm w-full shadow-2xl shadow-red-500/20">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-red-500/40">
+                <AlertTriangle className="w-8 h-8 text-red-400" />
+              </div>
+              <h2 className="text-lg font-black text-white uppercase tracking-widest mb-2">SEND TO ALL?</h2>
+              <p className="text-sm text-red-300 font-bold uppercase tracking-wider">
+                SURE THAT ALL TEAMS NEED THAT MESSAGE?
+              </p>
+              <div className="mt-3 bg-red-900/20 border border-red-500/30 rounded-xl p-3">
+                <p className="text-sm text-white font-bold italic">"{chatInput}"</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleSendChat(true)}
+                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+              >
+                <Megaphone className="w-5 h-5" />
+                YES, SEND TO ALL
+              </button>
+              <button
+                onClick={() => setShowSendAllWarning(false)}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== CONFIRM READ POPUP (from gamemaster) ==================== */}
+      {confirmReadMessages.length > 0 && (
+        <div className="fixed inset-0 z-[7000] bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border-2 border-orange-500/60 rounded-3xl p-6 max-w-sm w-full shadow-[0_0_40px_rgba(249,115,22,0.3)] animate-pulse-slow">
+            <div className="text-center mb-5">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500/30 to-orange-500/30 rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-orange-500/60 shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                <Megaphone className="w-10 h-10 text-orange-400" />
+              </div>
+              <h2 className="text-xl font-black text-orange-400 uppercase tracking-[0.2em] mb-1">IMPORTANT MESSAGE</h2>
+              <p className="text-xs text-green-400 font-black uppercase tracking-widest">
+                FROM {confirmReadMessages[0].sender}
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-900/30 to-orange-900/20 border-2 border-orange-500/40 rounded-2xl p-5 mb-6 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+              <p className="text-base text-white font-bold leading-relaxed text-center">
+                {confirmReadMessages[0].message}
+              </p>
+              <p className="text-xs text-slate-400 font-bold mt-3 text-center">
+                {new Date(confirmReadMessages[0].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+
+            <button
+              onClick={() => handleConfirmRead(confirmReadMessages[0].id)}
+              className="w-full py-5 bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700 text-white rounded-2xl font-black text-lg uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-lg shadow-orange-600/30"
+            >
+              <CheckCircle className="w-6 h-6" />
+              CONFIRM READ
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading overlay with progress bar and fun texts */}
       {loading && !team && (
         <div className="absolute inset-0 bg-[#0a0f1d] flex items-center justify-center">
-          <div className="text-center">
+          <div className="text-center w-full max-w-xs px-6">
             <RefreshCw className="w-14 h-14 text-orange-500 animate-spin mx-auto mb-4" />
-            <p className="text-lg text-white font-black uppercase tracking-wider">LOADING TEAM...</p>
+            <p className="text-lg text-white font-black uppercase tracking-wider mb-6">PREPARING TEAM LOBBY</p>
+            <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+                style={{ animation: 'loadProgress 30s ease-out forwards' }}
+              />
+            </div>
+            <style>{`
+              @keyframes loadProgress {
+                0% { width: 3%; }
+                10% { width: 15%; }
+                25% { width: 35%; }
+                40% { width: 50%; }
+                60% { width: 70%; }
+                80% { width: 85%; }
+                90% { width: 92%; }
+                100% { width: 98%; }
+              }
+            `}</style>
+            <p className="text-xs text-slate-400 mt-4 uppercase tracking-widest transition-opacity duration-500 h-5">
+              {funLoadingTexts[loadingTextIndex]}
+            </p>
           </div>
         </div>
       )}

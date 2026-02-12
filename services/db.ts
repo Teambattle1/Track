@@ -890,6 +890,37 @@ export const addTeamMember = async (teamId: string, member: { deviceId: string; 
     }
 };
 
+// Merge a rejoining player with an existing member (transfer device identity)
+export const mergeTeamMember = async (teamId: string, oldDeviceId: string, newDeviceId: string, newName?: string): Promise<void> => {
+    try {
+        const team = await fetchTeam(teamId);
+        if (!team) return;
+
+        const updatedMembers = team.members.map(m => {
+            if (m.deviceId === oldDeviceId) {
+                return { ...m, deviceId: newDeviceId, name: newName || m.name };
+            }
+            return m;
+        });
+
+        // Also update captain if the merged member was captain
+        let captainId = team.captainDeviceId;
+        if (captainId === oldDeviceId) {
+            captainId = newDeviceId;
+        }
+
+        await supabase.from('teams').update({
+            members: updatedMembers,
+            captain_device_id: captainId,
+            updated_at: new Date().toISOString()
+        }).eq('id', teamId);
+
+        console.log(`[DB] Merged member: ${oldDeviceId} → ${newDeviceId} in team ${teamId}`);
+    } catch (e) {
+        logError('mergeTeamMember', e);
+    }
+};
+
 // --- LIBRARY & LISTS ---
 export const fetchLibrary = async (): Promise<TaskTemplate[]> => {
     const normalizeTemplate = (template: any): TaskTemplate => {
@@ -2123,4 +2154,27 @@ export const deleteRecoveryCode = async (code: string): Promise<void> => {
         // Ignore errors - code cleanup is best-effort
     }
     localStorage.removeItem(`recovery_code_${code.toUpperCase()}`);
+};
+
+// Fetch all recovery codes for a given game (captain use: show codes for team members)
+export const fetchRecoveryCodesForGame = async (gameId: string): Promise<RecoveryCodeData[]> => {
+    try {
+        const { data, error } = await supabase
+            .from('player_recovery_codes')
+            .select('data, expires_at')
+            .eq('game_id', gameId);
+
+        if (error) {
+            if (error.code === '42P01') return [];
+            throw error;
+        }
+
+        const now = Date.now();
+        return (data || [])
+            .filter(r => new Date(r.expires_at).getTime() > now)
+            .map(r => r.data as RecoveryCodeData);
+    } catch (e) {
+        logError('fetchRecoveryCodesForGame', e);
+        return [];
+    }
 };

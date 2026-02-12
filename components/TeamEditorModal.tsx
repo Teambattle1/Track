@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2, Crown, ExternalLink } from 'lucide-react';
+import { X, Users, ArrowRight, ChevronDown, ChevronUp, RefreshCw, Check, AlertCircle, Plus, Trash2, Crown, ExternalLink, Key, Copy } from 'lucide-react';
 import { Team, TeamMemberData, Game } from '../types';
 import * as db from '../services/db';
 import GameChooserView from './GameChooserView';
@@ -48,6 +48,8 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
   const [movingMember, setMovingMember] = useState<{ member: TeamMemberData; fromTeamId: string } | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [recoveryCodes, setRecoveryCodes] = useState<Record<string, string>>({}); // deviceId -> code
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const game = games.find(g => g.id === selectedGameId);
 
@@ -71,6 +73,17 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
       }
       setTeams(data);
       setExpandedTeamIds(new Set(data.map(t => t.id)));
+      // Load recovery codes
+      try {
+        const codes = await db.fetchRecoveryCodesForGame(gId);
+        const codeMap: Record<string, string> = {};
+        for (const c of codes) {
+          codeMap[c.deviceId] = c.code;
+        }
+        setRecoveryCodes(codeMap);
+      } catch (e) {
+        console.error('[TeamEditor] Error loading recovery codes:', e);
+      }
     } catch (err) {
       console.error('[TeamEditor] Error loading teams:', err);
     } finally {
@@ -460,9 +473,32 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                                   </div>
                                 )}
                                 <div>
-                                  <span className="text-xs font-black text-slate-300 uppercase tracking-wider">{(member.name || 'UNKNOWN').toUpperCase()}</span>
-                                  {isCaptain && (
-                                    <span className="ml-2 text-[8px] font-black text-amber-500 uppercase tracking-widest">CAPTAIN</span>
+                                  <div className="flex items-center">
+                                    <span className="text-xs font-black text-slate-300 uppercase tracking-wider">{(member.name || 'UNKNOWN').toUpperCase()}</span>
+                                    {isCaptain && (
+                                      <span className="ml-2 text-[8px] font-black text-amber-500 uppercase tracking-widest">CAPTAIN</span>
+                                    )}
+                                  </div>
+                                  {recoveryCodes[member.deviceId] && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const code = recoveryCodes[member.deviceId];
+                                        navigator.clipboard.writeText(code).catch(() => {});
+                                        setCopiedCode(code);
+                                        setTimeout(() => setCopiedCode(null), 2000);
+                                      }}
+                                      className="flex items-center gap-1 mt-0.5 group/code"
+                                      title="Click to copy recovery code"
+                                    >
+                                      <Key className="w-2.5 h-2.5 text-green-500/60" />
+                                      <span className="text-[9px] font-mono font-bold text-green-500/60 tracking-wider group-hover/code:text-green-400 transition-colors">{recoveryCodes[member.deviceId]}</span>
+                                      {copiedCode === recoveryCodes[member.deviceId] ? (
+                                        <Check className="w-2.5 h-2.5 text-green-400" />
+                                      ) : (
+                                        <Copy className="w-2.5 h-2.5 text-slate-600 group-hover/code:text-green-400 transition-colors" />
+                                      )}
+                                    </button>
                                   )}
                                 </div>
                               </div>
