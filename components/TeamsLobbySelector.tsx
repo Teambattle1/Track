@@ -126,16 +126,16 @@ const TeamsLobbySelector: React.FC<TeamsLobbySelectorProps> = ({
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-white text-lg transition-colors" style={{ color: tc }}>
+                            <h3 className="font-black text-white text-xl uppercase tracking-wider transition-colors">
                               {team.name}
                             </h3>
-                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-400">
+                            <div className="flex items-center gap-4 mt-2 text-sm font-black uppercase tracking-widest" style={{ color: tc }}>
                               <span className="flex items-center gap-1">
                                 <Users className="w-4 h-4" />
-                                {team.members?.length || 0} members
+                                {team.members?.length || 0} MEMBERS
                               </span>
-                              <span className="flex items-center gap-1 font-bold" style={{ color: tc }}>
-                                {team.score || 0} pts
+                              <span className="flex items-center gap-1">
+                                {team.score || 0} PTS
                               </span>
                             </div>
                           </div>

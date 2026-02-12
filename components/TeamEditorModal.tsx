@@ -424,11 +424,12 @@ const TeamEditorModal: React.FC<TeamEditorModalProps> = ({ gameId: initialGameId
                         </div>
                       )}
                       <div className="text-left">
-                        <h3 className={`${movingMember ? 'text-lg' : 'text-base'} font-black text-white uppercase tracking-wider`}>
+                        <h3 className={`${movingMember ? 'text-lg' : 'text-lg'} font-black text-white uppercase tracking-wider`}>
                           {team.name}
                           {isDemoTeam && <span className="ml-2 text-[8px] font-black text-yellow-500 uppercase">DEMO</span>}
                         </h3>
-                        <p className={`${movingMember ? 'text-sm' : 'text-xs'} text-slate-400 font-bold uppercase tracking-widest mt-0.5`}>
+                        <p className={`${movingMember ? 'text-sm' : 'text-sm'} font-black uppercase tracking-widest mt-0.5`}
+                           style={team.color ? { color: team.color } : { color: '#94a3b8' }}>
                           {team.members.length} {team.members.length !== 1 ? 'MEMBERS' : 'MEMBER'} · {team.score} PTS
                         </p>
                       </div>

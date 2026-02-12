@@ -155,12 +155,12 @@ const TeamLobbyChooser: React.FC<TeamLobbyChooserProps> = ({ games, onClose, onS
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-black text-white uppercase tracking-wider truncate">{team.name}</h3>
-                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: tc + 'aa' }}>
+                    <h3 className="text-lg font-black text-white uppercase tracking-wider truncate">{team.name}</h3>
+                    <p className="text-sm font-black uppercase tracking-widest" style={{ color: tc }}>
                       {team.members?.length || 0} MEMBERS · {team.score || 0} PTS
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" style={{ color: tc + '80' }} />
+                  <ChevronRight className="w-5 h-5 shrink-0 group-hover:translate-x-0.5 transition-transform" style={{ color: tc }} />
                 </button>
               );
             }))
