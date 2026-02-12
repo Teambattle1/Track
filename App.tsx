@@ -2294,11 +2294,12 @@ const GameApp: React.FC = () => {
                               }
                           }
 
-                          const mapCenter = mapRef.current?.getCenter();
+                          const mapCenter = mapRef.current?.getCenter()
+                              || targetGame.points?.find(p => p.location && p.location.lat !== 0)?.location
+                              || { lat: 55.6761, lng: 12.5683 };
 
                           // Helper function to calculate spiral placement with 50m spacing
-                          const getOffsetLocation = (center: Coordinate | null | undefined, index: number): Coordinate | null => {
-                              if (!center) return null;
+                          const getOffsetLocation = (center: Coordinate, index: number): Coordinate => {
                               if (index === 0) return center; // First task at center
 
                               // Spiral placement: tasks arranged in a circle pattern
@@ -2385,11 +2386,12 @@ const GameApp: React.FC = () => {
                               }
                           }
 
-                          const mapCenter = mapRef.current?.getCenter();
+                          const mapCenter = mapRef.current?.getCenter()
+                              || targetGame.points?.find(p => p.location && p.location.lat !== 0)?.location
+                              || { lat: 55.6761, lng: 12.5683 };
 
                           // Helper function to calculate spiral placement with 50m spacing
-                          const getOffsetLocation = (center: Coordinate | null | undefined, index: number): Coordinate | null => {
-                              if (!center) return null;
+                          const getOffsetLocation = (center: Coordinate, index: number): Coordinate => {
                               if (index === 0) return center; // First task at center
 
                               // Spiral placement: tasks arranged in a circle pattern

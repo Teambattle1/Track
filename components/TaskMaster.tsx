@@ -819,18 +819,7 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
     const handleBulkAddToGame = async (game: Game) => {
         const selectedTasks = library.filter(t => selectedTemplateIds.includes(t.id));
 
-        // Create GamePoints from selected tasks
-        const newPoints = selectedTasks.map((task, i) => templateToGamePoint({
-            ...task,
-            id: `${task.id}-${Date.now()}-${i}`
-        }));
-
-        const updatedGame = {
-            ...game,
-            points: [...game.points, ...newPoints]
-        };
-
-        onImportTasks(selectedTasks); // This will trigger parent to add to the game
+        onImportTasks(selectedTasks, game.id);
         setSelectedTemplateIds([]);
         setBulkSelectionMode(false);
         setShowGameSelector(false);
@@ -2477,9 +2466,13 @@ const TaskMaster: React.FC<TaskMasterProps> = ({
                             onImportTasks(tasks, activeGame.id);
                             setShowAiGen(false);
                             setNotification({ message: `✨ ${tasks.length} AI-generated tasks added to game!`, type: 'success' });
-                        } else {
-                            // No active game - just close the modal
+                        } else if (games.length > 0) {
+                            // No active game - let user pick a game
+                            handleImportTasksWithGameSelect(tasks);
                             setShowAiGen(false);
+                        } else {
+                            setShowAiGen(false);
+                            setNotification({ message: 'No games available. Please create a game first.', type: 'warning' });
                         }
                     }}
                     onAddToLibrary={async (tasks) => {
