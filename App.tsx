@@ -2346,6 +2346,12 @@ const GameApp: React.FC = () => {
                           }
 
                           setShowTaskMaster(false);
+                          // Navigate to the game's map editor so the user sees the new tasks
+                          setShowLanding(false);
+                          setMode(GameMode.EDIT);
+                          if (targetGame.id !== activeGameId) {
+                              setActiveGameId(targetGame.id);
+                          }
                       }
                   }}
                   onImportTaskList={async (list, gameId) => {
@@ -2438,6 +2444,12 @@ const GameApp: React.FC = () => {
                           }
 
                           setShowTaskMaster(false);
+                          // Navigate to the game's map editor so the user sees the new tasks
+                          setShowLanding(false);
+                          setMode(GameMode.EDIT);
+                          if (targetGame.id !== activeGameId) {
+                              setActiveGameId(targetGame.id);
+                          }
                       }
                   }}
                   taskLists={taskLists}

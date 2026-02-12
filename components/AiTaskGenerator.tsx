@@ -144,6 +144,9 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
   const [selectedTaskListId, setSelectedTaskListId] = useState<string>('');
   const [newListName, setNewListName] = useState('');
   const [saveToLibrary, setSaveToLibrary] = useState(true);
+  const [saveToTaskList, setSaveToTaskList] = useState(false);
+  const [gameTaskListId, setGameTaskListId] = useState<string>('');
+  const [gameNewListName, setGameNewListName] = useState('');
 
   // Batch Settings
   const [batchIcon, setBatchIcon] = useState<IconId | 'auto'>('auto');
@@ -185,12 +188,27 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
           if (url) {
               setLogoUrl(url);
               setUseLogoForTasks(true);
+              setIsGeneratingLogo(false);
           } else {
-              setError("Could not find a logo for this topic.");
+              // Auto-fallback to AI image generation when logo search fails
+              setIsGeneratingLogo(false);
+              setIsGeneratingAiImage(true);
+              try {
+                  const aiUrl = await generateAiImage(topic, 'thematic');
+                  if (aiUrl) {
+                      setLogoUrl(aiUrl);
+                      setUseLogoForTasks(true);
+                  } else {
+                      setError("Could not find or generate a logo. Check Stability AI API key.");
+                  }
+              } catch (aiErr) {
+                  setError("Could not generate AI image. Check API key.");
+              } finally {
+                  setIsGeneratingAiImage(false);
+              }
           }
       } catch (e) {
           setError("Error searching for logo.");
-      } finally {
           setIsGeneratingLogo(false);
       }
   };
@@ -481,6 +499,15 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
           if (onAddToLibrary) {
               onAddToLibrary(finalTasks);
           }
+
+          // Also save to task list if checkbox checked
+          if (saveToTaskList && gameTaskListId) {
+              if (gameTaskListId === 'NEW' && gameNewListName.trim() && onCreateListWithTasks) {
+                  onCreateListWithTasks(gameNewListName.trim(), finalTasks);
+              } else if (gameTaskListId !== 'NEW' && onAddTasksToList) {
+                  onAddTasksToList(gameTaskListId, finalTasks);
+              }
+          }
       }
       // 2. Add to Library OR Task List (based on user choice)
       else if (targetMode === 'LIBRARY') {
@@ -640,15 +667,51 @@ const AiTaskGenerator: React.FC<AiTaskGeneratorProps> = ({ onClose, onAddTasks, 
               )}
 
               <div className="flex items-center gap-2 px-1">
-                  <input 
-                      type="checkbox" 
-                      id="saveLib" 
-                      checked={saveToLibrary} 
-                      onChange={(e) => setSaveToLibrary(e.target.checked)} 
+                  <input
+                      type="checkbox"
+                      id="saveLib"
+                      checked={saveToLibrary}
+                      onChange={(e) => setSaveToLibrary(e.target.checked)}
                       className="rounded bg-gray-700 border-gray-600 text-orange-600 focus:ring-orange-500"
                   />
                   <label htmlFor="saveLib" className="text-xs font-bold text-gray-400 uppercase cursor-pointer">ALSO SAVE TO LIBRARY</label>
               </div>
+
+              {/* Also save to Task List */}
+              <div className="flex items-center gap-2 px-1">
+                  <input
+                      type="checkbox"
+                      id="saveTaskList"
+                      checked={saveToTaskList}
+                      onChange={(e) => setSaveToTaskList(e.target.checked)}
+                      className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="saveTaskList" className="text-xs font-bold text-gray-400 uppercase cursor-pointer">ALSO SAVE TO TASK LIST</label>
+              </div>
+              {saveToTaskList && (
+                  <div className="space-y-2 pl-6">
+                      <select
+                          value={gameTaskListId}
+                          onChange={(e) => setGameTaskListId(e.target.value)}
+                          className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs font-bold outline-none focus:border-blue-500 uppercase"
+                      >
+                          <option value="">Select list...</option>
+                          {taskLists.map(l => (
+                              <option key={l.id} value={l.id}>{l.name}</option>
+                          ))}
+                          <option value="NEW">+ CREATE NEW LIST</option>
+                      </select>
+                      {gameTaskListId === 'NEW' && (
+                          <input
+                              type="text"
+                              value={gameNewListName}
+                              onChange={(e) => setGameNewListName(e.target.value)}
+                              placeholder="New list name..."
+                              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs font-bold outline-none focus:border-blue-500 placeholder:text-gray-500"
+                          />
+                      )}
+                  </div>
+              )}
           </div>
       );
   };
