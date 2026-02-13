@@ -582,7 +582,6 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                       onClick={onOpenWizard}
                       delay={0}
                       scale={0.75}
-                      badge="NEW"
                   />
               )}
               <MapPinButton
@@ -617,6 +616,7 @@ const InitialLanding: React.FC<InitialLandingProps> = ({ onAction, version, game
                   onClick={() => onAction('CREATE_AROUNDTHEWORLD_GAME')}
                   delay={200}
                   scale={0.75}
+                  badge="BETA"
               />
           </div>
       </div>
